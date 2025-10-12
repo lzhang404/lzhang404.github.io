@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Merge Sort Visualizer</title>
+  <link rel="stylesheet" href="./styles.css"/>
+</head>
+<body>
+  <header>Merge Sort Interactive Visualizer</header>
+
+  <main>
+    <section class="panel lesson-panel">
+      <div class="controls">
+        <div>
+          <label for="array-input">Array values (comma or space separated)</label>
+          <input id="array-input" type="text" value="38, 27, 43, 3, 9, 82, 10"/>
+        </div>
+        <div class="button-row">
+          <button id="start-btn">Start</button>
+          <button id="toggle-btn" disabled>Pause</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+        <div class="message" id="message"></div>
+      </div>
+
+      <div class="legend">
+        <h2>Legend</h2>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-swatch current"></span><span>Current recursive segment</span></div>
+          <div class="legend-item"><span class="legend-swatch split-left"></span><span>Left half</span></div>
+          <div class="legend-item"><span class="legend-swatch split-right"></span><span>Right half</span></div>
+          <div class="legend-item"><span class="legend-swatch merge-target"></span><span>Merge target</span></div>
+          <div class="legend-item"><span class="legend-swatch merged"></span><span>Merged result</span></div>
+          <div class="legend-item note">Segments show the recursive splits (top) and how they merge back together (bottom).</div>
+        </div>
+      </div>
+
+      <div class="visualization">
+        <h2>Array Split & Merge</h2>
+        <div class="merge-info" id="merge-vars"></div>
+        <div class="merge-info" id="merge-info">Enter an array and press Start to watch merge sort unfold.</div>
+        <div class="levels-container" id="levels-container"></div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>C++ Merge Sort</h2>
+      <pre id="code-block"></pre>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

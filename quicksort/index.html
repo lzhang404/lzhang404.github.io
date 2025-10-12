@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quick Sort Visualizer</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>Quick Sort Interactive Visualizer</header>
+  <main>
+    <section class="panel lesson-panel">
+      <div class="controls">
+        <div>
+          <label for="array-input">Array values (comma or space separated)</label>
+          <input id="array-input" type="text" value="10, 7, 8, 9, 1, 5">
+        </div>
+        <div class="button-row">
+          <button id="start-btn">Start</button>
+          <button id="toggle-btn" disabled>Pause</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+        <div class="message" id="message"></div>
+      </div>
+
+      <div class="legend">
+        <h2>Legend</h2>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-swatch swap"></span><span>Elements swapped</span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-i"></span><span>Index <code>i</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-j"></span><span>Index <code>j</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-p"></span><span>Index <code>p</code> (pivot)</span></div>
+        </div>
+      </div>
+
+      <div class="visualization">
+        <h2>Array State</h2>
+        <div class="pivot-status" id="pivot-status">low = , high = <br>pivot value = </div>
+        <div class="array-container" id="array-container"></div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>C++ Quick Sort</h2>
+      <pre id="code-block"></pre>
+    </section>
+  </main>
+
+  <!-- Module entrypoint -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

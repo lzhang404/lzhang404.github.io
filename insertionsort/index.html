@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Insertion Sort Visualizer</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>Insertion Sort Interactive Visualizer</header>
+
+  <main>
+    <section class="panel lesson-panel">
+      <div class="controls">
+        <div>
+          <label for="array-input">Array values (comma or space separated)</label>
+          <input id="array-input" type="text" value="12, 11, 13, 5, 6" />
+        </div>
+        <div class="button-row">
+          <button id="start-btn">Start</button>
+          <button id="toggle-btn" disabled>Pause</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+        <div class="message" id="message"></div>
+      </div>
+
+      <div class="legend">
+        <h2>Legend</h2>
+        <div class="legend-grid">
+          <div class="legend-item">
+            <span class="legend-swatch shift"></span>
+            <span>Shifted element</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch sorted"></span>
+            <span>Sorted</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch pointer-i"></span>
+            <span>Index <code>i</code></span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch pointer-j"></span>
+            <span>Index <code>j</code></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="visualization">
+        <h2>Array State</h2>
+        <div class="key-status" id="key-status">Key value = arr[i] = </div>
+        <div class="array-container" id="array-container"></div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>C++ Insertion Sort</h2>
+      <pre id="code-block"></pre>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
