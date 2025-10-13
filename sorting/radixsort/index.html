@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Radix Sort (LSD) Visualizer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="../../shared/code-styles.css" />
+</head>
+<body>
+  <header>Radix Sort (LSD) Interactive Visualizer</header>
+
+  <main>
+    <section class="panel lesson-panel">
+      <div class="controls">
+        <div>
+          <label for="array-input">Integers (comma or space separated)</label>
+        </div>
+        <div>
+          <input id="array-input" type="text" value="6, -12, 100, 22, 5" />
+        </div>
+        <div class="button-row">
+          <button id="start-btn">Start</button>
+          <button id="toggle-btn" disabled>Pause</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+        
+      </div>
+
+      <div class="legend">
+        <h2>Legend</h2>
+        <div class="legend-grid">
+          <div class="legend-item">
+            <span class="legend-swatch placed"></span>
+            <span>Placed in bucket</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch collected"></span>
+            <span>Collected back to array</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="visualization">
+        <h2>Array & Buckets</h2>
+        <div class="message" id="message"></div>
+        <div class="radix-pass" id="radix-pass">pass = 1 (place = 1)</div>
+
+        <div class="vtables">
+          <!-- Actual array table -->
+          <div class="vtable">
+            <div class="vtable-head">
+              <div class="vtable-title">Array</div>
+              <div class="vtable-caption" id="array-caption">unsorted</div>
+            </div>
+            <div id="array-table" class="vtable-body"></div>
+          </div>
+
+          <!-- Buckets table -->
+          <div class="vtable">
+            <div class="vtable-head">
+              <div class="vtable-title">Buckets (0–9)</div>
+            </div>
+            <div id="bucket-table" class="vtable-body"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>C++ Radix Sort (LSD, base 10)</h2>
+      <pre id="code-block"></pre>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
