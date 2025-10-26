@@ -1,0 +1,22 @@
+export const dllInsertionSortCode = [
+  `ListInsertionSortDoublyLinked(list) {`,
+  `  curNode = list-&gt;head-&gt;next`,
+  `  <span class="kw">while</span> (curNode != null) {`,
+  `    nextNode = curNode-&gt;next`,
+  `    searchNode = curNode-&gt;prev`,
+  `    <span class="kw">while</span> (searchNode != null <span class="kw">and</span> searchNode-&gt;data &gt; curNode-&gt;data) {`,
+  `      searchNode = searchNode-&gt;prev`,
+  `    }`,
+  `    <span class="cmt">// Remove and re-insert curNode</span>`,
+  `    ListRemoveNode(list, curNode)`,
+  `    <span class="kw">if</span> (searchNode == null) {`,
+  `      curNode-&gt;prev = null`,
+  `      ListPrependNode(list, curNode)`,
+  `    }`,
+  `    <span class="kw">else</span> {`,
+  `      ListInsertNodeAfter(list, searchNode, curNode)`,
+  `    }`,
+  `    curNode = nextNode`,
+  `  }`,
+  `}`
+];

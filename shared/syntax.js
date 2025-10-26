@@ -64,7 +64,28 @@ export function renderCodeBlock(host, codeLines, opts = {}) {
     num.textContent = String(i + 1).padStart(2, " ");
 
     const txt = el("span");
-    txt.innerHTML = tokenized ? line : highlightCpp(line);
+    let html = tokenized ? line : highlightCpp(line);
+    txt.innerHTML = html;
+
+    if (!tokenized) {
+      const walker = document.createTreeWalker(txt, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      let stillLeading = true;
+      while (node && stillLeading) {
+        const value = node.textContent ?? "";
+        if (value.length) {
+          const leading = value.match(/^\s*/)?.[0] ?? "";
+          if (leading.length) {
+            node.textContent =
+              "\u00a0".repeat(leading.length) + value.slice(leading.length);
+          }
+          if (value.trim().length > 0) {
+            stillLeading = false;
+          }
+        }
+        node = walker.nextNode();
+      }
+    }
 
     row.append(num, txt);
     host.appendChild(row);

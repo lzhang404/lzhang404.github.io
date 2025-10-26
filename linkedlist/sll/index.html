@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Singly Linked List Operations Visualizer</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="../../shared/code-styles.css" />
+</head>
+<body>
+  <header>Singly Linked List Operations</header>
+  <main>
+    <section class="panel left-panel">
+      <div class="controls">
+        <label for="list-input">Initial node values (comma or space separated)</label>
+        <input id="list-input" value="7, 2, 9, 4" autocomplete="off" />
+
+        <div class="button-row">
+          <button id="build-btn">Build list</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+
+        <label for="operation">Operation</label>
+        <select id="operation">
+          <option value="append">Append</option>
+          <option value="prepend">Prepend</option>
+          <option value="insertAfter">Insert node after</option>
+          <option value="removeAfter">Remove node after</option>
+          <option value="removeByValue">Remove by value</option>
+          <option value="traverse">Traversal</option>
+        </select>
+
+        <div id="operation-fields"></div>
+
+        <div class="button-row">
+          <button id="run-btn">Run operation</button>
+          <button id="step-btn">Step</button>
+          <button id="auto-btn">Auto</button>
+        </div>
+
+        <label class="speed">
+          <span>Auto delay</span>
+          <input id="speed" type="range" min="300" max="1500" step="50" value="700" />
+        </label>
+
+        <div id="message" class="message"></div>
+      </div>
+
+      <div class="legend-inline">
+        <span><span class="dot head"></span>head</span>
+        <span><span class="dot tail"></span>tail</span>
+        <span><span class="dot cur"></span>cur</span>
+        <span><span class="dot prev"></span>prev</span>
+        <span><span class="dot target"></span>target</span>
+        <span><span class="dot new"></span>newNode</span>
+      </div>
+
+      <div class="viz">
+        <div id="step-message" class="step-message"></div>
+        <svg id="viz" viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowHead" markerWidth="12" markerHeight="8" refX="12" refY="4" orient="auto">
+              <polygon points="0 0, 12 4, 0 8"></polygon>
+            </marker>
+          </defs>
+        </svg>
+        <div class="viz-note">
+          Solid arrows show the <code>next</code> pointer links of the singly linked list.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>Reference Pseudocode</h2>
+      <div id="code-block"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

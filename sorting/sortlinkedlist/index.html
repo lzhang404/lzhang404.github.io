@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Linked List Insertion Sort Visualizer</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="../../shared/code-styles.css" />
+</head>
+<body>
+  <header>Linked List Insertion Sort Visualizer</header>
+  <main>
+    <section class="panel left-panel">
+      <div class="controls">
+        <label for="list-input">Node values (comma or space separated)</label>
+        <input id="list-input" value="5, 3, 8, 1, 4" autocomplete="off" />
+
+        <fieldset class="list-type">
+          <legend>List type</legend>
+          <label>
+            <input type="radio" name="list-kind" value="dll" checked />
+            Doubly linked list
+          </label>
+          <label>
+            <input type="radio" name="list-kind" value="sll" />
+            Singly linked list
+          </label>
+        </fieldset>
+
+        <div class="button-row">
+          <button id="build-btn">Build</button>
+          <button id="step-btn">Step</button>
+          <button id="auto-btn">Auto</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+
+        <label class="speed">
+          <span>Auto delay</span>
+          <input id="speed" type="range" min="300" max="1500" step="50" value="700" />
+        </label>
+
+        <div id="message" class="message"></div>
+      </div>
+
+      <div class="legend-inline">
+        <span><span class="dot cur"></span>curNode</span>
+        <span><span class="dot search"></span>searchNode</span>
+        <span><span class="dot next"></span>nextNode</span>
+        <span><span class="dot sorted"></span>sortedTail</span>
+      </div>
+
+      <div class="viz">
+        <div id="step-message" class="step-message"></div>
+        <svg id="viz" viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowHead" markerWidth="12" markerHeight="8" refX="12" refY="4" orient="auto">
+              <polygon points="0 0, 12 4, 0 8"></polygon>
+            </marker>
+          </defs>
+        </svg>
+        <div class="viz-note">
+          Doubly linked lists show dashed arrows for <code>prev</code> and solid arrows for <code>next</code>.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>Reference Pseudocode</h2>
+      <div id="code-block"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

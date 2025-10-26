@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BST Height Visualizer</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="../shared/code-styles.css" />
+</head>
+<body>
+  <header>Binary Search Tree &mdash; Height</header>
+  <main>
+    <section class="panel left-panel">
+      <div class="controls">
+        <label for="values-input">Node values (comma or space separated)</label>
+        <input id="values-input" value="37, 23, 45, 12, 29, 41, 56" autocomplete="off" />
+
+        <div class="button-row">
+          <button id="build-btn">Build Tree</button>
+          <button id="step-btn">Step</button>
+          <button id="auto-btn">Auto</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+
+        <label class="speed">
+          <span>Auto delay</span>
+          <input id="speed" type="range" min="300" max="1500" step="50" value="700" />
+        </label>
+
+        <div id="message" class="message"></div>
+      </div>
+
+      <div class="legend-inline">
+        <span><span class="dot current"></span>Current recursion</span>
+        <span><span class="dot height"></span>Height resolved</span>
+      </div>
+
+      <div class="viz">
+        <div id="step-message" class="step-message"></div>
+        <svg id="viz" viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg">
+          <defs></defs>
+        </svg>
+        <div class="viz-note" id="viz-note">
+          Heights are measured in edges. Leaves are height 0; an empty subtree contributes -1.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>Reference Pseudocode</h2>
+      <div id="code-block"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main-height.js"></script>
+</body>
+</html>

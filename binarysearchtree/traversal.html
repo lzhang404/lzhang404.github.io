@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BST Traversal Visualizer</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="../shared/code-styles.css" />
+</head>
+<body>
+  <header>Binary Search Tree &mdash; Traversals</header>
+  <main>
+    <section class="panel left-panel">
+      <div class="controls">
+        <label for="values-input">Node values (comma or space separated)</label>
+        <input id="values-input" value="37, 23, 45, 12, 29, 41, 56" autocomplete="off" />
+
+        <label for="traversal-order">Traversal order</label>
+        <select id="traversal-order">
+          <option value="inorder">Inorder (LNR)</option>
+          <option value="preorder">Preorder (NLR)</option>
+          <option value="postorder">Postorder (LRN)</option>
+          <option value="levelorder">Level order (BFS)</option>
+        </select>
+
+        <div class="button-row">
+          <button id="build-btn">Build Tree</button>
+          <button id="step-btn">Step</button>
+          <button id="auto-btn">Auto</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+
+        <label class="speed">
+          <span>Auto delay</span>
+          <input id="speed" type="range" min="300" max="1500" step="50" value="700" />
+        </label>
+
+        <div id="message" class="message"></div>
+      </div>
+
+      <div class="legend-inline">
+        <span><span class="dot left-phase"></span>Calling left subtree</span>
+        <span><span class="dot visit-phase"></span>Visiting / outputting node</span>
+        <span><span class="dot right-phase"></span>Calling right subtree</span>
+        <span><span class="dot complete-phase"></span>Traversal complete for node</span>
+      </div>
+
+      <div class="viz">
+        <div id="step-message" class="step-message"></div>
+        <svg id="viz" viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg">
+          <defs></defs>
+        </svg>
+        <div class="viz-note" id="viz-note">
+          Colors trace the recursion phases: yellow for diving left, blue when visiting, purple for right calls, and green once the node returns. Annotations show the visitation order.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>Reference Pseudocode</h2>
+      <div id="code-block"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main-traversal.js"></script>
+</body>
+</html>
