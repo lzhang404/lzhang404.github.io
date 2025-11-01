@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Heap Insert Visualizer</title>
+  <link rel="stylesheet" href="../../shared/code-styles.css" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header>Heap Insert Visualizer</header>
+  <nav><a class="back-link" href="../index.html">&larr; Back to heap hub</a></nav>
+  <main>
+    <section class="panel control-panel">
+      <div class="controls">
+        <div class="field">
+          <label for="array-input">Array values (comma or space separated)</label>
+          <input id="array-input" type="text" value="77, 55, 92, 67, 98, 23, 42" />
+        </div>
+        <div class="field field-inline">
+          <span class="label">Heap type</span>
+          <label><input type="radio" name="heap-type" value="max" checked /> Max heap</label>
+          <label><input type="radio" name="heap-type" value="min" /> Min heap</label>
+        </div>
+        <input type="radio" name="operation" value="insert" checked hidden />
+        <div class="field" id="insert-field">
+          <label for="insert-value">Value to insert</label>
+          <input id="insert-value" type="number" value="10" />
+        </div>
+        <div class="button-row">
+          <button id="start-btn">Start</button>
+          <button id="step-btn">Step</button>
+          <button id="toggle-btn" disabled>Pause</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+        <div class="message" id="message"></div>
+      </div>
+
+      <div class="visual-section">
+        <h2>Heap State</h2>
+        <div class="step-info" id="step-info">Insert a value and follow the percolate-up steps that restore heap order.</div>
+        <div class="tree-wrapper">
+          <svg id="heap-tree" viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="array-wrapper">
+          <h3>Array Representation</h3>
+          <div class="array-container" id="array-container"></div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <h2>Legend</h2>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-swatch current"></span><span>Inserted node index <code>i</code></span></div>
+          <div class="legend-item"><span class="legend-swatch parent"></span><span>Parent under comparison</span></div>
+          <div class="legend-item"><span class="legend-swatch swap"></span><span>Nodes being swapped</span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-i"></span><span>Pointer <code>i</code></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>C++ Insert</h2>
+      <div class="code-tabs">
+        <button class="tab active" data-snippet="insert">insert</button>
+      </div>
+      <pre id="code-block"></pre>
+    </section>
+  </main>
+
+  <script type="module" src="../src/main.js"></script>
+</body>
+</html>

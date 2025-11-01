@@ -1,0 +1,404 @@
+:root {
+  color-scheme: light;
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --border: #d7dce5;
+  --text: #1f2937;
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --node-fill: #f8fafc;
+  --node-border: #94a3b8;
+  --node-visited: #10b981;
+  --node-current: #7c3aed;
+  --node-frontier: #f97316;
+  --node-source: #fd329b;
+  --node-highlight: #0ea5e9;
+  --edge-default: #cbd5e1;
+  --edge-active: #2563eb;
+  --edge-relaxed: #059669;
+  --muted: #6b7280;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+}
+
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 1.6rem;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+nav {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 1.75rem;
+}
+
+.back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+main {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.75rem;
+}
+
+.landing-grid {
+  display: grid;
+  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.35rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.landing-card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+}
+
+.landing-card p {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+}
+
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: var(--accent);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primary-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.22);
+}
+
+.visualizer-layout {
+  display: grid;
+  gap: 1.75rem;
+  grid-template-columns: minmax(520px, 1fr) minmax(520px, 1fr);
+  align-items: start;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.field input[type="text"],
+.field input[type="number"],
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 0.98rem;
+  outline: none;
+  font-family: inherit;
+}
+
+.field textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.field-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.field-inline label {
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+button {
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:not([disabled]):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.22);
+}
+
+.message {
+  min-height: 1.3rem;
+  font-size: 0.95rem;
+}
+
+.message.error { color: #ef4444; }
+
+.status-line {
+  min-height: 1.3rem;
+  font-size: 1.2rem;
+  color: #334155;
+}
+
+.step-info {
+  min-height: 3.2rem;
+  margin: 1.1rem 0 0;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.97rem;
+  line-height: 1.5;
+}
+
+.graph-panel h2,
+.code-panel h2,
+.structure h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.2rem;
+}
+
+.graph-wrapper {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #f8fafc;
+  padding: 0.75rem;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.graph-wrapper svg {
+  width: 100%;
+  height: 340px;
+}
+
+.structure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.structure-items {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.structure-item {
+  padding: 0.45rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(249, 115, 22, 0.18);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.structure.secondary .structure-item {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #065f46;
+}
+
+.distances {
+  margin-top: 1.35rem;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.distances h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.legend-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.legend-swatch.visited { background: rgba(16, 185, 129, 0.25); border-color: var(--node-visited); }
+.legend-swatch.frontier { background: rgba(249, 115, 22, 0.22); border-color: var(--node-frontier); }
+.legend-swatch.current { background: rgba(124, 58, 237, 0.22); border-color: var(--node-current); }
+.legend-swatch.source { background: rgba(250, 112, 172, 0.22); border-color: var(--node-source); }
+.legend-swatch.candidate { background: rgba(14, 165, 233, 0.22); border-color: var(--node-highlight); }
+.legend-swatch.relaxed { background: rgba(5, 150, 105, 0.24); border-color: var(--edge-relaxed); }
+
+.graph-node {
+  fill: var(--node-fill);
+  stroke: var(--node-border);
+  stroke-width: 2;
+  transition: fill 0.2s ease, stroke 0.2s ease, transform 0.2s ease;
+}
+
+.graph-node.visited { fill: rgba(16, 185, 129, 0.2); stroke: var(--node-visited); }
+.graph-node.current { fill: rgba(124, 58, 237, 0.2); stroke: var(--node-current); transform: scale(1.03); }
+.graph-node.frontier { fill: rgba(249, 115, 22, 0.2); stroke: var(--node-frontier); }
+.graph-node.source { fill: rgba(250, 112, 172, 0.22); stroke: var(--node-source); }
+.graph-node.emphasis { fill: rgba(14, 165, 233, 0.22); stroke: var(--node-highlight); transform: scale(1.04); }
+
+.graph-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  fill: var(--text);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.graph-edge {
+  stroke: var(--edge-default);
+  stroke-width: 2.2;
+  transition: stroke 0.2s ease;
+}
+
+.graph-edge.active { stroke: var(--edge-active); stroke-width: 3; }
+.graph-edge.relaxed { stroke: var(--edge-relaxed); stroke-width: 3; }
+
+.edge-weight {
+  font-size: 1.2rem;
+  fill: var(--muted);
+  text-anchor: middle;
+}
+
+.code-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1.5rem;
+  align-self: start;
+}
+
+.code-tabs {
+  display: inline-flex;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.35rem;
+  border-radius: 999px;
+}
+
+.code-tabs .tab {
+  border: none;
+  background: transparent;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.code-tabs .tab.active {
+  background: #ffffff;
+  color: var(--accent);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+}
+
+.distance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.distance-table th,
+.distance-table td {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.distance-table thead {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.distance-table td.updated {
+  background: rgba(16, 185, 129, 0.16);
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .visualizer-layout {
+    grid-template-columns: 1fr;
+  }
+  .code-panel {
+    position: static;
+  }
+}

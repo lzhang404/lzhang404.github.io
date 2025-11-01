@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Priority Queue Visualizer</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>Priority Queue (Heap) Visualizer</header>
+  <main>
+    <section class="panel control-panel">
+      <div class="controls">
+        <div class="field">
+          <label for="array-input">Initial values (comma or space separated)</label>
+          <input id="array-input" type="text" value="34, 25, 16, 12, 9, 8" />
+        </div>
+        <div class="field field-inline">
+          <span class="label">Priority type</span>
+          <label><input type="radio" name="pq-type" value="max" checked /> Max-heap (higher values first)</label>
+          <label><input type="radio" name="pq-type" value="min" /> Min-heap (lower values first)</label>
+        </div>
+        <div class="field field-inline">
+          <span class="label">Operation</span>
+          <label><input type="radio" name="pq-operation" value="build" checked /> Build queue</label>
+          <label><input type="radio" name="pq-operation" value="enqueue" /> Enqueue (push)</label>
+          <label><input type="radio" name="pq-operation" value="dequeue" /> Dequeue (pop)</label>
+          <label><input type="radio" name="pq-operation" value="peek" /> Peek front</label>
+        </div>
+        <div class="field" id="enqueue-field">
+          <label for="enqueue-value">Value to enqueue</label>
+          <input id="enqueue-value" type="number" value="30" />
+        </div>
+        <div class="button-row">
+          <button id="start-btn">Start</button>
+          <button id="step-btn">Step</button>
+          <button id="toggle-btn" disabled>Pause</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+        <div class="message" id="message"></div>
+      </div>
+
+      <div class="visual-section">
+        <h2>Queue State</h2>
+        <div class="step-info" id="step-info">Press Step to follow priority queue operations one action at a time.</div>
+        <div class="array-container" id="array-container"></div>
+      </div>
+
+      <div class="legend">
+        <h2>Legend</h2>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-swatch heap"></span><span>Active queue area</span></div>
+          <div class="legend-item"><span class="legend-swatch current"></span><span>Current node</span></div>
+          <div class="legend-item"><span class="legend-swatch candidate"></span><span>Best candidate</span></div>
+          <div class="legend-item"><span class="legend-swatch parent"></span><span>Parent</span></div>
+          <div class="legend-item"><span class="legend-swatch child"></span><span>Child</span></div>
+          <div class="legend-item"><span class="legend-swatch swap"></span><span>Swapping nodes</span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-front"></span><span>Pointer <code>front</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-i"></span><span>Pointer <code>i</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-parent"></span><span>Pointer <code>parent</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-left"></span><span>Pointer <code>L</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-right"></span><span>Pointer <code>R</code></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>C++ Priority Queue (Heap) Operations</h2>
+      <div class="code-tabs">
+        <button class="tab active" data-snippet="build">heapify &amp; build</button>
+        <button class="tab" data-snippet="enqueue">enqueue</button>
+        <button class="tab" data-snippet="dequeue">dequeue</button>
+        <button class="tab" data-snippet="peek">peek</button>
+      </div>
+      <pre id="code-block"></pre>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
