@@ -1,8 +1,10 @@
 /* ----- Code window (shared) ----- */
 :root{
-  --code-bg: var(--code-bg, #f8fafc);
-  --code-border: var(--code-border, #e2e8f0);
-  --code-highlight: var(--code-highlight, rgba(37,99,235,.18));
+  --code-bg: #f8fafc;
+  --code-border: #e2e8f0;
+  --code-highlight: rgba(37,99,235,.18);
+  --code-highlight-outline: rgba(37,99,235,.22);
+  --code-scrollbar-thumb: rgba(15,23,42,.2);
 }
 
 /* container title optional */
@@ -40,8 +42,10 @@
 
 
 /* active line highlight */
-.code-line.active{background:rgba(37,99,235,.18);
-  box-shadow:inset 0 0 0 1px rgba(37,99,235,.22)}
+.code-line.active{
+  background: var(--code-highlight);
+  box-shadow: inset 0 0 0 1px var(--code-highlight-outline);
+}
 
 /* syntax colors (match other algorithms) */
 .code-line span.kw{       color:#2563eb; font-weight:600; }  /* keywords */
@@ -52,8 +56,13 @@
 /* optional extras */
 .code-line span.num{ color:#334155; }
 .code-line span.str{ color:#b45309; }
-.code-line span.cmt{ color:#6b7280; font-style:italic; }
+.code-line span.cmt{ color:#656665; font-style:italic; }
 
 /* nice scrollbar */
-.code-panel pre::-webkit-scrollbar{ height:10px; }
-.code-panel pre::-webkit-scrollbar-thumb{ background:rgba(15,23,42,.2); border-radius:999px; }
+.code-panel pre::-webkit-scrollbar,
+#code-block::-webkit-scrollbar{ height:10px; }
+.code-panel pre::-webkit-scrollbar-thumb,
+#code-block::-webkit-scrollbar-thumb{
+  background: var(--code-scrollbar-thumb);
+  border-radius:999px;
+}

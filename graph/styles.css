@@ -13,7 +13,7 @@
   --node-frontier: #f97316;
   --node-source: #fd329b;
   --node-highlight: #0ea5e9;
-  --edge-default: #cbd5e1;
+  --edge-default: #94a3b8;
   --edge-active: #2563eb;
   --edge-relaxed: #059669;
   --muted: #6b7280;
@@ -71,7 +71,7 @@ main {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 1.35rem;
+  padding: 1rem;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
@@ -203,11 +203,11 @@ button:not([disabled]):hover {
 
 .step-info {
   min-height: 3.2rem;
-  margin: 1.1rem 0 0;
+  margin: 0.1rem 0 0;
   background: rgba(37, 99, 235, 0.08);
   border: 1px solid rgba(37, 99, 235, 0.18);
   border-radius: 10px;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.5rem;
   font-size: 0.97rem;
   line-height: 1.5;
 }
@@ -215,7 +215,7 @@ button:not([disabled]):hover {
 .graph-panel h2,
 .code-panel h2,
 .structure h2 {
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.3rem;
   font-size: 1.2rem;
 }
 
@@ -223,8 +223,8 @@ button:not([disabled]):hover {
   border: 1px solid var(--border);
   border-radius: 16px;
   background: #f8fafc;
-  padding: 0.75rem;
-  min-height: 360px;
+  padding: 0.5rem;
+  min-height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,13 +232,21 @@ button:not([disabled]):hover {
 
 .graph-wrapper svg {
   width: 100%;
-  height: 340px;
+  height: 260px;
 }
 
 .structure {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.structure-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  align-items: start;
 }
 
 .structure-items {
@@ -248,7 +256,7 @@ button:not([disabled]):hover {
 }
 
 .structure-item {
-  padding: 0.45rem 0.45rem;
+  padding: 0.3rem 0.3rem;
   border-radius: 999px;
   background: rgba(249, 115, 22, 0.18);
   border: 1px solid rgba(249, 115, 22, 0.4);
@@ -277,14 +285,14 @@ button:not([disabled]):hover {
 
 .legend-grid {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.2rem;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.2rem;
   font-size: 0.95rem;
 }
 

@@ -109,18 +109,20 @@ export function validateStartNode(graph, start) {
   return { success: true };
 }
 
-export function computeCircularLayout(nodes, { width = 720, height = 480 } = {}) {
+export function computeCircularLayout(nodes, { width = 900, height = 420 } = {}) {
   const layout = new Map();
   const count = nodes.length;
   const centerX = width / 2;
   const centerY = height / 2;
-  const radius = Math.min(width, height) * 0.38 + (count < 4 ? 40 : 0);
+  const baseRadius = Math.min(width, height) * 0.38 + (count < 4 ? 40 : 0);
   const angleStep = (Math.PI * 2) / Math.max(count, 1);
+  const horizontalRadius = Math.min(centerX - 50, baseRadius * 2);
+  const verticalRadius = Math.min(centerY - 50, baseRadius * 0.9);
 
   nodes.forEach((node, index) => {
     const angle = angleStep * index - Math.PI / 2;
-    const x = centerX + radius * Math.cos(angle);
-    const y = centerY + radius * Math.sin(angle);
+    const x = centerX + horizontalRadius * Math.cos(angle);
+    const y = centerY + verticalRadius * Math.sin(angle);
     layout.set(node, { x, y });
   });
 

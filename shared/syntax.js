@@ -13,15 +13,46 @@ export function escapeHtml(s) {
   ));
 }
 
+function splitLineParts(line) {
+  let inString = false;
+  let escapeNext = false;
+  for (let i = 0; i < line.length - 1; i++) {
+    const ch = line[i];
+    if (inString) {
+      if (escapeNext) {
+        escapeNext = false;
+      } else if (ch === "\\") {
+        escapeNext = true;
+      } else if (ch === "\"") {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === "\"") {
+      inString = true;
+      continue;
+    }
+    if (ch === "/" && line[i + 1] === "/" && (i === 0 || line[i - 1] !== ":")) {
+      return {
+        code: line.slice(0, i),
+        comment: line.slice(i)
+      };
+    }
+  }
+  return { code: line, comment: "" };
+}
+
 export function highlightCpp(line) {
-  let s = escapeHtml(line);
-  // comments
-  s = s.replace(/\/\/.*/g, m => `<span class="cmt">${m}</span>`);
+  const { code, comment } = splitLineParts(line);
+  let s = escapeHtml(code);
+
   // strings
   s = s.replace(/"(?:\\.|[^"\\])*"/g, m => `<span class="str">${m}</span>`);
+
   // std::name  -> std (pink) + name (purple)
   s = s.replace(/\bstd::([A-Za-z_]\w*)\b/g,
-    (_m, fn) => `<span class="standard">std</span>::<span class="func">${fn}</span>`);
+    (_m, fn) => `<span class="standard">std</span>::<span class="func">${fn}</span>`
+  );
 
   // keywords (blue)
   const kw = [
@@ -40,6 +71,10 @@ export function highlightCpp(line) {
 
   // numbers (muted)
   s = s.replace(/\b\d+(?:\.\d+)?\b/g, m => `<span class="num">${m}</span>`);
+
+  if (comment) {
+    s += `<span class="cmt">${escapeHtml(comment)}</span>`;
+  }
   return s;
 }
 

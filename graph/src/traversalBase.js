@@ -39,6 +39,7 @@ export class TraversalBase {
     this.isPaused = false;
     this.timer = null;
     this.parsedGraph = null;
+    this.manualComplete = false;
 
     if (!this.allowDirected && this.directedInput) {
       this.directedInput.checked = false;
@@ -109,7 +110,7 @@ export class TraversalBase {
   updateControls() {
     const running = this.isRunning && !this.isPaused;
     if (this.startBtn) this.startBtn.disabled = this.isRunning;
-    if (this.stepBtn) this.stepBtn.disabled = running;
+    if (this.stepBtn) this.stepBtn.disabled = running || this.manualComplete;
     if (this.toggleBtn) {
       this.toggleBtn.disabled = !this.isRunning;
       this.toggleBtn.textContent = this.isPaused ? "Resume" : "Pause";
@@ -125,6 +126,7 @@ export class TraversalBase {
     this.isPaused = false;
     this.steps = [];
     this.stepIndex = 0;
+    this.manualComplete = false;
 
     if (this.edgesInput && this.defaultEdges && !this.edgesInput.value.trim()) {
       this.edgesInput.value = this.defaultEdges;
@@ -191,10 +193,16 @@ export class TraversalBase {
 
   stepOnce() {
     if (this.isRunning && !this.isPaused) return;
+    if (this.manualComplete && this.steps.length && this.stepIndex >= this.steps.length) {
+      this.setMessage("Traversal complete! Press Reset to run again.");
+      return;
+    }
     if (!this.prepareSteps(false)) return;
     if (!this.steps.length || this.stepIndex >= this.steps.length) return;
     const hasMore = this.advanceStep();
     if (!hasMore && this.stepIndex >= this.steps.length) {
+      this.manualComplete = true;
+      this.updateControls();
       this.setMessage("Traversal complete!");
     }
   }
@@ -267,6 +275,7 @@ export class TraversalBase {
 
     this.steps = build.steps;
     this.stepIndex = 0;
+    this.manualComplete = false;
     this.applyInitialState(build.initialState || {});
     this.setMessage("");
     if (!build.initialState || typeof build.initialState.stepInfo !== "string") {
