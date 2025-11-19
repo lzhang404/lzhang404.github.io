@@ -111,6 +111,13 @@ main {
   align-items: start;
 }
 
+.side-column {
+  top: 3rem;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+}
+
 .controls {
   display: flex;
   flex-direction: column;
@@ -271,7 +278,7 @@ button:not([disabled]):hover {
 }
 
 .distances {
-  margin-top: 1.35rem;
+  margin: 0;
   background: #f8fafc;
   border: 1px solid var(--border);
   border-radius: 12px;
