@@ -226,6 +226,13 @@ button:not([disabled]):hover {
   font-size: 1.2rem;
 }
 
+.graph-visual-row {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
 .graph-wrapper {
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -235,11 +242,17 @@ button:not([disabled]):hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 2 1 420px;
 }
 
 .graph-wrapper svg {
   width: 100%;
   height: 260px;
+}
+
+.graph-visual-row .distances {
+  flex: 1 1 240px;
+  margin: 0;
 }
 
 .structure {
@@ -415,5 +428,8 @@ button:not([disabled]):hover {
   }
   .code-panel {
     position: static;
+  }
+  .graph-visual-row {
+    flex-direction: column;
   }
 }

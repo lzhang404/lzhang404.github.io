@@ -32,8 +32,24 @@
           <div class="message" id="message"></div>
         </div>
 
-        <div class="graph-wrapper">
-          <svg id="graph-canvas" viewBox="0 0 720 480" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="graph-visual-row">
+          <div class="graph-wrapper">
+            <svg id="graph-canvas" viewBox="0 0 720 480" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+
+          <section class="distances">
+            <h2>Distances</h2>
+            <table class="distance-table">
+              <thead>
+                <tr>
+                  <th>Node</th>
+                  <th>Dist</th>
+                  <th>Previous</th>
+                </tr>
+              </thead>
+              <tbody id="distance-body"></tbody>
+            </table>
+          </section>
         </div>
 
         <div class="step-info" id="step-info"></div>
@@ -63,20 +79,6 @@
       </section>
 
       <div class="side-column">
-        <section class="panel distances">
-          <h2>Distances</h2>
-          <table class="distance-table">
-            <thead>
-              <tr>
-                <th>Node</th>
-                <th>Dist</th>
-                <th>Previous</th>
-              </tr>
-            </thead>
-            <tbody id="distance-body"></tbody>
-          </table>
-        </section>
-
         <section class="panel code-panel">
           <h2>C++ Dijkstra</h2>
           <pre id="code-block"></pre>

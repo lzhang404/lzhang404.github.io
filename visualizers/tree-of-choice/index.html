@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tree of Choice &mdash; Brute Force vs Backtracking</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="../shared/code-styles.css" />
+</head>
+<body>
+  <header>Tree of Choice &mdash; Brute Force vs Backtracking</header>
+  <main>
+    <section class="panel intro">
+      <h1>Make &rarr; Explore &rarr; Undo</h1>
+      <p>
+        Both brute force search and backtracking walk the same tree of choices. Brute force blindly
+        explores every branch, while backtracking uses the recursive cycle of <strong>make a choice</strong>,
+        <strong>explore</strong>, and <strong>undo</strong> to move between branches without rebuilding state.
+      </p>
+      <p>
+        Pick an example to see how the recursion tree captures the work: permutations for a shopping bag
+        and ordered travel paths between cities. The stepper highlights the exact nodes that participate in
+        the cycle.
+      </p>
+    </section>
+
+    <section class="panel viz-panel">
+      <div class="picker" id="example-picker" role="tablist" aria-label="Pick example"></div>
+      <p class="example-description" id="example-description"></p>
+
+      <div class="legend-inline">
+        <span><span class="dot current"></span>Make choice (current node)</span>
+        <span><span class="dot visited"></span>Explored path</span>
+        <span><span class="dot target"></span>Undo / next branch</span>
+      </div>
+
+      <div class="viz">
+        <div id="step-message" class="step-message"></div>
+        <svg id="viz" viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="viz-note" id="viz-note"></div>
+      </div>
+    </section>
+
+    <section class="panel steps-panel">
+      <h2>Recursive cycle</h2>
+      <div id="steps" class="steps"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

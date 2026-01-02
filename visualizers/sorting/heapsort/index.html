@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Heap Sort Visualizer</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>Heap Sort Interactive Visualizer</header>
+  <main>
+    <section class="panel lesson-panel">
+      <div class="controls">
+        <div>
+          <label for="array-input">Array values (comma or space separated)</label>
+          <input id="array-input" type="text" value="12, 11, 13, 5, 6, 7" />
+        </div>
+        <div class="button-row">
+          <button id="start-btn">Start</button>
+          <button id="step-btn">Step</button>
+          <button id="toggle-btn" disabled>Pause</button>
+          <button id="reset-btn">Reset</button>
+        </div>
+        <div class="message" id="message"></div>
+      </div>
+
+      <div class="legend">
+        <h2>Legend</h2>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-swatch heap"></span><span>Active heap</span></div>
+          <div class="legend-item"><span class="legend-swatch current"></span><span>Node being heapified</span></div>
+          <div class="legend-item"><span class="legend-swatch candidate"></span><span>Current largest candidate</span></div>
+          <div class="legend-item"><span class="legend-swatch child"></span><span>Child under comparison</span></div>
+          <div class="legend-item"><span class="legend-swatch swap"></span><span>Swapped elements</span></div>
+          <div class="legend-item"><span class="legend-swatch sorted"></span><span>Sorted suffix</span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-i"></span><span>Pointer <code>i</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-max"></span><span>Pointer <code>max</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-l"></span><span>Pointer <code>L</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-r"></span><span>Pointer <code>R</code></span></div>
+          <div class="legend-item"><span class="legend-swatch pointer-end"></span><span>Pointer <code>end</code></span></div>
+        </div>
+      </div>
+
+      <div class="visualization">
+        <h2>Array State</h2>
+        <div class="step-info" id="step-info">Press Start to build the max-heap.</div>
+        <div class="array-container" id="array-container"></div>
+      </div>
+    </section>
+
+    <section class="panel code-panel">
+      <h2>C++ Heap Sort</h2>
+      <pre id="code-block"></pre>
+    </section>
+  </main>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
