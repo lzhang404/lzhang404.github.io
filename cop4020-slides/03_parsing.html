@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Grammars, Parsing &amp; ASTs</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2, user-scalable=yes">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- =========================================================
+           Title
+      ========================================================== -->
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat">
+          <h1>Grammars, Parsing &amp; ASTs</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Module 3</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 1: Big picture and grammar motivation
+      ========================================================== -->
+      <section>
+        <section>
+          <h2>Big picture and grammar motivation</h2>
+        </section>
+
+        <section>
+          <h2>Big Picture: Where Are We in the Compiler Pipeline?</h2>
+          <ul class="simple">
+            <li>
+              <p>So far (Week 2): lexical structure</p>
+              <ul>
+                <li>
+                  <p>Raw source $\rightarrow$ characters $\rightarrow$ tokens</p>
+                </li>
+                <li>
+                  <p>Tokens: keywords, identifiers, literals, operators, separators, comments</p>
+                </li>
+                <li>
+                  <p>Implemented with regular expressions and a tiny JavaScript lexer</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>This week (Week 3): syntax</p>
+              <ul>
+                <li>
+                  <p>How do we describe valid sequences of tokens?</p>
+                </li>
+                <li>
+                  <p>How do we turn a token stream into a tree structure?</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Pipeline view:
+                \[
+                \text{Source} \;\to\; \text{Lexer} \;\to\; \text{Parser} \;\to\; \text{AST} \;\to\; \text{Later passes}
+                \]</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Week 3 Plan</h2>
+          <ul class="simple">
+            <li>
+              <p>Context-free grammars (CFGs)</p>
+            </li>
+            <li>
+              <p>BNF/EBNF notation</p>
+            </li>
+            <li>
+              <p>Derivations and parse trees</p>
+            </li>
+            <li>
+              <p>Ambiguity, precedence, associativity</p>
+            </li>
+            <li>
+              <p>Abstract syntax trees (ASTs) vs parse trees</p>
+            </li>
+            <li>
+              <p>Recursive descent parsing (top-down, hand-written)</p>
+            </li>
+            <li>
+              <p>JavaScript demo: expression parser that builds an AST</p>
+            </li>
+            <li>
+              <p>Java/C++ grammar snippets, parser generators (ANTLR)</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Why Do We Need Grammars?</h2>
+          <ul class="simple">
+            <li>
+              <p>Natural language analogy:</p>
+              <ul>
+                <li>
+                  <p>English has nouns, verbs, sentences, and rules for combining them.</p>
+                </li>
+                <li>
+                  <p>Programming languages also have rules: "an if statement looks like this..."</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>We want a precise, formal way to say:</p>
+              <ul>
+                <li>
+                  <p>which token sequences are valid programs</p>
+                </li>
+                <li>
+                  <p>how they are structured as trees</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Grammars:</p>
+              <ul>
+                <li>
+                  <p>are the standard formalism for language syntax</p>
+                </li>
+                <li>
+                  <p>are used by parser generators and hand-written parsers</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <!-- SPLIT: Context-Free Grammars (CFGs): Informal Idea -->
+        <section>
+          <h2>CFGs: Informal idea</h2>
+          <p>
+            A context-free grammar describes valid strings with production rules.
+            Core ingredients: terminals, nonterminals, a start symbol, and productions.
+          </p>
+        </section>
+
+        <section>
+          <h2>CFGs: Terminals</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Terminals</strong>:</p>
+              <ul>
+                <li>
+                  <p>things that actually appear in the input token stream</p>
+                </li>
+                <li>
+                  <p>examples:
+                    <code>if</code>, <code>else</code>, <code>+</code>, <code>(</code>, <code>)</code>,
+                    <code>IDENT</code>, <code>NUM</code>
+                  </p>
+                </li>
+                <li>
+                  <p>in practice, these often correspond to lexer token types</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>CFGs: Nonterminals and start symbol</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Nonterminals</strong>:</p>
+              <ul>
+                <li>
+                  <p>names for syntactic categories (abstract "slots" in the structure)</p>
+                </li>
+                <li>
+                  <p>examples: <code>Expr</code>, <code>Stmt</code>, <code>Block</code>, <code>Type</code></p>
+                </li>
+                <li>
+                  <p>do not appear literally in the source code</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Start symbol</strong>:</p>
+              <ul>
+                <li>
+                  <p>the nonterminal that represents a complete valid input</p>
+                </li>
+                <li>
+                  <p>often called <code>Program</code> or <code>CompilationUnit</code></p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>CFGs: Productions</h2>
+          <p>Productions describe how a nonterminal expands into terminals and other nonterminals:</p>
+          <ul class="simple">
+            <li>
+              <p><code>Expr -&gt; Expr &quot;+&quot; Term</code></p>
+            </li>
+            <li>
+              <p><code>Stmt -&gt; &quot;if&quot; &quot;(&quot; Expr &quot;)&quot; Stmt</code></p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Terminals vs Nonterminals</h2>
+          <p>Consider the source fragment:</p>
+          <pre><code data-trim data-noescape class="language-javascript">42 + x * (y + 3)</code></pre>
+          <p>After lexical analysis (Week 2), we might get tokens:</p>
+          <pre><code data-trim data-noescape class="language-text">NUMBER(42)   PLUS("+")   IDENT(x)   STAR("*")
+LPAREN("(")  IDENT(y)    PLUS("+")  NUMBER(3)  RPAREN(")")</code></pre>
+          <ul class="simple">
+            <li>
+              <p>Terminals: token types such as <code>NUMBER</code>, <code>PLUS</code>, <code>IDENT</code>,
+                <code>STAR</code>, <code>LPAREN</code>, <code>RPAREN</code>
+              </p>
+            </li>
+            <li>
+              <p>Nonterminals: categories we use in the grammar, for example</p>
+              <ul>
+                <li>
+                  <p><code>Expr</code> for "any expression"</p>
+                </li>
+                <li>
+                  <p><code>Term</code> for "multiplication/division group"</p>
+                </li>
+                <li>
+                  <p><code>Factor</code> for "single number, variable, or parenthesized expression"</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Intuition: terminals are the leaves of the parse tree, nonterminals are the internal nodes that
+                organize them.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Practice: terminals and nonterminals</h2>
+          <p>Consider a grammar for a tiny expression and statement language.
+            Look at the following symbols:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr     Stmt     if     else     NUM     IDENT     +</code></pre>
+          <p>Questions (discuss with a neighbor):</p>
+          <ul class="simple">
+            <li>
+              <p>Which of these would typically be <strong>terminals</strong>?</p>
+            </li>
+            <li>
+              <p>Which of these would typically be <strong>nonterminals</strong>?</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Practice answers: terminals and nonterminals</h2>
+          <p>One reasonable classification:</p>
+          <ul class="simple">
+            <li>
+              <p>Likely <strong>nonterminals</strong> (syntactic categories):</p>
+              <ul>
+                <li>
+                  <p><code>Expr</code>, <code>Stmt</code></p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Likely <strong>terminals</strong> (tokens from the lexer):</p>
+              <ul>
+                <li>
+                  <p><code>if</code>, <code>else</code>, <code>NUM</code>, <code>IDENT</code>, <code>+</code></p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>A Tiny Arithmetic Expression Grammar</h2>
+          <p>Terminals (coming from the lexer):</p>
+          <ul class="simple">
+            <li>
+              <p><code>NUM</code>, <code>+</code>, <code>*</code>, <code>(</code>, <code>)</code></p>
+            </li>
+          </ul>
+          <p>Nonterminals:</p>
+          <ul class="simple">
+            <li>
+              <p><code>Expr</code>, <code>Term</code>, <code>Factor</code></p>
+            </li>
+          </ul>
+          <p>Grammar:
+            \[
+            \begin{array}{rcl}
+            \text{Expr} &\rightarrow& \text{Expr} + \text{Term} \;\mid\; \text{Term} \\
+            \text{Term} &\rightarrow& \text{Term} * \text{Factor} \;\mid\; \text{Factor} \\
+            \text{Factor} &\rightarrow& ( \text{Expr} ) \;\mid\; \text{NUM}
+            \end{array}
+            \]</p>
+          <p>This grammar generates strings like:</p>
+          <ul class="simple">
+            <li>
+              <p><code>NUM</code></p>
+            </li>
+            <li>
+              <p><code>NUM + NUM</code></p>
+            </li>
+            <li>
+              <p><code>NUM * NUM + NUM</code></p>
+            </li>
+            <li>
+              <p><code>(NUM + NUM) * NUM</code></p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 2: Grammar notation: BNF, EBNF, derivations
+      ========================================================== -->
+      <section>
+        <section>
+          <h2>Grammar notation: BNF, EBNF, and derivations</h2>
+        </section>
+
+        <section>
+          <h2>BNF Notation</h2>
+          <p>BNF = Backus--Naur Form</p>
+          <div style="margin-top: 0.3cm;"></div>
+          <p>Common conventions:</p>
+          <ul class="simple">
+            <li>
+              <p>Nonterminals: capitalized or in angle brackets, e.g. <code>&lt;expr&gt;</code></p>
+            </li>
+            <li>
+              <p>Terminals: literal symbols or tokens, e.g. <code>&quot;+&quot;</code>, <code>&quot;if&quot;</code></p>
+            </li>
+            <li>
+              <p>Productions: $&lt;expr&gt; ::= &lt;expr&gt; "+" &lt;term&gt;| &lt;term&gt;$</p>
+            </li>
+          </ul>
+          <div style="margin-top: 0.3cm;"></div>
+          <p>Arithmetic example in BNF:</p>
+          <pre><code data-trim data-noescape class="language-text">&lt;expr&gt;   ::= &lt;expr&gt; &quot;+&quot; &lt;term&gt; | &lt;term&gt;
+&lt;term&gt;   ::= &lt;term&gt; &quot;*&quot; &lt;factor&gt; | &lt;factor&gt;
+&lt;factor&gt; ::= &quot;(&quot; &lt;expr&gt; &quot;)&quot; | NUM</code></pre>
+          <p>BNF is widely used in language specifications (for example, early C and Pascal).</p>
+        </section>
+
+        <section>
+          <h2>EBNF: Extended BNF</h2>
+          <p>EBNF adds shorthand:</p>
+          <ul class="simple">
+            <li>
+              <p><code>A*</code> = zero or more <code>A</code></p>
+            </li>
+            <li>
+              <p><code>A+</code> = one or more <code>A</code></p>
+            </li>
+            <li>
+              <p><code>[A]</code> = optional <code>A</code></p>
+            </li>
+          </ul>
+          <p>Example: a comma-separated list of identifiers</p>
+          <pre><code data-trim data-noescape class="language-text">&lt;id-list&gt; ::= IDENT (&quot;,&quot; IDENT)*</code></pre>
+          <p>Expression example:</p>
+          <pre><code data-trim data-noescape class="language-text">&lt;expr&gt;   ::= &lt;term&gt; (&quot;+&quot; &lt;term&gt;)*
+&lt;term&gt;   ::= &lt;factor&gt; (&quot;*&quot; &lt;factor&gt;)*
+&lt;factor&gt; ::= &quot;(&quot; &lt;expr&gt; &quot;)&quot; | NUM</code></pre>
+          <p>EBNF is easier to read and closer to how we think about repetition and options.</p>
+        </section>
+
+        <!-- SPLIT: Derivations slide into two -->
+        <section>
+          <h2>Derivations: How Grammars Generate Strings</h2>
+          <ul class="simple">
+            <li>
+              <p>A derivation starts at the start symbol and repeatedly applies productions.</p>
+
+            </li>
+            <li>
+              <p>Arithmetic grammar (example):</p>
+            </li>
+          </ul>
+          <pre>
+            <code data-trim data-noescape class="language-text">
+            Expr -&gt; Expr &quot;+&quot; Term | Term
+            Term -&gt; Term &quot;*&quot; Factor | Factor
+            Factor -&gt; NUM
+            </code>
+          </pre>
+          <ul class="simple">
+            <li> <p>Leftmost derivation of <code>NUM + NUM * NUM</code>: </li>
+          </ul>
+            \[
+            \begin{aligned}
+            \text{Expr}
+            &\Rightarrow \text{Expr} + \text{Term} \\
+            &\Rightarrow \text{Term} + \text{Term} \\
+            &\Rightarrow \text{Factor} + \text{Term} \\
+            &\Rightarrow \text{NUM} + \text{Term} \\
+            &\Rightarrow \text{NUM} + \text{Term} * \text{Factor} \\
+            &\Rightarrow \text{NUM} + \text{Factor} * \text{Factor} \\
+            &\Rightarrow \text{NUM} + \text{NUM} * \text{NUM}
+            \end{aligned}
+            \]</p>
+          <ul class="simple">
+            <li> Different derivation orders (leftmost vs rightmost) give the same final string,
+            but may correspond to different parse trees for ambiguous grammars.</p> </li>
+          </ul>
+          
+        </section>
+
+        <section>
+          <h2>Practice: derivations</h2>
+          <p>Use the (precedence-aware) grammar:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr   -&gt; Expr &quot;+&quot; Term | Term
+Term   -&gt; Term &quot;*&quot; Factor | Factor
+Factor -&gt; &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
+          <p>Consider the string:</p>
+          <pre><code data-trim data-noescape class="language-text">(NUM + NUM) * NUM</code></pre>
+          <p>Tasks:</p>
+          <ul class="simple">
+            <li>
+              <p>Write out a <strong>leftmost derivation</strong> for this string,
+                starting from <code>Expr</code>.</p>
+            </li>
+            <li>
+              <p>At which step does the grammar "decide" that
+                <code>&quot;*&quot;</code> binds tighter than <code>&quot;+&quot;</code>?
+                (Hint: look at when <code>Term</code> expands.)
+              </p>
+            </li>
+          </ul>
+          <p>Do not worry about the actual numbers; just use the token name <code>NUM</code>.</p>
+        </section>
+
+        <!-- SPLIT: Practice answers derivations -->
+        <section>
+          <h2>Practice answers: derivations (grammar)</h2>
+          <pre><code data-trim data-noescape class="language-text">Expr   -&gt; Expr &quot;+&quot; Term | Term
+Term   -&gt; Term &quot;*&quot; Factor | Factor
+Factor -&gt; &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
+          <ul class="simple">
+            <li> <p>One leftmost derivation for <code>(NUM + NUM) * NUM</code>:</p> </li>
+          </ul>
+          <p>\[
+            \begin{aligned}
+            \text{Expr}
+            &\Rightarrow \text{Term} \\
+            &\Rightarrow \text{Term} * \text{Factor} \\
+            &\Rightarrow \text{Factor} * \text{Factor} \\
+            &\Rightarrow ( \text{Expr} ) * \text{Factor} \\
+            &\Rightarrow ( \text{Expr} + \text{Term} ) * \text{Factor} \\
+            &\Rightarrow ( \text{Term} + \text{Term} ) * \text{Factor} \\
+            &\Rightarrow ( \text{Factor} + \text{Term} ) * \text{Factor} \\
+            &\Rightarrow ( \text{NUM} + \text{Term} ) * \text{Factor} \\
+            &\Rightarrow ( \text{NUM} + \text{Factor} ) * \text{Factor} \\
+            &\Rightarrow ( \text{NUM} + \text{NUM} ) * \text{Factor} \\
+            &\Rightarrow ( \text{NUM} + \text{NUM} ) * \text{NUM}
+            \end{aligned}
+            \]</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 3: Parse trees and ambiguity
+      ========================================================== -->
+      <section>
+        <section>
+          <h2>Parse trees and ambiguity</h2>
+        </section>
+
+        <section>
+          <h2>Parse Trees</h2>
+          <p>A parse tree (also called a concrete syntax tree):</p>
+          <ul class="simple">
+            <li>
+              <p>reflects the structure of a derivation</p>
+            </li>
+            <li>
+              <p>has nonterminals as internal nodes</p>
+            </li>
+            <li>
+              <p>has terminals (tokens) as leaves</p>
+            </li>
+          </ul>
+          <div style="margin-top: 0.3cm;"></div>
+          <p>For <code>NUM + NUM * NUM</code> with our grammar:</p>
+          <ul class="simple">
+            <li>
+              <p>Root: <code>Expr</code></p>
+            </li>
+            <li>
+              <p>Children: <code>Expr</code>, <code>+</code>, <code>Term</code></p>
+            </li>
+            <li>
+              <p><code>Expr</code> child: <code>Term</code></p>
+            </li>
+            <li>
+              <p><code>Term</code> child: <code>Factor</code></p>
+            </li>
+            <li>
+              <p>and so on</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Parse Tree for NUM + NUM * NUM</h2>
+
+          <ul class="simple">
+            <li>
+              <p>Root nonterminal: <code>Expr</code></p>
+            </li>
+            <li>
+              <p>Grammar enforces that <code>*</code> binds tighter than <code>+</code></p>
+            </li>
+          </ul>
+
+          <p>Grammar:</p>
+          <pre><code data-trim data-noescape class="language-text">&lt;Expr&gt;   ::= &lt;Expr&gt; &quot;+&quot; &lt;Term&gt; | &lt;Term&gt;
+&lt;Term&gt;   ::= &lt;Term&gt; &quot;*&quot; &lt;Factor&gt; | &lt;Factor&gt;
+&lt;Factor&gt; ::= &quot;(&quot; &lt;Expr&gt; &quot;)&quot; | NUM</code></pre>
+
+          <img
+            src = "../_static/images/parse_tree1.png"
+            alt = "A example parse tree for NUM + NUM * NUM"
+            style="display:block; margin: 0.6em auto; max-width: 85%; max-height: 400px; height:auto;"
+          >
+        </section>
+
+        <section>
+          <h2>Ambiguity in Grammars</h2>
+          <p>A grammar is ambiguous if at least one string has two different parse trees.</p>
+          <div style="margin-top: 0.3cm;"></div>
+          <p>Example of an ambiguous expression grammar:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr ::= Expr &quot;+&quot; Expr
+      | Expr &quot;*&quot; Expr
+      | NUM</code></pre>
+          <ul class="simple">
+            <li>
+              <p>The string <code>NUM + NUM * NUM</code> can parse as:</p>
+              <ul>
+                <li>
+                  <p><code>(NUM + NUM) * NUM</code></p>
+                </li>
+                <li>
+                  <p><code>NUM + (NUM * NUM)</code></p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Arithmetic meaning is usually <code>*</code> before <code>+</code>.</p>
+            </li>
+          </ul>
+          <p>Real languages avoid ambiguity (or define disambiguation rules) to make parsing deterministic and semantics
+            clear.</p>
+        </section>
+
+        <section>
+          <h2>Ambiguous Parse Trees for NUM + NUM * NUM</h2>
+          <p>We use the ambiguous grammar:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr ::= Expr &quot;+&quot; Expr
+      | Expr &quot;*&quot; Expr
+      | NUM</code></pre>
+          <p>For the string NUM + NUM * NUM, there are two parse trees:</p>
+            <div style="display:flex; gap:16px; align-items:center; justify-content:center;">
+              <figure style="flex:1; margin:0;">
+                <img src="../_static/images/ambiguous_parse_tree1.png" alt="Parse tree for (NUM + NUM) * NUM"
+                    style="width:100%; height:auto; max-height:420px; object-fit:contain;">
+              </figure>
+
+              <figure style="flex:1; margin:0;">
+                <img src="../_static/images/ambigous_parse_tree2.png" alt="Parse tree for NUM + (NUM * NUM)"
+                    style="width:100%; height:auto; max-height:420px; object-fit:contain;">
+              </figure>
+            </div>
+
+          
+        </section>
+
+        <section>
+          <h2>Ambiguity: The Dangling Else Problem</h2>
+          <p>Classic example in many language grammars:</p>
+          <pre><code data-trim data-noescape class="language-text">Stmt ::= &quot;if&quot; &quot;(&quot; Expr &quot;)&quot; Stmt
+       | &quot;if&quot; &quot;(&quot; Expr &quot;)&quot; Stmt &quot;else&quot; Stmt
+       | ...</code></pre>
+          <p>The string:</p>
+          <pre><code data-trim data-noescape class="language-text">if (c1)
+  if (c2)
+    s1;
+  else
+    s2;</code></pre>
+          <p>Two possible parses:</p>
+          <ul class="simple">
+            <li>
+              <p><code>else</code> matches the inner <code>if</code></p>
+            </li>
+            <li>
+              <p><code>else</code> matches the outer <code>if</code></p>
+            </li>
+          </ul>
+          <p>Most languages (C, Java, JavaScript) use the rule:</p>
+          <ul class="simple">
+            <li>
+              <p><code>else</code> is matched with the nearest preceding unmatched <code>if</code></p>
+            </li>
+          </ul>
+
+        </section>
+
+        <section>
+          <h2>Fixing Precedence and Associativity</h2>
+          <p>We can encode precedence and associativity in the grammar.</p>
+          <div style="margin-top: 0.3cm;"></div>
+          <p>Precedence (multiplication tighter than addition):</p>
+          <pre><code data-trim data-noescape class="language-text">Expr   ::= Term (&quot;+&quot; Term)*
+Term   ::= Factor (&quot;*&quot; Factor)*
+Factor ::= &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
+          <p>Associativity example (left-associative <code>+</code>):</p>
+          <ul class="simple">
+            <li>
+              <p>Expr $\rightarrow$ Expr "+" Term $\mid$ Term</p>
+            </li>
+            <li>
+              <p>or with EBNF: <code>Expr -&gt; Term (&quot;+&quot; Term)*</code></p>
+            </li>
+            <li>
+              <p>This forces <code>a + b + c</code> to parse as <code>(a + b) + c</code>.</p>
+            </li>
+          </ul>
+          <p>Designing grammars is partly math and partly language design.</p>
+        </section>
+
+        <section>
+          <h2>Java and C++ Grammar Snippets</h2>
+          <ul class="simple">
+            <li>
+              <p>Real languages have large grammars (hundreds of rules).</p>
+            </li>
+            <li>
+              <p>Example, simplified from a Java expression grammar:</p>
+              <pre><code data-trim data-noescape class="language-text">Expression
+  ::= AssignmentExpression
+
+AssignmentExpression
+  ::= ConditionalExpression
+   |  LeftHandSideExpression AssignmentOperator Expression
+
+ConditionalExpression
+  ::= LogicalOrExpression
+   |  LogicalOrExpression &quot;?&quot; Expression &quot;:&quot; ConditionalExpression</code></pre>
+            </li>
+            <li>
+              <p>C++ has an even more complex grammar because of templates, operator overloading, and other features.
+              </p>
+            </li>
+            <li>
+              <p>Takeaway: the same CFG ideas scale up to industrial languages.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Summary So Far</h2>
+          <ul class="simple">
+            <li>
+              <p>Tokens from the lexer are organized by a parser using a grammar.</p>
+            </li>
+            <li>
+              <p>CFGs describe syntax via terminals, nonterminals, productions, and a start symbol.</p>
+            </li>
+            <li>
+              <p>BNF and EBNF are notations for writing grammars.</p>
+            </li>
+            <li>
+              <p>Derivations and parse trees show how strings are generated.</p>
+            </li>
+            <li>
+              <p>Ambiguity is problematic for compilers; we often fix it using precedence and associativity.</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 4: ASTs and their role
+      ========================================================== -->
+      <section>
+        <section>
+          <h2>ASTs and their role</h2>
+        </section>
+
+        <section>
+          <h2>From Parse Trees to ASTs</h2>
+          <p>Parse tree:</p>
+          <ul class="simple">
+            <li>
+              <p>very close to the grammar</p>
+            </li>
+            <li>
+              <p>includes all parentheses, keywords, and punctuation</p>
+            </li>
+            <li>
+              <p>often quite bushy</p>
+            </li>
+          </ul>
+          <div style="margin-top: 0.3cm;"></div>
+          <p>Abstract syntax tree (AST):</p>
+          <ul class="simple">
+            <li>
+              <p>more compact, semantics-oriented structure</p>
+            </li>
+            <li>
+              <p>drops syntax sugar and unnecessary nodes</p>
+            </li>
+            <li>
+              <p>children represent meaningful subexpressions, not just grammar artifacts</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>AST vs Parse Tree: Visual Comparison</h2>
+          <ul class="simple">
+            <li>
+              <p>Parse tree closely mirrors the grammar:</p>
+              <ul>
+                <li>
+                  <p>nodes such as <code>Expr</code>, <code>Term</code>, <code>Factor</code></p>
+                </li>
+                <li>
+                  <p>parentheses appear as their own leaves</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>AST:</p>
+              <ul>
+                <li>
+                  <p>internal nodes represent operations, such as <code>BinaryExpr</code>, <code>UnaryExpr</code>,
+                    <code>CallExpr</code>
+                  </p>
+                </li>
+                <li>
+                  <p>leaves represent identifiers and literals, such as <code>Identifier</code>, <code>Number</code>,
+                    <code>String</code>
+                  </p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <p>In implementation:</p>
+          <ul class="simple">
+            <li>
+              <p>AST nodes are usually classes or structured objects.</p>
+            </li>
+            <li>
+              <p>Later phases (type checking, interpretation, code generation) use the AST.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>AST Node Shapes for a Tiny Expression Language</h2>
+          <p>Suppose we support:</p>
+          <ul class="simple">
+            <li>
+              <p>numbers</p>
+            </li>
+            <li>
+              <p>binary operators <code>+</code> and <code>*</code></p>
+            </li>
+            <li>
+              <p>parentheses</p>
+            </li>
+          </ul>
+          <p>We might define AST node "types" as JavaScript objects:</p>
+          <pre><code data-trim data-noescape class="language-javascript">{ type: "NumberLiteral", value: 42 }
+
+{
+  type: "BinaryExpr",
+  op: "+",
+  left:  { /* another AST node */ },
+  right: { /* another AST node */ }
+}</code></pre>
+          <p>Later, an interpreter can evaluate:</p>
+          <ul class="simple">
+            <li>
+              <p><code>NumberLiteral</code> by returning its value</p>
+            </li>
+            <li>
+              <p><code>BinaryExpr</code> by recursively evaluating <code>left</code> and <code>right</code>, then
+                applying <code>op</code></p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Example AST for 1 + 2 * 3</h2>
+          <p>A possible AST (as JavaScript-style objects):</p>
+          <pre><code data-trim data-noescape class="language-javascript">{
+  type: "BinaryExpr",
+  op: "+",
+  left:  { type: "NumberLiteral", value: 1 },
+  right: {
+    type: "BinaryExpr",
+    op: "*",
+    left:  { type: "NumberLiteral", value: 2 },
+    right: { type: "NumberLiteral", value: 3 }
+  }
+}</code></pre>
+          <p>Visual tree:</p>
+           <img
+            src = "../_static/images/example_ast.png"
+            alt = "An example AST for 1 + 2 * 3"
+            style="display:block; margin: 0.6em auto; max-width: 85%; max-height: 400px; height:auto;"
+          >
+          
+        </section>
+
+        <section>
+          <h2>Industry angle: how TypeScript / JavaScript tools parse code</h2>
+          <p>Modern tooling for TypeScript and JavaScript (editors and CLIs) uses parsers:</p>
+          <ul class="simple">
+            <li>
+              <p>language servers (for example VS Code) provide:</p>
+              <ul>
+                <li>
+                  <p>syntax highlighting</p>
+                </li>
+                <li>
+                  <p>go-to-definition, rename, code completion</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>analysis tools:</p>
+              <ul>
+                <li>
+                  <p>ESLint, TypeScript compiler, static analyzers</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>code transformation tools:</p>
+              <ul>
+                <li>
+                  <p>Babel, swc, TypeScript compiler emitters</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <p>All of these have a pipeline very similar to our toy compiler:</p>
+          <p>\[
+            \text{Source} \to \text{Lexer} \to \text{Parser} \to \text{AST} \to
+            \text{Analysis / Transformations}
+            \]</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 5: Parsing strategies
+      ========================================================== -->
+      <section>
+        <section>
+          <h2>Parsing strategies: top-down and bottom-up</h2>
+        </section>
+
+        <section>
+          <h2>Top-down parsing</h2>
+          <ul class="simple">
+            <li>
+              <p>start from the start symbol (for example <code>Expr</code>)</p>
+            </li>
+            <li>
+              <p>predict which productions to use, based on the next tokens</p>
+            </li>
+            <li>
+              <p>build the tree from the root down toward the leaves</p>
+            </li>
+            <li>
+              <p>examples:</p>
+              <ul>
+                <li>
+                  <p>hand-written recursive descent (what we are doing)</p>
+                </li>
+                <li>
+                  <p>LL (Left-to-right, Leftmost derivation) parsers generated by tools</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+
+        </section>
+        <section>
+          <h2>Bottom-up parsing</h2>
+
+          <ul class="simple">
+            <li>
+              <p>start from the input tokens</p>
+            </li>
+            <li>
+              <p>repeatedly combine tokens and partial subtrees into larger phrases</p>
+            </li>
+            <li>
+              <p>build the tree from the leaves up toward the root</p>
+            </li>
+            <li>
+              <p>examples:</p>
+              <ul>
+                <li>
+                  <p>LR (left-to-right, rightmost-derivation-in-reverse), LALR, GLR parsers</p>
+                </li>
+                <li>
+                  <p>traditional parser generators such as YACC, Bison</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Top-down vs bottom-up in real parsers</h2>
+          <ul class="simple">
+            <li>
+              <p>many modern language implementations use:</p>
+              <ul>
+                <li>
+                  <p>hand-written recursive descent (top-down), or</p>
+                </li>
+                <li>
+                  <p>parser generators that produce LL-style top-down parsers</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>classic C and C++ compilers have often used:</p>
+              <ul>
+                <li>
+                  <p>LALR bottom-up parsers generated by YACC or Bison</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Reasons to choose one or the other include:</p>
+              <ul class="simple">
+                <li>
+                  <p>control over error messages and recovery</p>
+                </li>
+                <li>
+                  <p>convenience of writing and maintaining the grammar</p>
+                </li>
+                <li>
+                  <p>performance and the complexity of the language syntax</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>For this course, recursive descent is a good model:
+            the code is small enough to read on a slide, and it mirrors the grammar directly.</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 6: Recursive descent and expression grammar design
+      ========================================================== -->
+      <section>
+        <section>
+          <h2>Recursive descent and expression grammar design</h2>
+        </section>
+
+        <section>
+          <h2>Recursive Descent Parsing: Idea</h2>
+          <ul class="simple">
+            <li>
+              <p>Top-down parser: start from the start symbol and predict what comes next.</p>
+            </li>
+            <li>
+              <p>For each nonterminal in the grammar, write a function that:</p>
+              <ul>
+                <li>
+                  <p>consumes tokens from the input</p>
+                </li>
+                <li>
+                  <p>returns an AST node</p>
+                </li>
+                <li>
+                  <p>throws an error if the syntax is invalid</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>This approach is natural to implement by hand for smaller languages or subsets.</p>
+            </li>
+            <li>
+              <p>Example mapping:</p>
+                <ul class="simple">
+                  <li>
+                    <p>nonterminal <code>Expr</code> corresponds to function <code>parseExpr</code></p>
+                  </li>
+                  <li>
+                    <p>nonterminal <code>Term</code> corresponds to function <code>parseTerm</code></p>
+                  </li>
+                  <li>
+                    <p>nonterminal <code>Factor</code> corresponds to function <code>parseFactor</code></p>
+                  </li>
+                </ul>
+            </li>
+          </ul>
+          
+        </section>
+
+        <section>
+          <h2>Designing a grammar for expressions (1)</h2>
+          <p>Suppose we want a tiny expression language with:</p>
+          <ul class="simple">
+            <li>
+              <p>numbers, <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></p>
+            </li>
+            <li>
+              <p>parentheses for grouping</p>
+            </li>
+            <li>
+              <p>usual math rules:</p>
+              <ul>
+                <li>
+                  <p><code>*</code> and <code>/</code> bind tighter than <code>+</code> and <code>-</code></p>
+                </li>
+                <li>
+                  <p><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> are left-associative</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <p>A naive grammar might be:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr ::= Expr &quot;+&quot; Expr
+      |  Expr &quot;*&quot; Expr
+      |  NUM</code></pre>
+
+        </section>
+
+        <section>
+          <h2>Designing a grammar for expressions (2)</h2>
+
+          <pre><code data-trim data-noescape class="language-text">Expr ::= Expr &quot;+&quot; Expr
+      |  Expr &quot;*&quot; Expr
+      |  NUM</code></pre>
+          <p>Problems:</p>
+          <ul class="simple">
+            <li>
+              <p>ambiguous: <code>NUM + NUM * NUM</code> has two parse trees</p>
+            </li>
+            <li>
+              <p>no explicit precedence or associativity</p>
+            </li>
+          </ul>
+          <p>Our design strategy:</p>
+          <ul class="simple">
+            <li>
+              <p>introduce layers that match precedence: <code>Expr</code> for <code>+</code>- and <code>Term</code> for
+                <code>*</code>/</p>
+            </li>
+            <li>
+              <p>use repetition patterns (or left recursion) to encode associativity</p>
+            </li>
+            <li>
+              <p>let <code>Factor</code> handle base cases and parentheses</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>From operator table to Expr / Term / Factor</h2>
+          <p>Start from the operator table: parentheses, numbers, <code>*</code>, <code>/</code>,
+          <code>+</code>, <code>-</code> (from highest to least precedence)
+          </p>
+
+          <p>Design a layered grammar:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr   ::= Term ((&quot;+&quot;|&quot;-&quot;) Term)*
+Term   ::= Factor ((&quot;*&quot;|&quot;/&quot;) Factor)*
+Factor ::= &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
+          <p>Why this matches our design goals:</p>
+          <ul class="simple">
+            <li>
+              <p>precedence:</p>
+              <ul>
+                <li>
+                  <p><code>Expr</code> is built out of <code>Term</code>s, so <code>*</code> and <code>/</code> are
+                    resolved before <code>+</code> and <code>-</code>.</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>associativity:</p>
+              <ul>
+                <li>
+                  <p><code>(&quot;+&quot; Term)*</code> means a left-fold of <code>+</code> over <code>Term</code>s, so
+                    <code>a + b + c</code> parses as <code>(a + b) + c</code>.</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>parentheses:</p>
+              <ul>
+                <li>
+                  <p><code>Factor ::= &quot;(&quot; Expr &quot;)&quot;</code> lets any full expression appear as a
+                    single factor, overriding normal precedence.</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Practice: extending the expression grammar</h2>
+          <p>Our current grammar:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr   ::= Term ((&quot;+&quot;|&quot;-&quot;) Term)*
+Term   ::= Factor ((&quot;*&quot;|&quot;/&quot;) Factor)*
+Factor ::= &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
+          <p>We want to add a <strong>unary minus</strong> operator so that expressions like
+            <code>-x</code> and <code>-(1 + 2) * 3</code> are valid.
+          </p>
+          <p>Design goal:</p>
+          <ul class="simple">
+            <li>
+              <p>unary <code>&quot;-&quot;</code> should bind <em>tighter</em> than <code>&quot;*&quot;</code> and
+                <code>&quot;/&quot;</code>
+                (that is, <code>-x * 3</code> means <code>(-x) * 3</code>).</p>
+            </li>
+          </ul>
+          <p>Tasks:</p>
+          <ul class="simple">
+            <li>
+              <p>Propose a new grammar rule (or set of rules) that adds unary minus.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Practice answers: extending the expression grammar</h2>
+          <p>One simple solution: extend <code>Factor</code> to handle unary minus:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr   ::= Term ((&quot;+&quot;|&quot;-&quot;) Term)*
+Term   ::= Factor ((&quot;*&quot;|&quot;/&quot;) Factor)*
+Factor ::= &quot;(&quot; Expr &quot;)&quot;
+        |  NUM
+        |  &quot;-&quot; Factor</code></pre>
+          <p>Why this works:</p>
+          <ul class="simple">
+            <li>
+              <p><code>Factor</code> is the "tightest" level (numbers and parentheses).</p>
+            </li>
+            <li>
+              <p>By adding <code>&quot;-&quot; Factor</code> there, we say:</p>
+              <ul>
+                <li>
+                  <p>first form a negated factor <code>(&quot;-&quot; Factor)</code></p>
+                </li>
+                <li>
+                  <p>then let <code>Term</code> combine factors with <code>&quot;*&quot;</code> and
+                    <code>&quot;/&quot;</code></p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>So <code>-x * 3</code> parses as <code>(-x) * 3</code>, not <code>-(x * 3)</code>.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Grammar for Our Recursive Descent Parser</h2>
+          <p>We use a precedence-aware grammar that is easy to parse top-down:</p>
+          <pre><code data-trim data-noescape class="language-text">Expr   ::= Term ((&quot;+&quot;|&quot;-&quot;) Term)*
+Term   ::= Factor ((&quot;*&quot;|&quot;/&quot;) Factor)*
+Factor ::= &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
+          <p>Tokens (from a Week 2 style lexer):</p>
+          <ul class="simple">
+            <li>
+              <p><code>NUMBER</code> tokens with a numeric value</p>
+            </li>
+            <li>
+              <p>symbol tokens for <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>(</code>,
+                <code>)</code></p>
+            </li>
+            <li>
+              <p>possibly an <code>EOF</code> token to mark the end</p>
+            </li>
+          </ul>
+          <p>Each nonterminal becomes a JavaScript function that:</p>
+          <ul class="simple">
+            <li>
+              <p>looks at the current token</p>
+            </li>
+            <li>
+              <p>decides which production to use</p>
+            </li>
+            <li>
+              <p>builds AST nodes</p>
+            </li>
+          </ul>
+        </section>
+
+        <!-- SPLIT: Token Stream Helper -->
+        <section>
+          <h2>Token Stream Helper in TypeScript (1)</h2>
+          <p>Assume we already have a lexer that produces an array of tokens like:</p>
+          <ul class="simple">
+            <li>
+              <p><code>{ type: &quot;NUMBER&quot;, value: 42 }</code></p>
+            </li>
+            <li>
+              <p><code>{ type: &quot;PLUS&quot;,   lexeme: &quot;+&quot; }</code></p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">// Assume Token and TokenType are defined elsewhere.
+class Parser {
+  private tokens: Token[];
+  private pos = 0;
+  constructor(tokens: Token[]) {
+    this.tokens = tokens;
+  }
+  private current(): Token | undefined {
+    return this.tokens[this.pos];
+  }
+  match(type: TokenType): Token | null {
+    const tok = this.current();
+    if (tok && tok.type === type){
+      this.pos++; return tok;
+    }
+    return null;
+  }
+  expect(type: TokenType, message: string): Token {
+    const tok = this.match(type);
+    if (!tok) {
+      throw new Error(
+        message + " at token " +
+        JSON.stringify(this.current())
+      );
+    }
+    return tok;
+  }
+}
+</code></pre>
+        </section>
+
+
+
+        <section>
+          <h2>Parsing Factors</h2>
+          <p>Grammar:</p>
+          <pre><code data-trim data-noescape class="language-text">Factor ::= &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
+          <pre><code data-trim data-noescape class="language-typescript">parseFactor(): ExprNode {
+  const tok = this.current();
+  // "(" Expr ")"
+  if (tok && tok.type === TokenType.LPAREN) {
+    this.match(TokenType.LPAREN);
+    const expr = this.parseExpr();
+    this.expect(TokenType.RPAREN, "Expected ')'");
+    // We do not keep parentheses as separate AST nodes
+    return expr;
+  }
+  // NUM
+  if (tok && tok.type === TokenType.NUMBER) {
+    this.match(TokenType.NUMBER);
+    return {
+      type: "NumberLiteral",
+      value: tok.value as number
+    };
+  }
+  throw new Error(
+    "Expected number or '(' at token " + JSON.stringify(tok)
+  );
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Parsing Terms with Left-Associative Loops</h2>
+          <p>Grammar: $Term ::= Factor (("*"|"/") Factor)*$</p>
+          <ul class="simple">
+            <li>
+              <p>parse a <code>Factor</code></p>
+            </li>
+            <li>
+              <p>while the next token is <code>&quot;*&quot;</code> or <code>&quot;/&quot;</code>, consume it and
+                another <code>Factor</code></p>
+            </li>
+            <li>
+              <p>each time, build a <code>BinaryExpr</code> whose <code>left</code> child is the previous node</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">parseTerm(): ExprNode {
+  let node: ExprNode = this.parseFactor();
+  while (true) {
+    const tok = this.current();
+    if (!tok || (tok.type !== TokenType.STAR &&
+                 tok.type !== TokenType.SLASH)) {
+      break;
+    }
+    this.pos++; // consume * or /
+    const right = this.parseFactor();
+    node = {
+      type: "BinaryExpr",
+      op: tok.lexeme as string, // "*" or "/"
+      left: node,
+      right: right
+    };
+  }
+  return node;
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Parsing Expressions (Plus and Minus)</h2>
+          <p>Grammar: $Expr ::= Term (("+"|"-") Term)*$<br />Implementation (same pattern as <code>parseTerm</code>):
+          </p>
+          <pre><code data-trim data-noescape class="language-typescript">parseExpr(): ExprNode {
+  let node: ExprNode = this.parseTerm();
+  while (true) {
+    const tok = this.current();
+    if (!tok || (tok.type !== TokenType.PLUS &&
+                 tok.type !== TokenType.MINUS)) {
+      break;
+    }
+    this.pos++; // consume + or -
+    const right = this.parseTerm();
+    node = {
+      type: "BinaryExpr",
+      op: tok.lexeme as string, // "+" or "-"
+      left: node,
+      right: right
+    };
+  }
+  return node;
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Putting It Together: Top-Level Parse Function</h2>
+          <p>We want to parse a whole expression and ensure we consumed all tokens.</p>
+          <pre><code data-trim data-noescape class="language-typescript">parse(): ExprNode {
+  const ast = this.parseExpr();
+  const tok = this.current();
+  if (tok && tok.type !== TokenType.EOF) {
+    throw new Error(
+      "Unexpected extra input at token " + JSON.stringify(tok)
+    );
+  }
+  return ast;
+}</code></pre>
+          <p>Usage example: npx ts-node expr_parser.ts "1 + 2 * 3"</p>
+          <pre><code data-trim data-noescape class="language-typescript">const tokens: Token[] = lex("1 + 2 * 3"); // from a Week 2 style lexer
+tokens.push({ type: TokenType.EOF });
+
+const parser = new Parser(tokens);
+const ast: ExprNode = parser.parse();
+console.log(JSON.stringify(ast, null, 2));</code></pre>
+        </section>
+
+        <section>
+          <h2>What Does the AST Look Like for 1 + 2 * 3?</h2>
+          <p>For input <code>1 + 2 * 3</code>, the AST should encode precedence:</p>
+          <pre><code data-trim data-noescape class="language-typescript">{
+  "type": "BinaryExpr",
+  "op": "+",
+  "left": { "type": "NumberLiteral", "value": 1 },
+  "right": {
+    "type": "BinaryExpr",
+    "op": "*",
+    "left":  { "type": "NumberLiteral", "value": 2 },
+    "right": { "type": "NumberLiteral", "value": 3 }
+  }
+}</code></pre>
+          <p>This corresponds to the intended meaning:
+            \[
+            1 + (2 * 3)
+            \]
+            The grammar and recursive descent structure enforce this.</p>
+        </section>
+
+        <section>
+          <h2>Error Handling in Recursive Descent</h2>
+          <p>Basic approach in this example:</p>
+          <ul class="simple">
+            <li>
+              <p><code>expect(type, message)</code> throws if the next token is not the expected type.</p>
+            </li>
+            <li>
+              <p>Each parse function throws helpful messages when it sees something invalid.</p>
+            </li>
+          </ul>
+          <div style="margin-top: 0.3cm;"></div>
+          <p>More sophisticated options (for later or advanced courses):</p>
+          <ul class="simple">
+            <li>
+              <p>error recovery: skip tokens until a synchronization point (for example, <code>;</code>)</p>
+            </li>
+            <li>
+              <p>collect multiple errors before giving up</p>
+            </li>
+          </ul>
+          <p>Even a simple recursive descent parser can give helpful error messages because you control the code.</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 7: Bottom-up parsing and parser generators
+      ========================================================== -->
+      <section>
+        <section>
+          <h2>Bottom-up parsing and parser generators</h2>
+        </section>
+
+        <section>
+          <h2>Bottom-up parsing: shift-reduce idea</h2>
+          <p>Bottom-up parsers:</p>
+          <ul class="simple">
+            <li>
+              <p>build the parse tree from the leaves up toward the root</p>
+            </li>
+            <li>
+              <p>most common family: LR parsers (including LALR)</p>
+            </li>
+            <li>
+              <p>key mechanism: shift-reduce algorithm</p>
+            </li>
+          </ul>
+          <p>Shift-reduce algorithm (very high level):</p>
+          <ul class="simple">
+            <li>
+              <p>maintain:</p>
+              <ul>
+                <li>
+                  <p>a stack of grammar symbols and parser states</p>
+                </li>
+                <li>
+                  <p>the remaining input tokens</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>two main actions:</p>
+              <ul>
+                <li>
+                  <p>shift: move the next input token onto the stack</p>
+                </li>
+                <li>
+                  <p>reduce: when the top of the stack matches the right-hand side of a production (a handle), replace
+                    it by the left-hand side nonterminal</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <p>Compared to LL / recursive descent:</p>
+          <ul class="simple">
+            <li>
+              <p>LR parsers are more powerful (can handle a larger class of grammars)</p>
+            </li>
+            <li>
+              <p>but the implementation is more complex and usually table-driven</p>
+            </li>
+            <li>
+              <p>so we normally let tools (YACC, Bison, etc.) generate them</p>
+            </li>
+          </ul>
+        </section>
+
+        <!-- SPLIT: Shift-reduce example (table is big) -->
+        <section>
+          <h2>Shift-reduce example: NUM + NUM * NUM (1)</h2>
+          <p>Use a simplified expression grammar (with precedence already encoded):</p>
+          <pre><code data-trim data-noescape class="language-text">Expr   ::= Term (&quot;+&quot; Term)*
+Term   ::= Factor (&quot;*&quot; Factor)*
+Factor ::= NUM</code></pre>
+          <p>Trace (first half):</p>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th>
+                  <p>Stack</p>
+                </th>
+                <th>
+                  <p>Input</p>
+                </th>
+                <th>
+                  <p>Action</p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <p><code>[ ]</code></p>
+                </td>
+                <td>
+                  <p><code>NUM + NUM * NUM $</code></p>
+                </td>
+                <td>
+                  <p>start</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[NUM]</code></p>
+                </td>
+                <td>
+                  <p><code>+ NUM * NUM $</code></p>
+                </td>
+                <td>
+                  <p>shift NUM</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Factor]</code></p>
+                </td>
+                <td>
+                  <p><code>+ NUM * NUM $</code></p>
+                </td>
+                <td>
+                  <p>reduce Factor $\rightarrow$ NUM</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Term]</code></p>
+                </td>
+                <td>
+                  <p><code>+ NUM * NUM $</code></p>
+                </td>
+                <td>
+                  <p>reduce Term $\rightarrow$ Factor</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr]</code></p>
+                </td>
+                <td>
+                  <p><code>+ NUM * NUM $</code></p>
+                </td>
+                <td>
+                  <p>reduce Expr $\rightarrow$ Term</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr,+]</code></p>
+                </td>
+                <td>
+                  <p><code>NUM * NUM $</code></p>
+                </td>
+                <td>
+                  <p>shift '+'</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr,+,NUM]</code></p>
+                </td>
+                <td>
+                  <p><code>* NUM $</code></p>
+                </td>
+                <td>
+                  <p>shift NUM</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Shift-reduce example: NUM + NUM * NUM (2)</h2>
+          <pre><code data-trim data-noescape class="language-text">Expr   ::= Term (&quot;+&quot; Term)*
+Term   ::= Factor (&quot;*&quot; Factor)*
+Factor ::= NUM</code></pre>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th>
+                  <p>Stack</p>
+                </th>
+                <th>
+                  <p>Input</p>
+                </th>
+                <th>
+                  <p>Action</p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <p><code>[Expr,+,Factor]</code></p>
+                </td>
+                <td>
+                  <p><code>* NUM $</code></p>
+                </td>
+                <td>
+                  <p>reduce Factor $\rightarrow$ NUM</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr,+,Term]</code></p>
+                </td>
+                <td>
+                  <p><code>* NUM $</code></p>
+                </td>
+                <td>
+                  <p>reduce Term $\rightarrow$ Factor</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr,+,Term,*]</code></p>
+                </td>
+                <td>
+                  <p><code>NUM $</code></p>
+                </td>
+                <td>
+                  <p>shift '*'</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr,+,Term,*,NUM]</code></p>
+                </td>
+                <td>
+                  <p><code>$</code></p>
+                </td>
+                <td>
+                  <p>shift NUM</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr,+,Term,*,Factor]</code></p>
+                </td>
+                <td>
+                  <p><code>$</code></p>
+                </td>
+                <td>
+                  <p>reduce Factor $\rightarrow$ NUM</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr,+,Term]</code></p>
+                </td>
+                <td>
+                  <p><code>$</code></p>
+                </td>
+                <td>
+                  <p>reduce Term $\rightarrow$Term "*" Factor</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p><code>[Expr]</code></p>
+                </td>
+                <td>
+                  <p><code>$</code></p>
+                </td>
+                <td>
+                  <p>reduce Expr$\rightarrow$Expr "+" Term</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ul class="simple">
+            <li>
+              <p>we never explicitly call something like <code>parseExpr</code></p>
+            </li>
+            <li>
+              <p>instead, the parser watches the stack and reduces handles</p>
+            </li>
+            <li>
+              <p>when the stack is a single <code>Expr</code> and input is <code>$</code>, the parse succeeds</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Parser Generators: ANTLR and Friends</h2>
+          <p>Hand-written recursive descent:</p>
+          <ul class="simple">
+            <li>
+              <p>good for small languages, domain-specific languages, and teaching</p>
+            </li>
+            <li>
+              <p>you control every detail of the implementation</p>
+            </li>
+          </ul>
+          <p>Parser generators (ANTLR, JavaCC, YACC/Bison, and others):</p>
+          <ul class="simple">
+            <li>
+              <p>input: grammar file (usually close to BNF or EBNF)</p>
+            </li>
+            <li>
+              <p>output: parser code in Java, C++, Python, and other languages</p>
+            </li>
+            <li>
+              <p>often include lexer plus parser plus tree-building support</p>
+            </li>
+          </ul>
+          <div style="margin-top: 0.3cm;"></div>
+          <p>In industry:</p>
+          <ul class="simple">
+            <li>
+              <p>many compilers and tools use parser generators</p>
+            </li>
+            <li>
+              <p>some use hand-written recursive descent for flexibility and better error messages</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>A tiny ANTLR grammar for expressions</h2>
+          <pre><code data-trim data-noescape class="language-antlr">grammar ExprLang;
+expr
+  : term (('+' | '-') term)*
+  ;
+term
+  : factor (('*' | '/') factor)*
+  ;
+factor
+  : NUMBER
+  | '(' expr ')'
+  ;
+NUMBER : [0-9]+ ; // Lexer rules (tokens)
+WS     : [ \t\r\n]+ -&gt; skip ;</code></pre>
+          <ul class="simple">
+            <li>
+              <p>Grammar rules <code>expr</code>, <code>term</code>, <code>factor</code> look almost identical to our
+                handwritten CFG.</p>
+            </li>
+            <li>
+              <p>ANTLR generates a lexer and parser from this file.</p>
+            </li>
+            <li>
+              <p>Instead of writing <code>parseExpr</code>, <code>parseTerm</code> by hand, we describe the grammar and
+                let the tool produce the parser code.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Summary of Week 3</h2>
+          <ul class="simple">
+            <li>
+              <p>Grammars (CFGs) are the formal tool for describing syntax.</p>
+            </li>
+            <li>
+              <p>BNF and EBNF are common notations for writing grammars.</p>
+            </li>
+            <li>
+              <p>Parse trees capture how strings are derived from the grammar.</p>
+            </li>
+            <li>
+              <p>ASTs are simplified, semantics-focused trees that compilers actually use.</p>
+            </li>
+            <li>
+              <p>Recursive descent parsing:</p>
+              <ul>
+                <li>
+                  <p>one function per nonterminal</p>
+                </li>
+                <li>
+                  <p>straightforward to implement in JavaScript</p>
+                </li>
+                <li>
+                  <p>gives a working expression parser and AST builder</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Real-world grammars (Java, C++) and tools such as ANTLR scale these ideas up.</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 800, "height": 540 });
+
+
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    // More info https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>

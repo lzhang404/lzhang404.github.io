@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>COP4020 Programming Languages</title>
+    <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  </head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat">
+<h1>COP4020 Programming Languages</h1>
+<div class="subtitle docutils container">
+<p><strong>Module 1</strong></p>
+<p>Liting Zhang</p>
+</div>
+</section>
+</section>
+
+<section class="slide level2">
+
+<section id="course-overview" class="frame">
+<h2>Course Overview</h2>
+<ul>
+<li><p>Tuesday, Thursday 11 am - 12:15 pm</p></li>
+<li><p>Room 438</p></li>
+<li><p>Course Zoom link: https://uwf.zoom.us/j/84176259046</p></li>
+<li><p>Instructor:</p>
+<ul>
+<li><p>Dr. Liting Zhang</p></li>
+<li><p>lzhang@uwf.edu, 4/435</p></li>
+<li><p>Office hours: T, R 2 - 4 PM Via Zoom
+https://uwf.zoom.us/my/lzhang</p></li>
+</ul></li>
+<li><p>TA:</p></li>
+</ul>
+</section>
+<section id="communication-policy" class="frame">
+<h2>Communication Policy</h2>
+<ul>
+<li><p>Course information and updates are sent via Canvas
+announcements</p></li>
+<li><p>Email is the preferred method of communication</p></li>
+<li><p>Use subject line format:
+<code>COP4020: [Your Topic Here]</code></p></li>
+<li><p>Example: <code>COP4020: Project 2 Questions</code></p></li>
+<li><p>Expect a response within 1–2 business days</p></li>
+<li><p>Avoid:</p>
+<ul>
+<li><p>Canvas/Navigation messages</p></li>
+<li><p>Sending only error screenshots without your code/context</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="course-goals" class="frame">
+<h2>Course Goals</h2>
+<ul>
+<li><p>Describe fundamentals issues in the design and implementation of
+programming languages.</p></li>
+<li><p>Describe programming language theory as it pertains to
+programming language translation</p></li>
+<li><p>Develop programs using the major programming paradigms
+(procedural, object-oriented, functional and logic-based).</p></li>
+</ul>
+</section>
+<section id="attendance-policy" class="frame">
+<h2>Attendance Policy</h2>
+<ul>
+<li><p>Regular attendance is expected and will greatly improve
+performance</p></li>
+<li><p>Participation including in-class activities, lab etc are
+graded</p></li>
+</ul>
+</section>
+<section id="grading-evaluation" class="frame">
+<h2>Grading / Evaluation</h2>
+<div class="columns">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Assignment</th>
+<th style="text-align: right;">% of Grade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Participation</td>
+<td style="text-align: right;">10%</td>
+</tr>
+<tr>
+<td style="text-align: left;">Homeworks</td>
+<td style="text-align: right;">10%</td>
+</tr>
+<tr>
+<td style="text-align: left;">Projects</td>
+<td style="text-align: right;">20%</td>
+</tr>
+<tr>
+<td style="text-align: left;">Group Project</td>
+<td style="text-align: right;">10%</td>
+</tr>
+<tr>
+<td style="text-align: left;">Tests</td>
+<td style="text-align: right;">25%</td>
+</tr>
+<tr>
+<td style="text-align: left;">Final Exam</td>
+<td style="text-align: right;">25%</td>
+</tr>
+</tbody>
+</table><table>
+<thead>
+<tr>
+<th style="text-align: left;">Letter Grade</th>
+<th style="text-align: left;">Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">A</td>
+<td style="text-align: left;">92% – 100%</td>
+</tr>
+<tr>
+<td style="text-align: left;">A-</td>
+<td style="text-align: left;">90% – 91.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">B+</td>
+<td style="text-align: left;">87% – 89.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">B</td>
+<td style="text-align: left;">84% – 86.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">B-</td>
+<td style="text-align: left;">80% – 83.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">C+</td>
+<td style="text-align: left;">77% – 79.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">C</td>
+<td style="text-align: left;">74% – 76.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">C-</td>
+<td style="text-align: left;">70% – 73.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">D+</td>
+<td style="text-align: left;">67% – 69.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">D</td>
+<td style="text-align: left;">60% – 66.9%</td>
+</tr>
+<tr>
+<td style="text-align: left;">F</td>
+<td style="text-align: left;">0% – 59.9%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="assessments" class="frame">
+<h2>Assessments</h2>
+<ul>
+<li><p>Individual Projects:</p>
+<ul>
+<li><p>3 programming assignments (GitHub Classroom)</p></li>
+<li><p>about 2 weeks to finish</p></li>
+</ul></li>
+<li><p>Group Project:</p>
+<ul>
+<li><p>about 4 weeks to finish</p></li>
+</ul></li>
+<li><p>Exams:</p>
+<ul>
+<li><p>2 tests (around week 6 and week 11)</p></li>
+<li><p>1 comprehensive final exam</p></li>
+<li><p>Respondus LockDown Browser required</p></li>
+</ul></li>
+<li><p>Participation</p>
+<ul>
+<li><p>Participation is measured using online activities including
+quizzes, labs and other activities.</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="late-policy" class="frame">
+<h2>Late Policy</h2>
+<ul>
+<li><p>In-class activities: no late submissions</p></li>
+<li><p>Projects:</p>
+<ul>
+<li><p>accepted up to 48 hours after deadline; after that, 0 without
+approved extension</p></li>
+<li><p>no late submission for the last project</p></li>
+<li><p>penalty (applied once to earned score):</p>
+<ul>
+<li><p><span class="math inline">\(\le\)</span> 24 hours late: <span
+class="math inline">\(-10\%\)</span></p></li>
+<li><p>24–48 hours late: <span
+class="math inline">\(-20\%\)</span></p></li>
+</ul></li>
+<li><p>extension: request before the deadline when possible</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="excused-absences-policy" class="frame">
+<h2>Excused Absences Policy</h2>
+<ul>
+<li><p>Accepted reasons (with documentation):</p>
+<ul>
+<li><p>illness, family death/crisis</p></li>
+<li><p>military/jury duty, religious holy days</p></li>
+<li><p>official University events</p></li>
+<li><p>serious illness of dependent children</p></li>
+</ul></li>
+<li><p>Notify instructor ASAP for any excused absence affecting graded
+work</p></li>
+<li><p>Make-up tests:</p>
+<ul>
+<li><p>allowed with medical notice or approved emergency</p></li>
+<li><p>non-medical/emergency reasons require advance approval</p></li>
+<li><p>if absent without prior approval, notify within 48 hours</p></li>
+<li><p>make up within 2 weeks (unless long-term illness)</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="todays-plan" class="frame">
+<h2>Today’s Plan</h2>
+<ul>
+<li><p>What do we mean by “programming language”?</p></li>
+<li><p>How languages sit between humans and machines</p></li>
+<li><p>What languages are for:</p>
+<ul>
+<li><p>Communication</p></li>
+<li><p>Abstraction</p></li>
+<li><p>Safety and reliability</p></li>
+<li><p>Performance and efficiency</p></li>
+</ul></li>
+<li><p>Different language styles (paradigms)</p></li>
+<li><p>How this connects to the rest of the course</p></li>
+</ul>
+</section>
+<section id="what-is-a-programming-language-informal" class="frame">
+<h2>What is a Programming Language? (Informal)</h2>
+<ul>
+<li><p>A <strong>system of rules</strong> for telling a computer what to
+do</p></li>
+<li><p>Consists of</p>
+<ul>
+<li><p>Syntax: what programs look like</p></li>
+<li><p>Semantic: what programs mean / what they do</p></li>
+</ul></li>
+<li><p>Similar to human language:</p>
+<ul>
+<li><p>Vocabulary, grammar, meaning</p></li>
+</ul></li>
+<li><p>but with stricter rules: computers don’t guess what we
+meant</p></li>
+</ul>
+</section>
+<section id="why-not-just-use-english" class="frame">
+<h2>Why Not Just Use English?</h2>
+<ul>
+<li><p>Natural languages are</p>
+<ul>
+<li><p>Ambiguous: "Put the glasses on the table"</p></li>
+<li><p>Context-dependent: meaning changes with situation</p></li>
+<li><p>Vague: "Do it quickly" - How quick?</p></li>
+</ul></li>
+<li><p>Computers need:</p>
+<ul>
+<li><p>Precise instructions</p></li>
+<li><p>Repeatable behavior</p></li>
+<li><p>No guessing / interpretation</p></li>
+</ul></li>
+<li><p>Programming languages = controlled, precise languages for
+computers</p></li>
+</ul>
+</section>
+<section id="programming-languages-as-contracts" class="frame">
+<h2>Programming Languages as Contracts</h2>
+<ul>
+<li><p>A program is an agreement between:</p>
+<ul>
+<li><p>Programmer: what they think will happen</p></li>
+<li><p>Language definition / compiler (what really happens)</p></li>
+<li><p>Computer (how it actually runs)</p></li>
+</ul></li>
+<li><p>Languages define:</p>
+<ul>
+<li><p>What is legal to write</p></li>
+<li><p>What a legal program must do</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="the-hardware-reality" class="frame">
+<h2>The Hardware Reality</h2>
+<ul>
+<li><p>At the lowest level</p>
+<ul>
+<li><p>Computers work with voltages, bits, and machine
+instructions</p></li>
+</ul></li>
+<li><p>Machine code:</p>
+<ul>
+<li><p>Sequences of binary numbers (e.g., 100110000)</p></li>
+<li><p>Directly control CPU operations</p></li>
+</ul></li>
+<li><p>Writing large programs in pure machine code:</p>
+<ul>
+<li><p>Extremely error-prone</p></li>
+<li><p>Hard to read, hard to change</p></li>
+</ul></li>
+<li><p>We need something more human-friendly</p></li>
+</ul>
+</section>
+<section id="example-machine-vs-high-level-languages" class="frame">
+<h2>Example: Machine vs High-Level Languages</h2>
+<ul>
+<li><p>Task: add 2 and 3, store the result</p></li>
+<li><p>Machine-level idea:</p>
+<ul>
+<li><p>Load value 2 into a register</p></li>
+<li><p>Add 3</p></li>
+<li><p>Store result in memory</p></li>
+</ul></li>
+<li><p>High-level (e.g., python-like)</p>
+<pre data-xleftmargin="12pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-python">    x = 2 + 3</code></pre></li>
+<li><p>Programming languages:</p>
+<ul>
+<li><p>Let us think at a higher level</p></li>
+<li><p>Hide a lot of hardware detail</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="how-high-level-code-becomes-machine-code" class="frame">
+<h2>How High-Level Code Becomes Machine Code</h2>
+<ul>
+<li><p>A compiler: translates your program once into machine code</p>
+<ul>
+<li><p>e.g., C, Rust, many others</p></li>
+</ul></li>
+<li><p>An interpreter:</p>
+<ul>
+<li><p>Reads your program and executes it step by step</p></li>
+<li><p>e.g., Python, JavaScript (simplified picture)</p></li>
+</ul></li>
+<li><p>Languages exist partly to make this translation possible and
+reliable</p></li>
+</ul>
+</section>
+<section id="layers-of-abstraction" class="frame">
+<h2>Layers of Abstraction</h2>
+<ul>
+<li><p>Abstraction: ignoring details that don’t matter right
+now</p></li>
+<li><p>Programming languages give you:</p>
+<ul>
+<li><p>Variables instead of registers</p></li>
+<li><p>Functions instead of jump instructions</p></li>
+<li><p>Data structures instead of raw memory addresses</p></li>
+</ul></li>
+<li><p>This lets programmer:</p>
+<ul>
+<li><p>Focus on problem solving</p></li>
+<li><p>Not on micro-managing hardware</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="core-purposes-of-programming-languages" class="frame">
+<h2>Core Purposes of Programming Languages</h2>
+<ul>
+<li><p>Communication:</p>
+<ul>
+<li><p>Between humans and computers</p></li>
+<li><p>Between humans (reading each other’s code)</p></li>
+</ul></li>
+<li><p>Abstraction</p>
+<ul>
+<li><p>Hiding unnecessary detail</p></li>
+<li><p>Organizing large systems</p></li>
+</ul></li>
+<li><p>Safety &amp; reliability: preventing certain classes of
+bugs</p></li>
+<li><p>Performance &amp; efficiency: Allowing good use of hardware
+resources</p></li>
+<li><p>Expressivness: Letting us describe complex ideas
+concisely</p></li>
+</ul>
+</section>
+<section id="languages-as-human-human-communication" class="frame">
+<h2>Languages as Human-Human Communication</h2>
+<ul>
+<li><p>Most code is red more often than written</p></li>
+<li><p>Language are designed for :</p>
+<ul>
+<li><p>Readability: how easy to understand?</p></li>
+<li><p>Maintainability: how easy to change safely?</p></li>
+</ul></li>
+<li><p>Style guidelines, idioms, and tooling: make languages more usable
+for teams</p></li>
+<li><p>Question: would you rather debug:</p>
+<ul>
+<li><p>a clear but slow program?</p></li>
+<li><p>a fast but unreadable one?</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="languages-as-abstraction-tools" class="frame">
+<h2>Languages as Abstraction Tools</h2>
+<ul>
+<li><p>Languages give new building blocks:</p>
+<ul>
+<li><p>Functions, classes, modules, packages</p></li>
+<li><p>Types, intefraces, generics, traits</p></li>
+</ul></li>
+<li><p>Examples:</p>
+<ul>
+<li><p>Instead of thinking in bytes, think in strings</p></li>
+<li><p>Instead of loops and indices, think in map/filter/reduce</p></li>
+</ul></li>
+<li><p>Languages help align code structure with how we think about
+problems</p></li>
+</ul>
+</section>
+<section id="safety-and-guarantees" class="frame">
+<h2>Safety and Guarantees</h2>
+<ul>
+<li><p>Languages can forbid dangerous actions:</p>
+<ul>
+<li><p>Reading past the end of an array</p></li>
+<li><p>Using unitialized variables</p></li>
+</ul></li>
+<li><p>Type systems: Check consistency of data usage before
+running</p></li>
+<li><p>Memory safety, concurrency safety, null safety, etc.</p></li>
+<li><p>The more work the language does for us, the fewer hidden
+landmines in our code</p></li>
+</ul>
+</section>
+<section id="performance-and-control" class="frame">
+<h2>Performance and Control</h2>
+<ul>
+<li><p>Some languages aim for:</p>
+<ul>
+<li><p>High performance (close to machine speed)</p></li>
+<li><p>Fine-grained control over memory / CPU</p></li>
+</ul></li>
+<li><p>Others aim for:</p>
+<ul>
+<li><p>Productivity: fast to write, easier to change</p></li>
+<li><p>Automatic memory management (garbage collection)</p></li>
+</ul></li>
+<li><p>Trade-off: Control vs convenience</p></li>
+<li><p>Different domains have different priorities</p></li>
+</ul>
+</section>
+<section id="language-roles-in-practice" class="frame">
+<h2>Language Roles in Practice</h2>
+<ul>
+<li><p><span>Embedded systems</span>: tight performance and memory
+constraints</p></li>
+<li><p><span>Web backends</span>: serving requests, talking to
+databases</p></li>
+<li><p><span>Front-end / UI</span>: running in browsers or mobile
+apps</p></li>
+<li><p><span>Data / ML</span>: cleaning, analyzing, training
+models</p></li>
+<li><p><span>DevOps / scripting</span>: automating repetitive
+tasks</p></li>
+<li><p>Different roles emphasize <span>different language
+features</span></p></li>
+</ul>
+</section>
+<section id="domain-specific-languages" class="frame">
+<h2>Domain-Specific Languages</h2>
+<ul>
+<li><p>Shader languages (graphics / GPUD):</p>
+<ul>
+<li><p>GLSL - OpenSL shading language</p></li>
+<li><p>HLSL – High Level Shading Language (DirectX)</p></li>
+<li><p>MSL – Metal Shading Language (Apple platforms)</p></li>
+<li><p>Used to program how pixels/vertices are drawn on screen</p></li>
+</ul></li>
+<li><p>Configuration languages:</p>
+<ul>
+<li><p>YAML, JSON, TOML - app &amp; service config files</p></li>
+<li><p>Focus on declaring setting, not computation</p></li>
+</ul></li>
+<li><p>Scripting languages:</p>
+<ul>
+<li><p>Bash / shell scripts – automating command-line tasks</p></li>
+<li><p>Python, Ruby, Perl – glue code, automation, tools</p></li>
+<li><p>JavaScript – scripting in browsers and many tools</p></li>
+<li><p>Often used to automate or “glue together” other systems</p></li>
+</ul></li>
+<li><p>Other domian-specific examples:</p>
+<ul>
+<li><p>SQL – querying and updating relational databases</p></li>
+<li><p>HTML/CSS – describing structure and style of web pages</p></li>
+</ul></li>
+<li><p>Why create a new language?</p>
+<ul>
+<li><p>Make certain tasks easier, safer, less repetitive</p></li>
+<li><p>Capture expert patterns in the language itself</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="quick-demos-javascript-python" class="frame">
+<h2>Quick Demos: JavaScript &amp; Python</h2>
+<ul>
+<li><p><strong>Python</strong> (general-purpose, data, scripts,
+ML):</p></li>
+</ul>
+<pre data-xleftmargin="8pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline"
+data-fontsize="\normalsize"><code class="language-python">nums = [1, 2, 3, 4]
+total = sum(nums)
+print(&quot;Total:&quot;, total)</code></pre>
+<ul>
+<li><p><strong>JavaScript</strong> (runs in browsers, also on servers
+with Node.js):</p></li>
+</ul>
+<pre data-xleftmargin="8pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline"
+data-fontsize="\normalsize"><code class="language-javascript">const nums = [1, 2, 3, 4];
+const total = nums.reduce((a, b) =&gt; a + b, 0);
+console.log(&quot;Total:&quot;, total);</code></pre>
+</section>
+<section id="language-cameos-in-industry" class="frame">
+<h2>Language Cameos in Industry</h2>
+<ul>
+<li><p><strong>C++</strong>:</p>
+<ul>
+<li><p>Systems programming, game engines, performance-critical
+code</p></li>
+</ul></li>
+<li><p><strong>Java</strong> / <strong>C#</strong>:</p>
+<ul>
+<li><p>Enterprise backends, Android (Java), desktop apps, large
+systems</p></li>
+</ul></li>
+<li><p><strong>SQL</strong>:</p>
+<ul>
+<li><p>Querying and updating relational databases</p></li>
+</ul></li>
+<li><p><strong>Go</strong>:</p>
+<ul>
+<li><p>Cloud services, infrastructure tools, networking</p></li>
+</ul></li>
+<li><p><strong>Rust</strong>:</p>
+<ul>
+<li><p>Systems programming with strong safety guarantees</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="paradigms-different-ways-of-thinking" class="frame">
+<h2>Paradigms: Different Ways of Thinking</h2>
+<ul>
+<li><p>A paradigm is a style / philosophy of programming</p>
+<ul>
+<li><p>Imperative: change state step by step</p></li>
+<li><p>Object-Oriented: organize code around objects &amp;
+methods</p></li>
+<li><p>Functional: emphasize functions, immutability</p></li>
+<li><p>Logic/Declarative: state what should be true, not how</p></li>
+</ul></li>
+<li><p>Many languages support multiple paradigms</p></li>
+<li><p>Paradigms influence:</p>
+<ul>
+<li><p>How we decompose problems</p></li>
+<li><p>The kinds of bugs we’re likely to make</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="same-problem-different-styles" class="frame">
+<h2>Same Problem, Different Styles</h2>
+<ul>
+<li><p>Example: Sum of a list</p></li>
+<li><p>Imperative style:</p>
+<pre data-xleftmargin="8pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-python">    total = 0
+    for x in nums:
+      total += x</code></pre></li>
+<li><p>Functional style:</p>
+<pre data-xleftmargin="8pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-python">    total = sum(nums)</code></pre></li>
+<li><p>Declarative (SQL-ish idea)</p>
+<pre data-xleftmargin="8pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-sql">    SELECT SUM(value) FROM numbers;</code></pre></li>
+</ul>
+</section>
+<section id="languages-shape-how-we-think" class="frame">
+<h2>Languages Shape How We Think</h2>
+<ul>
+<li><p>Languages encourage some patterns, discourage others</p>
+<ul>
+<li><p>Easy recursion? <span class="math inline">\(\rightarrow\)</span>
+You think recursively more often</p></li>
+<li><p>Easy objects? <span class="math inline">\(\rightarrow\)</span>
+You think in terms of entties &amp; messages</p></li>
+</ul></li>
+<li><p>Learning new languages:</p>
+<ul>
+<li><p>Expands your mental toolbox</p></li>
+<li><p>Changes what feels "natural" when solving problems</p></li>
+</ul></li>
+<li><p>This course: helps you see pass any one language</p></li>
+</ul>
+</section>
+<section id="languages-and-jobs" class="frame">
+<h2>Languages and Jobs</h2>
+<ul>
+<li><p>You might see:</p>
+<ul>
+<li><p>“Python / SQL” in data and analytics roles</p></li>
+<li><p>“Java / C#” in enterprise and backend roles</p></li>
+<li><p>“JavaScript / TypeScript” in web front-end roles</p></li>
+<li><p>“C / C++ / Rust” in systems, embedded, game engines</p></li>
+<li><p>“Go” in cloud / infrastructure / DevOps tools</p></li>
+</ul></li>
+<li><p>This course:</p>
+<ul>
+<li><p>Focuses on <strong>concepts</strong> that transfer across
+languages</p></li>
+<li><p>Helps you pick up new languages faster on the job</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="summary-what-are-languages-really-for" class="frame">
+<h2>Summary: What Are Languages Really For?</h2>
+<ul>
+<li><p>Bridging humans and machines. Making it possible to express
+intent precisely</p></li>
+<li><p>Managing complexity: abstractions, modularity,
+organization</p></li>
+<li><p>Enforcing constraints: catching errors early, improving
+reliability</p></li>
+<li><p>Optimizing for resources: time, memory, energy</p></li>
+<li><p>Shaping thought: Providing concepts that guide how we solve
+problems</p></li>
+</ul>
+</section>
+</section>
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+    
+    
+      <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+      <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+      <script src="../_static/revealjs/plugin/math/math.js"></script>
+      
+    
+    <script>
+        var revealjsConfig = new Object();
+        Object.assign(revealjsConfig, {"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
+        
+        
+        
+          revealjsConfig.plugins = [
+            RevealNotes,RevealHighlight,RevealMath,
+          ];
+        
+        // More info https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize(revealjsConfig);
+    </script>
+
+  </body>
+</html>
