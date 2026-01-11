@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Lexical Structure &amp; Scanning</title>
+    <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  </head><body>
+    <div class="reveal">
+        <div class="slides" role="main">
+            <section >
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat">
+<h1>Lexical Structure &amp; Scanning</h1>
+<div class="subtitle docutils container">
+<p><strong>Module 2</strong></p>
+<p>Liting Zhang</p>
+</div>
+</section>
+</section>
+<section >
+<section >
+<h2>Overview and Goals</h2>
+</section>
+<section >
+<h2>Overview</h2>
+<p>How raw characters become tokens.</p>
+<ul class="simple">
+<li><p>What lexical analysis is</p></li>
+<li><p>Characters, lexemes, tokens</p></li>
+<li><p>Token categories (Java, C++, JavaScript)</p></li>
+<li><p>Regular expressions and a bit of theory</p></li>
+</ul>
+<ul class="simple">
+<li><p>How a scanner (lexer) is designed</p></li>
+<li><p>A tiny lexer in JavaScript (Node)</p></li>
+<li><p>How to handle whitespace, comments, and errors</p></li>
+<li><p>How this connects to Project 1</p></li>
+</ul>
+</section>
+<section >
+<h2>Goals for Week 2</h2>
+<p>After this week, you should be able to:</p>
+<ul class="simple">
+<li><p>explain what characters, lexemes, and tokens are</p></li>
+<li><p>describe where lexical analysis fits in a compiler or interpreter</p></li>
+<li><p>list common token categories in languages like Java, C++, JavaScript</p></li>
+<li><p>write simple regular expressions for typical token patterns</p></li>
+<li><p>explain how finite automata relate to regular expressions</p></li>
+<li><p>read and understand a small hand-written scanner (lexer)</p></li>
+<li><p>run and lightly modify a tiny TypeScript lexer (for Project 1)</p></li>
+</ul>
+</section>
+</section>
+<section >
+<section >
+<h2>Lexical Basics</h2>
+</section>
+<section >
+<h2>What Is Lexical Analysis?</h2>
+<ul class="simple">
+<li><p>Lexical analysis (scanning) is the first phase of a compiler or interpreter.</p></li>
+<li><p>It takes in:</p>
+<ul>
+<li><p>a stream of characters from the source file</p></li>
+</ul>
+</li>
+<li><p>It produces:</p>
+<ul>
+<li><p>a stream of tokens such as</p></li>
+<li><p>keywords (<code>let</code>, <code>if</code>, <code>while</code>)</p></li>
+<li><p>identifiers (variable and function names)</p></li>
+<li><p>literals (numbers, strings)</p></li>
+<li><p>operators and punctuation</p></li>
+</ul>
+</li>
+<li><p>Main job:</p>
+<ul>
+<li><p>group characters into meaningful pieces (lexemes)</p></li>
+<li><p>give each lexeme a token type</p></li>
+<li><p>skip whitespace and comments</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section >
+<h2>Where Does Lexical Analysis Fit?</h2>
+<ul class="simple">
+<li><p>A very simple view of a compiler or interpreter:</p>
+<ul>
+<li><p>Source program (characters)</p></li>
+<li><p>&rarr; scanner or lexer (tokens)</p></li>
+<li><p>&rarr; parser (syntax trees)</p></li>
+<li><p>&rarr; later phases (semantic checks, code generation, and so on)</p></li>
+</ul>
+</li>
+<li><p>Lexical analysis answers questions like:</p>
+<ul>
+<li><p>Where does each identifier, number, or operator start and end?</p></li>
+<li><p>What kind of token is each piece of the input?</p></li>
+</ul>
+</li>
+<li><p>In practice, a scanner can be:</p>
+<ul>
+<li><p>hand-written, or</p></li>
+<li><p>generated from regular expressions and finite automata</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section >
+<h2>Basic Vocabulary</h2>
+<ul class="simple">
+<li><p>Character: one position in the file, for example <code>a</code>, <code>+</code>, <code>7</code>, <code>;</code></p></li>
+<li><p>Lexeme: a finite sequence of characters from the source program that matches the pattern for a token</p></li>
+<li><p>Token: a pair &lt;token-name, attribute&gt; produced by the lexical analyzer to represent a lexeme.</p></li>
+<li><p>Example line: <code>int x = 42;</code></p></li>
+<li><p>Lexemes in that line:</p>
+<ul>
+<li><p>int</p></li>
+<li><p>x</p></li>
+<li><p>=</p></li>
+<li><p>42</p></li>
+<li><p>;</p></li>
+</ul>
+</li>
+<li><p>Tokens for those lexemes:</p>
+<ul>
+<li><p><code>int</code> &rarr; token type <code>INT_KEYWORD</code></p></li>
+<li><p><code>x</code> &rarr; token type <code>IDENT</code></p></li>
+<li><p><code>=</code> &rarr; token type <code>ASSIGN</code></p></li>
+<li><p><code>42</code> &rarr; token type <code>INT_LIT</code> (value 42)</p></li>
+<li><p><code>;</code> &rarr; token type <code>SEMICOLON</code></p></li>
+</ul>
+</li>
+<li><p>Lexical structure: the rules that say how characters form valid tokens</p></li>
+</ul>
+</section>
+<section >
+<h2>Example: Token Stream</h2>
+<p>Consider the JavaScript statement:</p>
+<pre><code data-trim data-noescape class="language-typescript">let sum = a + 10;</code></pre>
+<p>One possible sequence of tokens:</p>
+<ul class="simple">
+<li><p>token type <code>LET_KW</code>, lexeme <code>let</code></p></li>
+<li><p>token type <code>IDENT</code>, lexeme <code>sum</code></p></li>
+<li><p>token type <code>ASSIGN</code>, lexeme <code>=</code></p></li>
+<li><p>token type <code>IDENT</code>, lexeme <code>a</code></p></li>
+<li><p>token type <code>PLUS</code>, lexeme <code>+</code></p></li>
+<li><p>token type <code>INT_LIT</code>, value <code>10</code></p></li>
+<li><p>token type <code>SEMICOLON</code>, lexeme <code>;</code></p></li>
+</ul>
+<p>Whitespace is usually skipped by the scanner and does not become tokens.</p>
+</section>
+<section >
+<h2>Token Categories in Industry Languages</h2>
+<p>Common categories in Java, C++, and JavaScript:</p>
+<ul class="simple">
+<li><p>Keywords (reserved words that are not allowed as identifiers)</p></li>
+<li><p>Identifiers (names of variables, functions, classes, and so on)</p></li>
+<li><p>Literals (integers, floats, strings, chars, booleans)</p></li>
+<li><p>Operators (for example, <code>+ - * / == &amp;&amp; || !</code>)</p></li>
+<li><p>Separators and punctuation (for example, <code>; , ( ) { } [ ]</code>)</p></li>
+<li><p>Comments and whitespace (usually recognized, then ignored)</p></li>
+</ul>
+</section>
+<section >
+<h2>Java / C++ / JavaScript Token Examples</h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Category</p></th>
+<th class="head"><p>Java</p></th>
+<th class="head"><p>C++</p></th>
+<th class="head"><p>JavaScript</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Keyword</p></td>
+<td><p><code>int</code>, <code>class</code></p></td>
+<td><p><code>int</code>, <code>template</code></p></td>
+<td><p><code>let</code>, <code>function</code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Identifier</p></td>
+<td><p><code>myVar</code></p></td>
+<td><p><code>vectorSize</code></p></td>
+<td><p><code>totalSum</code></p></td>
+</tr>
+<tr class="row-even"><td><p>Integer literal</p></td>
+<td><p><code>42</code></p></td>
+<td><p><code>0</code>, <code>100</code></p></td>
+<td><p><code>42</code></p></td>
+</tr>
+<tr class="row-odd"><td><p>String literal</p></td>
+<td><p><code>"hi"</code></p></td>
+<td><p><code>"hi"</code></p></td>
+<td><p><code>"hi"</code>, <code>`hi`</code></p></td>
+</tr>
+<tr class="row-even"><td><p>Operator</p></td>
+<td><p><code>+</code>, <code>==</code></p></td>
+<td><p><code>+</code>, <code>-&gt;</code></p></td>
+<td><p><code>+</code>, <code>===</code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Separator</p></td>
+<td><p><code>;</code>, <code>{</code>, <code>}</code></p></td>
+<td><p><code>;</code>, <code>(</code>, <code>)</code></p></td>
+<td><p><code>;</code>, <code>(</code>, <code>)</code></p></td>
+</tr>
+<tr class="row-even"><td><p>Comment</p></td>
+<td><p><code>// ...</code></p></td>
+<td><p><code>// ...</code></p></td>
+<td><p><code>// ...</code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section >
+<section >
+<h2>Regular Expressions</h2>
+</section>
+<section >
+<h2>Why Use Regular Expressions?</h2>
+<ul class="simple">
+<li><p>Many token types follow simple text patterns.</p></li>
+<li><p>Examples:</p>
+<ul>
+<li><p>Identifier: letter or underscore, followed by letters, digits, or underscores</p></li>
+<li><p>Integer literal: one or more digits in a row</p></li>
+<li><p>Whitespace: one or more spaces, tabs, or newlines</p></li>
+</ul>
+</li>
+<li><p>Regular expressions are a compact way to write these patterns.</p></li>
+<li><p>Later, we can turn these patterns into finite automata and then into code.</p></li>
+</ul>
+</section>
+<section >
+<h2>Regular Languages and Regex (Informal)</h2>
+<p>A regular language is a set of strings built from simpler pieces using:</p>
+<ul class="simple">
+<li><p>Union (choice): <span class="math notranslate nohighlight">\(L_1 \cup L_2\)</span></p>
+<ul>
+<li><p>strings from <span class="math notranslate nohighlight">\(L_1\)</span> or from <span class="math notranslate nohighlight">\(L_2\)</span></p></li>
+</ul>
+</li>
+<li><p>Concatenation: <span class="math notranslate nohighlight">\(L_1 L_2\)</span></p>
+<ul>
+<li><p>strings from <span class="math notranslate nohighlight">\(L_1\)</span> followed by strings from <span class="math notranslate nohighlight">\(L_2\)</span></p></li>
+</ul>
+</li>
+<li><p>Kleene star: <span class="math notranslate nohighlight">\(L^*\)</span></p>
+<ul>
+<li><p>zero or more repetitions of strings from <span class="math notranslate nohighlight">\(L\)</span></p></li>
+</ul>
+</li>
+</ul>
+<p>Regular expressions give us a way to write these ideas:</p>
+<ul class="simple">
+<li><p><code>(a|b)</code> means either <code>a</code> or <code>b</code></p></li>
+<li><p><code>ab</code> means <code>a</code> followed by <code>b</code></p></li>
+<li><p><code>a*</code> means any number of <code>a</code>, including zero</p></li>
+<li><p>Common shorthands: <code>[0-9]</code>, <code>[A-Za-z]</code>, <code>\d</code>, <code>+</code>, <code>?</code>, and so on</p></li>
+</ul>
+</section>
+<section >
+<h2>Regex Syntax -- Common Matching Symbols</h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symbol</p></th>
+<th class="head"><p>Meaning</p></th>
+<th class="head"><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code>.</code></p></td>
+<td><p>Any character</p></td>
+<td><p><code>("..", "a%")</code> -- T<br /><code>("..", ".a")</code> -- T<br /><code>("..", "a")</code> -- F</p></td>
+</tr>
+<tr class="row-odd"><td><p><code>^</code></p></td>
+<td><p>Start anchors</p></td>
+<td><p><code>("^a.c.", "abcd")</code> -- T<br /><code>("^a", "ac")</code> -- F</p></td>
+</tr>
+<tr class="row-even"><td><p><code>$</code></p></td>
+<td><p>End anchors</p></td>
+<td><p><code>("..cd$", "abcd")</code> -- T<br /><code>("a$", "a")</code> -- T<br /><code>("a$", "aca")</code> -- F</p></td>
+</tr>
+<tr class="row-odd"><td><p><code>[abc]</code></p></td>
+<td><p>One of a, b, or c</p></td>
+<td><p><code>("^[abc]d", "ad9")</code> -- T<br /><code>("[ab].d$", "bad")</code> -- T<br /><code>("[ab]x", "cx")</code> -- F</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section >
+<h2>Regex Syntax -- Common Matching Symbols</h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symbol</p></th>
+<th class="head"><p>Meaning</p></th>
+<th class="head"><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code>[abc][12]</code></p></td>
+<td><p>Can match a, b or c followed by 1 or 2</p></td>
+<td><p><code>("[ab][12]", "a2")</code> -- T<br /><code>("[ab].[12]", "acd2")</code> -- T<br /><code>("[ab][12]", "a3")</code> -- F</p></td>
+</tr>
+<tr class="row-odd"><td><p><code>[^abc]</code></p></td>
+<td><p>When <code>^</code> is the first character in <code>[]</code>, it negates the pattern, matches anything except a, b or c</p></td>
+<td><p><code>("[^ab][^12]", "c3#")</code> -- T<br /><code>("[^ab]..[^12]", "x123")</code> -- T<br /><code>("[^ab][^12]", "c2")</code> -- F</p></td>
+</tr>
+<tr class="row-even"><td><p><code>[a-e1-8]</code></p></td>
+<td><p>Matches ranges between a to e or 1 to 8</p></td>
+<td><p><code>("[a-e1-3]", "d#")</code> -- T<br /><code>("[a-e1-3]", "2")</code> -- T<br /><code>("[a-e1-3]", "f2")</code> -- F</p></td>
+</tr>
+<tr class="row-odd"><td><p><code>xx|yy</code></p></td>
+<td><p>Matches regex <code>xx</code> or <code>yy</code></p></td>
+<td><p><code>("xx|yy", "xx")</code> -- T<br /><code>("xx|yy", "yy")</code> -- T<br /><code>("xx|yy", "xy")</code> -- F</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section >
+<h2>Regex Syntax -- Quantifiers</h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Regular expression</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code>x?</code></p></td>
+<td><p>x occurs once or not at all</p></td>
+</tr>
+<tr class="row-odd"><td><p><code>X*</code></p></td>
+<td><p>X occurs zero or more times (Kleene star)</p></td>
+</tr>
+<tr class="row-even"><td><p><code>X+</code></p></td>
+<td><p>X occurs one or more times (Kleene cross)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code>X{n}</code></p></td>
+<td><p>X occurs exactly n times</p></td>
+</tr>
+<tr class="row-even"><td><p><code>X{n,}</code></p></td>
+<td><p>X occurs n or more times</p></td>
+</tr>
+<tr class="row-odd"><td><p><code>X{n,m}</code></p></td>
+<td><p>X occurs at least n times but not more than m times</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section >
+<h2>Regex Syntax -- Metacharacters</h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Regular expression</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code>\d</code></p></td>
+<td><p>Any digit, short for <code>[0-9]</code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code>\D</code></p></td>
+<td><p>Any non-digit, short for <code>[^0-9]</code></p></td>
+</tr>
+<tr class="row-even"><td><p><code>\s</code></p></td>
+<td><p>Any whitespace or delimiter character, short for <code>[\t\n\x0B\f\r]</code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code>\S</code></p></td>
+<td><p>Any non-whitespace character, short for <code>[^\s]</code></p></td>
+</tr>
+<tr class="row-even"><td><p><code>\w</code></p></td>
+<td><p>Any word character, short for <code>[a-zA-Z_0-9]</code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code>\W</code></p></td>
+<td><p>Any non-word character, short for <code>[^\w]</code></p></td>
+</tr>
+<tr class="row-even"><td><p><code>\b</code></p></td>
+<td><p>A word boundary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code>\B</code></p></td>
+<td><p>A non word boundary.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section >
+<h2>Practice 1: Regex -- Match or No Match?</h2>
+<p>Pattern: <code>[A-Za-z_][A-Za-z0-9_]*</code></p>
+<p>For each string, decide: match or no match?</p>
+<ul class="simple">
+<li><p><code>x</code></p></li>
+<li><p><code>_main</code></p></li>
+<li><p><code>9lives</code></p></li>
+<li><p><code>hello_world</code></p></li>
+<li><p><code>user-name</code></p></li>
+</ul>
+<p>What rule does this regex encode for identifiers?<br />Example to try: <code>node regex.js</code></p>
+</section>
+<section >
+<h2>Regex Examples for Tokens</h2>
+<p>Assume ASCII letters, digits, underscore:</p>
+<ul class="simple">
+<li><p>Identifier (simple version): <code>[A-Za-z_][A-Za-z0-9_]*</code></p></li>
+<li><p>Integer literal (non-negative): <code>[0-9]+</code></p></li>
+<li><p>Whitespace: <code>[\t ]+</code></p></li>
+<li><p>Line comment (C++/Java/JS style): <code>//.*</code></p></li>
+</ul>
+<p>Real languages add more details (hex, floats, Unicode, and so on), but the basic idea is the same.</p>
+</section>
+</section>
+<section >
+<section >
+<h2>Finite Automata</h2>
+</section>
+<section >
+<h2>Finite Automata: Intuition</h2>
+<ul class="simple">
+<li><p>A finite automaton (FA) is a very simple machine with:</p>
+<ul>
+<li><p>a small set of states</p></li>
+<li><p>a start state</p></li>
+<li><p>one or more accepting (final) states</p></li>
+<li><p>rules that say how to move between states based on the next character</p></li>
+</ul>
+</li>
+<li><p>How it works:</p>
+<ul>
+<li><p>start in the initial state</p></li>
+<li><p>read characters one at a time and follow the transitions</p></li>
+<li><p>if you end in an accepting state, the input string is accepted</p></li>
+</ul>
+</li>
+<li><p>Regular expressions and finite automata describe the same class of languages.</p></li>
+</ul>
+</section>
+<section >
+<h2>Deterministic vs Non-deterministic Automata</h2>
+<ul class="simple">
+<li><p>In a deterministic finite automaton (DFA):</p>
+<ul>
+<li><p>for each state and each input character, there is at most one next state</p></li>
+</ul>
+</li>
+<li><p>In a non-deterministic finite automaton (NFA):</p>
+<ul>
+<li><p>there may be several possible next states</p></li>
+<li><p>there may be moves on empty input (epsilon transitions)</p></li>
+</ul>
+</li>
+<li><p>The important fact for us:</p>
+<ul>
+<li><p>every NFA can be converted into an equivalent DFA</p></li>
+<li><p>scanners are usually implemented as DFAs for speed</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section >
+<h2>Deterministic Finite Automation for Integer Literals</h2>
+<p>Target language: non-empty sequences of digits, described by <code>[0-9]+</code>.</p>
+<p>States (informal):</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(q_0\)</span>: start, no digits seen yet</p></li>
+<li><p><span class="math notranslate nohighlight">\(q_1\)</span>: have seen at least one digit (accepting)</p></li>
+<li><p><span class="math notranslate nohighlight">\(q_{\text{dead}}\)</span>: anything invalid</p></li>
+</ul>
+<p>Behavior:</p>
+<ul class="simple">
+<li><p>From <span class="math notranslate nohighlight">\(q_0\)</span>:</p>
+<ul>
+<li><p>digit goes to <span class="math notranslate nohighlight">\(q_1\)</span></p></li>
+<li><p>non-digit goes to <span class="math notranslate nohighlight">\(q_{\text{dead}}\)</span></p></li>
+</ul>
+</li>
+<li><p>From <span class="math notranslate nohighlight">\(q_1\)</span>:</p>
+<ul>
+<li><p>digit stays in <span class="math notranslate nohighlight">\(q_1\)</span></p></li>
+<li><p>non-digit means we stop and accept the digits we saw as one token</p></li>
+</ul>
+</li>
+</ul>
+<p>This is the basic idea of how a scanner finds where an integer literal ends.</p>
+</section>
+<section >
+<h2>Example: Running the Integer DFA</h2>
+<p>Target pattern: sequences of digits <code>[0-9]+</code>.</p>
+<p>Example 1: input <code>"42"</code></p>
+<ul class="simple">
+<li><p>Start in <span class="math notranslate nohighlight">\(q_0\)</span></p></li>
+<li><p>Read <code>'4'</code> (digit): <span class="math notranslate nohighlight">\(q_0 \rightarrow q_1\)</span></p></li>
+<li><p>Read <code>'2'</code> (digit): <span class="math notranslate nohighlight">\(q_1 \rightarrow q_1\)</span></p></li>
+<li><p>End of input in accepting state <span class="math notranslate nohighlight">\(q_1\)</span></p></li>
+<li><p>Result: one integer token with lexeme <code>"42"</code></p></li>
+</ul>
+<p>Example 2: input <code>"123x"</code></p>
+<ul class="simple">
+<li><p>Start in <span class="math notranslate nohighlight">\(q_0\)</span></p></li>
+<li><p>Read <code>'1'</code>, <code>'2'</code>, <code>'3'</code> (digits): <span class="math notranslate nohighlight">\(q_0 \rightarrow q_1 \rightarrow q_1 \rightarrow q_1\)</span></p></li>
+<li><p>Next character is <code>'x'</code> (not a digit)</p></li>
+<li><p>DFA says: stop token before <code>'x'</code></p></li>
+<li><p>Result: integer token <code>"123"</code>, remaining input <code>"x"</code> for the next token</p></li>
+</ul>
+</section>
+<section >
+<h2>DFA Sketch for Identifiers</h2>
+<p>Simple identifier rule: first character is a letter or underscore, rest are letters, digits, or underscores.</p>
+<p>States:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(q_0\)</span> start, seen nothing yet</p></li>
+<li><p><span class="math notranslate nohighlight">\(q_{\text{id}}\)</span> seen a valid first character (accepting)</p></li>
+<li><p><span class="math notranslate nohighlight">\(q_{\text{dead}}\)</span> for anything that can not start an identifier</p></li>
+</ul>
+<p>Behavior:</p>
+<ul class="simple">
+<li><p>From <span class="math notranslate nohighlight">\(q_0\)</span>:</p>
+<ul>
+<li><p>letter or underscore goes to <span class="math notranslate nohighlight">\(q_{\text{id}}\)</span></p></li>
+<li><p>anything else goes to <span class="math notranslate nohighlight">\(q_{\text{dead}}\)</span></p></li>
+</ul>
+</li>
+<li><p>From <span class="math notranslate nohighlight">\(q_{\text{id}}\)</span>:</p>
+<ul>
+<li><p>letter, digit, or underscore stays in <span class="math notranslate nohighlight">\(q_{\text{id}}\)</span></p></li>
+<li><p>other character means end of identifier token</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section >
+<h2>Example: Running the Identifier DFA 1</h2>
+<p>Simple identifier rule:</p>
+<ul class="simple">
+<li><p>first character: letter or underscore</p></li>
+<li><p>rest: letters, digits, or underscores</p></li>
+</ul>
+<p>Example 1: input <code>"x1y"</code></p>
+<ul class="simple">
+<li><p>Start in <span class="math notranslate nohighlight">\(q_0\)</span></p></li>
+<li><p>Read <code>'x'</code> (letter): <span class="math notranslate nohighlight">\(q_0 \rightarrow q_{\text{id}}\)</span></p></li>
+<li><p>Read <code>'1'</code> (digit): stay in <span class="math notranslate nohighlight">\(q_{\text{id}}\)</span></p></li>
+<li><p>Read <code>'y'</code> (letter): stay in <span class="math notranslate nohighlight">\(q_{\text{id}}\)</span></p></li>
+<li><p>End of input in accepting state <span class="math notranslate nohighlight">\(q_{\text{id}}\)</span></p></li>
+<li><p>Result: identifier token with lexeme <code>"x1y"</code></p></li>
+</ul>
+</section>
+<section >
+<h2>Example: Running the Identifier DFA 2</h2>
+<p>Simple identifier rule:</p>
+<ul class="simple">
+<li><p>first character: letter or underscore</p></li>
+<li><p>rest: letters, digits, or underscores</p></li>
+</ul>
+<p>Example 2: input <code>"_main3"</code></p>
+<ul class="simple">
+<li><p>Start in <span class="math notranslate nohighlight">\(q_0\)</span></p></li>
+<li><p>Read <code>'_'</code>: <span class="math notranslate nohighlight">\(q_0 \rightarrow q_{\text{id}}\)</span></p></li>
+<li><p>Read <code>'m'</code>, <code>'a'</code>, <code>'i'</code>, <code>'n'</code>, <code>'3'</code>: stay in <span class="math notranslate nohighlight">\(q_{\text{id}}\)</span> each time</p></li>
+<li><p>End of input in <span class="math notranslate nohighlight">\(q_{\text{id}}\)</span></p></li>
+<li><p>Result: identifier token with lexeme <code>"_main3"</code></p></li>
+</ul>
+</section>
+</section>
+<section >
+<section >
+<h2>From Regex to a Scanner</h2>
+</section>
+<section >
+<h2>From Regex to Scanner (High Level)</h2>
+<ul class="simple">
+<li><p>For each token type:</p>
+<ul>
+<li><p>write a regular expression</p></li>
+<li><p>turn that regular expression into an automaton</p></li>
+</ul>
+</li>
+<li><p>Combine the automata for all token types into one machine.</p></li>
+<li><p>Use that machine to scan the input:</p>
+<ul>
+<li><p>find the longest prefix that matches some token</p></li>
+<li><p>output that token</p></li>
+<li><p>then continue with the rest of the input</p></li>
+</ul>
+</li>
+<li><p>Tools like <code>lex</code>, <code>flex</code>, and <code>JLex</code> can do this automatically.</p></li>
+</ul>
+</section>
+<section >
+<h2>Manual Lexing Walkthrough</h2>
+<p>Consider the line:</p>
+<pre><code data-trim data-noescape class="language-java">let total = a + 10;</code></pre>
+<p>Walk through as a scanner would:</p>
+<ul class="simple">
+<li><p>Read l e t &rarr; matches keyword pattern, token <code>LET_KW</code></p></li>
+<li><p>Skip the space</p></li>
+<li><p>Read t o t a l &rarr; matches identifier pattern, token <code>IDENT</code></p></li>
+<li><p>Skip the space</p></li>
+<li><p>Read = &rarr; matches assign pattern, token <code>ASSIGN</code></p></li>
+<li><p>Skip the space</p></li>
+<li><p>Read a &rarr; token <code>IDENT</code></p></li>
+<li><p>Skip the space</p></li>
+<li><p>Read + &rarr; token <code>PLUS</code></p></li>
+<li><p>Skip the space</p></li>
+<li><p>Read 1 0 &rarr; token <code>INT_LIT</code></p></li>
+<li><p>Read ; &rarr; token <code>SEMICOLON</code></p></li>
+</ul>
+</section>
+</section>
+<section >
+<section >
+<h2>Practice: Tokenizing Code</h2>
+</section>
+<section >
+<h2>Practice 2: Tokenizing Java (Question)</h2>
+<p>Java snippet:</p>
+<pre><code data-trim data-noescape class="language-java">int sum = 0;
+for (int i = 0; i &lt; 10; i = i + 1) {
+  sum = sum + i;
+}</code></pre>
+<p>Questions:</p>
+<ul class="simple">
+<li><p>What are the lexemes for the first line?</p></li>
+<li><p>Which token types do they map to?</p></li>
+<li><p>Where do you see keywords, identifiers, literals, operators, separators in this whole snippet?</p></li>
+</ul>
+</section>
+<section >
+<h2>Practice 2: Tokenizing Java (Answer 1)</h2>
+<p>Java snippet:</p>
+<pre><code data-trim data-noescape class="language-java">int sum = 0;</code></pre>
+<ul class="simple">
+<li><p>Lexemes for the first line:</p>
+<ul>
+<li><p><code>int</code></p></li>
+<li><p><code>sum</code></p></li>
+<li><p><code>=</code></p></li>
+<li><p><code>0</code></p></li>
+<li><p><code>;</code></p></li>
+</ul>
+</li>
+<li><p>Token types (one possible naming scheme):</p>
+<ul>
+<li><p><code>INT_KW</code>, <code>IDENT</code>, <code>ASSIGN</code>, <code>INT_LIT</code>, <code>SEMICOLON</code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section >
+<h2>Practice 2: Tokenizing Java (Answer 2)</h2>
+<p>Java snippet:</p>
+<pre><code data-trim data-noescape class="language-java">int sum = 0;
+for (int i = 0; i &lt; 10; i = i + 1) {
+  sum = sum + i;
+}</code></pre>
+<ul class="simple">
+<li><p>Keywords: <code>int</code>, <code>for</code></p></li>
+<li><p>Identifiers: <code>sum</code>, <code>i</code></p></li>
+<li><p>Operators:</p>
+<ul>
+<li><p><code>=</code></p></li>
+<li><p><code>+</code></p></li>
+<li><p><code>&lt;</code></p></li>
+</ul>
+</li>
+<li><p>Separators:</p>
+<ul>
+<li><p><code>(</code></p></li>
+<li><p><code>)</code></p></li>
+<li><p><code>{</code></p></li>
+<li><p><code>}</code></p></li>
+<li><p><code>;</code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section >
+<section >
+<h2>Implementation in JavaScript</h2>
+</section>
+<section >
+<h2>Scanner Responsibilities</h2>
+<ul class="simple">
+<li><p>Read input characters from a source file or string.</p></li>
+<li><p>Group characters into tokens using lexical rules.</p></li>
+<li><p>Return a sequence (or stream) of tokens to the parser.</p></li>
+<li><p>Skip over things that should not become tokens:</p>
+<ul>
+<li><p>whitespace</p></li>
+<li><p>comments</p></li>
+</ul>
+</li>
+<li><p>Keep track of:</p>
+<ul>
+<li><p>line numbers and columns, for error messages</p></li>
+<li><p>the original lexeme for identifiers, literals, and so on</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section >
+<h2>Design Choices</h2>
+<ul class="simple">
+<li><p>How to write the scanner:</p>
+<ul>
+<li><p>a table-driven DFA, or</p></li>
+<li><p>hand-written if and else or switch code</p></li>
+</ul>
+</li>
+<li><p>Lookahead:</p>
+<ul>
+<li><p>sometimes we must peek at the next character</p></li>
+<li><p>examples: <code>=</code> versus <code>==</code>, <code>+</code> versus <code>++</code></p></li>
+</ul>
+</li>
+<li><p>Error handling:</p>
+<ul>
+<li><p>what should we do with unexpected characters?</p></li>
+<li><p>one simple strategy: report the error and maybe skip one character</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section >
+<h2>A Tiny Token Definition (TypeScript)</h2>
+<pre><code data-trim data-noescape class="language-typescript">const TokenType = {
+  LET: "LET",
+  IDENT: "IDENT",
+  NUMBER: "NUMBER",
+  OP: "OP",
+  ASSIGN: "ASSIGN",
+  SEMI: "SEMI"
+} as const;
+class Token {
+  public type: TokenType;
+  public lexeme: string;
+  constructor(type: TokenType, lexeme: string) {
+    this.type = type;
+    this.lexeme = lexeme;
+  }
+  toString(): string {
+    return `${this.type}(${this.lexeme})`;
+  }
+}</code></pre>
+</section>
+<section >
+<h2>Regex Specification for Tokens (TypeScript)</h2>
+<pre><code data-trim data-noescape class="language-javascript">const tokenSpecs: [RegExp, TokenType | null][] = [
+  // Whitespace (skip)
+  [/^\\s+/, null],
+  // Single-line comments (skip)
+  [/^\\/\\/.*/, null],
+  // Keywords
+  [/^let\\b/, TokenType.LET],
+  // Identifiers and numbers
+  [/^[A-Za-z_][A-Za-z0-9_]*/, TokenType.IDENT],
+  [/^[0-9]+/, TokenType.NUMBER],
+  // Operators and punctuation
+  [/^[+\\-*\\/]/, TokenType.OP],
+  [/^=/, TokenType.ASSIGN],
+  [/^;/, TokenType.SEMI]
+];</code></pre>
+<ul class="simple">
+<li><p>Each entry is a pair: a regular expression and a token type.</p></li>
+<li><p>If the token type is <code>null</code>, the scanner skips that text.</p></li>
+</ul>
+</section>
+<section >
+<h2>Tiny Lexer in TypeScript</h2>
+<pre><code data-trim data-noescape class="language-javascript">function lex(input: string): Token[] {
+  const tokens: Token[] = [];
+  let str: string = input;
+  while (str.length &gt; 0) {
+    let match: RegExpExecArray | null = null;
+    let matchedType: TokenType | null = null;
+    for (const [regex, type] of tokenSpecs) {
+      match = regex.exec(str);
+      if (match) {
+        matchedType = type;
+        break;
+      }
+    }
+    if (!match) {
+      throw new Error(`Unexpected character: '${str[0]}'`);
+    }
+    const lexeme = match[0];
+    if (matchedType !== null) {
+      tokens.push(new Token(matchedType, lexeme));
+    }
+    str = str.slice(lexeme.length);
+  }
+  return tokens;
+}</code></pre>
+</section>
+<section >
+<h2>Running the Tiny Lexer</h2>
+<pre><code data-trim data-noescape class="language-javascript">const src = "let sum = a + 10;";
+
+const tokens = lex(src);
+for (const t of tokens) {
+  console.log(t.toString());
+}</code></pre>
+<p>Expected output (in words):</p>
+<ul class="simple">
+<li><p>a LET token with lexeme <code>let</code></p></li>
+<li><p>an IDENT token with lexeme <code>sum</code></p></li>
+<li><p>an ASSIGN token with lexeme <code>=</code></p></li>
+<li><p>an IDENT token with lexeme <code>a</code></p></li>
+<li><p>an OP token with lexeme <code>+</code></p></li>
+<li><p>a NUMBER token with lexeme <code>10</code></p></li>
+<li><p>a SEMI token with lexeme <code>;</code></p></li>
+</ul>
+<p>Example: <code>npx ts-node tiny_lexer.ts "let sum = a + 10;"</code></p>
+</section>
+<section >
+<h2>Handling Whitespace and Comments</h2>
+<ul class="simple">
+<li><p>What counts as whitespace in most languages?</p>
+<ul>
+<li><p>space character, tab character, newline, carriage return</p></li>
+</ul>
+</li>
+<li><p>Typical scanner rule:</p>
+<ul>
+<li><p>recognize one or more whitespace characters</p></li>
+<li><p>consume them (advance the input position)</p></li>
+<li><p>do not return a token for them</p></li>
+</ul>
+</li>
+<li><p>Why we still care about whitespace:</p>
+<ul>
+<li><p>we must update line and column numbers</p></li>
+<li><p>newlines affect error messages and sometimes layout</p></li>
+</ul>
+</li>
+<li><p>Comments are handled the same way:</p>
+<ul>
+<li><p>recognize the comment pattern (for example, <code>//...</code> or <code>/* ... */</code>)</p></li>
+<li><p>consume everything up to the end of the comment</p></li>
+<li><p>return no token, but still update line and column if there are newlines</p></li>
+</ul>
+</li>
+<li><p>Exception examples:</p>
+<ul>
+<li><p>Python: indentation (leading spaces) is part of the syntax</p></li>
+<li><p>some languages treat end of line as a special token</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section >
+<section >
+<h2>Wrap-up</h2>
+</section>
+<section >
+<h2>Error Reporting in Scanners</h2>
+<ul class="simple">
+<li><p>Real source code will contain mistakes.</p></li>
+<li><p>Your scanner should detect bad input such as:</p>
+<ul>
+<li><p>characters that are not allowed in the language</p></li>
+<li><p>badly formed tokens, if you choose to support more complex tokens</p></li>
+</ul>
+</li>
+<li><p>When an error is found:</p>
+<ul>
+<li><p>print a clear message with the line and column</p></li>
+<li><p>show the unexpected character or lexeme</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section >
+<h2>Connecting Back to Java/C++ Token Categories</h2>
+<ul class="simple">
+<li><p>Java and C++ use the same basic ideas:</p>
+<ul>
+<li><p>keywords: <code>int</code>, <code>class</code>, <code>if</code>, <code>while</code>, and so on</p></li>
+<li><p>identifiers: names that follow the language rules</p></li>
+<li><p>literals: integers, floats, chars, strings, booleans</p></li>
+<li><p>operators: arithmetic, comparison, logical, bitwise</p></li>
+<li><p>separators: punctuation and delimiters</p></li>
+</ul>
+</li>
+<li><p>Industrial compilers have many more token types and details.</p></li>
+<li><p>The small scanners you build in this course use the same core ideas, just on a smaller scale.</p></li>
+</ul>
+</section>
+<section >
+<h2>Summary</h2>
+<p>By the end of Week 2, you should be able to:</p>
+<ul class="simple">
+<li><p>say what characters, lexemes, and tokens are</p></li>
+<li><p>list the main token categories in common languages</p></li>
+<li><p>write simple regular expressions for token patterns</p></li>
+<li><p>explain, at a high level, what a finite automaton does</p></li>
+<li><p>read and write a small scanner in JavaScript or Python</p></li>
+</ul>
+<p>Next week: from tokens to parse trees, and the basics of parsing.</p>
+</section>
+</section>
+
+        </div>
+    </div>
+    
+    <script src="../_static/revealjs/dist/reveal.js"></script>
+    
+    
+      <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+      <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+      <script src="../_static/revealjs/plugin/math/math.js"></script>
+      
+    
+    <script>
+        var revealjsConfig = new Object();
+        Object.assign(revealjsConfig, {"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null});
+        
+        
+        
+          revealjsConfig.plugins = [
+            RevealNotes,RevealHighlight,RevealMath,
+          ];
+        
+        // More info https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize(revealjsConfig);
+    </script>
+
+  </body>
+</html>
