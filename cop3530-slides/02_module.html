@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Modular Development</title>
+
+  <!-- Same styling pattern as your other Reveal exports (e.g., m02_lexical.html) -->
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <style>
+    .two-col { display: flex; gap: 24px; align-items: flex-start; }
+    .two-col > div { flex: 1; }
+    .small-note { font-size: 0.9em; opacity: 0.9; }
+    .center { text-align: center; }
+
+    /* Simple “box diagram” styling (for pipeline picture) */
+    .pipe-box {
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: inline-block;
+      min-width: 160px;
+      text-align: center;
+    }
+    .pipe-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .arrow { font-size: 1.4em; padding: 0 6px; }
+    code.inline { font-size: 0.95em; }
+  </style>
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- =========================================================
+           Title
+           ========================================================= -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Modular Development</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Modular Development, Building, Make, and Testing</strong></p>
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Overview
+           ========================================================= -->
+      <section>
+        <section class="frame">
+          <h2>Overview</h2>
+          <ul>
+            <li><p>Modular development: drivers and reusable modules</p></li>
+            <li><p>C++ build pipeline: preprocessing, compiling, linking</p></li>
+            <li><p>Building with g++: one-step vs step-wise compilation</p></li>
+            <li><p>Make: targets, dependencies, recipes, and automation</p></li>
+            <li><p>Testing: test drivers, assert, and unit testing frameworks</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Learning goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li><p>Organize a project into drivers and modules using header and source files</p></li>
+            <li><p>Explain what preprocessing, compiling, and linking do</p></li>
+            <li><p>Build modular projects using step-wise compilation and linking</p></li>
+            <li><p>Write a basic makefile with multiple targets</p></li>
+            <li><p>Write and run simple unit tests using assert or a framework style</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Core idea: build and test faster as projects grow</h2>
+          <ul>
+            <li><p>Separate code into modules so changes stay local</p></li>
+            <li><p>Compile modules separately so rebuilds are fast</p></li>
+            <li><p>Use make so the build is repeatable and correct</p></li>
+            <li><p>Use tests so behavior stays correct after changes</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section: Modular Development
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Modular Development</h2>
+        </section>
+
+        <section class="frame">
+          <h2>What is modular development</h2>
+          <p>Modular development in C++ means splitting a program into independent, reusable components.</p>
+          <ul>
+            <li><p>A module has a clear responsibility</p></li>
+            <li><p>A header contains declarations (the interface)</p></li>
+            <li><p>A source file contains definitions (the implementation)</p></li>
+            <li><p>A driver contains <code class="inline">main</code> and builds an executable</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Benefits</h2>
+          <ul>
+            <li><p>Reuse the same module in many programs</p></li>
+            <li><p>Multiple people can work on different modules at the same time</p></li>
+            <li><p>Smaller rebuilds: recompile only what changed</p></li>
+            <li><p>Easier testing: test a module with a separate test driver</p></li>
+            <li><p>Cleaner code: fewer giant files, clearer responsibilities</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Drivers vs modules</h2>
+
+          <p><strong>Driver</strong></p>
+          <ul>
+            <li><p>Has <code class="inline">main</code></p></li>
+            <li><p>Produces an executable</p></li>
+            <li><p>Often one driver per program or per test executable</p></li>
+          </ul>
+
+          <p><strong>Module</strong></p>
+          <ul>
+            <li><p>No <code class="inline">main</code></p></li>
+            <li><p>Provides reusable classes and functions</p></li>
+            <li><p>Usually a pair: <code class="inline">something.hpp</code> and <code class="inline">something.cpp</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Header guards</h2>
+          <p>prevent the same header from being included multiple times in the same compilation unit</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">#ifndef THREE_INTS_HPP
+#define THREE_INTS_HPP
+
+class ThreeInts {
+public:
+  ThreeInts(int a, int b, int c);
+  int sum() const;
+private:
+  int x_, y_, z_;
+};
+
+#endif</code></pre>
+        </section>
+
+        <!-- Practice 1 -->
+        <section class="frame">
+          <h2>Practice 1: classify files</h2>
+
+          <p>Project files:</p>
+          <ul>
+            <li><p><code class="inline">main.cpp</code></p></li>
+            <li><p><code class="inline">table.hpp</code>, <code class="inline">table.cpp</code></p></li>
+            <li><p><code class="inline">list.hpp</code>, <code class="inline">list.cpp</code></p></li>
+          </ul>
+
+          <p>Task:</p>
+          <ul>
+            <li><p>Which file is the driver?</p></li>
+            <li><p>Which files are modules?</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 1 Answer</h2>
+          <ul>
+            <li><p>Driver: <code class="inline">main.cpp</code> (contains <code class="inline">main</code>)</p></li>
+            <li><p>Modules: <code class="inline">table.hpp</code> with <code class="inline">table.cpp</code>, <code class="inline">list.hpp</code> with <code class="inline">list.cpp</code></p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section: Build Pipeline and g++
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Build Pipeline and g++</h2>
+        </section>
+
+        <section class="frame">
+          <h2>C++ build pipeline</h2>
+          <p>Building translates source code into an executable.</p>
+          <ul>
+            <li><p><strong>Preprocessing</strong>: expands includes and macros</p></li>
+            <li><p><strong>Compiling</strong>: turns each source file into an object file</p></li>
+            <li><p><strong>Linking</strong>: combines object files into an executable</p></li>
+          </ul>
+        </section>
+
+        <!-- (LaTeX forest -> HTML diagram approximation) -->
+        <section class="frame">
+          <h2>Pipeline picture</h2>
+
+          <div class="center">
+            <div class="pipe-row">
+              <div class="pipe-box"><code>.cpp</code> + <code>.hpp</code></div>
+              <div class="arrow">→</div>
+              <div class="pipe-box">Preprocess</div>
+              <div class="arrow">→</div>
+              <div class="pipe-box">Compile<br><span class="small-note">(<code>g++ -c</code>)</span></div>
+            </div>
+
+            <div class="pipe-row">
+              <div class="pipe-box"><code>.o</code> files</div>
+              <div class="arrow">→</div>
+              <div class="pipe-box">Link</div>
+              <div class="arrow">→</div>
+              <div class="pipe-box">Executable</div>
+            </div>
+          </div>
+
+          <p class="small-note">Headers are included into source files; headers are not compiled by themselves.</p>
+        </section>
+
+        <section class="frame">
+          <h2>g++ options you will use</h2>
+          <ul>
+            <li><p><code class="inline">-std=c++14</code> (or newer)</p></li>
+            <li><p><code class="inline">-Wall -Wextra</code></p></li>
+            <li><p><code class="inline">-I include</code></p></li>
+            <li><p><code class="inline">-c</code></p></li>
+            <li><p><code class="inline">-o name</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>One-step build</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ -std=c++14 -Wall -Wextra -I include \
+  -o main main.cpp table.cpp list.cpp</code></pre>
+
+          <p>This compiles and links in one command.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Step-wise build</h2>
+          <p>Compile each source file into an object file:</p>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ -std=c++14 -Wall -Wextra -I include -c main.cpp
+g++ -std=c++14 -Wall -Wextra -I include -c table.cpp
+g++ -std=c++14 -Wall -Wextra -I include -c list.cpp</code></pre>
+
+          <p>Link object files:</p>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ -o main main.o table.o list.o</code></pre>
+        </section>
+
+        <!-- Practice 2 -->
+        <section class="frame">
+          <h2>Practice 2: what is wrong</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ -o main main.cpp grade-book.cpp grades.hpp</code></pre>
+
+          <ul>
+            <li><p>What is wrong (if anything)?</p></li>
+            <li><p>Is this one-step or step-wise?</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 2 Answer</h2>
+          <ul>
+            <li><p>This is one-step (compile and link together).</p></li>
+            <li><p>The header file should not be listed as a build input.</p></li>
+            <li><p>Better: <code class="inline">g++ -o main main.cpp grade-book.cpp</code></p></li>
+          </ul>
+        </section>
+
+        <!-- Practice 3 -->
+        <section class="frame">
+          <h2>Practice 3: object file mistake</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ -o main.o main.cpp</code></pre>
+
+          <ul>
+            <li><p>What does this likely produce?</p></li>
+            <li><p>How do you correctly create <code class="inline">main.o</code>?</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 3 Answer</h2>
+          <p>Without <code class="inline">-c</code>, this links and creates an executable named <code class="inline">main.o</code>.</p>
+          <p><strong>Correct:</strong></p>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ -std=c++14 -Wall -Wextra -c main.cpp -o main.o</code></pre>
+        </section>
+
+        <!-- Practice 4 -->
+        <section class="frame">
+          <h2>Practice 4: -c with -o mistake</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ -c -o main.o main.cpp grade-book.cpp</code></pre>
+
+          <ul>
+            <li><p>Why is this incorrect?</p></li>
+            <li><p>Show one correct fix.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 4 Answer</h2>
+          <p><code class="inline">-c</code> compiles each source file into its own object file. Using <code class="inline">-o main.o</code> tries to name a single output for multiple inputs.</p>
+          <p><strong>Fix by compiling separately:</strong></p>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ -c main.cpp -o main.o
+g++ -c grade-book.cpp -o grade-book.o
+g++ -o main main.o grade-book.o</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section: Make
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Make</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Why use make</h2>
+          <p>Step-wise builds have repeated commands. <code class="inline">make</code> automates:</p>
+          <ul>
+            <li><p>build order</p></li>
+            <li><p>rebuild only what changed</p></li>
+            <li><p>shared compiler flags</p></li>
+            <li><p>multiple executables (main and tests)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Make vocabulary</h2>
+          <ul>
+            <li><p><strong>Target</strong>: output to build</p></li>
+            <li><p><strong>Dependencies</strong>: inputs needed for the target</p></li>
+            <li><p><strong>Recipe</strong>: commands to build the target</p></li>
+          </ul>
+
+          <p><strong>Automatic variables:</strong></p>
+          <ul>
+            <li><p><code class="inline">$@</code>: target name</p></li>
+            <li><p><code class="inline">$^</code>: all dependencies</p></li>
+            <li><p><code class="inline">$&lt;</code>: first dependency</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Makefile example: two executables</h2>
+          <p>Example: <code class="inline">m02-multimodule/makefile</code></p>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-make">CXX      := g++
+CXXFLAGS := -std=c++14 -Wall -Wextra -I include
+all: main test
+
+main: main.o three-ints.o
+	$(CXX) -o $@ $^
+test: test.o three-ints.o
+	$(CXX) -o $@ $^
+main.o: main.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+test.o: test.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+three-ints.o: three-ints.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+.PHONY: clean
+# test compiled executable, *.dSYM debug symbol folders
+clean :
+	rm -rf test main *.o *.gc* test *.dSYM</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Common make commands</h2>
+          <ul>
+            <li><p><code class="inline">make</code></p></li>
+            <li><p><code class="inline">make main</code></p></li>
+            <li><p><code class="inline">make test</code></p></li>
+            <li><p><code class="inline">make clean</code></p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section: Testing
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Testing</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Why testing</h2>
+          <ul>
+            <li><p>Manual testing does not scale</p></li>
+            <li><p>Tests describe expected behavior</p></li>
+            <li><p>Tests catch regressions after changes</p></li>
+            <li><p>Modules are easier to test than monoliths</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Types of tests</h2>
+          <ul>
+            <li><p>Unit tests: one function or class</p></li>
+            <li><p>Integration tests: modules working together</p></li>
+            <li><p>System tests: full program behavior</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Simple test driver</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">#include "three-ints.hpp"
+#include &lt;iostream&gt;
+
+int main() {
+  ThreeInts t(1, 2, 3);
+  std::cout &lt;&lt; "sum=" &lt;&lt; t.sum() &lt;&lt; "\n"; // expected 6
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Tests with assert</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">#include "store-item.hpp"
+#include &lt;cassert&gt;
+
+void testStoreItem() {
+  StoreItem a("Apple");
+  StoreItem b("apple");
+  assert(a.equals(b));
+}
+
+int main() {
+  testStoreItem();
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Framework style (Catch2-like)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">#include "catch.hpp"
+#include "store-item.hpp"
+
+TEST_CASE("store item equality", "[storeItem]") {
+  SECTION("case-insensitive comparison") {
+    StoreItem a("Apple");
+    StoreItem b("apple");
+    CHECK(a.equals(b));
+  }
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Run tests from make</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-make">test-run: test
+	./test</code></pre>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">make test-run</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Review
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Review</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Summary</h2>
+          <ul>
+            <li><p>Modules separate interface (hpp) from implementation (cpp)</p></li>
+            <li><p>Step-wise builds compile to object files, then link</p></li>
+            <li><p><code class="inline">make</code> automates dependencies and rebuilds only what changed</p></li>
+            <li><p>Tests reduce regressions and increase confidence in correctness</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Review questions</h2>
+          <ul>
+            <li><p>Why are header guards necessary?</p></li>
+            <li><p>Why is step-wise compilation faster for iterative changes?</p></li>
+            <li><p>What are target, dependencies, and recipe in make?</p></li>
+            <li><p>What is the difference between a test driver and a unit test framework?</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <!-- Plugins -->
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": null,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>

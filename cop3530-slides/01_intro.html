@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Introduction to Data Structure and Algorithm I</title>
+
+  <!-- Match the same Reveal + course styling pattern (like m02_lexical.html) -->
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <style>
+    /* Light-touch table styling to resemble booktabs */
+    table.booktabs {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.92em;
+    }
+    table.booktabs thead tr {
+      border-bottom: 2px solid #333;
+    }
+    table.booktabs tbody tr:first-child {
+      border-top: 1px solid #333;
+    }
+    table.booktabs tbody tr {
+      border-bottom: 1px solid #ddd;
+    }
+    table.booktabs th, table.booktabs td {
+      padding: 6px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .two-col {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .two-col > div {
+      flex: 1;
+    }
+    .small-note {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    .center {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- =========================================================
+           Title
+           ========================================================= -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Introduction to Data Structure and Algorithm I</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Course Policies and Logistics
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Course Policies and Logistics</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Course and Instructor Information</h2>
+          <ul>
+            <li><p>Class schedule: T, R 9:30 - 10:45 AM</p></li>
+            <li><p>Meets: 4/248</p></li>
+            <li><p>Instructor: Liting Zhang, PhD</p></li>
+            <li>
+              <p>Office Hours:</p>
+              <ul>
+                <li><p>Office: 4/435</p></li>
+                <li><p>Tue and Thurs: 2 - 4 pm</p></li>
+                <li><p>Zoom: <a href="https://uwf.zoom.us/j/9979287260">https://uwf.zoom.us/j/9979287260</a></p></li>
+              </ul>
+            </li>
+            <li><p>Email: <a href="mailto:lzhang@uwf.edu">lzhang@uwf.edu</a></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Communication Policy</h2>
+          <ul>
+            <li><p>Course information and updates are sent via Canvas announcements</p></li>
+            <li><p>Email is the preferred method of communication</p></li>
+            <li><p>Use subject line format: <code>COP3530: [Your Topic Here]</code></p></li>
+            <li><p>Example: <code>COP3530: Project 2 Questions</code></p></li>
+            <li><p>Expect a response within 1–2 business days</p></li>
+            <li>
+              <p>Avoid:</p>
+              <ul>
+                <li><p>Canvas/Navigation messages</p></li>
+                <li><p>Sending only error screenshots without your code/context</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Important Note</h2>
+          <ul>
+            <li><p>This is a programming-intensive course.</p></li>
+            <li>
+              <p>It does <strong>not</strong> get easier as the semester goes on:</p>
+              <ul>
+                <li><p>you will read code, debug, and write substantial programs</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>This is <strong>not</strong> self-paced:</p>
+              <ul>
+                <li><p>complete assignments and programs by the posted deadlines</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Course Objectives</h2>
+          <ul>
+            <li><p>Develop solutions by applying presented algorithms</p></li>
+            <li><p>Write algorithms for solving problems prior to coding</p></li>
+            <li><p>Analyze solutions in terms of time and space complexity</p></li>
+            <li><p>Develop programs that utilize different types of data structures</p></li>
+            <li><p>Write recursive definitions and develop recursive programming solutions</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Textbook Info (zyBooks)</h2>
+          <ul>
+            <li><p>Go to zyBooks website and create a new account</p></li>
+            <li><p>Enter zyBook code: <code>UWFCOP3530ZhangSpring2026</code></p></li>
+            <li><p>Subscribe</p></li>
+            <li><p>Participation activities: do before/during reading</p></li>
+            <li><p>Challenges: do after covered in lecture</p></li>
+            <li><p>Grading: finish &gt; 80% for full credit; graded after due date; counts toward final grade</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Attendance Policy</h2>
+          <ul>
+            <li><p>Regular attendance is expected and will greatly improve performance</p></li>
+            <li><p>Attendance is not taken and not part of your grade</p></li>
+            <li><p>In-class activities are graded (lowest two will be dropped)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Grading / Evaluation</h2>
+
+          <div class="two-col">
+            <div>
+              <table class="booktabs">
+                <thead>
+                  <tr>
+                    <th>Assignment</th>
+                    <th>% of Grade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Checkpoints</td><td>10%</td></tr>
+                  <tr><td>Projects</td><td>30%</td></tr>
+                  <tr><td>Tests</td><td>20%</td></tr>
+                  <tr><td>Final Exam</td><td>20%</td></tr>
+                  <tr><td>zyBooks Activities</td><td>10%</td></tr>
+                  <tr><td>Classroom Activities</td><td>10%</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div>
+              <table class="booktabs">
+                <thead>
+                  <tr>
+                    <th>Letter Grade</th>
+                    <th>Range</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>A</td><td>92% – 100%</td></tr>
+                  <tr><td>A-</td><td>90% – 91.9%</td></tr>
+                  <tr><td>B+</td><td>87% – 89.9%</td></tr>
+                  <tr><td>B</td><td>84% – 86.9%</td></tr>
+                  <tr><td>B-</td><td>80% – 83.9%</td></tr>
+                  <tr><td>C+</td><td>77% – 79.9%</td></tr>
+                  <tr><td>C</td><td>74% – 76.9%</td></tr>
+                  <tr><td>C-</td><td>70% – 73.9%</td></tr>
+                  <tr><td>D+</td><td>67% – 69.9%</td></tr>
+                  <tr><td>D</td><td>60% – 66.9%</td></tr>
+                  <tr><td>F</td><td>0% – 59.9%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Assessments</h2>
+          <ul>
+            <li>
+              <p>Checkpoints:</p>
+              <ul>
+                <li><p>2 mini programming assignments (GitHub Classroom)</p></li>
+                <li><p>about 2 weeks to finish</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Projects:</p>
+              <ul>
+                <li><p>3 programming assignments (GitHub Classroom)</p></li>
+                <li><p>about 3 weeks to finish</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Exams:</p>
+              <ul>
+                <li><p>2 tests (around week 6 and week 11)</p></li>
+                <li><p>1 comprehensive final exam</p></li>
+                <li><p>Respondus LockDown Browser required</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Activities:</p>
+              <ul>
+                <li><p>zyBooks activities</p></li>
+                <li><p>classroom activities</p></li>
+                <li><p>short review quiz for previous class</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Late Policy</h2>
+          <ul>
+            <li><p>In-class activities: no late submissions</p></li>
+            <li><p>zyBooks: due as shown in Canvas; no late submissions</p></li>
+            <li>
+              <p>Checkpoints/Projects:</p>
+              <ul>
+                <li><p>accepted up to 48 hours after deadline; after that, 0 without approved extension</p></li>
+                <li><p>no late submission for the last project</p></li>
+                <li>
+                  <p>penalty (applied once to earned score):</p>
+                  <ul>
+                    <li><p>\(\le\) 24 hours late: \(-10\%\)</p></li>
+                    <li><p>24–48 hours late: \(-20\%\)</p></li>
+                  </ul>
+                </li>
+                <li><p>extension: request before the deadline when possible</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Excused Absences Policy</h2>
+          <ul>
+            <li>
+              <p>Accepted reasons (with documentation):</p>
+              <ul>
+                <li><p>illness, family death/crisis</p></li>
+                <li><p>military/jury duty, religious holy days</p></li>
+                <li><p>official University events</p></li>
+                <li><p>serious illness of dependent children</p></li>
+              </ul>
+            </li>
+            <li><p>Notify instructor ASAP for any excused absence affecting graded work</p></li>
+            <li>
+              <p>Make-up tests:</p>
+              <ul>
+                <li><p>allowed with medical notice or approved emergency</p></li>
+                <li><p>non-medical/emergency reasons require advance approval</p></li>
+                <li><p>if absent without prior approval, notify within 48 hours</p></li>
+                <li><p>make up within 2 weeks (unless long-term illness)</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Development Environment for C++
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Development Environment for C++</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Development Environment for C++</h2>
+          <ul>
+            <li><p>Minimal requirements</p></li>
+            <li><p>Toolchain and environment</p></li>
+            <li><p>Command-line environment (bash)</p></li>
+            <li>
+              <p>Local development environment</p>
+              <ul>
+                <li><p>Linux native</p></li>
+                <li><p>Windows WSL (Linux CLI)</p></li>
+                <li><p>Mac OS native</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Remote development environment (optional)</p>
+              <ul>
+                <li><p>SSH server (Linux CLI)</p></li>
+                <li><p>GitHub Codespaces (Web IDE + Linux VM)</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Traps and pitfalls</p>
+              <ul>
+                <li><p>MinGW / MSYS2 / Git Bash</p></li>
+                <li><p>click-and-run single-file workflows</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Minimal Requirements for C++ Development</h2>
+          <ul>
+            <li>
+              <p>An editor/IDE to edit source code files</p>
+              <ul>
+                <li><p>Visual Studio Code (recommended)</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>A build environment to compile source files into executables/libraries</p>
+              <ul>
+                <li><p>access through a command-line interface (CLI), usually bash</p></li>
+                <li><p>core software: <code>g++</code>, <code>make</code>, <code>git</code>, <code>valgrind</code></p></li>
+              </ul>
+            </li>
+            <li><p>Other bash tools may be useful (zip, tar, grep, etc.)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Windows Users (Suggested Workflow)</h2>
+          <ul>
+            <li><p>NEVER put your project in OneDrive folder</p></li>
+            <li><p>NEVER put your project under a directory containing spaces in its name</p></li>
+            <li><p>AVOID MinGW/MSYS2/Git Bash</p></li>
+            <li><p>Pay attention to line endings for files obtained from Windows apps</p></li>
+            <li>
+              <p>NEVER download and unzip from GitHub</p>
+              <ul>
+                <li><p>use <code>git clone</code> instead (zip tools often mess up line endings)</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Tools and Environment</h2>
+          <ul>
+            <li>
+              <p><code>make</code></p>
+              <ul>
+                <li><p>automate the build process and manage dependencies</p></li>
+                <li><p>read more about make</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><code>git</code></p>
+              <ul>
+                <li><p>distributed version control for text files (source code)</p></li>
+                <li><p>we use a small subset as beginners</p></li>
+                <li><p>backup versions of your work; submit your work</p></li>
+                <li><p>read more about git</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Command-Line Interface (CLI)</h2>
+          <ul>
+            <li><p>Command-line interface (CLI): text-based interface to interact with the computer</p></li>
+            <li><p>Shell: interprets commands</p></li>
+            <li><p>Terminal: displays input/output</p></li>
+            <li><p>Counterpart of GUI (graphical user interface)</p></li>
+            <li>
+              <p>Why CLI:</p>
+              <ul>
+                <li><p>Flexible: adjust parameters on the fly</p></li>
+                <li><p>Easy-to-use: easily automated even when complicated</p></li>
+                <li><p>Portable: same commands across platforms</p></li>
+                <li><p>Efficient: less resource consumption</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Problems with GUI</h2>
+          <ul>
+            <li><p>GUI is great, but not suitable to our needs</p></li>
+            <li><p>Hard to automate</p></li>
+            <li><p>Hard to learn well for modular projects + build systems</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Local Environment</h2>
+          <ul>
+            <li><p>A local development environment is recommended for this course</p></li>
+            <li><p>Not always the most convenient, but worth your time to learn</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Local Environment: Linux machine</h2>
+          <ul>
+            <li><p>Install <code>g++</code> and <code>make</code> using your package manager (Ubuntu example):</p></li>
+          </ul>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">sudo apt update
+sudo apt install build-essential
+# optional but recommended:
+sudo apt install valgrind</code></pre>
+
+          <p class="small-note">For other distributions, use the appropriate package manager.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Local Environment: Windows (WSL)</h2>
+          <ul>
+            <li><p>Install Ubuntu 20.04 LTS from Microsoft Store (WSL)</p></li>
+            <li><p>Toolchain setup is similar to Linux</p></li>
+          </ul>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">sudo apt update
+sudo apt install build-essential
+# optional but recommended:
+sudo apt install valgrind</code></pre>
+
+          <ul>
+            <li><p>Install Visual Studio Code</p></li>
+            <li><p>Install WSL Extension in VS Code</p></li>
+            <li><p><a href="https://code.visualstudio.com/docs/remote/wsl">WSL + VS Code workflow</a></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Local Environment: Mac OS</h2>
+          <ul>
+            <li><p>Install Xcode Command Line Tools</p></li>
+          </ul>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">xcode-select --install</code></pre>
+
+          <ul>
+            <li><p>Note: <code>valgrind</code> is not directly available on Mac OS</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Remote Environment</h2>
+          <ul>
+            <li><p>Remote environment: use a remote computer to do development</p></li>
+            <li>
+              <p>SSH server (from CS department):</p>
+              <ul>
+                <li><p>C++ toolchain pre-installed</p></li>
+                <li><p>handle files remotely</p></li>
+                <li><p>best with VS Code in SSH remote mode</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>GitHub Codespaces:</p>
+              <ul>
+                <li><p>in-browser VS Code + Linux virtual machine</p></li>
+                <li><p>free hours for GitHub Classroom</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Traps and Pitfalls</h2>
+          <ul>
+            <li>
+              <p>MinGW/MSYS2/Git Bash:</p>
+              <ul>
+                <li><p>Windows port of g++ toolchain</p></li>
+                <li><p>g++ under MinGW may not match Linux behavior</p></li>
+                <li><p>compatibility issues with make</p></li>
+                <li><p>not recommended for this course</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Click-and-run features:</p>
+              <ul>
+                <li><p>tricky to configure for modular projects with make</p></li>
+                <li><p>command line is usually better</p></li>
+              </ul>
+            </li>
+            <li><p>Examples: jGrasp, “Run and Debug” button in VS Code, OnlineGDB, Eclipse</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: GitHub Classroom Workflow
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>GitHub Classroom Workflow</h2>
+        </section>
+
+        <section class="frame">
+          <h2>GitHub and GitHub Classroom: why we use them</h2>
+          <ul>
+            <li><p><strong>Git</strong> is version control: track changes, revert mistakes, collaborate</p></li>
+            <li><p><strong>GitHub</strong> hosts git repositories online (backup + sharing)</p></li>
+            <li><p><strong>GitHub Classroom</strong> distributes assignments as private repos</p></li>
+            <li><p>You submit by <strong>pushing commits</strong> (no file uploads, no zip submissions)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Key idea: repository = your assignment folder</h2>
+          <ul>
+            <li><p>Each assignment link creates a <strong>private repository</strong> for you</p></li>
+            <li>
+              <p>You clone it once, then:</p>
+              <ul>
+                <li><p>edit code locally</p></li>
+                <li><p>commit changes</p></li>
+                <li><p>push to GitHub (this is the submission)</p></li>
+              </ul>
+            </li>
+            <li><p>Your repo keeps history: you can see what changed and when</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Vocabulary you must know</h2>
+          <ul>
+            <li><p><strong>repo</strong> (repository): project folder tracked by git</p></li>
+            <li><p><strong>clone</strong>: download a repo to your machine (first time)</p></li>
+            <li><p><strong>commit</strong>: save a checkpoint with a message</p></li>
+            <li><p><strong>push</strong>: upload commits to GitHub (submission happens here)</p></li>
+            <li><p><strong>pull</strong>: download updates from GitHub (rare for assignments)</p></li>
+            <li><p><strong>origin</strong>: default remote repo on GitHub</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Workflow overview (every assignment)</h2>
+          <ol>
+            <li><p>Accept assignment link (GitHub Classroom)</p></li>
+            <li><p>Clone repository to your machine (once)</p></li>
+            <li><p>Edit and test locally</p></li>
+            <li><p>Commit frequently with clear messages</p></li>
+            <li><p>Push to GitHub before the deadline</p></li>
+          </ol>
+        </section>
+
+        <section class="frame">
+          <h2>Step 1: accept assignment + clone</h2>
+          <p>After accepting the <a href="https://classroom.github.com/a/NdP0_0fn">lab1 link</a>, copy the repo URL, then:</p>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash"># choose a folder where you store class work
+mkdir -p ~/Desktop/cop3530
+cd ~/Desktop/cop3530
+
+# clone your private assignment repository
+git clone your_private_git_repo_link
+cd assignment-1-yourname</code></pre>
+
+          <ul>
+            <li><p><strong>Do not</strong> download ZIP files from GitHub.</p></li>
+            <li><p>Clone once; after that you just work inside the folder.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Step 2: edit, build, run</h2>
+          <p>Typical local cycle:</p>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash"># see what files exist
+ls
+# edit main.cpp
+# build (example)
+make
+
+# run (example)
+./main</code></pre>
+
+          <p>Always make sure your code compiles and runs <strong>before</strong> you push.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Step 3: check status + add files</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash"># see what changed
+git status
+
+# stage changes (most common)
+git add .
+
+# or stage a specific file
+git add main.cpp</code></pre>
+
+          <ul>
+            <li><p><code>git status</code> tells you exactly what will be committed.</p></li>
+            <li><p><code>git add .</code> stages all changes in the repo folder.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Step 4: commit with a message</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">git commit -m "Implement insert() and fix edge cases"</code></pre>
+
+          <p>Good commit messages:</p>
+          <ul>
+            <li><p>describe <strong>what</strong> changed (and why, if needed)</p></li>
+            <li><p>are short and specific</p></li>
+            <li><p>happen often (small checkpoints)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Step 5: push (this is submission)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">git push</code></pre>
+
+          <ul>
+            <li><p>If this command succeeds, your code is on GitHub.</p></li>
+            <li><p>GitHub Classroom autograding (if enabled) runs after pushes.</p></li>
+            <li><p>Always push <strong>before</strong> the deadline.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>How to confirm your submission</h2>
+          <ul>
+            <li><p>Open your assignment repo on GitHub</p></li>
+            <li><p>Check the README grade badge</p></li>
+            <li>
+              <p>View grading detail</p>
+              <ul>
+                <li><p>On your GitHub repo page, click the Actions tab to see your graded results.</p></li>
+                <li><p>If it isn't a green check mark <strong><span style="color:lime;">√</span></strong> path, then at least part of the testing failed.</p></li>
+                <li><p>Click the commit message for the failing version then click “Autograding” on the left side of the page.</p></li>
+                <li><p>Follow the <strong style="color:red;">X</strong> path and expand things to see what errors exist.</p></li>
+                <li><p>It is usually <code>education/autograding@v1</code> and you can expand this path to view the detail.</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common mistakes (avoid these)</h2>
+          <ul>
+            <li><p>Editing files outside the repo folder (then nothing gets committed)</p></li>
+            <li><p>Forgetting <code>git add</code> (commit contains no changes)</p></li>
+            <li><p>Forgetting <code>git push</code> (GitHub does not receive your commits)</p></li>
+            <li><p>Downloading ZIP from GitHub (breaks workflow + line endings)</p></li>
+            <li><p>Working in OneDrive / folders with spaces (Windows issues)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>When things go wrong: quick fixes</h2>
+          <ul>
+            <li>
+              <p>“I committed but GitHub doesn't update”:</p>
+              <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+                   data-fontsize="\small" data-tabsize="1"><code class="language-bash">git push</code></pre>
+            </li>
+
+            <li>
+              <p>“Nothing to commit, but I changed files”:</p>
+              <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+                   data-fontsize="\small" data-tabsize="1"><code class="language-bash">git status
+git add .
+git commit -m "Update solution"</code></pre>
+            </li>
+
+            <li>
+              <p>“Merge / pull issues” (rare for assignments):</p>
+              <ul>
+                <li><p>ask instructor/TA before force commands</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Recommended habit: commit early, commit often</h2>
+          <ul>
+            <li><p>Treat commits like save points</p></li>
+            <li>
+              <p>Make a commit when you:</p>
+              <ul>
+                <li><p>pass a test</p></li>
+                <li><p>finish a function</p></li>
+                <li><p>fix a bug</p></li>
+              </ul>
+            </li>
+            <li><p>If something breaks, you can go back to a working commit</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Comment and Documentation</h2>
+          <ul>
+            <li>
+              <p>Comment</p>
+              <ul>
+                <li><p>audience: the programmer themselves</p></li>
+                <li><p>used to explain code to yourself/other programmers</p></li>
+                <li><p>often replaceable by good names and good structure</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Documentation</p>
+              <ul>
+                <li><p>audience: users of the code (including future you)</p></li>
+                <li><p>explains behavior, contracts, parameters, edge cases</p></li>
+                <li><p>always useful</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Comment vs Documentation (examples)</h2>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">// initialize the array  (often replaceable by a good function name)
+for (int i = 0; i &lt; 10; ++i) {
+  a[i] = 0;
+}
+
+// print the array
+for (int i = 0; i &lt; 10; ++i) {
+  std::cout &lt;&lt; a[i] &lt;&lt; std::endl;
+}</code></pre>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">/**
+ * @brief Initialize an array to all zeros.
+ * @param a The array to initialize.
+ * @param n The number of elements in the array.
+ */
+void initializeArray(int a[], int n);
+
+void initializeArray(int a[], int n) {
+  for (int i = 0; i &lt; n; ++i) {
+    a[i] = 0;
+  }
+}</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Errors and Debugging Basics
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Errors and Debugging Basics</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Types of Errors in C++</h2>
+          <ul>
+            <li><p>Syntax error</p></li>
+            <li><p>Runtime error</p></li>
+            <li><p>Logic error</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Syntax Error</h2>
+          <ul>
+            <li><p>Compilation error: compiler cannot understand your code</p></li>
+            <li><p>Reading error messages helps, but can be non-trivial at first</p></li>
+            <li><p>A good editor/IDE can highlight syntax errors (may require configuration)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Runtime Error</h2>
+          <ul>
+            <li><p>Related concept: exceptions</p></li>
+            <li><p>Compiler understands your code, but the program fails while running</p></li>
+            <li><p>Symptoms: crash, segmentation fault, freeze, etc.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Logic Error</h2>
+          <ul>
+            <li><p>Program compiles and runs, but does not do what you want</p></li>
+            <li>
+              <p>Problems it causes:</p>
+              <ul>
+                <li><p>wrong output / wrong behavior</p></li>
+                <li><p>wasted resources (too slow; too much memory; possible memory leak)</p></li>
+              </ul>
+            </li>
+            <li><p>Often the most difficult type of error to debug</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Introduction to Data Structures and Algorithms
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Introduction to Data Structures and Algorithms</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Overview</h2>
+          <ul>
+            <li><p>Data structure</p></li>
+            <li><p>Introduction to algorithms</p></li>
+            <li><p>Relation between data structure and algorithms</p></li>
+            <li><p>Abstract data types</p></li>
+            <li><p>Applications of ADTs</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Data Structures</h2>
+          
+            <p>A data structure is a way of organizing, storing, and performing operations on data.</p>
+         
+        </section>
+
+        <section class="frame">
+          <h2>Data structures: four common examples</h2>
+          <ul>
+            <li><p><strong>Record</strong>: group related fields (e.g., Student: id, name, age)</p></li>
+            <li><p><strong>Array</strong>: contiguous sequence (e.g., test scores)</p></li>
+            <li><p><strong>Linked list</strong>: nodes connected by pointers (e.g., train cars)</p></li>
+            <li><p><strong>Binary tree</strong>: hierarchical structure (e.g., directory tree)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Example: Record and Array</h2>
+
+          <div class="two-col">
+            <div>
+              <p><strong>Record (Student)</strong></p>
+              <ul>
+                <li><p>id: 1234567</p></li>
+                <li><p>name: Alice</p></li>
+                <li><p>age: 20</p></li>
+              </ul>
+              <p><strong>Why it helps:</strong> keeps related data together.</p>
+            </div>
+
+            <div>
+              <p><strong>Array (Scores)</strong></p>
+              <ul>
+                <li><p>contiguous memory</p></li>
+                <li><p>constant-time indexing</p></li>
+              </ul>
+
+              <div class="center" style="margin-top: 10px;">
+                <table class="booktabs" style="width:auto; margin:0 auto;">
+                  <tbody>
+                    <tr>
+                      <td>78</td><td>90</td><td>92</td><td>100</td><td>85</td><td>88</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Example: Linked list and Binary tree</h2>
+
+          <div class="two-col">
+            <div>
+              <p><strong>Linked list</strong></p>
+              <ul>
+                <li><p>nodes store data + link to next</p></li>
+                <li><p>flexible insert/remove</p></li>
+              </ul>
+
+              <div class="center" style="margin-top: 10px; font-size: 1.2em;">
+                <span style="border:1px solid #333; padding:6px 10px; border-radius:6px;">A</span>
+                <span style="padding:0 10px;">→</span>
+                <span style="border:1px solid #333; padding:6px 10px; border-radius:6px;">B</span>
+                <span style="padding:0 10px;">→</span>
+                <span style="border:1px solid #333; padding:6px 10px; border-radius:6px;">C</span>
+              </div>
+            </div>
+
+            <div>
+              <p><strong>Binary tree</strong></p>
+              <ul>
+                <li><p>hierarchical relationships</p></li>
+                <li><p>supports efficient search (when structured)</p></li>
+              </ul>
+              <img
+            src = "../_static/images/binary_tree.png"
+            alt = "A simple binary tree"
+            style="display:block; margin: 0.6em auto; max-width: 50%; max-height: 50%; height:auto;"
+          >
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Algorithms</h2>
+          <ul>
+            <li><p>An algorithm is a step-by-step process to solve a problem.</p></li>
+            <li><p>Input \(\rightarrow\) process \(\rightarrow\) output</p></li>
+            <li><p>Same problem can have many algorithms with different efficiency.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Algorithms + data structures: together</h2>
+          <ul>
+            <li><p>Data structure organizes data; algorithm uses that organization.</p></li>
+            <li>
+              <p>Examples:</p>
+              <ul>
+                <li><p>Searching a sorted array: <strong>binary search</strong></p></li>
+                <li><p>Navigation / shortest path: <strong>Dijkstra's algorithm</strong> on a <strong>graph</strong></p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Example problem: find maximum value</h2>
+          <ul>
+            <li><p>Problem: given an array of numbers, return the maximum element.</p></li>
+            <li><p>Idea: scan from left to right while tracking the best so far.</p></li>
+          </ul>
+
+          <p><strong>Why this matters:</strong></p>
+          <ul>
+            <li><p>establishes a baseline linear-time algorithm: \(O(n)\)</p></li>
+            <li><p>helps compare to slower approaches (e.g., nested loops)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Find maximum (C++ example)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int maxValue(const int a[], int n) {
+  int best = a[0];
+  for (int i = 1; i &lt; n; ++i) {
+    if (a[i] &gt; best) best = a[i];
+  }
+  return best;
+}</code></pre>
+
+          <p>Runs in \(O(n)\) time and \(O(1)\) extra space.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Practical Applications of Algorithms</h2>
+          <ul>
+            <li><p>Searching (databases, files, websites)</p></li>
+            <li><p>Sorting (ranking, reporting, preprocessing)</p></li>
+            <li><p>Graph algorithms (routing, networks, recommendations)</p></li>
+            <li><p>Compression and hashing (storage, security, performance)</p></li>
+            <li><p>Optimization (scheduling, planning, resource allocation)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Example Computational Problems</h2>
+          <ul>
+            <li><p>Find an item quickly in a large dataset</p></li>
+            <li><p>Plan the shortest/cheapest route between locations</p></li>
+            <li><p>Schedule tasks with priorities and deadlines</p></li>
+            <li><p>Match or recommend items based on similarity</p></li>
+            <li><p>Detect duplicates, anomalies, or patterns</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Efficient Algorithms and Hard Problems</h2>
+          <ul>
+            <li><p>Efficient algorithms: runtime increases no more than polynomially with input size</p></li>
+            <li><p>Some problems lack known efficient algorithms \(\rightarrow\) NP-complete problems</p></li>
+            <li>
+              <p>NP-complete problem characteristics:</p>
+              <ul>
+                <li><p>no efficient algorithm found</p></li>
+                <li><p>no proof that an efficient algorithm is impossible</p></li>
+                <li><p>if one NP-complete problem is solved efficiently, all can be</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Strategy:</p>
+              <ul>
+                <li><p>focus on finding good (not necessarily optimal) solutions</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Abstract Data Types (ADTs)
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Abstract Data Types (ADTs)</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Abstract Data Types (ADTs)</h2>
+          <ul>
+            <li><p>An ADT specifies <strong>what operations</strong> are supported (behavior), not <strong>how</strong> they are implemented.</p></li>
+            <li><p>Focus: interface, contracts, and expected behavior.</p></li>
+            <li><p>Multiple implementations can satisfy the same ADT.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common ADTs</h2>
+          <ul>
+            <li><p>List</p></li>
+            <li><p>Stack</p></li>
+            <li><p>Queue / Deque</p></li>
+            <li><p>Priority queue</p></li>
+            <li><p>Set / Map (dictionary)</p></li>
+            <li><p>Graph</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Application of ADTs</h2>
+          <ul>
+            <li>
+              <p>Choose an ADT based on what operations you need:</p>
+              <ul>
+                <li><p>stack: last-in-first-out</p></li>
+                <li><p>queue: first-in-first-out</p></li>
+                <li><p>map: key \(\rightarrow\) value lookup</p></li>
+                <li><p>priority queue: always remove highest priority</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Then choose an implementation based on performance goals:</p>
+              <ul>
+                <li><p>array vs linked list</p></li>
+                <li><p>binary heap vs balanced tree</p></li>
+                <li><p>hash table vs tree-based map</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>ADTs in Standard Libraries</h2>
+          <ul>
+            <li>
+              <p>C++ STL examples:</p>
+              <ul>
+                <li><p><code>std::vector</code> (dynamic array)</p></li>
+                <li><p><code>std::list</code> (doubly linked list)</p></li>
+                <li><p><code>std::stack</code>, <code>std::queue</code>, <code>std::priority_queue</code></p></li>
+                <li><p><code>std::map</code>, <code>std::unordered_map</code></p></li>
+                <li><p><code>std::set</code>, <code>std::unordered_set</code></p></li>
+              </ul>
+            </li>
+            <li><p>These are implementations that provide ADT-like interfaces</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Review / Summary
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Review</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Summary</h2>
+          <ul>
+            <li><p>Policies + workflow matter: they prevent avoidable problems</p></li>
+            <li><p>CLI + Linux toolchain is the most reliable setup for this course</p></li>
+            <li><p>Classify errors first (syntax/runtime/logic), then debug efficiently</p></li>
+            <li><p>Data structures organize data; algorithms solve problems using that organization</p></li>
+            <li><p>ADTs describe behavior; implementations determine performance</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <!-- Plugins -->
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": null,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
