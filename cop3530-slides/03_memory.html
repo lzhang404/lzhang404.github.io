@@ -157,28 +157,30 @@
         <section class="frame">
           <h2>Typical address space picture</h2>
 
-          <div class="mem-layout">
-            <div class="mem-row">
-              <span class="mem-label">Higher addresses</span>
-              <span class="mem-note">Stack region (often grows downward as calls happen)</span>
-            </div>
-            <div class="mem-row">
-              <span class="mem-label"></span>
-              <span class="mem-note">Free space between stack and heap (shrinks as both grow)</span>
-            </div>
-            <div class="mem-row">
-              <span class="mem-label"></span>
-              <span class="mem-note">Heap region (often grows upward as allocations happen)</span>
-            </div>
-            <div class="mem-row">
-              <span class="mem-label"></span>
-              <span class="mem-note">Static region (globals and static variables)</span>
-            </div>
-            <div class="mem-row">
-              <span class="mem-label">Lower addresses</span>
-              <span class="mem-note">Code region (program instructions)</span>
-            </div>
-          </div>
+          <table class="slide-table">
+            <tbody>
+              <tr>
+                <td><strong>Higher addresses</strong></td>
+                <td>Stack region (often grows downward as calls happen)</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Free space between stack and heap (shrinks as both grow)</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Heap region (often grows upward as allocations happen)</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Static region (globals and static variables)</td>
+              </tr>
+              <tr>
+                <td><strong>Lower addresses</strong></td>
+                <td>Code region (program instructions)</td>
+              </tr>
+            </tbody>
+          </table>
 
           <p class="small-note">
             Use this picture to explain collisions: stack overflow, out-of-memory, or stack/heap meeting.
