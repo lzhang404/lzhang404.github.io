@@ -3,10 +3,9 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-  <title>Lexical Structure &amp; Scanning</title>
+<title>Lexical Structure &amp; Scanning</title>
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
@@ -15,8 +14,6 @@
   <script src="../_static/design-tabs.js?v=f930bc37"></script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 </head>
 
 <body>
@@ -25,7 +22,7 @@
 
       <section>
         <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
-          data-background-position="top center" data-background-repeat="no-repeat">
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
           <h1>Lexical Structure &amp; Scanning</h1>
           <div class="subtitle docutils container">
             <p><strong>Module 2</strong></p>
@@ -517,7 +514,7 @@
         </section>
         <section id="regex-syntax-common-matching-symbols" class="frame">
           <h2>Regex Syntax – Common Matching Symbols</h2>
-          <table style="width:55%;">
+          <table class="slide-table">
             <colgroup>
               <col />
               <col />
@@ -525,83 +522,83 @@
             </colgroup>
             <thead>
               <tr>
-                <th style="text-align: left;">Symbol</th>
-                <th style="text-align: left;">Meaning</th>
-                <th style="text-align: left;">Example</th>
+                <th>Symbol</th>
+                <th>Meaning</th>
+                <th>Example</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="text-align: left;">.</td>
-                <td style="text-align: left;">Any character</td>
-                <td style="text-align: left;">
-                  <table>
+                <td>.</td>
+                <td>Any character</td>
+                <td>
+                  <table class="slide-table-inner">
                     <tbody>
                       <tr>
-                        <td style="text-align: left;"><code>("..", "a%")</code> – T</td>
+                        <td><code>("..", "a%")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;">| – T</td>
+                        <td>| – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("..", ".a")</code> – T</td>
+                        <td><code>("..", ".a")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("..", "a")</code> – F</td>
+                        <td><code>("..", "a")</code> – F</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
               <tr>
-                <td style="text-align: left;"><code>^</code></td>
-                <td style="text-align: left;">Start anchors</td>
-                <td style="text-align: left;">
-                  <table>
+                <td><code>^</code></td>
+                <td>Start anchors</td>
+                <td>
+                  <table class="slide-table-inner">
                     <tbody>
                       <tr>
-                        <td style="text-align: left;"><code>("^a.c.", "abcd")</code> – T</td>
+                        <td><code>("^a.c.", "abcd")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("^a", "ac")</code> – F</td>
+                        <td><code>("^a", "ac")</code> – T</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
               <tr>
-                <td style="text-align: left;"><code>$</code></td>
-                <td style="text-align: left;">End anchors</td>
-                <td style="text-align: left;">
-                  <table>
+                <td><code>$</code></td>
+                <td>End anchors</td>
+                <td>
+                  <table class="slide-table-inner">
                     <tbody>
                       <tr>
-                        <td style="text-align: left;"><code>("..cd$", "abcd")</code> – T</td>
+                        <td><code>("..cd$", "abcd")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("a$", "a")</code> – T</td>
+                        <td><code>("a$", "a")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("a$", "aca")</code> – F</td>
+                        <td><code>("a$", "aca")</code> – T</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
               <tr>
-                <td style="text-align: left;"><code>[abc]</code></td>
-                <td style="text-align: left;">One of a, b, or c</td>
-                <td style="text-align: left;">
-                  <table>
+                <td><code>[abc]</code></td>
+                <td>One of a, b, or c</td>
+                <td>
+                  <table class="slide-table-inner">
                     <tbody>
                       <tr>
-                        <td style="text-align: left;"><code>("^[abc]d", "ad9")</code> – T</td>
+                        <td><code>("^[abc]d", "ad9")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("[ab].d$", "bad")</code> – T</td>
+                        <td><code>("[ab].d$", "bad")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("[ab]x", "cx")</code> – F</td>
+                        <td><code>("[ab]x", "cx")</code> – F</td>
                       </tr>
                     </tbody>
                   </table>
@@ -612,7 +609,7 @@
         </section>
         <section id="regex-syntax-common-matching-symbols-1" class="frame">
           <h2>Regex Syntax – Common Matching Symbols</h2>
-          <table style="width:75%;">
+          <table class="slide-table">
             <colgroup>
               <col />
               <col style="width: 30%" />
@@ -620,92 +617,92 @@
             </colgroup>
             <thead>
               <tr>
-                <th style="text-align: left;">Symbol</th>
-                <th style="text-align: left;">Meaning</th>
-                <th style="text-align: left;">Example</th>
+                <th>Symbol</th>
+                <th>Meaning</th>
+                <th>Example</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="text-align: left;"><code>[abc][12]</code></td>
-                <td style="text-align: left;">Can match a, b or c followed by 1 or
+                <td><code>[abc][12]</code></td>
+                <td>Can match a, b or c followed by 1 or
                   2</td>
-                <td style="text-align: left;">
-                  <table>
+                <td>
+                  <table class="slide-table-inner">
                     <tbody>
                       <tr>
-                        <td style="text-align: left;"><code>("[ab][12]", "a2")</code> – T</td>
+                        <td><code>("[ab][12]", "a2")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("[ab].[12]", "acd2")</code> –
+                        <td><code>("[ab].[12]", "acd2")</code> –
                           T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("[ab][12]", "a3")</code> – F</td>
+                        <td><code>("[ab][12]", "a3")</code> – F</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
               <tr>
-                <td style="text-align: left;"><code>[^abc]</code></td>
-                <td style="text-align: left;">When <code>^</code> is the first character
+                <td><code>[^abc]</code></td>
+                <td>When <code>^</code> is the first character
                   in <code>[]</code>, it negates the pattern, matches anything except a, b
                   or c</td>
-                <td style="text-align: left;">
-                  <table>
+                <td>
+                  <table class="slide-table-inner">
                     <tbody>
                       <tr>
-                        <td style="text-align: left;"><code>("[^ab][^12]", "c3#")</code> –
+                        <td><code>("[^ab][^12]", "c3#")</code> –
                           T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("[^ab]..[^12]", "x123")</code>
+                        <td><code>("[^ab]..[^12]", "x123")</code>
                           –T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("[^ab][^12]", "c2")</code> – F</td>
+                        <td><code>("[^ab][^12]", "c2")</code> – F</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
               <tr>
-                <td style="text-align: left;"><code>[a-e1-8]</code></td>
-                <td style="text-align: left;">Matches ranges between a to e or 1 to
+                <td><code>[a-e1-8]</code></td>
+                <td>Matches ranges between a to e or 1 to
                   8</td>
-                <td style="text-align: left;">
-                  <table>
+                <td>
+                  <table class="slide-table-inner">
                     <tbody>
                       <tr>
-                        <td style="text-align: left;"><code>("[a-e1-3]", "d#")</code> – T</td>
+                        <td><code>("[a-e1-3]", "d#")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("[a-e1-3]", "2")</code> – T</td>
+                        <td><code>("[a-e1-3]", "2")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("[a-e1-3]", "f2")</code> – F</td>
+                        <td><code>("[a-e1-3]", "f2")</code> – F</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
               <tr>
-                <td style="text-align: left;"><code>xx|yy</code></td>
-                <td style="text-align: left;">Matches regex <code>xx</code> or
+                <td><code>xx|yy</code></td>
+                <td>Matches regex <code>xx</code> or
                   <code>yy</code>
                 </td>
-                <td style="text-align: left;">
-                  <table>
+                <td>
+                  <table class="slide-table-inner">
                     <tbody>
                       <tr>
-                        <td style="text-align: left;"><code>("xx|yy", "xx")</code> – T</td>
+                        <td><code>("xx|yy", "xx")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("xx|yy", "yy")</code> – T</td>
+                        <td><code>("xx|yy", "yy")</code> – T</td>
                       </tr>
                       <tr>
-                        <td style="text-align: left;"><code>("xx|yy", "xy")</code> – F</td>
+                        <td><code>("xx|yy", "xy")</code> – F</td>
                       </tr>
                     </tbody>
                   </table>
@@ -716,7 +713,7 @@
         </section>
         <section id="regex-syntax-quantifiers" class="frame">
           <h2>Regex Syntax – Quantifiers</h2>
-          <table style="width:60%;">
+          <table class="slide-table">
             <colgroup>
               <col />
               <col style="width: 60%" />
@@ -760,7 +757,7 @@
         </section>
         <section id="regex-syntax-metacharacters" class="frame">
           <h2>Regex Syntax – Metacharacters</h2>
-          <table style="width:60%;">
+          <table class="slide-table">
             <colgroup>
               <col />
               <col style="width: 60%" />
@@ -842,7 +839,7 @@
           <p>What rule does this regex encode for identifiers?<br />
             Example to try: <code>node regex.js</code></p>
         </section>
-        <section id="regex-examples-for-tokens" class="frame">
+        <section id="slide-table-inner-for-tokens" class="frame">
           <h2>Regex Examples for Tokens</h2>
           <p>Assume ASCII letters, digits, underscore:</p>
           <ul>
@@ -957,7 +954,7 @@
     Target language: non-empty sequences of digits, described by <span>[0-9]+</span>.
   </p>
 
-  <table>
+  <table class="slide-table">
     <tbody>
       <tr>
         <!-- Column 1: States -->
@@ -1259,16 +1256,9 @@
             </li>
           </ul>
         </section>
-      </section>
-      <section>
-        <section id="practice-tokenizing-code" class="title-slide slide level1">
-          <h1>Practice: Tokenizing Code</h1>
-          <div class="frame">
 
-          </div>
-        </section>
         <section id="practice-2-tokenizing-java-question" class="frame">
-          <h2>Practice 2: Tokenizing Java (Question)</h2>
+          <h2>Practice 2: Tokenizing Java </h2>
           <p>Java snippet:</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
             data-fontsize="\normalsize" data-tabsize="2"><code class="language-java">int sum = 0;
@@ -1341,49 +1331,43 @@ for (int i = 0; i &lt; 10; i = i + 1) {
               <p>Identifiers: <code>sum</code>, <code>i</code></p>
             </li>
             <li>
-              <p>Operators:</p>
-              <ul>
-                <li>
-                  <p><code>=</code></p>
-                </li>
-                <li>
-                  <p><code>+</code></p>
-                </li>
-                <li>
-                  <p><code>&lt;</code></p>
-                </li>
-              </ul>
+              <p>Operators: <code>=</code> <code>+</code>  <code>&lt;</code></p>
+
             </li>
             <li>
-              <p>Separators:</p>
-              <ul>
-                <li>
-                  <p><code>(</code></p>
-                </li>
-                <li>
-                  <p><code>)</code></p>
-                </li>
-                <li>
-                  <p><code>{</code></p>
-                </li>
-                <li>
-                  <p><code>}</code></p>
-                </li>
-                <li>
-                  <p><code>;</code></p>
-                </li>
-              </ul>
+              <p>Separators: <code>(</code> <code>)</code> <code>{</code> <code>}</code> <code>;</code> </p>
             </li>
           </ul>
         </section>
       </section>
       <section>
         <section id="implementation-in-javascript" class="title-slide slide level1">
-          <h1>Implementation in JavaScript</h1>
+          <h1>Implementation in Typescript</h1>
           <div class="frame">
 
           </div>
         </section>
+        <section id="Why Using Typescript", class = "frame">
+          <h2>Why Using Typescript</h2>
+          <div class="frame">
+            <ul>
+              <li>Safer than JavaScript: static types + discriminated unions make tokens/AST/evaluator cases explicit, catching “undefined”/missing-case bugs at compile time</li>
+              <li>
+                Less overhead than Java/C#: far less boilerplate and build/tooling friction, so we focus on grammars, parsing, ASTs, and semantics—not frameworks.
+              </li>
+              <li>
+                Less low-level pain than C/C++/Rust: avoids memory management and complex toolchains that distract from core PL concepts.
+              </li>
+              <li>
+                More structure than Python: types enforce invariants for AST and type-checking projects, making large refactors and grading more reliable.
+              </li>
+              <li>
+                Industry-relevant: runs on Node, fast iteration with ts-node, and widely used for real tooling (linters, language servers, compilers).
+              </li>
+            </ul>
+          </div>
+        </section>
+
         <section id="scanner-responsibilities" class="frame">
           <h2>Scanner Responsibilities</h2>
           <ul>
@@ -1463,7 +1447,7 @@ for (int i = 0; i &lt; 10; i = i + 1) {
         <section id="a-tiny-token-definition-typescript" class="frame">
           <h2>A Tiny Token Definition (TypeScript)</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const TokenType = {
+            data-fontsize="\small" data-tabsize="1"><code data-trim data-noescape  class="language-typescript">const TokenType = {
   LET: &quot;LET&quot;,
   IDENT: &quot;IDENT&quot;,
   NUMBER: &quot;NUMBER&quot;,
@@ -1515,7 +1499,7 @@ class Token {
         <section id="tiny-lexer-in-typescript" class="frame">
           <h2>Tiny Lexer in TypeScript</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\scriptsize" data-tabsize="1"><code class="language-javascript">function lex(input: string): Token[] {
+            data-fontsize="\scriptsize" data-tabsize="1"><code data-trim data-noescape  class="language-javascript">function lex(input: string): Token[] {
   const tokens: Token[] = [];
   let str: string = input;
   while (str.length &gt; 0) {
@@ -1549,36 +1533,12 @@ const tokens = lex(src);
 for (const t of tokens) {
   console.log(t.toString());
 }</code></pre>
-          <p>Expected output (in words):</p>
-          <ul>
-            <li>
-              <p>a LET token with lexeme <span>let</span></p>
-            </li>
-            <li>
-              <p>an IDENT token with lexeme <span>sum</span></p>
-            </li>
-            <li>
-              <p>an ASSIGN token with lexeme <span>=</span></p>
-            </li>
-            <li>
-              <p>an IDENT token with lexeme <span>a</span></p>
-            </li>
-            <li>
-              <p>an OP token with lexeme <span>+</span></p>
-            </li>
-            <li>
-              <p>a NUMBER token with lexeme <span>10</span></p>
-            </li>
-            <li>
-              <p>a SEMI token with lexeme <span>;</span></p>
-            </li>
-          </ul>
           <p>Example:
             <code>npx ts-node tiny_lexer.ts "let sum = a + 10;"</code>
           </p>
         </section>
         <section id="handling-whitespace-and-comments" class="frame">
-          <h2>Handling Whitespace and Comments</h2>
+          <h2>Handling Whitespace</h2>
           <ul>
             <li>
               <p>What counts as whitespace in most languages?</p>
@@ -1615,9 +1575,7 @@ for (const t of tokens) {
             </li>
           </ul>
         </section>
-      </section>
-
-      <section id="handling-whitespace-and-comments" class="frame">
+              <section id="handling-whitespace-and-comments" class="frame">
           <h2>Handling Comments</h2>
           <ul>
             <li>
@@ -1652,6 +1610,7 @@ for (const t of tokens) {
           </ul>
         </section>
       </section>
+
 
       <section>
         <section id="wrap-up" class="title-slide slide level1">
@@ -1752,17 +1711,13 @@ for (const t of tokens) {
 
   <script src="../_static/revealjs/dist/reveal.js"></script>
 
-
   <script src="../_static/revealjs/plugin/notes/notes.js"></script>
   <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
   <script src="../_static/revealjs/plugin/math/math.js"></script>
 
-
   <script>
     var revealjsConfig = new Object();
-    Object.assign(revealjsConfig, { "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540 });
-
-
+    Object.assign(revealjsConfig, { "disableLayout": true, "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540 });
 
     revealjsConfig.plugins = [
       RevealNotes, RevealHighlight, RevealMath,

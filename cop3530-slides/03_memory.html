@@ -2,10 +2,9 @@
 <html lang="en" data-content_root="../">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-  <title>Memory Management</title>
+<title>Memory Management</title>
 
   <!-- Same styling pattern as your other Reveal exports (e.g., m02_lexical.html) -->
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
@@ -17,55 +16,6 @@
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-  <style>
-    .two-col { display: flex; gap: 24px; align-items: flex-start; }
-    .two-col > div { flex: 1; }
-    .small-note { font-size: 0.9em; opacity: 0.9; }
-    .center { text-align: center; }
-
-    /* Quick diagram helpers */
-    .pipe-box {
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 10px 14px;
-      display: inline-block;
-      min-width: 170px;
-      text-align: center;
-    }
-    .pipe-row {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 14px;
-    }
-    .arrow { font-size: 1.4em; padding: 0 6px; }
-
-    /* Simple “memory layout” column */
-    .mem-layout {
-      width: 72%;
-      margin: 0 auto;
-      border: 1px solid #333;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    .mem-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 14px;
-      border-bottom: 1px solid #333;
-      font-size: 0.95em;
-    }
-    .mem-row:last-child { border-bottom: none; }
-    .mem-label { font-weight: 600; }
-    .mem-note { opacity: 0.9; }
-
-    code.inline { font-size: 0.95em; }
-  </style>
 </head>
 
 <body>
@@ -240,8 +190,8 @@
            Section: Stack
            ========================================================= -->
       <section>
-        <section>
-          <h2>Stack</h2>
+        <section class="title-slide slide level1">
+          <h1>Stack</h1>
         </section>
 
         <section class="frame">
@@ -305,8 +255,8 @@ int main() {
            Section: Heap
            ========================================================= -->
       <section>
-        <section>
-          <h2>Heap</h2>
+        <section class="title-slide slide level1">
+          <h1>Heap</h1>
         </section>
 
         <section class="frame">
@@ -403,8 +353,8 @@ int main() {
            Section: Pointers
            ========================================================= -->
       <section>
-        <section>
-          <h2>Pointers</h2>
+        <section class="title-slide slide level1">
+          <h1>Pointers</h1>
         </section>
 
 <section class="frame">
@@ -439,7 +389,6 @@ int main() {
     </div>
   </div>
 </section>
-
 
         <section class="frame">
           <h2>Pointer basic syntax</h2>
@@ -494,8 +443,8 @@ int* ptr = &x;   // ptr stores address of x
            Section: Dynamic 1D Arrays
            ========================================================= -->
       <section>
-        <section>
-          <h2>Dynamic 1D Arrays</h2>
+        <section class="title-slide slide level1">
+          <h1>Dynamic 1D Arrays</h1>
         </section>
 
         <section class="frame">
@@ -516,8 +465,6 @@ for (int i = 0; i < n; i++) arr[i] = i * i;
 delete[] arr;
 arr = nullptr;</code></pre>
         </section>
-
-
 
         <section class="frame">
           <h2>Two approaches for dynamic arrays of objects</h2>
@@ -588,7 +535,6 @@ states1 = nullptr;</code></pre>
     </div>
   </div>
         </section>
-
 
         <section class="frame">
           <h2>Dynamic 1D objects: pointer table</h2>
@@ -671,8 +617,8 @@ states2 = nullptr;</code></pre>
            Section: 2D Arrays
            ========================================================= -->
       <section>
-        <section>
-          <h2>2D Arrays</h2>
+        <section class="title-slide slide level1">
+          <h1>2D Arrays</h1>
         </section>
 
         <section class="frame">
@@ -839,7 +785,6 @@ for (size_t r = 0; r < ROWS; r++) {
 }
 delete[] dyn;
 dyn = nullptr;</code></pre>
-
 
         </section>
 
@@ -1013,8 +958,8 @@ int main() {
            Section: References vs Pointers
            ========================================================= -->
       <section>
-        <section>
-          <h2>References vs Pointers</h2>
+        <section class="title-slide slide level1">
+          <h1>References vs Pointers</h1>
         </section>
 
         <section class="frame">
@@ -1085,8 +1030,8 @@ int main() {
            Section: Classes Owning Dynamic Memory
            ========================================================= -->
       <section>
-        <section>
-          <h2>Classes Owning Dynamic Memory</h2>
+        <section class="title-slide slide level1">
+          <h1>Classes Owning Dynamic Memory</h1>
         </section>
 
         <section class="frame">
@@ -1189,8 +1134,8 @@ int main() {
            Section: Rule of 3
            ========================================================= -->
       <section>
-        <section>
-          <h2>Rule of 3</h2>
+        <section class="title-slide slide level1">
+          <h1>Rule of 3</h1>
         </section>
 
         <section class="frame">
@@ -1285,8 +1230,8 @@ public:
            Section: Rule of 5
            ========================================================= -->
       <section>
-        <section>
-          <h2>Rule of 5</h2>
+        <section class="title-slide slide level1">
+          <h1>Rule of 5</h1>
         </section>
 
         <section class="frame">
@@ -1371,8 +1316,8 @@ public:
            Section: Tools
            ========================================================= -->
       <section>
-        <section>
-          <h2>Tools</h2>
+        <section class="title-slide slide level1">
+          <h1>Tools</h1>
         </section>
 
         <section class="frame">
@@ -1399,8 +1344,8 @@ valgrind --tool=memcheck --leak-check=yes --show-leak-kinds=all --track-origins=
            Review
            ========================================================= -->
       <section>
-        <section>
-          <h2>Review</h2>
+        <section class="title-slide slide level1">
+          <h1>Review</h1>
         </section>
 
         <section class="frame">
@@ -1455,7 +1400,7 @@ valgrind --tool=memcheck --leak-check=yes --show-leak-kinds=all --track-origins=
 
   <script>
     var revealjsConfig = new Object();
-    Object.assign(revealjsConfig, {
+    Object.assign(revealjsConfig, { "disableLayout": true,
       "controls": true,
       "progress": true,
       "hash": true,

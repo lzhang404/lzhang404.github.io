@@ -4,10 +4,9 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-  <title>Grammars, Parsing &amp; ASTs</title>
+<title>Grammars, Parsing &amp; ASTs</title>
 
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -18,7 +17,6 @@
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2, user-scalable=yes">
 </head>
 
 <body>
@@ -30,7 +28,7 @@
       ========================================================== -->
       <section>
         <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
-          data-background-position="top center" data-background-repeat="no-repeat">
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
           <h1>Grammars, Parsing &amp; ASTs</h1>
           <div class="subtitle docutils container">
             <p><strong>Module 3</strong></p>
@@ -43,8 +41,8 @@
            Section 1: Big picture and grammar motivation
       ========================================================== -->
       <section>
-        <section>
-          <h2>Big picture and grammar motivation</h2>
+        <section  class="title-slide slide level1">
+          <h1>Big picture and grammar motivation</h1>
         </section>
 
         <section>
@@ -346,8 +344,8 @@ LPAREN("(")  IDENT(y)    PLUS("+")  NUMBER(3)  RPAREN(")")</code></pre>
            Section 2: Grammar notation: BNF, EBNF, derivations
       ========================================================== -->
       <section>
-        <section>
-          <h2>Grammar notation: BNF, EBNF, and derivations</h2>
+        <section class="title-slide">
+          <h1>Grammar notation: BNF, EBNF, and derivations</h1>
         </section>
 
         <section>
@@ -494,8 +492,8 @@ Factor -&gt; &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
            Section 3: Parse trees and ambiguity
       ========================================================== -->
       <section>
-        <section>
-          <h2>Parse trees and ambiguity</h2>
+        <section  class="title-slide slide level1">
+          <h1>Parse trees and ambiguity</h1>
         </section>
 
         <section>
@@ -553,7 +551,7 @@ Factor -&gt; &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
           <img
             src = "../_static/images/parse_tree1.png"
             alt = "A example parse tree for NUM + NUM * NUM"
-            style="display:block; margin: 0.6em auto; max-width: 85%; max-height: 400px; height:auto;"
+            style="display:block; margin: 0.6em auto; max-width: 30%; max-height: 30%; height:auto;"
           >
         </section>
 
@@ -595,12 +593,12 @@ Factor -&gt; &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
             <div style="display:flex; gap:16px; align-items:center; justify-content:center;">
               <figure style="flex:1; margin:0;">
                 <img src="../_static/images/ambiguous_parse_tree1.png" alt="Parse tree for (NUM + NUM) * NUM"
-                    style="width:100%; height:auto; max-height:420px; object-fit:contain;">
+                    style="width:auto; max-width:80%; height:auto; max-height:30%; object-fit:contain;">
               </figure>
 
               <figure style="flex:1; margin:0;">
                 <img src="../_static/images/ambigous_parse_tree2.png" alt="Parse tree for NUM + (NUM * NUM)"
-                    style="width:100%; height:auto; max-height:420px; object-fit:contain;">
+                    style="width:auto; max-width:80%; height:auto; max-height:30%; object-fit:contain;">
               </figure>
             </div>
 
@@ -715,8 +713,8 @@ ConditionalExpression
            Section 4: ASTs and their role
       ========================================================== -->
       <section>
-        <section>
-          <h2>ASTs and their role</h2>
+        <section  class="title-slide slide level1">
+          <h1>ASTs and their role</h1>
         </section>
 
         <section>
@@ -891,8 +889,8 @@ ConditionalExpression
            Section 5: Parsing strategies
       ========================================================== -->
       <section>
-        <section>
-          <h2>Parsing strategies: top-down and bottom-up</h2>
+        <section  class="title-slide slide level1">
+          <h1>Parsing strategies: top-down and bottom-up</h1>
         </section>
 
         <section>
@@ -996,8 +994,8 @@ ConditionalExpression
            Section 6: Recursive descent and expression grammar design
       ========================================================== -->
       <section>
-        <section>
-          <h2>Recursive descent and expression grammar design</h2>
+        <section  class="title-slide slide level1">
+          <h1>Recursive descent and expression grammar design</h1>
         </section>
 
         <section>
@@ -1274,12 +1272,9 @@ class Parser {
 </code></pre>
         </section>
 
-
-
         <section>
           <h2>Parsing Factors</h2>
-          <p>Grammar:</p>
-          <pre><code data-trim data-noescape class="language-text">Factor ::= &quot;(&quot; Expr &quot;)&quot; | NUM</code></pre>
+          <p>Grammar: $Factor ::= "(" Expr ")" | NUM$</p>
           <pre><code data-trim data-noescape class="language-typescript">parseFactor(): ExprNode {
   const tok = this.current();
   // "(" Expr ")"
@@ -1437,12 +1432,53 @@ console.log(JSON.stringify(ast, null, 2));</code></pre>
            Section 7: Bottom-up parsing and parser generators
       ========================================================== -->
       <section>
-        <section>
-          <h2>Bottom-up parsing and parser generators</h2>
+        <section  class="title-slide slide level1">
+          <h1>Bottom-up parsing and parser generators</h1>
+        </section>
+                <section>
+          <h2>Bottom-up parsing: shift-reduce idea (1)</h2>
+          <p>Bottom-up parsers:</p>
+          <ul class="simple">
+            <li>
+              <p>build the parse tree from the leaves up toward the root</p>
+            </li>
+            <li>
+              <p>most common family: LR parsers (including LALR)</p>
+            </li>
+            <li>
+              <p>key mechanism: shift-reduce algorithm</p>
+            </li>
+          </ul>
+          <p>Shift-reduce algorithm (very high level):</p>
+          <ul class="simple">
+            <li>
+              <p>maintain:</p>
+              <ul>
+                <li>
+                  <p>a stack of grammar symbols and parser states</p>
+                </li>
+                <li>
+                  <p>the remaining input tokens</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>two main actions:</p>
+              <ul>
+                <li>
+                  <p>shift: move the next input token onto the stack</p>
+                </li>
+                <li>
+                  <p>reduce: when the top of the stack matches the right-hand side of a production (a handle), replace
+                    it by the left-hand side nonterminal</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
         </section>
 
         <section>
-          <h2>Bottom-up parsing: shift-reduce idea</h2>
+          <h2>Bottom-up parsing: shift-reduce idea (2)</h2>
           <p>Bottom-up parsers:</p>
           <ul class="simple">
             <li>
@@ -1823,9 +1859,7 @@ WS     : [ \t\r\n]+ -&gt; skip ;</code></pre>
 
 <script>
     var revealjsConfig = new Object();
-    Object.assign(revealjsConfig, { "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 800, "height": 540 });
-
-
+    Object.assign(revealjsConfig, { "disableLayout": true, "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 800, "height": 540 });
 
     revealjsConfig.plugins = [
       RevealNotes, RevealHighlight, RevealMath,
