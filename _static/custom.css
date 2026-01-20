@@ -72,8 +72,14 @@ html.reveal-full-page {
   -webkit-overflow-scrolling: touch; }
 
 .reveal .slides section {
+  text-align: left;
   padding-left: 1rem; 
-  padding-top:  1rem;}
+  padding-top:  1rem;
+  padding-right: 2rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;    
+}
 
 .reveal .slides section.title-slide {
   padding-left: 0; }
@@ -121,10 +127,6 @@ html.reveal-full-page {
   text-align: left; 
   padding-top: 0.5em;
   padding-bottom: 0.5em}
-
-/* Keep section (level-1) title slides centered while other slides are left aligned. */
-.reveal .slides section {
-  text-align: left; }
 
 .reveal .slides > section.title-slide,
 .reveal .slides > section > section.title-slide {
@@ -223,7 +225,7 @@ html.reveal-full-page {
 .reveal ul {
   display: block;
   text-align: left;
-  margin: 0 0 0 1.5em;
+  margin: 0 0 0 1em;
   overflow-wrap: anywhere;
   word-break: break-word;
   white-space: normal; }
@@ -278,7 +280,7 @@ html.reveal-full-page {
 .reveal pre {
   display:inline-block;
   position: relative;
-  width: 50%;
+  width: 90%;
   margin: var(--r-block-margin) auto;
   text-align: left;
   font-size: 0.8em;
@@ -294,7 +296,7 @@ html.reveal-full-page {
 
 .reveal pre code {
   display: block;
-  padding: 1em 2em 1em 2em;
+  padding: 1em 1em 1em 1em;
   overflow: auto;
   max-height: 500px;
   word-wrap: normal; }
@@ -461,7 +463,7 @@ html.reveal-full-page {
   padding-bottom: 0.5vh; }
 
 .reveal li {
-  font-size: 90%; }
+  font-size: 95%; }
 
 .reveal ul ul,
 .reveal ul ol,
@@ -486,7 +488,7 @@ html.reveal-full-page {
   --cols: 5;
   --mem-scale: 1;              /* scales text + padding */
   --mem-maxh: 380px;           /* vertical scroll threshold */
-  --mem-sidew: 110px;          /* left label width */
+  --mem-sidew: 160px;          /* left label width */
   width: var(--mem-card-w, 92%);  
   margin-top: 0.5rem;
   padding: calc(0.50rem * var(--mem-scale)) calc(0.55rem * var(--mem-scale));
@@ -513,7 +515,8 @@ html.reveal-full-page {
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
   padding-bottom: 2px;
-    overflow-x: auto;
+  padding-bottom: 10x;
+  overflow-x: auto;
  
   -webkit-overflow-scrolling: touch;
 
@@ -553,14 +556,15 @@ html.reveal-full-page {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: calc(0.70rem * var(--mem-scale));
+  padding-right: calc(0.30rem * var(--mem-scale));
+  padding-left: calc(0.50rem * var(--mem-scale));
   font-weight: 700;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .mem-cell{
   border: 2px solid rgba(0,0,0,0.35);
-  padding: calc(0.35rem * var(--mem-scale)) calc(0.25rem * var(--mem-scale));
+  padding: calc(0.25rem * var(--mem-scale)) calc(0.25rem * var(--mem-scale));
   text-align: center;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;            /* prevents overlap */

@@ -186,15 +186,6 @@
             Use this picture to explain collisions: stack overflow, out-of-memory, or stack/heap meeting.
           </p>
         </section>
-      </section>
-
-      <!-- =========================================================
-           Section: Stack
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Stack</h1>
-        </section>
 
         <section class="frame">
           <h2>Stack memory management</h2>
@@ -203,18 +194,13 @@
             <li><p>The runtime maintains a call stack</p></li>
             <li><p>Stores local variables and function parameters</p></li>
             <li><p>Automatically managed: allocation and deallocation happen for you</p></li>
+            <li><p>Stack overflow happens when the stack cannot grow further.</p></li>
+            <ul>
+              <li><p>Infinite recursion (no base case)</p></li>
+              <li><p>Huge local arrays on the stack</p></li>
+              <li>Deep recursion with large stack frames</li>
+            </ul>
           </ul>
-          <p class="small-note">Stack overflow happens when the stack cannot grow further.</p>
-        </section>
-
-        <section class="frame">
-          <h2>Stack overflow: common causes</h2>
-          <ul>
-            <li><p>Infinite recursion (no base case)</p></li>
-            <li><p>Huge local arrays on the stack</p></li>
-            <li><p>Deep recursion with large stack frames</p></li>
-          </ul>
-          <p class="small-note">Recursion details are discussed in the recursion lecture, but this is the key failure mode.</p>
         </section>
 
         <!-- Practice 1 -->
@@ -223,7 +209,8 @@
           <p>Predict what can go wrong.</p>
 
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int f(int n) {
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">
+int f(int n) {
   int big[1000000];
   if (n <= 0) return 0;
   return big[0] + f(n - 1);
@@ -253,14 +240,101 @@ int main() {
         </section>
       </section>
 
+
       <!-- =========================================================
-           Section: Heap
+           Section: Pointers
            ========================================================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Heap</h1>
+          <h1>Pointers</h1>
         </section>
 
+        <section class="frame">
+          <h2>Pointer definition</h2>
+
+          <div style="display:flex; gap: 1.2rem; align-items:flex-start;">
+            <!-- Left: text -->
+            <div style="flex: 1 1 50%; min-width: 300px;">
+              <p>A pointer is a variable that stores an address of an object of some type.</p>
+
+              <ul>
+                <li><p>The pointee is the object that lives at that address</p></li>
+                <li><p>The pointer variable itself also has an address</p></li>
+                <li>
+                  <p>Use cases:</p>
+                  <ul>
+                    <li><p>dynamic-size data</p></li>
+                    <li><p>share data without copying</p></li>
+                    <li><p>build linked structures</p></li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Right: image -->
+            <div style="flex: 1 1 50%; min-width: 260px;">
+              <img
+                src="../_static/images/pointer.png"
+                alt="An example of pointer value and address"
+                style="width:100%; height:auto; display:block; margin-top:0.2rem;"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Pointer basic syntax</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int x = 22;
+int* ptr = &x;   // ptr stores address of x
+*ptr = 30;       // dereference: modify x through ptr</code></pre>
+
+          <ul>
+            <li><code>*</code> is called the dereference operator. It gives us access to the value stored at the memory address ptr is pointing to </li>
+            <li><p>Rule: never dereference a pointer until you know it is valid.</p></li>
+          </ul>
+          <p>Initialize pointers to <code class="inline">nullptr</code> to mean no object.</p>
+          <ul>
+            <li><p>Checking before dereference can prevent crashes</p></li>
+            <li><p><code class="inline">delete</code> and <code class="inline">delete[]</code> on <code class="inline">nullptr</code> does nothing</p></li>
+          </ul>
+          <p>Example: m03-mem-management/pointer.cpp</p>
+        </section>
+
+
+        <!-- Practice 3 -->
+        <section class="frame">
+          <h2>Practice 3: nullptr crash</h2>
+          <p>What happens, and how do you fix it?</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int main() {
+  int* p = nullptr;
+  *p = 5;
+}</code></pre>
+        <p>Example: m03-mem-management/nullptr-crash.cpp</p>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 3 Answer</h2>
+          <ul>
+            <li><p>Dereferencing <code class="inline">nullptr</code> crashes (undefined behavior).</p></li>
+            <li><p>Fix: point to a real object before dereference.</p></li>
+          </ul>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int main() {
+  int x = 0;
+  int* p = &x;
+  *p = 5;
+}</code></pre>
+        </section>
+      </section>
+
+
+      <!--
+      Section: Heap Memory Manegment
+      -->
+      <section>
         <section class="frame">
           <h2>Heap memory management</h2>
           <ul>
@@ -351,95 +425,6 @@ int main() {
         </section>
       </section>
 
-      <!-- =========================================================
-           Section: Pointers
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Pointers</h1>
-        </section>
-
-<section class="frame">
-  <h2>Pointer definition</h2>
-
-  <div style="display:flex; gap: 1.2rem; align-items:flex-start;">
-    <!-- Left: text -->
-    <div style="flex: 1 1 50%; min-width: 300px;">
-      <p>A pointer is a variable that stores an address of an object of some type.</p>
-
-      <ul>
-        <li><p>The pointee is the object that lives at that address</p></li>
-        <li><p>The pointer variable itself also has an address</p></li>
-        <li>
-          <p>Use cases:</p>
-          <ul>
-            <li><p>dynamic-size data</p></li>
-            <li><p>share data without copying</p></li>
-            <li><p>build linked structures</p></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Right: image -->
-    <div style="flex: 1 1 50%; min-width: 260px;">
-      <img
-        src="../_static/images/pointer.png"
-        alt="An example of pointer value and address"
-        style="width:100%; height:auto; display:block; margin-top:0.2rem;"
-      />
-    </div>
-  </div>
-</section>
-
-        <section class="frame">
-          <h2>Pointer basic syntax</h2>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int x = 22;
-int* ptr = &x;   // ptr stores address of x
-*ptr = 30;       // dereference: modify x through ptr</code></pre>
-
-          <ul>
-            <li><code>*</code> is called the dereference operator. It gives us access to the value stored at the memory address ptr is pointing to </li>
-            <li><p>Rule: never dereference a pointer until you know it is valid.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Null pointer</h2>
-          <p>Initialize pointers to <code class="inline">nullptr</code> to mean no object.</p>
-          <ul>
-            <li><p>Checking before dereference can prevent crashes</p></li>
-            <li><p><code class="inline">delete</code> and <code class="inline">delete[]</code> on <code class="inline">nullptr</code> does nothing</p></li>
-          </ul>
-        </section>
-
-        <!-- Practice 3 -->
-        <section class="frame">
-          <h2>Practice 3: nullptr crash</h2>
-          <p>What happens, and how do you fix it?</p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int main() {
-  int* p = nullptr;
-  *p = 5;
-}</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Practice 3 Answer</h2>
-          <ul>
-            <li><p>Dereferencing <code class="inline">nullptr</code> crashes (undefined behavior).</p></li>
-            <li><p>Fix: point to a real object before dereference.</p></li>
-          </ul>
-
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int main() {
-  int x = 0;
-  int* p = &x;
-  *p = 5;
-}</code></pre>
-        </section>
-      </section>
 
       <!-- =========================================================
            Section: Dynamic 1D Arrays
@@ -491,6 +476,7 @@ public:
   State(const string& n) : name(n) {}
   string getName() const { return name; }
 };</code></pre>
+        <p>Example: array-1D.cpp</p>
         </section>
 
         <section class="frame">
@@ -701,9 +687,10 @@ cout << mat[1][2] << "\n";</code></pre>
             <li><p>One block is contiguous overall</p></li>
             <li><p>Pointer-to-pointer is not contiguous overall</p></li>
           </ul>
+          <li><p>Example: array-2D.cpp</p></li>
           </section>
 
-    <section class="frame">
+        <section class="frame">
           <h2>Heap 2D as one contiguous block</h2>
           <p>Manual indexing: <code class="inline">index = r * COLS + c</code></p>
 
@@ -763,7 +750,7 @@ block = nullptr;</code></pre>
   </div>
 </div>
 
-</section>
+        </section>
 
         <section class="frame">
           <h2>Heap 2D via pointer-to-pointer</h2>
@@ -969,19 +956,18 @@ int main() {
 
           <div class="two-col">
             <div>
-              <p><strong>Reference</strong></p>
+              <p><strong>Reference &</strong></p>
               <ul>
                 <li><p>Alias for another variable</p></li>
                 <li><p>Must bind to something at creation</p></li>
-                <li><p>Cannot be <code class="inline">nullptr</code></p></li>
-                <li><p>Cannot be reseated later</p></li>
+                <li><p>Cannot be <code class="inline">nullptr</code>. Cannot be reseated later</p></li>
+
               </ul>
             </div>
             <div>
-              <p><strong>Pointer</strong></p>
+              <p><strong>Pointer * </strong></p>
               <ul>
-                <li><p>Stores an address</p></li>
-                <li><p>Can be <code class="inline">nullptr</code></p></li>
+                <li><p>Stores an address. Can be <code class="inline">nullptr</code></p></li>
                 <li><p>Can be reseated to point elsewhere</p></li>
                 <li><p>Requires dereference to access the pointed value</p></li>
               </ul>
@@ -989,6 +975,32 @@ int main() {
           </div>
         </section>
 
+        <section class = "frame">
+          <h2> Two meanings of &</h2>
+          <ul>
+            <li><p>Address of operator (used in expressions): Type of &x is int*
+</p></li>
+            <li><p>Reference declaration (used in variable declaration): <code class="inline">int& </code>means “reference to int”
+ </p></li>
+          </ul>
+        <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">
+int x = 10;
+// ref is another name for x
+// int& means “reference to int”
+int& ref = x; 
+//ref = b doesn’t reseat ref 
+ref = 20; // changes x too
+cout << x; // prints 20
+
+int a = 10;
+// ptr stores address of x
+int* ptr = &a; 
+*ptr = 20; // changes x too
+cout << a; // prints 20
+ptr = &x; // reseated</code></pre>
+
+        </section>
         <section class="frame">
           <h2>Example: swap with pointers vs references</h2>
 
@@ -1007,6 +1019,7 @@ int main() {
   a = b;
   b = tmp;
 }</code></pre>
+<p>Example: ref-vs-ptr-params.cpp</p>
         </section>
 
         <!-- Practice 5 -->
@@ -1043,15 +1056,12 @@ int main() {
             <li><p>pointer field: address of dynamic array</p></li>
             <li><p>size field: number of elements currently stored</p></li>
             <li><p>capacity field: total elements that can fit before growing</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Growth strategy</h2>
-          <ul>
-            <li><p>Expanding by +1 each time is expensive</p></li>
-            <li><p>Common approach: double capacity when full</p></li>
-            <li><p>This gives amortized constant-time <code class="inline">push_back</code> behavior</p></li>
+            <li><p>Growth Strategy</p></li>
+            <ul>
+              <li><p>Expanding by +1 each time is expensive</p></li>
+              <li><p>Common approach: double capacity when full</p></li>
+              <li><p>This gives amortized constant-time <code class="inline">push_back</code> behavior</p></li>
+            </ul>
           </ul>
         </section>
 
@@ -1095,7 +1105,8 @@ public:
             <li><p>Two objects now share one heap block</p></li>
             <li><p>Destructor runs twice on same block</p></li>
           </ul>
-          <p class="small-note">Result: double delete crash and shared-state surprises.</p>
+          <p>Result: double delete crash and shared-state surprises.</p>
+          <p>Example: shallow-copy.cpp</p>
         </section>
 
         <!-- Practice 6 -->
@@ -1202,29 +1213,6 @@ public:
     return *this;
   }
 };</code></pre>
-        </section>
-
-        <!-- Practice 7 -->
-        <section class="frame">
-          <h2>Practice 7: spot the self-assignment bug</h2>
-          <p>Find the bug.</p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List& operator=(const List& other) {
-  if (this == *other) return *this;
-  delete[] arr;
-  size = other.size;
-  arr = new int[size];
-  for (int i = 0; i < size; i++) arr[i] = other.arr[i];
-  return *this;
-}</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Practice 7 Answer</h2>
-          <p>The self-assignment check is wrong: it compares a pointer to an object value.</p>
-          <p><strong>Correct check:</strong></p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">if (this == &other) return *this;</code></pre>
         </section>
       </section>
 

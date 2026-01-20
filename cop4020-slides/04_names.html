@@ -2,10 +2,9 @@
 <html lang="en" data-content_root="../">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-  <title>Names, Bindings, Scope, and Lifetime</title>
+<title>Names, Bindings, Scope, and Lifetime</title>
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
@@ -15,7 +14,6 @@
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes>
 </head>
 
 <body>
@@ -28,7 +26,7 @@
                  data-background-image="../_static/logo.png"
                  data-background-size="50%"
                  data-background-position="top center"
-                 data-background-repeat="no-repeat">
+                 data-background-repeat="no-repeat" class="title-slide">
           <h1>Names, Bindings, Scope, and Lifetime</h1>
           <div class="subtitle docutils container">
             <p><strong>Module 4</strong></p>
@@ -83,6 +81,7 @@
             <li><p>A memory location is a place in memory, such as an address or offset, that can hold a value.</p></li>
           </ul>
           <p>Programmers mostly see names, the machine mostly sees addresses. A language needs rules to connect these two worlds.</p>
+          <p>ts_aliasing.ts</p>
         </section>
 
         <section id="names-design-issues-in-languages" class="frame">
@@ -426,6 +425,7 @@ outer();</code></pre>
             <li><p>The global x is hidden inside inner by the inner x.</p></li>
           </ul>
           <p>The meaning of inner is determined completely by the surrounding code, not by who calls outer or inner.</p>
+          <p>ts_static_scope.ts</p>
         </section>
 
         <section id="block-scope-and-shadowing-in-c" class="frame">
@@ -509,6 +509,7 @@ g();</code></pre>
             <li><p>global: assign to a name in the module scope</p></li>
             <li><p>nonlocal: assign to a name in an enclosing (but not global) function scope</p></li>
           </ul>
+          <p>py_legb.py</p>
         </section>
 
         <section id="python-legb-rule-in-a-small-example" class="frame">
@@ -689,6 +690,7 @@ int main(void) {
             <li><p>Forgetting to free heap memory in leak causes a memory leak, where allocated storage is never reclaimed.</p></li>
             <li><p>Lifetime errors are a major source of bugs in low level languages with manual memory management.</p></li>
           </ul>
+          <p>c_dangling.c</p>
         </section>
 
         <section id="stack-and-heap-mental-model" class="frame">
@@ -726,6 +728,7 @@ console.log(add10(20));  // 30</code></pre>
             <li><p>Even after makeAdder has returned, n is kept alive because add10 still uses it.</p></li>
             <li><p>The lifetime of n is therefore tied to the lifetime of the closure, not to the stack frame of makeAdder.</p></li>
           </ul>
+          <p>ts_closure_lifetime.ts</p>
         </section>
 
         <section id="lifetime-in-c-versus-garbage-collected-languages" class="frame">
@@ -836,6 +839,7 @@ def add_to_acc(x):
             <li><p>add_to_acc(x) reads and updates the global variable acc. The result depends on how many times you have called it before.</p></li>
             <li><p>If you see the call add_to_acc(3) in a large program, you cannot know its result without knowing the entire history of acc.</p></li>
           </ul>
+          <p>py_pure_impure.py</p>
         </section>
 
         <section id="side-effects-and-hidden-state-in-typescript" class="frame">
@@ -935,6 +939,7 @@ def add(values):
             <li><p>The code compiles or runs, but it does not update the intended accumulation variable.</p></li>
             <li><p>Many teams use linters that warn when a local variable shadows a name from an outer scope, to avoid these mistakes.</p></li>
           </ul>
+          <p>ts_shadow.ts</p>
         </section>
 
         <section id="hoisting-with-var-in-javascript-or-typescript" class="frame">
@@ -957,6 +962,7 @@ data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabs
             <li><p>The variable exists from the start of the function but has value undefined until the assignment line.</p></li>
             <li><p>This can hide bugs because reading msg before the assignment does not cause an immediate error.</p></li>
           </ul>
+          <p>ts_hoist.ts</p>
         </section>
 
         <section id="summary-of-var-let-and-const" class="frame">
@@ -1020,6 +1026,7 @@ data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-ta
             <li><p>Variables declared with let can be reassigned after they are initialized.</p></li>
             <li><p>Variables declared with const cannot be reassigned to a new value.</p></li>
           </ul>
+          <p>ts_tdz.ts</p>
         </section>
 
         <section id="block-scope-in-loops-let" class="frame">
@@ -1146,7 +1153,8 @@ function B() {
 <script>
     var revealjsConfig = new Object();
     Object.assign(revealjsConfig, 
-    { "controls": true, 
+    { "disableLayout": true,
+    "controls": true, 
     "progress": true, 
     "hash": true, 
     "center": true, 
