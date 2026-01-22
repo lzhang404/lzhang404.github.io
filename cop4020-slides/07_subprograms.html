@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+<title>Subprograms, Parameters, and Closures</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Subprograms, Parameters, and Closures</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Module 7</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="slide level2">
+
+        <section id="overview" class="frame">
+          <h2>Overview</h2>
+          <ul>
+            <li>
+              <p>Subprograms: procedures vs functions</p>
+            </li>
+            <li>
+              <p>First-class vs second-class functions</p>
+            </li>
+            <li>
+              <p>Parameter passing models and common language behaviors</p>
+            </li>
+            <li>
+              <p>Defaults, named arguments, and API design</p>
+            </li>
+            <li>
+              <p>Closures: lexical environments and variable capture</p>
+            </li>
+            <li>
+              <p>Higher-order functions: callbacks and lambdas</p>
+            </li>
+            <li>
+              <p>Industry angle: callback hell vs async/await; closures in UI and
+                React</p>
+            </li>
+          </ul>
+        </section>
+        <section id="learning-goals" class="frame">
+          <h2>Learning goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li>
+              <p>Distinguish procedures from functions and explain why the
+                distinction matters</p>
+            </li>
+            <li>
+              <p>Identify first-class function features and compare TypeScript,
+                Java, Python support</p>
+            </li>
+            <li>
+              <p>Predict effects of different parameter passing
+                strategies</p>
+            </li>
+            <li>
+              <p>Use default parameters and named arguments to design readable
+                APIs</p>
+            </li>
+            <li>
+              <p>Explain what a closure is and what it means to capture a
+                variable</p>
+            </li>
+            <li>
+              <p>Diagnose common closure bugs (loop capture, stale state) and
+                apply fixes</p>
+            </li>
+            <li>
+              <p>Refactor callback-based async code into async/await with correct
+                error handling</p>
+            </li>
+          </ul>
+        </section>
+        <section id="core-idea-subprograms-as-reusable-behavior" class="frame">
+          <h2>Core idea: subprograms as reusable behavior</h2>
+          <p>A subprogram is a named unit of executable code that can be
+            invoked.</p>
+          <p>Common reasons to use subprograms</p>
+          <ul>
+            <li>
+              <p>Abstraction: hide details behind a simple interface</p>
+            </li>
+            <li>
+              <p>Reuse: call the same logic from many places</p>
+            </li>
+            <li>
+              <p>Testability: isolate logic to test it independently</p>
+            </li>
+            <li>
+              <p>Composition: build larger behavior from smaller pieces</p>
+            </li>
+          </ul>
+          <p>In practice, subprograms include functions, procedures, methods,
+            constructors, lambdas, and callbacks.</p>
+        </section>
+      </section>
+      <section>
+        <section id="procedures-and-functions" class="title-slide slide level1">
+          <h1>Procedures and Functions</h1>
+
+        </section>
+        <section id="procedures-and-functions-1" class="frame">
+          <h2>Procedures and Functions</h2>
+        </section>
+        <section id="procedures-vs-functions" class="frame">
+          <h2>Procedures vs functions</h2>
+          <p>Procedure</p>
+          <ul>
+            <li>
+              <p>Emphasizes performing an action</p>
+            </li>
+            <li>
+              <p>May not return a meaningful value</p>
+            </li>
+            <li>
+              <p>Often used for I/O, logging, mutation of state</p>
+            </li>
+          </ul>
+          <p>Function</p>
+          <ul>
+            <li>
+              <p>Emphasizes computing and returning a value</p>
+            </li>
+            <li>
+              <p>Ideally depends only on inputs (pure), but real code may still
+                have side effects</p>
+            </li>
+          </ul>
+          <p>In many modern languages, the syntax does not enforce a strict
+            separation, so the distinction is about design intent.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function logUserLogin(userId: string): void {
+  console.log(&quot;login&quot;, userId); // procedure-like
+}
+
+function computeDiscount(price: number, rate: number): number {
+  return price * (1 - rate); // function-like
+}</code></pre>
+<p>npx ts-node ts_procedure_vs_function.ts</p>
+        </section>
+        <section id="why-the-difference-matters-in-practice" class="frame">
+          <h2>Why the difference matters in practice</h2>
+          <p>When you mix side effects into computations, you make code harder to
+            test and reason about.</p>
+          <p>Typical symptoms</p>
+          <ul>
+            <li>
+              <p>A function sometimes returns a value, sometimes prints or mutates
+                global state</p>
+            </li>
+            <li>
+              <p>Hidden dependencies (reads global variables, reads time, reads
+                random)</p>
+            </li>
+            <li>
+              <p>Unclear call order changes results</p>
+            </li>
+          </ul>
+          <p>A common refactor is to separate computation from effects.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function computeTotal(items: number[]): number {
+  return items.reduce((sum, x) =&gt; sum + x, 0);
+}
+function printReceipt(total: number): void {
+  console.log(&quot;Total:&quot;, total);
+}
+const total = computeTotal([10, 20, 5]);
+printReceipt(total);</code></pre>
+        </section>
+        <section id="java-viewpoint-methods-that-return-vs-void-methods" class="frame">
+          <h2>Java viewpoint: methods that return vs void methods</h2>
+          <p>Java uses methods for both procedure-like and function-like
+            behavior.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-java">class Cart {
+  private int totalCents = 0;
+
+  void addItem(int priceCents) {   // procedure-like
+    totalCents += priceCents;
+  }
+
+  int getTotalCents() {            // function-like
+    return totalCents;
+  }
+}</code></pre>
+          <p>Design guideline</p>
+          <ul>
+            <li>
+              <p>Use void methods for state change and I/O</p>
+            </li>
+            <li>
+              <p>Use returning methods for query-like operations</p>
+            </li>
+          </ul>
+        </section>
+        <section id="python-viewpoint-everything-is-an-object-but-intent-still-matters" class="frame">
+          <h2>Python viewpoint: everything is an object, but intent still
+            matters</h2>
+          <p>Python does not require a separate procedure construct. Returning
+            None is common for procedure-like functions.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def add_item(cart, price_cents):
+  cart[&quot;total&quot;] += price_cents  # procedure-like mutation
+    # implicit return None
+
+def total_cents(cart):
+  return cart[&quot;total&quot;]          # function-like query
+
+cart = {&quot;total&quot;: 0}
+add_item(cart, 199)
+print(total_cents(cart))</code></pre>
+        </section>
+      </section>
+      <section>
+        <section id="first-class-functions" class="title-slide slide level1">
+          <h1>First-Class Functions</h1>
+
+        </section>
+        <section id="first-class-functions-1" class="frame">
+          <h2>First-Class Functions</h2>
+        </section>
+        <section id="first-class-vs-second-class-functions" class="frame">
+          <h2>First-class vs second-class functions</h2>
+          <ul>
+            <li>
+              <p>First-class function means a function can be used like a
+                value.</p>
+            </li>
+            <li>
+              <p>Typical capabilities</p>
+              <ul>
+                <li>
+                  <p>Assign to variables</p>
+                </li>
+                <li>
+                  <p>Pass as arguments</p>
+                </li>
+                <li>
+                  <p>Return from other functions</p>
+                </li>
+                <li>
+                  <p>Store in data structures</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Second-class function usually means some of those are restricted,
+                or require special wrappers.</p>
+            </li>
+            <li>
+              <p>This matters because many patterns in modern software rely on
+                passing behavior around: callbacks, middleware, event handlers, and
+                functional pipelines.</p>
+            </li>
+          </ul>
+        </section>
+        <section id="lambda" class="frame">
+          <h2>lambda</h2>
+          <p>Lambda</p>
+          <ul>
+            <li>
+              <p>An anonymous function written inline without a name</p>
+            </li>
+            <li>
+              <p>Used when a function is needed as a value (pass it, store it,
+                return it)</p>
+            </li>
+            <li>
+              <p>Often short; can capture variables from surrounding scope
+                (closure)</p>
+            </li>
+          </ul>
+          <p>Same idea in three languages:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-plaintext">TypeScript: (x) =&gt; x * 2
+Python:     lambda x: x * 2
+Java:       x -&gt; x * 2</code></pre>
+          <p>Compare to a named function:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function twice(x: number): number { return x * 2; }
+const twice2 = (x: number) =&gt; x * 2;</code></pre>
+          <p>Both represent a function value; the lambda is just the unnamed
+            form.</p>
+        </section>
+        <section id="typescript-functions-are-first-class" class="frame">
+          <h2>TypeScript: functions are first-class</h2>
+          <p>In TypeScript, functions are values with types.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type Combiner = (a: number, b: number) =&gt; number;
+
+const add: Combiner = (a, b) =&gt; a + b;
+const mul: Combiner = (a, b) =&gt; a * b;
+
+function apply(a: number, b: number, op: Combiner): number {
+  return op(a, b);
+}
+
+console.log(apply(2, 3, add));
+console.log(apply(2, 3, mul));</code></pre>
+        </section>
+        <section id="java-functions-via-interfaces-and-lambdas" class="frame">
+          <h2>Java: functions via interfaces and lambdas</h2>
+          <p>Java historically emphasized methods, but modern Java supports
+            lambdas targeting functional interfaces.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-java">import java.util.function.IntBinaryOperator;
+class Demo {
+  static int apply(int a, int b, IntBinaryOperator op) {
+    return op.applyAsInt(a, b);
+  }
+  public static void main(String[] args) {
+    IntBinaryOperator add = (x, y) -&gt; x + y;
+    IntBinaryOperator mul = (x, y) -&gt; x * y;
+
+    System.out.println(apply(2, 3, add));
+    System.out.println(apply(2, 3, mul));
+  }
+}</code></pre>
+          <p>The function value is represented through an object that implements
+            an interface.</p>
+            <p>npx ts-node ts_first_class_apply.ts</p>
+        </section>
+        <section id="cost-model-why-some-languages-needed-wrappers" class="frame">
+          <h2>Cost model: why some languages needed wrappers</h2>
+          <ul>
+            <li>
+              <p>In languages designed before first-class functions were common,
+                subprograms were not naturally values.</p>
+            </li>
+            <li>
+              <p>A common workaround pattern</p>
+              <ul>
+                <li>
+                  <p>Define an interface with one method</p>
+                </li>
+                <li>
+                  <p>Pass objects implementing that interface</p>
+                </li>
+                <li>
+                  <p>Later add lambda syntax as shorthand</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Consequence</p>
+              <ul>
+                <li>
+                  <p>Extra types and boilerplate compared to languages that treat
+                    functions as direct values</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </section>
+      <section>
+        <section id="parameters-and-argument-passing" class="title-slide slide level1">
+          <h1>Parameters and Argument Passing</h1>
+
+        </section>
+        <section id="parameters-and-argument-passing-1" class="frame">
+          <h2>Parameters and Argument Passing</h2>
+        </section>
+        <section id="parameter-passing-models" class="frame">
+          <h2>Parameter passing models</h2>
+          <ul>
+            <li>
+              <p>Parameter passing describes how the arguments at the call site
+                relate to the parameters in the callee.</p>
+            </li>
+            <li>
+              <p>Common models (conceptual)</p>
+              <ul>
+                <li>
+                  <p>Pass-by-value: copy the value into the parameter</p>
+                </li>
+                <li>
+                  <p>Pass-by-reference: parameter aliases the caller’s
+                    variable</p>
+                </li>
+                <li>
+                  <p>Pass-by-result (out): parameter writes back to caller on
+                    return</p>
+                </li>
+                <li>
+                  <p>Pass-by-value-result (inout): copy in on call, copy back on
+                    return</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Real languages often implement combinations, and object
+                references complicate intuition.</p>
+            </li>
+          </ul>
+        </section>
+        <section id="typescript-primitives-vs-objects-at-the-call-boundary" class="frame">
+          <h2>TypeScript: primitives vs objects at the call boundary</h2>
+          <ul>
+            <li>
+              <p>TypeScript (JavaScript runtime) passes argument values.</p>
+            </li>
+            <li>
+              <p>Key detail</p>
+              <ul>
+                <li>
+                  <p>For primitives, the value is the primitive itself</p>
+                </li>
+                <li>
+                  <p>For objects, the value is a reference to the object</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function bump(n: number): void {
+  n = n + 1;
+}
+function rename(user: { name: string }): void {
+  user.name = &quot;new&quot;;
+}
+let x = 10;
+bump(x);
+console.log(x); // still 10
+let u = { name: &quot;old&quot; };
+rename(u);
+console.log(u.name); // &quot;new&quot;</code></pre>
+<p>npx ts-node ts_param.ts</p>
+        </section>
+        <section id="how-to-describe-this-precisely" class="frame">
+          <h2>How to describe this precisely</h2>
+          <ul>
+            <li>
+              <p>A precise explanation that avoids confusion</p>
+              <ul>
+                <li>
+                  <p>The argument expression is evaluated to a value</p>
+                </li>
+                <li>
+                  <p>That value is assigned to the parameter variable</p>
+                </li>
+                <li>
+                  <p>Reassigning the parameter does not affect the caller
+                    variable</p>
+                </li>
+                <li>
+                  <p>Mutating through an object reference affects the shared
+                    object</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Many programmers call this pass-by-sharing or
+                call-by-object-sharing to highlight that references are shared, but
+                variables are not aliased.</p>
+            </li>
+          </ul>
+        </section>
+        <section id="practice-1-predict-the-output-typescript" class="frame">
+          <h2>Practice 1: predict the output (TypeScript)</h2>
+          <p>Read and predict the printed output, then explain using parameter
+            passing and mutation rules.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function change(n: number, obj: { v: number }): void {
+  n = n + 100;
+  obj.v = obj.v + 100;
+}
+
+let a = 1;
+let b = { v: 1 };
+
+change(a, b);
+
+console.log(a);
+console.log(b.v);</code></pre>
+          <ul>
+            <li>
+              <p>Which assignment is local only, and which affects shared
+                state</p>
+            </li>
+            <li>
+              <p>How to refactor to avoid mutation</p>
+            </li>
+          </ul>
+        </section>
+        <section id="practice-1-answer-primitives-vs-objects-typescript" class="frame">
+          <h2>Practice 1 Answer: primitives vs objects (TypeScript)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\scriptsize" data-tabsize="1"><code class="language-typescript">function change(n: number, obj: { v: number }): void {
+  n = n + 100;
+  obj.v = obj.v + 100;
+}
+let a = 1; let b = { v: 1 };
+change(a, b);
+console.log(a); //1
+console.log(b.v); // 101</code></pre>
+          <ul>
+            <li>
+              <p>n = n + 100 is local only because n is a local parameter
+                variable; it does not alias the caller variable a.</p>
+            </li>
+            <li>
+              <p>obj.v = obj.v + 100 affects shared state because obj refers to
+                the same object as b; it mutates that object in place.</p>
+            </li>
+          </ul>
+          <p>Refactor to avoid mutation (return new values instead of
+            mutating)</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\scriptsize" data-tabsize="1"><code class="language-typescript">function changePure(n: number, obj: { v: number }): { n2: number; obj2: { v: number } } {
+  return { n2: n + 100, obj2: { v: obj.v + 100 } };
+}
+let a = 1; let b = { v: 1 };
+const { n2, obj2 } = changePure(a, b);
+console.log(a);     // 1
+console.log(b.v);   // 1
+console.log(n2);    // 101
+console.log(obj2.v);// 101</code></pre>
+        </section>
+        <section id="java-passes-argument-values." class="frame">
+          <h2>Java passes argument values.</h2>
+          <ul>
+            <li>
+              <p>Primitive arguments behave like pass-by-value</p>
+            </li>
+            <li>
+              <p>Object arguments pass a reference value; mutation affects shared
+                object</p>
+            </li>
+            <li>
+              <p>Reassigning the parameter does not update the caller
+                variable</p>
+            </li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\scriptsize" data-tabsize="1"><code class="language-java">class User {
+  String name;
+  User(String n) { name = n; }
+}
+class Demo {
+  static void reassign(User u) {
+    u = new User(&quot;new&quot;); // only local parameter changes
+  }
+  static void mutate(User u) {
+    u.name = &quot;mutated&quot;;
+  }
+  public static void main(String[] args) {
+    User a = new User(&quot;old&quot;);
+    reassign(a);
+    System.out.println(a.name); // &quot;old&quot;
+    mutate(a);
+    System.out.println(a.name); // &quot;mutated&quot;
+  }
+}</code></pre>
+        </section>
+        <section id="python-references-and-mutation" class="frame">
+          <h2>Python: references and mutation</h2>
+          <p>Python also binds names to objects. Calling a function binds
+            parameter names to argument objects.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def reassign(lst):
+    lst = [99]     # local name now points elsewhere
+
+def mutate(lst):
+    lst.append(99) # mutates the shared object
+
+a = [1, 2]
+reassign(a)
+print(a)           # [1, 2]
+mutate(a)
+print(a)           # [1, 2, 99]</code></pre>
+          <p>Practical rule: reassignment is local; mutation is shared.</p>
+        </section>
+        <section id="pass-by-reference" class="frame">
+          <h2>Pass-by-reference</h2>
+          <ul>
+            <li>
+              <p>In pass-by-reference, the callee parameter is an alias for the
+                caller variable.</p>
+            </li>
+            <li>
+              <p>Consequences</p>
+              <ul>
+                <li>
+                  <p>Reassigning the parameter updates the caller variable</p>
+                </li>
+                <li>
+                  <p>The callee can replace what the caller variable refers
+                    to</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Many mainstream languages avoid general pass-by-reference for
+                safety and reasoning, but they may offer it in limited forms:</p>
+              <ul>
+                <li>
+                  <p>C++ references</p>
+                </li>
+                <li>
+                  <p>C# ref and out</p>
+                </li>
+                <li>
+                  <p>Rust borrowing rules</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section id="simulating-out-parameters-in-typescript" class="frame">
+          <h2>Simulating out parameters in TypeScript</h2>
+          <p>TypeScript does not have out parameters, but you can use objects to
+            carry results.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type ParseResult = 
+  { ok: boolean; value?: number; error?: string };
+
+function parseIntSafe(s: string): ParseResult {
+  const n = Number.parseInt(s, 10);
+  if (Number.isNaN(n)) {
+    return {ok: false, error: &quot;not an int&quot; };
+  }
+  return { ok: true, value: n };
+}
+
+const r = parseIntSafe(&quot;123&quot;);
+if (r.ok) console.log(r.value);</code></pre>
+          <p>Industry pattern: return a value object instead of mutating multiple
+            outputs.</p>
+        </section>
+        <section id="multiple-results-tuples-in-python" class="frame">
+          <h2>Multiple results: tuples in Python</h2>
+          <p>Python commonly returns multiple values as a tuple.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def divmod_like(a, b):
+    q = a // b
+    r = a % b
+    return q, r
+
+q, r = divmod_like(17, 5)
+print(q, r)</code></pre>
+          <p>Returning structured results often replaces out parameters in
+            practice.</p>
+        </section>
+        <section id="multiple-results-records-in-typescript" class="frame">
+          <h2>Multiple results: records in TypeScript</h2>
+          <p>TypeScript commonly returns an object with named fields.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function divmodLike(a: number, b: number): { q: number; r: number } {
+  return { q: Math.floor(a / b), r: a % b };
+}
+
+const { q, r } = divmodLike(17, 5);
+console.log(q, r);</code></pre>
+          <p>Named fields make call sites self-documenting.</p>
+        </section>
+      </section>
+      <section>
+        <section id="defaults-named-arguments-and-varargs" class="title-slide slide level1">
+          <h1>Defaults, Named Arguments, and Varargs</h1>
+
+        </section>
+        <section id="defaults-named-arguments-and-varargs-1" class="frame">
+          <h2>Defaults, Named Arguments, and Varargs</h2>
+        </section>
+        <section id="default-parameters-in-typescript" class="frame">
+          <h2>Default parameters in TypeScript</h2>
+          <p>Default parameters apply when the argument is missing or
+            undefined.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function greet(name: string, punctuation: string = &quot;!&quot;): string {
+  return &quot;Hello, &quot; + name + punctuation;
+}
+
+console.log(greet(&quot;Ada&quot;));
+console.log(greet(&quot;Ada&quot;, &quot;!!&quot;));</code></pre>
+          <p>Common use: small configuration knobs without forcing the caller to
+            pass every argument.</p>
+        </section>
+        <section id="named-arguments-pattern-in-typescript" class="frame">
+          <h2>Named arguments pattern in TypeScript</h2>
+          <p>TypeScript does not have true named arguments at call sites, but an
+            options object provides similar readability.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type FetchOptions = { timeoutMs?: number; retries?: number; cache?: boolean };
+
+function fetchWithOptions(url: string, options: FetchOptions = {}): void {
+  const timeoutMs = options.timeoutMs ?? 2000;
+  const retries = options.retries ?? 2;
+  const cache = options.cache ?? true;
+  console.log(url, timeoutMs, retries, cache);
+}
+
+fetchWithOptions(&quot;https://example.com&quot;, { retries: 5, cache: false });</code></pre>
+          <p>Benefit: callers can specify only what they need, in any order.</p>
+          <p>npx ts-node ts_options_object.ts</p>
+        </section>
+        <section id="practice-2-implement-a-safe-api-with-options-objects" class="frame">
+          <h2>Practice 2: implement a safe API with options objects</h2>
+          <p>Goal: redesign a function signature to avoid positional
+            confusion.</p>
+          <p>Starting point, hard to read at call sites:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function request(url: string, timeoutMs: number, retries: number, cache: boolean): void {
+  console.log(url, timeoutMs, retries, cache);
+}
+
+request(&quot;/api/users&quot;, 2000, 3, false);</code></pre>
+          <p>Problem with positional parameters</p>
+          <ul>
+            <li>
+              <p>request("/api/users", 2000, 3, false) is hard to read: the
+                meaning of each number/boolean is not obvious.</p>
+            </li>
+            <li>
+              <p>Callers can easily swap arguments accidentally.</p>
+            </li>
+          </ul>
+          <p>Task: convert to an options object with defaults and show clearer
+            call examples.</p>
+        </section>
+        <section id="practice-2-answer" class="frame">
+          <h2>Practice 2 Answer</h2>
+          <p>Refactor using an options object with defaults:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type RequestOptions = {
+  timeoutMs?: number; retries?: number; cache?: boolean;
+};
+function request(url: string, opts: RequestOptions = {}): void {
+  const timeoutMs = opts.timeoutMs ?? 2000;
+  const retries = opts.retries ?? 2;
+  const cache = opts.cache ?? true;
+  console.log(url, timeoutMs, retries, cache);
+}
+request(&quot;/api/users&quot;);
+request(&quot;/api/users&quot;, { retries: 3, cache: false });
+request(&quot;/api/users&quot;, { timeoutMs: 5000 });</code></pre>
+          <p>Why this is better</p>
+          <ul>
+            <li>
+              <p>The call site communicates intent through property
+                names.</p>
+            </li>
+            <li>
+              <p>Callers can specify only what they need.</p>
+            </li>
+            <li>
+              <p>Adding a new option later does not force changes to every call
+                site.</p>
+            </li>
+          </ul>
+        </section>
+        <section id="python-default-and-named-arguments" class="frame">
+          <h2>Python: default and named arguments</h2>
+          <p>Python supports default values and keyword arguments directly.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def connect(host, port=5432, timeout_s=2.0):
+    return (host, port, timeout_s)
+
+print(connect(&quot;db.local&quot;))
+print(connect(&quot;db.local&quot;, timeout_s=5.0))
+print(connect(host=&quot;db.local&quot;, port=6000))</code></pre>
+          <p>Keyword arguments significantly improve readability for functions
+            with many parameters.</p>
+        </section>
+        <section id="python-pitfall-mutable-default-arguments" class="frame">
+          <h2>Python pitfall: mutable default arguments</h2>
+          <p>Default values are evaluated once when the function is defined, not
+            each call.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def add_item(x, lst=[]):
+    lst.append(x)
+    return lst
+
+print(add_item(1))  # [1]
+print(add_item(2))  # [1, 2] surprising for many learners</code></pre>
+          <p>Safe pattern uses None and creates a new list inside.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def add_item_safe(x, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(x)
+    return lst</code></pre>
+        </section>
+        <section id="java-default-arguments-via-overloading" class="frame">
+          <h2>Java: default arguments via overloading</h2>
+          <p>Java does not have default arguments; common substitutes are
+            overloaded methods or builders.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-java">class Connector {
+  static String connect(String host) {
+    return connect(host, 5432, 2.0);
+  }
+  static String connect(String host, int port) {
+    return connect(host, port, 2.0);
+  }
+
+  static String connect(String host, int port, double timeoutS) {
+    return host + &quot;:&quot; + port + &quot; timeout=&quot; + timeoutS;
+  }
+}</code></pre>
+          <p>Overloads can grow quickly; builders are often preferred for many
+            optional fields.</p>
+        </section>
+        <section id="variadic-parameters-rest-args" class="frame">
+          <h2>Variadic parameters: rest args</h2>
+          <p>Variadic functions accept a variable number of arguments.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function sum(...xs: number[]): number {
+  return xs.reduce((acc, x) =&gt; acc + x, 0);
+}
+
+console.log(sum(1, 2, 3));
+console.log(sum(10));</code></pre>
+          <p>Similar features exist in Java and Python, but the call syntax and
+            typing differ.</p>
+        </section>
+        <section id="variadic-parameters-python-and-java" class="frame">
+          <h2>Variadic parameters: Python and Java</h2>
+          <p>Python uses star args.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def sum_all(*xs):
+    total = 0
+    for x in xs:
+        total += x
+    return total
+
+print(sum_all(1, 2, 3))</code></pre>
+          <p>Java uses varargs.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-java">class Demo {
+  static int sumAll(int... xs) {
+    int total = 0;
+    for (int x : xs) total += x;
+    return total;
+  }
+}</code></pre>
+        </section>
+      </section>
+      <section>
+        <section id="closures-and-capturing" class="title-slide slide level1">
+          <h1>Closures and Capturing</h1>
+
+        </section>
+        <section id="closures-and-capturing-1" class="frame">
+          <h2>Closures and Capturing</h2>
+        </section>
+        <section id="closures-and-lexical-environments" class="frame">
+          <h2>Closures and lexical environments</h2>
+          <p>Closure</p>
+          <ul>
+            <li>
+              <p>A function together with the environment of variables it
+                captures</p>
+            </li>
+            <li>
+              <p>The captured variables are free variables in the function body
+                (not parameters, not locals)</p>
+            </li>
+          </ul>
+          <p>Lexical environment</p>
+          <ul>
+            <li>
+              <p>The set of bindings visible due to where the function is defined
+                in source code</p>
+            </li>
+            <li>
+              <p>Lexical scoping means the structure of the code determines
+                variable resolution</p>
+            </li>
+          </ul>
+          <p>Closures allow behavior to depend on values that existed when the
+            function was created, even if the outer function has returned.</p>
+        </section>
+        <section id="typescript-closure-function-returning-function" class="frame">
+          <h2>TypeScript closure: function returning function</h2>
+          <p>This example returns a function that remembers a captured
+            variable.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function makeAdder(k: number): (x: number) =&gt; number {
+  return (x: number) =&gt; x + k; // captures k
+}
+
+const add10 = makeAdder(10);
+const add3 = makeAdder(3);
+
+console.log(add10(5)); // 15
+console.log(add3(5));  // 8</code></pre>
+          <p>k remains available because the returned function closes over it.</p>
+        </section>
+        <section id="practice-3-function-factory-and-capture-typescript" class="frame">
+          <h2>Practice 3: function factory and capture (TypeScript)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function makeLimiter(max: number): (x: number) =&gt; number {
+  // return a function that clamps x into [0, max]
+  return (x: number) =&gt; {
+    if (x &lt; 0) return 0;
+    if (x &gt; max) return max;
+    return x;
+  };
+}
+const limit10 = makeLimiter(10);
+console.log(limit10(-3));
+console.log(limit10(7));
+console.log(limit10(100));</code></pre>
+          <p>Discussion: what variable is captured, and how does it affect
+            behavior?</p>
+            <p>npx ts-node ts_closure_makeAdder.ts</p>
+        </section>
+        <section id="practice-3-function-factory-and-capture-typescript-1" class="frame">
+          <h2>Practice 3: function factory and capture (TypeScript)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function makeLimiter(max: number): (x: number) =&gt; number {
+  return (x: number) =&gt; {
+    if (x &lt; 0) return 0;
+    if (x &gt; max) return max;
+    return x;
+  };
+}
+const limit10 = makeLimiter(10);
+console.log(limit10(-3));  // 0
+console.log(limit10(7));   // 7
+console.log(limit10(100)); // 10</code></pre>
+          <p>What variable is captured, and how does it affect behavior</p>
+          <ul>
+            <li>
+              <p>The returned function closes over max.</p>
+            </li>
+            <li>
+              <p>max is fixed when makeLimiter is called; for limit10 it is
+                10.</p>
+            </li>
+            <li>
+              <p>Each call to limit10 uses the same captured max value to clamp
+                the input.</p>
+            </li>
+            <li>
+              <p>A different call makeLimiter(5) would create a different returned
+                function with a different captured max.</p>
+            </li>
+          </ul>
+        </section>
+        <section id="python-closure-nested-function-capturing-outer-variable" class="frame">
+          <h2>Python closure: nested function capturing outer variable</h2>
+          <p>Python closures behave similarly.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def make_adder(k):
+    def add(x):
+        return x + k  # captures k
+    return add
+
+add10 = make_adder(10)
+print(add10(5))</code></pre>
+          <p>Nested definitions are a common way to build specialized
+            behavior.</p>
+        </section>
+        <section id="java-closure-like-behavior-with-lambdas" class="frame">
+          <h2>Java closure-like behavior with lambdas</h2>
+          <p>Java lambdas can capture variables, with a restriction.</p>
+          <p>Captured local variables must be effectively final (not
+            reassigned).</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-java">import java.util.function.IntUnaryOperator;
+
+class Demo {
+  static IntUnaryOperator makeAdder(int k) {
+    return (int x) -&gt; x + k; // captures k
+  }
+
+  public static void main(String[] args) {
+    IntUnaryOperator add10 = makeAdder(10);
+    System.out.println(add10.applyAsInt(5));
+  }
+}</code></pre>
+          <p>The restriction simplifies reasoning about captured locals and
+            threading.</p>
+        </section>
+        <section id="what-gets-captured-value-vs-variable" class="frame">
+          <h2>What gets captured: value vs variable</h2>
+          <ul>
+            <li>
+              <p>A key subtlety: closures capture variables (bindings), not just
+                values.</p>
+            </li>
+            <li>
+              <p>Consequences</p>
+              <ul>
+                <li>
+                  <p>If the variable changes later, the closure observes the updated
+                    value</p>
+                </li>
+                <li>
+                  <p>Captured variables can extend lifetimes of data beyond the
+                    original scope</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>This is powerful but can cause surprising bugs, especially with
+                loops and asynchronous callbacks.</p>
+            </li>
+          </ul>
+        </section>
+        <section id="typescript-capturing-and-mutation" class="frame">
+          <h2>TypeScript: capturing and mutation</h2>
+          <p>The closure observes changes to captured variables.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function makeCounter(): () =&gt; number {
+  let count = 0;
+  return () =&gt; {
+    count = count + 1;
+    return count;
+  };
+}
+
+const c = makeCounter();
+console.log(c()); // 1
+console.log(c()); // 2</code></pre>
+          <p>This pattern implements private state without a class.</p>
+        </section>
+        <section id="python-closure-with-nonlocal-for-reassignment" class="frame">
+          <h2>Python: closure with nonlocal for reassignment</h2>
+          <p>Python requires nonlocal to rebind a captured variable.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def make_counter():
+    count = 0
+    def inc():
+        nonlocal count
+        count += 1
+        return count
+    return inc
+
+c = make_counter()
+print(c())
+print(c())</code></pre>
+          <p>Without nonlocal, count would be treated as a new local inside
+            inc.</p>
+            <p>npx ts-node ts_closure_counter.ts</p>
+        </section>
+        <section id="closure-lifetime-and-memory" class="frame">
+          <h2>Closure lifetime and memory</h2>
+          <p>When an inner function outlives the outer function call, captured
+            variables must remain alive.</p>
+          <p>Practical implications</p>
+          <ul>
+            <li>
+              <p>Closures can keep large objects alive longer than
+                intended</p>
+            </li>
+            <li>
+              <p>Event handlers can accidentally retain DOM nodes and leak
+                memory</p>
+            </li>
+            <li>
+              <p>Long-lived closures should capture only what they need</p>
+            </li>
+          </ul>
+          <p>A useful habit: avoid capturing entire objects when a small primitive
+            value is enough.</p>
+        </section>
+      </section>
+      <section>
+        <section id="closure-pitfalls" class="title-slide slide level1">
+          <h1>Closure Pitfalls</h1>
+
+        </section>
+        <section id="closure-pitfalls-1" class="frame">
+          <h2>Closure Pitfalls</h2>
+        </section>
+        <section id="classic-bug-loop-variable-capture-in-javascript-style-code" class="frame">
+          <h2>Classic bug: loop variable capture in JavaScript-style code</h2>
+          <p>The bug often appears when callbacks run later, after the loop
+            finishes.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">const callbacks: Array&lt;() =&gt; void&gt; = [];
+
+for (var i = 0; i &lt; 3; i++) {
+  callbacks.push(() =&gt; console.log(i));
+}
+
+callbacks[0]();
+callbacks[1]();
+callbacks[2]();</code></pre>
+          <p>With <em>var</em>, <em>i</em> is function-scoped, so all callbacks
+            share the same i.</p>
+        </section>
+        <section id="fix-use-block-scope-with-let" class="frame">
+          <h2>Fix: use block scope with let</h2>
+          <p>let creates a new binding per iteration in a for loop, so each
+            closure captures a distinct variable.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">const callbacks: Array&lt;() =&gt; void&gt; = [];
+
+for (let i = 0; i &lt; 3; i++) {
+  callbacks.push(() =&gt; console.log(i));
+}
+
+callbacks[0](); // 0
+callbacks[1](); // 1
+callbacks[2](); // 2</code></pre>
+          <p>Rule: prefer let and const over var in modern TypeScript.</p>
+          <p>npx ts-node ts_closure_loop_capture.ts</p>
+        </section>
+        <section id="python-late-binding-in-closures-inside-loops" class="frame">
+          <h2>Python: late binding in closures inside loops</h2>
+          <p>Python closures in loops can surprise you similarly.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">funcs = []
+for i in range(3):
+    funcs.append(lambda: i)
+
+print(funcs[0]()) #2
+print(funcs[1]()) #2
+print(funcs[2]()) #2</code></pre>
+          <p>Many learners expect 0, 1, 2, but all lambdas refer to the same i
+            binding.</p>
+        </section>
+        <section id="python-fix-capture-current-value-using-a-default-argument" class="frame">
+          <h2>Python fix: capture current value using a default argument</h2>
+          <p>Default arguments are evaluated at function creation time, capturing
+            the current loop value.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">funcs = []
+for i in range(3):
+    funcs.append(lambda i=i: i)
+
+print(funcs[0]())  # 0
+print(funcs[1]())  # 1
+print(funcs[2]())  # 2</code></pre>
+          <p>This is a widely used idiom for loop capture in Python.</p>
+        </section>
+        <section id="practice-4-closure-and-loop-capture-python" class="frame">
+          <h2>Practice 4: closure and loop capture (Python)</h2>
+          <p>Predict the output and propose a fix.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">funcs = []
+for i in range(4):
+    def f():
+        return i
+    funcs.append(f)
+
+for g in funcs:
+    print(g())</code></pre>
+          <ul>
+            <li>
+              <p>What is the captured variable</p>
+            </li>
+            <li>
+              <p>When is the variable value read</p>
+            </li>
+            <li>
+              <p>Fix using default-argument capture or another approach</p>
+            </li>
+          </ul>
+        </section>
+        <section id="practice-4-answer-closure-and-loop-capture-python" class="frame">
+          <h2>Practice 4 Answer: closure and loop capture (Python)</h2>
+          <p>Which value is captured, and when is it read</p>
+          <ul>
+            <li>
+              <p>The captured variable is i from the surrounding scope (the loop
+                variable).</p>
+            </li>
+            <li>
+              <p>The value of i is read when f is called later (g()), not when f
+                is defined.</p>
+            </li>
+            <li>
+              <p>After the loop ends, i equals 3, so all stored functions return
+                3.</p>
+            </li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\scriptsize" data-tabsize="1"><code class="language-python">funcs = [] #Fix using default-argument capture:
+for i in range(4):
+    def f(i=i):
+        return i
+    funcs.append(f)
+for g in funcs:
+    print(g())</code></pre>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\scriptsize" data-tabsize="1"><code class="language-python">#fix using a helper function create a new scope
+def make_f(i): 
+    def f():
+        return i
+    return f
+funcs = []
+for i in range(4):
+    funcs.append(make_f(i))</code></pre>
+        </section>
+      </section>
+      <section>
+        <section id="higher-order-functions-and-callbacks" class="title-slide slide level1">
+          <h1>Higher-Order Functions and Callbacks</h1>
+
+        </section>
+        <section id="higher-order-functions-and-callbacks-1" class="frame">
+          <h2>Higher-Order Functions and Callbacks</h2>
+        </section>
+        <section id="higher-order-functions" class="frame">
+          <h2>Higher-order functions</h2>
+          <p>A higher-order function is a function that</p>
+          <ul>
+            <li>
+              <p>takes a function as an argument, or</p>
+            </li>
+            <li>
+              <p>returns a function as a result</p>
+            </li>
+          </ul>
+          <p>Benefits</p>
+          <ul>
+            <li>
+              <p>Code reuse through generic control patterns (map, filter, retry,
+                debounce)</p>
+            </li>
+            <li>
+              <p>Separation of policy from mechanism (algorithm vs decision
+                rule)</p>
+            </li>
+            <li>
+              <p>Composition: build behavior by combining functions</p>
+            </li>
+          </ul>
+          <p>Costs</p>
+          <ul>
+            <li>
+              <p>Debugging can be harder due to indirect control flow</p>
+            </li>
+            <li>
+              <p>Types and error handling need careful design</p>
+            </li>
+          </ul>
+        </section>
+        <section id="callback" class="frame">
+          <h2>Callback</h2>
+          <ul>
+            <li>
+              <p>A function you pass into another function so the other function
+                can call it</p>
+            </li>
+            <li>
+              <p>Inversion of control: the library controls when/how many times it
+                calls your function</p>
+            </li>
+            <li>
+              <p>Can be called immediately (synchronous) or later
+                (asynchronous)</p>
+            </li>
+          </ul>
+          <p>Synchronous callback example (array processing):</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const nums = [1, 2, 3];
+const squares = nums.map(x =&gt; x * x); // callback is x =&gt; x * x</code></pre>
+          <p>Asynchronous callback example (event-style):</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function onClick(handler: () =&gt; void): void {
+  // real UI code would call handler later
+  handler();
+}
+onClick(() =&gt; console.log(&quot;clicked&quot;)); // callback is () =&gt; ...</code></pre>
+          <p>A callback API should document when it runs, how often, and how
+            errors are reported.</p>
+        </section>
+        <section id="typescript-map-filter-reduce-as-higher-order-functions" class="frame">
+          <h2>TypeScript: map, filter, reduce as higher-order functions</h2>
+          <p>Arrays provide higher-order functions that accept callbacks.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">const nums = [1, 2, 3, 4, 5];
+
+const squares = nums.map(x =&gt; x * x);
+const evens = nums.filter(x =&gt; x % 2 === 0);
+const sum = nums.reduce((acc, x) =&gt; acc + x, 0);
+
+console.log(squares);
+console.log(evens);
+console.log(sum);</code></pre>
+          <p>The callback provides the custom behavior; the loop mechanism is
+            reused.</p>
+        </section>
+        <section id="python-list-processing-with-functions" class="frame">
+          <h2>Python: list processing with functions</h2>
+          <p>Python offers functional tools and comprehensions.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">nums = [1, 2, 3, 4, 5]
+
+squares = list(map(lambda x: x * x, nums))
+evens = list(filter(lambda x: x % 2 == 0, nums))
+total = sum(nums)
+
+print(squares)
+print(evens)
+print(total)</code></pre>
+          <p>In Python, comprehensions are often preferred for readability, but
+            callbacks remain important for libraries.</p>
+        </section>
+        <section id="java-higher-order-style-with-streams" class="frame">
+          <h2>Java: higher-order style with streams</h2>
+          <p>Java streams accept lambdas and functional interfaces.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-java">import java.util.List;
+
+class Demo {
+  public static void main(String[] args) {
+    List&lt;Integer&gt; nums = List.of(1, 2, 3, 4, 5);
+
+    int sum = nums.stream()
+      .filter(x -&gt; x % 2 == 0)
+      .map(x -&gt; x * x)
+      .reduce(0, (acc, x) -&gt; acc + x);
+
+    System.out.println(sum);
+  }
+}</code></pre>
+          <p>Streams encourage a pipeline model where each step is a small
+            function.</p>
+        </section>
+        <section id="callbacks-event-handler-example" class="frame">
+          <h2>Callbacks: event handler example</h2>
+          <p>UI and server frameworks often use callbacks because they invert
+            control.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function onClick(handler: () =&gt; void): void {
+  // imagine this registers handler with a UI system
+  handler(); // demo call
+}
+
+let clicks = 0;
+
+onClick(() =&gt; {
+  clicks = clicks + 1;
+  console.log(&quot;clicks&quot;, clicks);
+});</code></pre>
+          <p>The callback closes over clicks, so it can update private state
+            across events.</p>
+        </section>
+        <section id="callback-design-considerations" class="frame">
+          <h2>Callback design considerations</h2>
+          <p>When you expose callbacks in an API, callers need to know:</p>
+          <ul>
+            <li>
+              <p>When the callback is invoked (immediately, later, possibly
+                multiple times)</p>
+            </li>
+            <li>
+              <p>Which thread or event loop invokes it</p>
+            </li>
+            <li>
+              <p>Error signaling model (throw, return value, error parameter,
+                promise rejection)</p>
+            </li>
+            <li>
+              <p>Cancellation mechanism</p>
+            </li>
+          </ul>
+          <p>Many production issues happen because the callback contract is
+            unclear, not because the syntax is hard.</p>
+        </section>
+      </section>
+      <section>
+        <section id="async-patterns-in-industry" class="title-slide slide level1">
+          <h1>Async Patterns in Industry</h1>
+
+        </section>
+        <section id="async-patterns-in-industry-1" class="frame">
+          <h2>Async Patterns in Industry</h2>
+        </section>
+        <section id="industry-angle-why-callback-hell-happens" class="frame">
+          <h2>Industry angle: why callback hell happens</h2>
+          <p>Callback hell is deeply nested callbacks that appear when:</p>
+          <ul>
+            <li>
+              <p>Each async step depends on the previous step result</p>
+            </li>
+            <li>
+              <p>Errors are handled separately at each nesting level</p>
+            </li>
+            <li>
+              <p>Multiple branches and retries are needed</p>
+            </li>
+          </ul>
+          <p>Symptoms</p>
+          <ul>
+            <li>
+              <p>Hard to read control flow</p>
+            </li>
+            <li>
+              <p>Duplication of error handling</p>
+            </li>
+            <li>
+              <p>Difficult to compose and test</p>
+            </li>
+          </ul>
+          <p>Modern JavaScript ecosystems introduced Promises and async/await to
+            make async flow look like sequential code.</p>
+        </section>
+        <section id="typescript-callback-based-async-style" class="frame">
+          <h2>TypeScript: callback-based async style</h2>
+          <p>This style is still common in older Node.js APIs and some
+            libraries.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type Callback&lt;T&gt; = (err: Error | null, value?: T) =&gt; void;
+function readUser(id: string, cb: Callback&lt;{ id: string; name: string }&gt;): void {
+  setTimeout(() =&gt; cb(null, { id, name: &quot;Ada&quot; }), 10);
+}
+function readOrders(userId: string, cb: Callback&lt;string[]&gt;): void {
+  setTimeout(() =&gt; cb(null, [&quot;A1&quot;, &quot;B2&quot;]), 10);
+}
+readUser(&quot;u1&quot;, (err, user) =&gt; {
+  if (err || !user) return console.log(&quot;error&quot;, err);
+  readOrders(user.id, (err2, orders) =&gt; {
+    if (err2 || !orders) return console.log(&quot;error&quot;, err2);
+    console.log(user.name, orders);
+  });
+});</code></pre>
+          <p>Nesting grows as you add more steps, branching, and retries.</p>
+        </section>
+        <section id="typescript-promises-reduce-nesting" class="frame">
+          <h2>TypeScript: Promises reduce nesting</h2>
+          <p>Promises represent a value that may be available later.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function readUserP(id: string): Promise&lt;{ id: string; name: string }&gt; {
+  return new Promise(resolve =&gt; setTimeout(() =&gt; resolve({ id, name: &quot;Ada&quot; }), 10));
+}
+
+function readOrdersP(userId: string): Promise&lt;string[]&gt; {
+  return new Promise(resolve =&gt; setTimeout(() =&gt; resolve([&quot;A1&quot;, &quot;B2&quot;]), 10));
+}
+
+readUserP(&quot;u1&quot;)
+  .then(user =&gt; readOrdersP(user.id).then(orders =&gt; [user, orders] as const))
+  .then(([user, orders]) =&gt; console.log(user.name, orders))
+  .catch(err =&gt; console.log(&quot;error&quot;, err));</code></pre>
+          <p>Control flow is flatter, but chains can still become complex.</p>
+        </section>
+        <section id="typescript-asyncawait-for-sequential-readability" class="frame">
+          <h2>TypeScript: async/await for sequential readability</h2>
+          <p>async/await is syntax over Promises that improves readability.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">async function workflow(): Promise&lt;void&gt; {
+  try {
+    const user = await readUserP(&quot;u1&quot;);
+    const orders = await readOrdersP(user.id);
+    console.log(user.name, orders);
+  } catch (err) {
+    console.log(&quot;error&quot;, err);
+  }
+}
+workflow();</code></pre>
+          <p>try/catch works for awaited promise rejections, which simplifies
+            error handling.</p>
+            <p>npx ts-node ts_async_callbacks_vs_asyncawait.ts</p>
+        </section>
+        <section id="practice-5-refactor-callback-nesting-to-asyncawait" class="frame">
+          <h2>Practice 5: refactor callback nesting to async/await</h2>
+          <p>Starting point:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\scriptsize" data-tabsize="1"><code class="language-typescript">type Callback&lt;T&gt; = (err: Error | null, value?: T) =&gt; void;
+function step1(cb: Callback&lt;number&gt;): void {
+  setTimeout(() =&gt; cb(null, 10), 10);
+}
+function step2(x: number, cb: Callback&lt;number&gt;): void {
+  setTimeout(() =&gt; cb(null, x + 5), 10);
+}
+function step3(x: number, cb: Callback&lt;number&gt;): void {
+  setTimeout(() =&gt; cb(null, x * 2), 10);
+}
+step1((e1, a) =&gt; {
+  if (e1 || a === undefined) return console.log(&quot;error&quot;, e1);
+  step2(a, (e2, b) =&gt; {
+    if (e2 || b === undefined) return console.log(&quot;error&quot;, e2);
+    step3(b, (e3, c) =&gt; {
+      if (e3 || c === undefined) return console.log(&quot;error&quot;, e3);
+      console.log(&quot;result&quot;, c);
+    });
+  });
+});</code></pre>
+          <p>Task: rewrite using Promises and async/await while preserving error
+            handling.</p>
+        </section>
+        <section id="practice-5-answer-refactor-callback-nesting-to-asyncawait-typescript" class="frame">
+          <h2>Practice 5 Answer: refactor callback nesting to async/await
+            (TypeScript)</h2>
+          <p>What the original code computes if no errors occur</p>
+          <ul>
+            <li>
+              <p>step1 produces 10</p>
+            </li>
+            <li>
+              <p>step2 adds 5, producing 15</p>
+            </li>
+            <li>
+              <p>step3 multiplies by 2, producing 30</p>
+            </li>
+            <li>
+              <p>printed line is result 30</p>
+            </li>
+          </ul>
+          <p>Promise wrappers (convert error-first callbacks into Promises):</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type Callback&lt;T&gt; = (err: Error | null, value?: T) =&gt; void;
+
+function step1(cb: Callback&lt;number&gt;): void {
+  setTimeout(() =&gt; cb(null, 10), 10);
+}
+function step2(x: number, cb: Callback&lt;number&gt;): void {
+  setTimeout(() =&gt; cb(null, x + 5), 10);
+}
+function step3(x: number, cb: Callback&lt;number&gt;): void {
+  setTimeout(() =&gt; cb(null, x * 2), 10);
+}
+
+function step1P(): Promise&lt;number&gt; {
+  return new Promise((resolve, reject) =&gt; {
+    step1((err, v) =&gt; {
+      if (err || v === undefined) return reject(err ?? new Error(&quot;missing value&quot;));
+      resolve(v);
+    });
+  });
+}
+
+function step2P(x: number): Promise&lt;number&gt; {
+  return new Promise((resolve, reject) =&gt; {
+    step2(x, (err, v) =&gt; {
+      if (err || v === undefined) return reject(err ?? new Error(&quot;missing value&quot;));
+      resolve(v);
+    });
+  });
+}
+
+function step3P(x: number): Promise&lt;number&gt; {
+  return new Promise((resolve, reject) =&gt; {
+    step3(x, (err, v) =&gt; {
+      if (err || v === undefined) return reject(err ?? new Error(&quot;missing value&quot;));
+      resolve(v);
+    });
+  });
+}</code></pre>
+          <p>async/await refactor with centralized error handling:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">async function run(): Promise&lt;void&gt; {
+  try {
+    const a = await step1P();
+    const b = await step2P(a);
+    const c = await step3P(b);
+    console.log(&quot;result&quot;, c);
+  } catch (err) {
+    console.log(&quot;error&quot;, err);
+  }
+}
+
+run();</code></pre>
+          <p>What changed</p>
+          <ul>
+            <li>
+              <p>Nesting is removed; the dependency order is still
+                preserved.</p>
+            </li>
+            <li>
+              <p>Errors are handled once in a single catch block.</p>
+            </li>
+          </ul>
+        </section>
+        <section id="async-closures-what-is-captured" class="frame">
+          <h2>Async closures: what is captured</h2>
+          <p>In async code, closures often capture variables whose values change
+            over time.</p>
+          <p>Typical bugs</p>
+          <ul>
+            <li>
+              <p>Capturing a loop variable and using it when the async task
+                resolves</p>
+            </li>
+            <li>
+              <p>Capturing a mutable object and seeing later changes
+                unexpectedly</p>
+            </li>
+          </ul>
+          <p>Typical fixes</p>
+          <ul>
+            <li>
+              <p>Use block scope variables for each iteration</p>
+            </li>
+            <li>
+              <p>Capture immutable snapshots (copy the needed values)</p>
+            </li>
+            <li>
+              <p>Prefer pure functions and explicit parameters for async
+                callbacks</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+      <section>
+        <section id="closures-in-ui-and-react" class="title-slide slide level1">
+          <h1>Closures in UI and React</h1>
+
+        </section>
+        <section id="closures-in-ui-and-react-1" class="frame">
+          <h2>Closures in UI and React</h2>
+        </section>
+        <section id="closures-in-ui-event-handlers" class="frame">
+          <h2>Closures in UI: event handlers</h2>
+          <p>UI systems store callback functions and invoke them later.</p>
+          <p>That means:</p>
+          <ul>
+            <li>
+              <p>The handler must keep access to needed state</p>
+            </li>
+            <li>
+              <p>Closures provide that access</p>
+            </li>
+            <li>
+              <p>Captured state may become stale if the UI updates but the handler
+                closes over an old snapshot</p>
+            </li>
+          </ul>
+          <p>This is a common source of bugs in React and other event-driven
+            frameworks.</p>
+        </section>
+        <section id="react-hook-idea-stale-closure-pattern-conceptual-typescript" class="frame">
+          <h2>React hook idea: stale closure pattern (conceptual TypeScript)</h2>
+          <p>This is a simplified illustration of a stale capture issue.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let count = 0;
+
+function makeHandler() {
+  const captured = count;
+  return () =&gt; console.log(&quot;captured&quot;, captured, &quot;current&quot;, count);
+}
+
+const h1 = makeHandler();
+count = 5;
+h1(); // captured 0, current 5</code></pre>
+          <p>In React, handlers created during a render capture that render’s
+            state values.</p>
+        </section>
+        <section id="react-style-fix-functional-update-pattern-conceptual-typescript" class="frame">
+          <h2>React-style fix: functional update pattern (conceptual
+            TypeScript)</h2>
+          <p>A common fix is to compute next state from previous state, avoiding
+            dependence on a captured stale value.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function updateCount(prev: number): number {
+  return prev + 1;
+}
+
+let state = 0;
+state = updateCount(state);
+state = updateCount(state);
+console.log(state);</code></pre>
+          <p>React provides a setState form that takes a function prev <span class="math inline">\(\rightarrow\)</span>
+            next to address stale closure
+            issues.</p>
+        </section>
+        <section id="rule-of-thumb-for-closures-in-production-code" class="frame">
+          <h2>Rule of thumb for closures in production code</h2>
+          <p>Prefer explicit parameters for data that varies per call.</p>
+          <p>Use closures for</p>
+          <ul>
+            <li>
+              <p>Configuration fixed at creation time</p>
+            </li>
+            <li>
+              <p>Encapsulated private state (counters, memoization
+                caches)</p>
+            </li>
+            <li>
+              <p>Dependency injection (passing services without globals)</p>
+            </li>
+          </ul>
+          <p>Avoid closures that capture</p>
+          <ul>
+            <li>
+              <p>Large objects unnecessarily</p>
+            </li>
+            <li>
+              <p>Variables that change frequently when you need the latest
+                value</p>
+            </li>
+            <li>
+              <p>Loop indices used later in async callbacks without proper
+                scoping</p>
+            </li>
+          </ul>
+        </section>
+        <section id="argument-evaluation-order-and-side-effects" class="frame">
+          <h2>Argument evaluation order and side effects</h2>
+          <p>When a call has multiple argument expressions, the language defines
+            an order.</p>
+          <p>Why this matters</p>
+          <ul>
+            <li>
+              <p>If argument expressions have side effects, order changes
+                behavior</p>
+            </li>
+            <li>
+              <p>Code becomes fragile and hard to refactor</p>
+            </li>
+          </ul>
+          <p>Practical guidance</p>
+          <ul>
+            <li>
+              <p>Avoid side effects inside arguments</p>
+            </li>
+            <li>
+              <p>Compute intermediate values in separate statements for
+                clarity</p>
+            </li>
+          </ul>
+        </section>
+        <section id="typescript-make-side-effects-explicit" class="frame">
+          <h2>TypeScript: make side effects explicit</h2>
+          <p>Instead of embedding state changes into call arguments, separate
+            them.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let i = 0;
+
+function f(a: number, b: number): void {
+  console.log(&quot;a&quot;, a, &quot;b&quot;, b);
+}
+
+i = i + 1;
+const a = i;
+i = i + 1;
+const b = i;
+
+f(a, b);</code></pre>
+          <p>This style is easier to read and debug than relying on tricky
+            evaluation order.</p>
+        </section>
+      </section>
+      <section>
+        <section id="closure-design-patterns" class="title-slide slide level1">
+          <h1>Closure Design Patterns</h1>
+
+        </section>
+        <section id="closure-design-patterns-1" class="frame">
+          <h2>Closure Design Patterns</h2>
+        </section>
+        <section id="closure-pattern-memoization" class="frame">
+          <h2>Closure pattern: memoization</h2>
+          <p>Memoization caches results based on inputs to speed up repeated
+            calls.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function memoize1&lt;A, R&gt;(f: (a: A) =&gt; R): (a: A) =&gt; R {
+  const cache = new Map&lt;A, R&gt;();
+  return (a: A) =&gt; {
+    if (cache.has(a)) return cache.get(a)!;
+    const r = f(a);
+    cache.set(a, r);
+    return r;
+  };
+}
+
+const slowSquare = (x: number) =&gt; x * x;
+const fastSquare = memoize1(slowSquare);
+console.log(fastSquare(10));
+console.log(fastSquare(10));</code></pre>
+          <p>The cache is private state captured by the returned function.</p>
+        </section>
+        <section id="closure-pattern-debounce-for-event-handlers" class="frame">
+          <h2>Closure pattern: debounce for event handlers</h2>
+          <p>Debounce delays execution until events stop firing for a period.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function debounce(fn: () =&gt; void, delayMs: number): () =&gt; void {
+  let timer: ReturnType&lt;typeof setTimeout&gt; | undefined;
+  return () =&gt; {
+    if (timer !== undefined) clearTimeout(timer);
+    timer = setTimeout(() =&gt; fn(), delayMs);
+  };
+}
+let fired = 0;
+const handler = debounce(() =&gt; {
+  fired = fired + 1;
+  console.log(&quot;fired&quot;, fired);
+}, 200);
+handler();
+handler();
+handler(); // only one execution after the last call settles</code></pre>
+          <p>timer is captured state that persists across invocations.</p>
+        </section>
+        <section id="closure-pattern-dependency-injection" class="frame">
+          <h2>Closure pattern: dependency injection</h2>
+          <p>Instead of reading globals, create a function that closes over
+            dependencies.</p>
+          <p>Example concept</p>
+          <ul>
+            <li>
+              <p>Provide a logger, configuration, or database client once</p>
+            </li>
+            <li>
+              <p>Return a handler that uses those dependencies without passing
+                them every time</p>
+            </li>
+          </ul>
+          <p>Benefits</p>
+          <ul>
+            <li>
+              <p>Easier testing with fake dependencies</p>
+            </li>
+            <li>
+              <p>Fewer hidden global dependencies</p>
+            </li>
+            <li>
+              <p>Better modularity</p>
+            </li>
+          </ul>
+        </section>
+        <section id="dependency-injection-with-closures-in-typescript" class="frame">
+          <h2>Dependency injection with closures in TypeScript</h2>
+          <p>Create a specialized function by capturing a service.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type Logger = { log: (msg: string) =&gt; void };
+
+function makeGreeter(logger: Logger): (name: string) =&gt; void {
+  return (name: string) =&gt; logger.log(&quot;hello &quot; + name);
+}
+
+const consoleLogger: Logger = {log: (msg) =&gt; console.log(msg)};
+const greet = makeGreeter(consoleLogger);
+
+greet(&quot;Ada&quot;);</code></pre>
+          <p>The returned function depends on logger without using a global
+            variable.</p>
+        </section>
+        <section id="java-capturing-effectively-final-variables" class="frame">
+          <h2>Java: capturing effectively final variables</h2>
+          <p>In Java, a lambda is allowed to capture a local variable only if that
+            variable is final or effectively final.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-java">import java.util.function.IntUnaryOperator;
+class Demo {
+  static IntUnaryOperator makeScaler(int factor) {
+    return x -&gt; x * factor;//factor is effectivly final
+  }
+  public static void main(String[] args) {
+    IntUnaryOperator times3 = makeScaler(3);
+    System.out.println(times3.applyAsInt(7));
+  }
+}</code></pre>
+          <p>If factor were reassigned later in the same scope, the code would not
+            compile.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-java">static IntUnaryOperator makeScaler(int factor) {
+  factor = factor + 1;          // reassignment
+  return x -&gt; x * factor;       // compile error
+}</code></pre>
+<p>java java_effective_final</p>
+        </section>
+        <section id="python-capturing-configuration-for-callbacks" class="frame">
+          <h2>Python: capturing configuration for callbacks</h2>
+          <p>Capturing configuration is a common pattern for callbacks.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def make_prefix_logger(prefix):
+    def log(msg):
+        print(prefix + &quot;: &quot; + msg)
+    return log
+
+info = make_prefix_logger(&quot;INFO&quot;)
+warn = make_prefix_logger(&quot;WARN&quot;)
+
+info(&quot;server started&quot;)
+warn(&quot;disk almost full&quot;)</code></pre>
+          <p>Each returned function retains its own prefix.</p>
+        </section>
+        <section id="summary-what-to-remember" class="frame">
+          <h2>Summary: what to remember</h2>
+          <p>Key takeaways</p>
+          <ul>
+            <li>
+              <p>Procedures emphasize actions and effects; functions emphasize
+                computed results</p>
+            </li>
+            <li>
+              <p>TypeScript and Python have first-class functions directly; Java
+                uses functional interfaces and lambdas</p>
+            </li>
+            <li>
+              <p>Many languages pass argument values; references can make mutation
+                visible across call boundaries</p>
+            </li>
+            <li>
+              <p>Default parameters and named arguments improve call-site
+                readability (Python directly, TypeScript via defaults and options
+                objects, Java via overloads/builders)</p>
+            </li>
+            <li>
+              <p>A closure is a function plus captured lexical environment;
+                capture can extend lifetimes and cause subtle bugs</p>
+            </li>
+            <li>
+              <p>Callback-heavy async code can become hard to manage; Promises and
+                async/await improve structure</p>
+            </li>
+          </ul>
+        </section>
+        <section id="review-questions" class="frame">
+          <h2>Review questions</h2>
+          <p>Use these to check understanding</p>
+          <ul>
+            <li>
+              <p>In TypeScript, why does mutating an object parameter affect the
+                caller, but reassigning the parameter does not?</p>
+            </li>
+            <li>
+              <p>What does effectively final mean in Java, and why does it matter
+                for lambdas?</p>
+            </li>
+            <li>
+              <p>In Python, why does a lambda inside a loop often returns the last
+                loop value?</p>
+            </li>
+            <li>
+              <p>When should you prefer an options object over positional
+                parameters?</p>
+            </li>
+            <li>
+              <p>How can closures lead to memory leaks in event-driven
+                code?</p>
+            </li>
+            <li>
+              <p>What changes when you refactor a nested callback flow into
+                async/await?</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true, "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540 });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    // More info https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>

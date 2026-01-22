@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+<title>Object-Oriented Programming &amp; Modules</title>
+    <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+<h1>Object-Oriented Programming &amp; Modules</h1>
+<div class="subtitle docutils container">
+<p><strong>Module 8</strong></p>
+<p>Liting Zhang</p>
+</div>
+</section>
+</section>
+
+<section class="slide level2">
+
+<section id="overview" class="frame">
+<h2>Overview</h2>
+<ul>
+<li><p>Objects, classes, encapsulation</p></li>
+<li><p>Inheritance and composition</p></li>
+<li><p>Dynamic dispatch and method lookup</p></li>
+<li><p>Interfaces vs abstract classes</p></li>
+<li><p>Mixins and traits (conceptual)</p></li>
+<li><p>Modules, packages, visibility, namespaces</p></li>
+<li><p>Industry angle: service and library design, package structure,
+code organization</p></li>
+<li><p>Languages: Java, TypeScript classes and modules, Python modules
+and packages</p></li>
+</ul>
+</section>
+<section id="learning-goals" class="frame">
+<h2>Learning goals</h2>
+<p>After this lecture, you should be able to</p>
+<ul>
+<li><p>Explain objects, classes, encapsulation, inheritance, and
+composition</p></li>
+<li><p>Predict behavior under dynamic dispatch and explain method
+lookup</p></li>
+<li><p>Choose between interfaces and abstract classes for a design
+goal</p></li>
+<li><p>Describe mixins and traits at a conceptual level</p></li>
+<li><p>Explain modules and packages, including visibility and
+namespaces</p></li>
+<li><p>Organize code using common industry package structures and
+layering</p></li>
+</ul>
+</section>
+<section id="core-idea-structure-code-around-responsibilities"
+class="frame">
+<h2>Core idea: structure code around responsibilities</h2>
+<p>OOP and modules are about managing complexity:</p>
+<ul>
+<li><p>Encapsulation: hide representation details behind
+methods</p></li>
+<li><p>Stable interfaces: depend on contracts, not
+implementations</p></li>
+<li><p>Separation of concerns: split features into
+modules/packages</p></li>
+<li><p>Evolution: add features without rewriting everything</p></li>
+</ul>
+<p>A useful mental model:</p>
+<ul>
+<li><p>Classes define capabilities and state</p></li>
+<li><p>Interfaces define contracts</p></li>
+<li><p>Modules/packages define boundaries and visibility</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section id="objects-and-classes" class="title-slide slide level1">
+<h1>Objects and Classes</h1>
+
+</section>
+<section id="objects-and-classes-1" class="frame">
+<h2>Objects and Classes</h2>
+</section>
+<section id="objects-and-classes-2" class="frame">
+<h2>Objects and classes</h2>
+<p>Object</p>
+<ul>
+<li><p>A runtime entity that bundles state and behavior</p></li>
+<li><p>State stored in fields, behavior provided by methods</p></li>
+<li><p>Multiple objects can share the same class</p></li>
+</ul>
+<p>Class</p>
+<ul>
+<li><p>A blueprint for creating objects</p></li>
+<li><p>Defines fields and methods</p></li>
+<li><p>Often also defines invariants that should always hold</p></li>
+</ul>
+<p>Encapsulation connects these: interact through methods, not raw
+fields.</p>
+</section>
+<section id="java-class-and-object-basics" class="frame">
+<h2>Java: class and object basics</h2>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\scriptsize"
+data-tabsize="1"><code class="language-java">class BankAccount {
+  private int balanceCents; //Encapsulation: balanceCents is private; 
+  BankAccount(int initialCents) {
+    if (initialCents &lt; 0) throw new IllegalArgumentException();
+    balanceCents = initialCents;
+  }
+  void deposit(int cents) {
+    if (cents &lt;= 0) throw new IllegalArgumentException();
+    balanceCents += cents;
+  }
+  boolean withdraw(int cents) {
+    if (cents &lt;= 0) throw new IllegalArgumentException();
+    if (cents &gt; balanceCents) return false;
+    balanceCents -= cents;
+    return true;
+  }
+  int getBalanceCents() {
+    return balanceCents;
+  }
+}
+class Demo {
+  public static void main(String[] args) {
+    BankAccount a = new BankAccount(1000);
+    a.deposit(250);
+    System.out.println(a.getBalanceCents());
+  }
+}</code></pre>
+</section>
+<section id="typescript-class-basics" class="frame">
+<h2>TypeScript: class basics</h2>
+<p>TypeScript compiles to JavaScript classes; access modifiers are
+checked by TypeScript.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-typescript">class BankAccount {
+  private balanceCents: number;
+  constructor(initialCents: number) {
+    if (initialCents &lt; 0) throw new Error(&quot;bad init&quot;);
+    this.balanceCents = initialCents;
+  }
+  deposit(cents: number): void {
+    if (cents &lt;= 0) throw new Error(&quot;bad deposit&quot;);
+    this.balanceCents += cents;
+  }
+  getBalanceCents(): number {
+    return this.balanceCents;
+  }
+}
+const a = new BankAccount(1000);
+a.deposit(250);
+console.log(a.getBalanceCents());</code></pre>
+</section>
+<section id="python-class-basics" class="frame">
+<h2>Python: class basics</h2>
+<p>Python uses classes and objects with a different visibility
+culture.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-python">class BankAccount:
+  def __init__(self, initial_cents: int):
+    if initial_cents &lt; 0:
+      raise ValueError(&quot;bad init&quot;)
+    self._balance_cents = initial_cents  # convention: internal
+  def deposit(self, cents: int) -&gt; None:
+    if cents &lt;= 0:
+      raise ValueError(&quot;bad deposit&quot;)
+    self._balance_cents += cents
+  def balance_cents(self) -&gt; int:
+    return self._balance_cent
+a = BankAccount(1000)
+a.deposit(250)
+print(a.balance_cents())</code></pre>
+<p>Underscore naming signals intended privacy; it is a convention, not
+enforcement.</p>
+</section>
+<section id="encapsulation-representation-and-invariants" class="frame">
+<h2>Encapsulation: representation and invariants</h2>
+<p>Encapsulation is not only about hiding fields:</p>
+<ul>
+<li><p>Protect invariants by controlling updates</p></li>
+<li><p>Reduce coupling by exposing a stable interface</p></li>
+<li><p>Allow internal representation to change without breaking
+callers</p></li>
+</ul>
+<p>Common invariants:</p>
+<ul>
+<li><p>Balance never negative</p></li>
+<li><p>Collection contains no duplicates</p></li>
+<li><p>State transitions follow allowed rules</p></li>
+</ul>
+</section>
+<section id="practice-1-fix-an-encapsulation-leak-java" class="frame">
+<h2>Practice 1: fix an encapsulation leak (Java)</h2>
+<p>Identify what breaks the invariant and propose a fix.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">class Account {
+  public int balanceCents;  // intended invariant: non-negative
+  public Account(int initial) { 
+    balanceCents = initial; }
+  public void deposit(int cents) { 
+    balanceCents += cents; }
+}
+class Demo {
+  public static void main(String[] args) {
+    Account a = new Account(100);
+    a.balanceCents = -999;     
+    System.out.println(a.balanceCents);
+  }
+}</code></pre>
+<ul>
+<li><p>What went wrong</p></li>
+<li><p>What change enforces the invariant</p></li>
+</ul>
+</section>
+<section id="practice-1-answer-fix-an-encapsulation-leak-java"
+class="frame">
+<h2>Practice 1 Answer: fix an encapsulation leak (Java)</h2>
+<p>What went wrong</p>
+<ul>
+<li><p>balanceCents is public, so callers can assign any value.</p></li>
+<li><p>The class cannot enforce the non-negative invariant.</p></li>
+</ul>
+<p>One correct fix: make state private and validate updates</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\scriptsize"
+data-tabsize="1"><code class="language-java">class Account {
+  private int balanceCents;
+  public Account(int initial) {
+    if (initial &lt; 0) throw new IllegalArgumentException();
+    balanceCents = initial;
+  }
+  public void deposit(int cents) {
+    if (cents &lt;= 0) throw new IllegalArgumentException();
+    balanceCents += cents;
+  }
+  public boolean withdraw(int cents) {
+    if (cents &lt;= 0) throw new IllegalArgumentException();
+    if (cents &gt; balanceCents) return false;
+    balanceCents -= cents;
+    return true;
+  }
+  public int getBalanceCents() { return balanceCents; }
+}</code></pre>
+<p>Result: callers cannot write the field directly; invariants live in
+methods.</p>
+</section></section>
+<section>
+<section id="inheritance-and-composition"
+class="title-slide slide level1">
+<h1>Inheritance and Composition</h1>
+
+</section>
+<section id="inheritance-and-composition-1" class="frame">
+<h2>Inheritance and Composition</h2>
+</section>
+<section id="inheritance" class="frame">
+<h2>Inheritance</h2>
+<p>Inheritance models an is-a relationship:</p>
+<ul>
+<li><p>A subclass reuses and extends a superclass
+interface/implementation</p></li>
+<li><p>Shared behavior can be placed in a base class</p></li>
+<li><p>Dynamic dispatch chooses overridden methods at runtime</p></li>
+</ul>
+<p>Risks:</p>
+<ul>
+<li><p>Tight coupling to base class internals</p></li>
+<li><p>Fragile base class problem when base changes</p></li>
+<li><p>Inheritance can encode the wrong relationship (has-a mistaken as
+is-a)</p></li>
+</ul>
+</section>
+<section id="composition" class="frame">
+<h2>Composition</h2>
+<p>Composition models a has-a relationship:</p>
+<ul>
+<li><p>Build objects from other objects</p></li>
+<li><p>Delegate work to a contained component</p></li>
+<li><p>Often easier to test and evolve than deep inheritance
+hierarchies</p></li>
+</ul>
+<p>A common guideline:</p>
+<ul>
+<li><p>Prefer composition for sharing behavior across unrelated
+types</p></li>
+<li><p>Use inheritance when there is a stable is-a relationship and
+polymorphism is central</p></li>
+</ul>
+</section>
+<section id="java-inheritance-example" class="frame">
+<h2>Java: inheritance example</h2>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">class Shape {
+  double area() { 
+    return 0.0; }
+}
+class Circle extends Shape {
+  private double r;
+  Circle(double r) { 
+    this.r = r; }
+  @Override double area() { 
+    return Math.PI * r * r; }
+}
+class Rect extends Shape {
+  private double w, h;
+  Rect(double w, double h) { 
+    this.w = w; this.h = h; }
+  @Override double area() { 
+    return w * h; }
+}</code></pre>
+<p>Shape is a common supertype, enabling polymorphic code over
+Shape.</p>
+</section>
+<section id="typescript-composition-by-delegation" class="frame">
+<h2>TypeScript: composition by delegation</h2>
+<p>Instead of inheriting, delegate to a component object.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-typescript">type Logger = { log: (msg: string) =&gt; void };
+class Service {
+  private logger: Logger;
+  constructor(logger: Logger) {
+    this.logger = logger;
+  }
+  handle(requestId: string): void {
+    this.logger.log(&quot;handling &quot; + requestId);
+  }
+}
+const consoleLogger: Logger = { 
+  log: (m) =&gt; console.log(m) };
+const s = new Service(consoleLogger);
+s.handle(&quot;r1&quot;);</code></pre>
+<p>Service has-a logger and delegates logging behavior.</p>
+</section>
+<section id="practice-2-inheritance-vs-composition-choice"
+class="frame">
+<h2>Practice 2: inheritance vs composition choice</h2>
+<p>You want to add caching to a data source.</p>
+<p>Option A: inherit from DataSource and override read.</p>
+<p>Option B: store a DataSource inside a CacheDataSource and delegate
+reads.</p>
+<p>Task:</p>
+<ul>
+<li><p>Which option better supports adding caching to many different
+data sources</p></li>
+<li><p>What is the risk of deep inheritance for this feature</p></li>
+</ul>
+</section>
+<section id="practice-2-answer-inheritance-vs-composition-choice"
+class="frame">
+<h2>Practice 2 Answer: inheritance vs composition choice</h2>
+<p>A reasonable answer:</p>
+<ul>
+<li><p>Composition is typically better for caching because caching is an
+add-on feature that can wrap many unrelated data sources.</p></li>
+<li><p>With composition, CacheDataSource can wrap any DataSource
+instance and delegate to it.</p></li>
+<li><p>Deep inheritance risks coupling caching logic to one base class
+design and can explode into many subclasses:</p>
+<ul>
+<li><p>CachedFileDataSource, CachedDbDataSource, CachedApiDataSource,
+plus variants</p></li>
+</ul></li>
+<li><p>Composition supports stacking features like caching + retry +
+logging using wrappers.</p></li>
+</ul>
+</section></section>
+<section>
+<section id="dynamic-dispatch-and-method-lookup"
+class="title-slide slide level1">
+<h1>Dynamic Dispatch and Method Lookup</h1>
+
+</section>
+<section id="dynamic-dispatch-and-method-lookup-1" class="frame">
+<h2>Dynamic Dispatch and Method Lookup</h2>
+</section>
+<section id="dynamic-dispatch" class="frame">
+<h2>Dynamic dispatch</h2>
+<p>Dynamic dispatch means the method implementation is chosen at runtime
+based on the receiver object’s class.</p>
+<ul>
+<li><p>Call site decides which method name to invoke</p></li>
+<li><p>Runtime decides which override to run</p></li>
+<li><p>Enables polymorphism: same call works for many concrete
+types</p></li>
+</ul>
+<p>This is central to typical OOP designs: code depends on a base type
+or interface, not a concrete class.</p>
+</section>
+<section id="java-dynamic-dispatch-example" class="frame">
+<h2>Java: dynamic dispatch example</h2>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">class Animal {
+  String speak() { return &quot;???&quot;; }
+}
+class Dog extends Animal {
+  @Override String speak() { return &quot;woof&quot;; }
+}
+class Cat extends Animal {
+  @Override String speak() { return &quot;meow&quot;; }
+}
+class Demo {
+  static void talk(Animal a) {
+    System.out.println(a.speak());
+  }
+  public static void main(String[] args) {
+    Animal a1 = new Dog();
+    Animal a2 = new Cat();
+    talk(a1);
+    talk(a2);
+  }
+}</code></pre>
+<p>talk depends on Animal, but the runtime chooses Dog.speak or
+Cat.speak.</p>
+</section>
+<section id="practice-3-predict-dispatch-output-java" class="frame">
+<h2>Practice 3: predict dispatch output (Java)</h2>
+<p>Predict the output.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">class A {
+  String f() { return &quot;A.f&quot;; }
+}
+class B extends A {
+  @Override String f() { return &quot;B.f&quot;; }
+  String g() { return &quot;B.g&quot;; }
+}
+class Demo {
+  static void run(A x) {
+    System.out.println(x.f());
+  }
+  public static void main(String[] args) {
+    A x = new B();
+    run(x);
+  }
+}</code></pre>
+<ul>
+<li><p>Which method body runs and why</p></li>
+</ul>
+</section>
+<section id="practice-3-answer-predict-dispatch-output-java"
+class="frame">
+<h2>Practice 3 Answer: predict dispatch output (Java)</h2>
+<p>Output</p>
+<ul>
+<li><p>B.f</p></li>
+</ul>
+<p>Explanation</p>
+<ul>
+<li><p>The static type of x in run is A, so the call is x.f().</p></li>
+<li><p>The dynamic type of the object is B, so dynamic dispatch selects
+B.f at runtime.</p></li>
+<li><p>Method g is not relevant because run never calls g.</p></li>
+</ul>
+</section>
+<section id="method-lookup-intuition" class="frame">
+<h2>Method lookup intuition</h2>
+<p>A practical way to explain method selection:</p>
+<ul>
+<li><p>The compiler checks whether the method name exists on the static
+type</p></li>
+<li><p>The runtime selects the most specific override on the actual
+object</p></li>
+</ul>
+<p>This separates:</p>
+<ul>
+<li><p>Type checking time: is the call allowed</p></li>
+<li><p>Runtime dispatch: which body executes</p></li>
+</ul>
+</section></section>
+<section>
+<section id="interfaces-vs-abstract-classes"
+class="title-slide slide level1">
+<h1>Interfaces vs Abstract Classes</h1>
+
+</section>
+<section id="interfaces-vs-abstract-classes-1" class="frame">
+<h2>Interfaces vs Abstract Classes</h2>
+</section>
+<section id="interfaces" class="frame">
+<h2>Interfaces</h2>
+<p>Interface</p>
+<ul>
+<li><p>A contract: method signatures that implementers must
+provide</p></li>
+<li><p>Supports polymorphism without inheriting implementation</p></li>
+<li><p>Encourages programming to an interface</p></li>
+</ul>
+<p>Typical uses:</p>
+<ul>
+<li><p>Plug-in points and dependency injection</p></li>
+<li><p>Multiple implementations behind a stable API</p></li>
+<li><p>Test doubles: fake implementations for testing</p></li>
+</ul>
+</section>
+<section id="abstract-classes" class="frame">
+<h2>Abstract classes</h2>
+<p>Abstract class</p>
+<ul>
+<li><p>A partial implementation plus an abstract contract</p></li>
+<li><p>Can define shared fields, constructors, and non-abstract
+methods</p></li>
+<li><p>Often used for a family of closely related classes with shared
+state or behavior</p></li>
+</ul>
+<p>Typical tradeoff:</p>
+<ul>
+<li><p>Abstract class provides reuse</p></li>
+<li><p>Interface provides decoupling and flexibility</p></li>
+</ul>
+</section>
+<section id="java-interface-vs-abstract-class" class="frame">
+<h2>Java: interface vs abstract class</h2>
+<p>Interface example:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">interface PaymentProcessor {
+  boolean charge(int cents);
+}
+class StripeProcessor implements PaymentProcessor {
+  public boolean charge(int cents) { return cents &gt; 0; }
+}</code></pre>
+<p>Abstract class example:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">abstract class BaseProcessor {
+  protected int attempts = 0;
+  public boolean chargeWithRetry(int cents) {
+    attempts++;
+    return charge(cents);
+  }
+  protected abstract boolean charge(int cents);
+}</code></pre>
+</section>
+<section id="typescript-interfaces-and-classes" class="frame">
+<h2>TypeScript: interfaces and classes</h2>
+<p>TypeScript uses structural typing: if it has the right shape, it
+matches the interface.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-typescript">interface PaymentProcessor {
+  charge(cents: number): boolean;
+}
+
+class StripeProcessor implements PaymentProcessor {
+  charge(cents: number): boolean {
+    return cents &gt; 0;
+  }
+}
+
+function checkout(p: PaymentProcessor): void {
+  console.log(p.charge(250));
+}
+checkout(new StripeProcessor());</code></pre>
+</section>
+<section id="practice-4-choose-interface-or-abstract-class"
+class="frame">
+<h2>Practice 4: choose interface or abstract class</h2>
+<p>You are designing a library with multiple implementations.</p>
+<p>Scenario A: you want many unrelated implementations and minimal
+coupling.</p>
+<p>Scenario B: you want to share state, constructors, and helper methods
+among close variants.</p>
+<p>Task:</p>
+<ul>
+<li><p>For A, choose interface or abstract class and justify</p></li>
+<li><p>For B, choose interface or abstract class and justify</p></li>
+</ul>
+</section>
+<section id="practice-4-answer-choose-interface-or-abstract-class"
+class="frame">
+<h2>Practice 4 Answer: choose interface or abstract class</h2>
+<p>A reasonable answer:</p>
+<ul>
+<li><p>Scenario A: interface</p>
+<ul>
+<li><p>Many unrelated implementations benefit from a pure
+contract</p></li>
+<li><p>Callers depend on the interface, not shared base state</p></li>
+</ul></li>
+<li><p>Scenario B: abstract class</p>
+<ul>
+<li><p>Shared state and constructors belong in a base type</p></li>
+<li><p>Helper methods reduce duplication among closely related
+variants</p></li>
+</ul></li>
+</ul>
+<p>Practical guideline:</p>
+<ul>
+<li><p>Default to interface for public extension points</p></li>
+<li><p>Use abstract classes inside a library when shared implementation
+is central</p></li>
+</ul>
+</section></section>
+<section>
+<section id="mixins-and-traits" class="title-slide slide level1">
+<h1>Mixins and Traits</h1>
+
+</section>
+<section id="mixins-and-traits-1" class="frame">
+<h2>Mixins and Traits</h2>
+</section>
+<section id="mixins-and-traits-conceptual" class="frame">
+<h2>Mixins and traits (conceptual)</h2>
+<p>Mixin</p>
+<ul>
+<li><p>A reusable bundle of methods that can be combined into many
+classes</p></li>
+<li><p>Often used to share behavior without forming a deep inheritance
+chain</p></li>
+</ul>
+<p>Trait</p>
+<ul>
+<li><p>Similar goal: compose behavior from pieces</p></li>
+<li><p>Often includes conflict rules for method name collisions</p></li>
+</ul>
+<p>Many languages implement some form of this idea:</p>
+<ul>
+<li><p>TypeScript uses mixin patterns with functions that extend
+classes</p></li>
+<li><p>Python supports multiple inheritance, which can be used
+mixin-style</p></li>
+<li><p>Java uses interfaces with default methods as a limited form of
+reusable behavior</p></li>
+</ul>
+</section>
+<section id="typescript-simple-mixin-pattern" class="frame">
+<h2>TypeScript: simple mixin pattern</h2>
+<p>A mixin can add methods to a base class.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-typescript">type Ctor&lt;T&gt; = new (...args: any[]) =&gt; T; //constructor type
+
+function Timestamped&lt;TBase extends Ctor&lt;{}&gt;&gt;(Base: TBase) {
+  return class extends Base {
+    createdAt = new Date();
+    ageMs(): number { 
+      return Date.now() - this.createdAt.getTime(); }
+  };
+}
+
+class User {
+  constructor(public name: string) {}
+}
+const TimestampedUser = Timestamped(User);
+const u = new TimestampedUser(&quot;Ada&quot;);
+console.log(u.name);
+console.log(u.ageMs());</code></pre>
+</section>
+<section id="python-mixin-style-multiple-inheritance" class="frame">
+<h2>Python: mixin-style multiple inheritance</h2>
+<p>Python can compose behavior using mixin classes.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-python">class JsonMixin:
+    def to_json(self) -&gt; str:
+        import json
+        return json.dumps(self.__dict__)
+
+class User(JsonMixin):
+    def __init__(self, name: str):
+        self.name = name
+
+u = User(&quot;Ada&quot;)
+print(u.to_json())</code></pre>
+<p>Multiple inheritance should be used carefully to avoid complex method
+resolution.</p>
+</section>
+<section id="practice-5-mixin-tradeoffs" class="frame">
+<h2>Practice 5: mixin tradeoffs</h2>
+<p>Consider using mixins to add logging and caching behaviors.</p>
+<ul>
+<li><p>What problem do mixins solve compared to inheritance</p></li>
+<li><p>What new problem can mixins introduce</p></li>
+<li><p>Name one safer alternative for combining features</p></li>
+</ul>
+</section>
+<section id="practice-5-answer-mixin-tradeoffs" class="frame">
+<h2>Practice 5 Answer: mixin tradeoffs</h2>
+<p>A reasonable answer:</p>
+<ul>
+<li><p>Mixins solve code reuse across many unrelated classes without
+deep inheritance.</p></li>
+<li><p>Mixins can introduce name conflicts and hard-to-understand method
+resolution.</p></li>
+<li><p>A safer alternative is composition using wrappers/delegation:</p>
+<ul>
+<li><p>a service has-a logger</p></li>
+<li><p>a data source has-a cache</p></li>
+</ul></li>
+</ul>
+</section></section>
+<section>
+<section id="modules-and-packages" class="title-slide slide level1">
+<h1>Modules and Packages</h1>
+
+</section>
+<section id="modules-and-packages-1" class="frame">
+<h2>Modules and Packages</h2>
+</section>
+<section id="modules-and-namespaces" class="frame">
+<h2>Modules and namespaces</h2>
+<p>Module</p>
+<ul>
+<li><p>A unit of code organization: a file or compilation unit</p></li>
+<li><p>Defines what is exported and what stays internal</p></li>
+<li><p>Prevents name collisions by using imports rather than global
+names</p></li>
+</ul>
+<p>Package</p>
+<ul>
+<li><p>A collection of related modules under a namespace</p></li>
+<li><p>Defines visibility and dependency boundaries</p></li>
+</ul>
+<p>A common goal: keep internal helpers private and expose a small
+public API surface.</p>
+</section>
+<section id="visibility-and-access-control-across-languages"
+class="frame">
+<h2>Visibility and access control across languages</h2>
+<p>Java</p>
+<ul>
+<li><p>public, protected, package-private (default), private</p></li>
+<li><p>package-private is a strong tool for internal APIs</p></li>
+</ul>
+<p>TypeScript</p>
+<ul>
+<li><p>public, protected, private checked by compiler</p></li>
+<li><p>runtime is JavaScript; enforcement is mostly at compile
+time</p></li>
+</ul>
+<p>Python</p>
+<ul>
+<li><p>underscore conventions: _internal, __name mangling</p></li>
+<li><p>relies on discipline and documentation rather than strict
+enforcement</p></li>
+</ul>
+</section>
+<section id="typescript-modules-export-and-import" class="frame">
+<h2>TypeScript modules: export and import</h2>
+<p>A typical two-file module design.</p>
+<p>File math.ts:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-typescript">export function add(a: number, b: number): number {
+  return a + b;
+}
+function helper(x: number): number {
+  return x * 2;
+}
+export function addThenDouble(a: number, b: number): number {
+  return helper(add(a, b));
+}</code></pre>
+<p>File main.ts:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-typescript">import { addThenDouble } from &quot;./math&quot;;
+
+console.log(addThenDouble(2, 3));</code></pre>
+<p>helper is not exported, so it is internal to the module.</p>
+</section>
+<section id="practice-6-typescript-import-name-conflicts" class="frame">
+<h2>Practice 6: TypeScript import name conflicts</h2>
+<p>Suppose you import two modules with the same exported name.</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-typescript">import { parse } from &quot;./json&quot;;
+import { parse } from &quot;./xml&quot;; // conflict</code></pre>
+<p>Task:</p>
+<ul>
+<li><p>Fix the imports so both functions are usable</p></li>
+<li><p>Show a call to each parse function</p></li>
+</ul>
+</section>
+<section id="practice-6-answer-typescript-import-name-conflicts"
+class="frame">
+<h2>Practice 6 Answer: TypeScript import name conflicts</h2>
+<p>Use import aliasing:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-typescript">import { parse as parseJson } from &quot;./json&quot;;
+import { parse as parseXml } from &quot;./xml&quot;;
+
+const a = parseJson(&quot;{\&quot;x\&quot;:1}&quot;);
+const b = parseXml(&quot;&lt;x&gt;1&lt;/x&gt;&quot;);
+
+console.log(a, b);</code></pre>
+<p>Aliasing resolves conflicts while keeping call sites readable.</p>
+</section>
+<section id="java-packages-organization-and-visibility" class="frame">
+<h2>Java packages: organization and visibility</h2>
+<p>Java uses packages as namespaces and visibility boundaries.</p>
+<p>File src/com/example/app/User.java:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">package com.example.app;
+
+class UserRepo { // package-private: internal to com.example.app
+  User find(String id) { return new User(id); }
+}
+
+public class User {
+  public final String id;
+  public User(String id) { this.id = id; }
+}</code></pre>
+<p>Package-private classes and methods support internal APIs without
+exposing them publicly.</p>
+</section>
+<section id="python-modules-and-packages" class="frame">
+<h2>Python modules and packages</h2>
+<p>Python module is a .py file; a package is a directory.</p>
+<p>Example structure:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-plaintext">app/
+  __init__.py
+  service.py
+  util.py</code></pre>
+<p>Example imports:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-python">from app.service import run
+from app import util</code></pre>
+<p><span class="math inline">\(\_\_init\_\_.py\)</span> marks a
+directory as a package and can also define the package public API.</p>
+</section>
+<section id="practice-7-python-module-entry-points" class="frame">
+<h2>Practice 7: Python module entry points</h2>
+<p>You have:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-plaintext">app/
+  __init__.py
+  main.py
+  util.py</code></pre>
+<p>main.py wants to call util.double.</p>
+<p>Task:</p>
+<ul>
+<li><p>Write the import statement inside main.py</p></li>
+<li><p>Explain one common mistake that causes import errors when running
+as a script</p></li>
+</ul>
+</section>
+<section id="practice-7-answer-python-module-entry-points"
+class="frame">
+<h2>Practice 7 Answer: Python module entry points</h2>
+<p>A correct import inside app/main.py:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
+data-tabsize="1"><code class="language-python">from app.util import double</code></pre>
+<p>Common mistake:</p>
+<ul>
+<li><p>Running app/main.py directly can change module resolution because
+app may not be treated as a package.</p></li>
+<li><p>A common robust approach is running as a module:</p>
+<pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-plaintext">python -m app.main</code></pre></li>
+</ul>
+</section></section>
+<section>
+<section id="industry-code-organization"
+class="title-slide slide level1">
+<h1>Industry Code Organization</h1>
+
+</section>
+<section id="industry-code-organization-1" class="frame">
+<h2>Industry Code Organization</h2>
+</section>
+<section id="typical-layering-in-services-and-libraries" class="frame">
+<h2>Typical layering in services and libraries</h2>
+<p>A common service structure:</p>
+<ul>
+<li><p>API layer: controllers/handlers, request parsing</p></li>
+<li><p>Domain layer: core business rules, pure logic where
+possible</p></li>
+<li><p>Data layer: repositories, persistence, external APIs</p></li>
+<li><p>Infrastructure: logging, metrics, configuration</p></li>
+</ul>
+<p>Goal: dependencies point inward.</p>
+<ul>
+<li><p>Domain should not depend on database libraries directly</p></li>
+<li><p>Use interfaces to invert dependencies for testability</p></li>
+</ul>
+</section>
+<section id="package-structure-strategies" class="frame">
+<h2>Package structure strategies</h2>
+<p>Two common approaches:</p>
+<p>Package by layer</p>
+<ul>
+<li><p>controllers/, services/, repositories/, models/</p></li>
+<li><p>Easy to find technical concerns, can scatter feature
+code</p></li>
+</ul>
+<p>Package by feature</p>
+<ul>
+<li><p>users/, orders/, billing/ each contains
+controller/service/repo</p></li>
+<li><p>Easier to work on a feature end-to-end, can duplicate
+infrastructure patterns</p></li>
+</ul>
+<p>Both can work; consistency matters more than the choice.</p>
+</section>
+<section id="practice-8-package-boundary-design" class="frame">
+<h2>Practice 8: package boundary design</h2>
+<p>You have a library that exposes a public API and also contains
+internal helpers.</p>
+<p>Task:</p>
+<ul>
+<li><p>Name one technique in Java to keep helpers internal</p></li>
+<li><p>Name one technique in TypeScript to keep helpers
+internal</p></li>
+<li><p>Name one technique in Python to signal internal helpers</p></li>
+</ul>
+</section>
+<section id="practice-8-answer-package-boundary-design" class="frame">
+<h2>Practice 8 Answer: package boundary design</h2>
+<p>A reasonable answer:</p>
+<ul>
+<li><p>Java: use package-private classes/methods and expose only public
+types in the package API.</p></li>
+<li><p>TypeScript: do not export internal helpers from a module, export
+only intended public functions/types.</p></li>
+<li><p>Python: use underscore naming for internal functions and place
+them in non-exported modules; document the public API.</p></li>
+</ul>
+</section></section>
+<section>
+<section id="review" class="title-slide slide level1">
+<h1>Review</h1>
+
+</section>
+<section id="review-1" class="frame">
+<h2>Review</h2>
+</section>
+<section id="summary-what-to-remember" class="frame">
+<h2>Summary: what to remember</h2>
+<ul>
+<li><p>Encapsulation protects invariants and reduces coupling</p></li>
+<li><p>Inheritance supports is-a polymorphism but increases
+coupling</p></li>
+<li><p>Composition supports has-a reuse and often scales better for
+feature combinations</p></li>
+<li><p>Dynamic dispatch selects method bodies at runtime based on the
+receiver object</p></li>
+<li><p>Interfaces define contracts; abstract classes combine contracts
+with shared implementation</p></li>
+<li><p>Mixins and traits aim to compose behavior, but can complicate
+method resolution</p></li>
+<li><p>Modules and packages create namespaces and boundaries for
+visibility and organization</p></li>
+<li><p>Industry codebases rely on clear APIs, stable package boundaries,
+and consistent structure</p></li>
+</ul>
+</section>
+<section id="review-questions" class="frame">
+<h2>Review questions</h2>
+<ul>
+<li><p>What is the difference between exposing fields and exposing
+methods for the same state</p></li>
+<li><p>When does composition beat inheritance for extending
+behavior</p></li>
+<li><p>In dynamic dispatch, what is checked at compile time and what is
+decided at runtime</p></li>
+<li><p>When would you prefer an interface to an abstract class in a
+library API</p></li>
+<li><p>What does a module export boundary do for long-term
+maintainability</p></li>
+<li><p>Which package structure fits your next project and why</p></li>
+</ul>
+</section>
+<section id="review-question-answers" class="frame">
+<h2>Review question answers</h2>
+<p>What is the difference between exposing fields and exposing methods
+for the same state</p>
+<ul>
+<li><p>Exposing fields lets callers read and write state directly, which
+can break invariants and tightly couples callers to
+representation.</p></li>
+<li><p>Exposing methods lets the class validate updates, preserve
+invariants, and change internal representation without changing
+callers.</p></li>
+</ul>
+<p>When does composition beat inheritance for extending behavior</p>
+<ul>
+<li><p>When the added behavior is an optional feature that should apply
+to many unrelated types (logging, caching, retries, metrics).</p></li>
+<li><p>When you want to combine multiple features without creating many
+subclasses.</p></li>
+<li><p>When you want to avoid coupling to a base class implementation
+and keep unit testing simpler.</p></li>
+</ul>
+</section>
+<section id="review-question-answers-1" class="frame">
+<h2>Review question answers</h2>
+<p>In dynamic dispatch, what is checked at compile time and what is
+decided at runtime</p>
+<ul>
+<li><p>Compile time: the method name must exist on the static type, and
+the argument/return types must match the method signature.</p></li>
+<li><p>Runtime: which overriding method body runs is chosen based on the
+receiver object’s actual class.</p></li>
+</ul>
+<p>When would you prefer an interface to an abstract class in a library
+API</p>
+<ul>
+<li><p>When you want many independent implementations with minimal
+coupling to shared code.</p></li>
+<li><p>When you want callers to depend only on a contract and not
+inherit state/constructors.</p></li>
+<li><p>When you want easier testing and mocking via alternate
+implementations.</p></li>
+</ul>
+</section>
+<section id="review-question-answers-2" class="frame">
+<h2>Review question answers</h2>
+<p>What does a module export boundary do for long-term
+maintainability</p>
+<ul>
+<li><p>It defines a small public API surface that other code depends
+on.</p></li>
+<li><p>It keeps helpers internal so they can be changed without breaking
+external users.</p></li>
+<li><p>It reduces name collisions and makes dependencies explicit
+through imports.</p></li>
+</ul>
+<p>Which package structure fits your next project and why</p>
+<ul>
+<li><p>Package by feature fits when teams work end-to-end on features
+and want related code in one place.</p></li>
+<li><p>Package by layer fits when a project emphasizes technical
+layering (controllers/services/repos) and consistent cross-cutting
+patterns.</p></li>
+<li><p>A common compromise is feature packages with shared
+infrastructure modules for logging/config/utilities.</p></li>
+</ul>
+</section></section>
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+    
+    
+      <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+      <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+      <script src="../_static/revealjs/plugin/math/math.js"></script>
+      
+    
+    <script>
+        var revealjsConfig = new Object();
+        Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
+        
+        
+        
+          revealjsConfig.plugins = [
+            RevealNotes,RevealHighlight,RevealMath,
+          ];
+        
+        // More info https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize(revealjsConfig);
+    </script>
+
+  </body>
+</html>

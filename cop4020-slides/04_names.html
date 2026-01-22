@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-<title>Names, Bindings, Scope, and Lifetime</title>
+  <title>Names, Bindings, Scope, and Lifetime</title>
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
@@ -37,292 +37,216 @@
 
       <!-- SECTION: Overview -->
       <section>
-        <section>
-          <h2>Overview and Goals</h2>
+        <section class="title-slide slide level1">
+          <h1>Overview and Goals</h1>
         </section>
 
         <section id="overview" class="frame">
           <h2>Overview</h2>
           <ul>
-            <li><p>How programs connect names to values and locations</p></li>
-            <li><p>How scope and lifetime control what is visible and when</p></li>
-            <li><p>Static scope and a thought experiment on dynamic scope</p></li>
-            <li><p>Storage lifetime: static, stack, heap, closures</p></li>
-            <li><p>Referential transparency and side effects</p></li>
-            <li><p>Bugs from shadowing and hoisting</p></li>
-            <li><p>How TypeScript let and const help compared to var</p></li>
+            <li><p>Names are what we write; machines operate on locations</p></li>
+            <li><p>Bindings explain how names connect to types, locations, and values</p></li>
+            <li><p>Scope explains where a name is visible in the program text</p></li>
+            <li><p>Lifetime explains how long storage exists during execution</p></li>
+            <li><p>These ideas explain real bugs (shadowing, hoisting, hidden state)</p></li>
           </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Roadmap</h2>
+          <ol>
+            <li><p>Names</p></li>
+            <li><p>Bindings and symbol tables</p></li>
+            <li><p>Scope (static vs dynamic)</p></li>
+            <li><p>Lifetime (static/stack/heap/closures)</p></li>
+            <li><p>Expressions, side effects, and common pitfalls</p></li>
+          </ol>
         </section>
       </section>
 
       <!-- SECTION: Names -->
       <section>
-        <section>
-          <h2>Names</h2>
+        <section class="title-slide slide level1">
+          <h1>Names</h1>
         </section>
 
         <section id="names-and-what-they-refer-to" class="frame">
-          <h2>Names and what they refer to</h2>
+          <h2>Names, values, and locations</h2>
           <p>When we write programs, we work with names and not raw addresses.</p>
           <ul>
-            <li><p>A name is a word in the source program that stands for something else. Examples:</p>
-              <ul>
-                <li><p>Variable names such as count, total, studentName</p></li>
-                <li><p>Function names such as print, sort, push</p></li>
-                <li><p>Type names such as int, double, string</p></li>
-              </ul>
-            </li>
-            <li><p>A value is the data currently stored. Examples:</p>
-              <ul>
-                <li><p>The integer 42 stored somewhere</p></li>
-                <li><p>The string "hello" stored somewhere</p></li>
-              </ul>
-            </li>
-            <li><p>A memory location is a place in memory, such as an address or offset, that can hold a value.</p></li>
+            <li><p>A <strong>name</strong> is a word in the source program (x, total, print).</p></li>
+            <li><p>A <strong>value</strong> is the data being represented (42, "hello").</p></li>
+            <li><p>A <strong>location</strong> is a place that can hold a value (stack slot, heap object, address).</p></li>
           </ul>
-          <p>Programmers mostly see names, the machine mostly sees addresses. A language needs rules to connect these two worlds.</p>
-          <p>ts_aliasing.ts</p>
+          <p>Programmers mostly see names. Execution ultimately reads/writes locations.</p>
         </section>
 
         <section id="names-design-issues-in-languages" class="frame">
           <h2>Names: design issues in languages</h2>
-          <p>When designing a language, there are many choices about how names work.</p>
-          <p>Questions language designers must answer:</p>
+          <p>Languages must decide how identifiers behave.</p>
           <ul>
-            <li><p>What characters are allowed in names</p>
-              <ul>
-                <li><p>letters, digits, underscore, dollar sign</p></li>
-                <li><p>non-ASCII characters or Unicode letters</p></li>
-              </ul>
-            </li>
-            <li><p>Are names case sensitive</p>
-              <ul>
-                <li><p>count, Count, and COUNT the same or different</p></li>
-              </ul>
-            </li>
-            <li><p>How long can names be</p>
-              <ul>
-                <li><p>some old languages had short limits (for example 6 or 8 characters)</p></li>
-                <li><p>most modern languages allow long descriptive names</p></li>
-              </ul>
-            </li>
-            <li><p>Which names are reserved words</p>
-              <ul>
-                <li><p>keywords such as if, while, class cannot be used as identifiers</p></li>
-              </ul>
-            </li>
-            <li><p>Which kinds of things can be named</p>
-              <ul>
-                <li><p>variables, constants, functions, classes, modules, types</p></li>
-              </ul>
-            </li>
+            <li><p>Allowed characters (letters, digits, underscore, dollar sign, Unicode)</p></li>
+            <li><p>Case sensitivity (count vs Count)</p></li>
+            <li><p>Keyword reservation (if, while, class)</p></li>
+            <li><p>What can be named (variables, functions, types, modules)</p></li>
           </ul>
-          <p>These choices affect readability, tool support, and how easy it is to make mistakes.</p>
         </section>
 
         <section id="name-forms-in-c-python-and-typescript" class="frame">
           <h2>Name forms in C, Python, and TypeScript</h2>
-          <p>Many languages have similar rules, but there are some differences.</p>
-
           <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-cpp">// C++
 int total_sum = 0;
 double x2 = 3.14;
-// int class = 1;   // not allowed: class is a keyword in C++</code></pre>
+// int class = 1;   // not allowed: class is a keyword</code></pre>
 
           <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-python"># Python
 student_name = "Ana"
-_max_count = 10 # leading underscore often means "internal use"</code></pre>
+_max_count = 10</code></pre>
 
           <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// TypeScript / JavaScript
 let totalSum = 0;
-const $cacheKey = "users";   // $ is allowed
+const $cacheKey = "users";
 // let if = 1; // not allowed: if is a keyword</code></pre>
 
           <ul>
-            <li><p>All three are case sensitive: Name, name, and NAME are different.</p></li>
-            <li><p>C and TypeScript typically use camelCase for variables, Python often uses snake_case.</p></li>
-            <li><p>Underscore and dollar sign are allowed in TypeScript and many other languages.</p></li>
-            <li><p>Keywords are reserved and cannot be reused as variable names.</p></li>
+            <li><p>All three are case sensitive.</p></li>
+            <li><p>Style conventions differ (camelCase vs snake_case).</p></li>
+            <li><p>Keywords are reserved.</p></li>
           </ul>
         </section>
 
         <section id="what-kinds-of-things-get-names" class="frame">
           <h2>What kinds of things get names</h2>
-          <p>Names are not only for variables. A typical program has many kinds of named entities.</p>
-          <p>Examples of named things:</p>
           <ul>
-            <li><p>Variables</p>
-              <ul>
-                <li><p>local variables inside a block or function</p></li>
-                <li><p>parameters to functions</p></li>
-                <li><p>global or module level variables</p></li>
-              </ul>
-            </li>
-            <li><p>Functions and methods</p>
-              <ul>
-                <li><p>print, sort, addStudent, computeArea</p></li>
-              </ul>
-            </li>
-            <li><p>Types and classes</p>
-              <ul>
-                <li><p>struct Node in C</p></li>
-                <li><p>class Student in TypeScript</p></li>
-              </ul>
-            </li>
-            <li><p>Modules, packages, or namespaces</p>
-              <ul>
-                <li><p>Python modules, TypeScript modules or files</p></li>
-              </ul>
-            </li>
+            <li><p>Variables (locals, globals, parameters)</p></li>
+            <li><p>Functions and methods</p></li>
+            <li><p>Types and classes</p></li>
+            <li><p>Modules or namespaces</p></li>
           </ul>
-          <p>The symbol table in a compiler needs to record not only the name string, but also what kind of thing each name refers to.</p>
+          <p>A compiler must record more than the spelling: what kind of thing it is and where it belongs.</p>
+        </section>
+
+        <section>
+          <h2>Practice: names vs values (warm-up)</h2>
+          <p>Consider this TypeScript code:</p>
+          <pre><code data-trim data-noescape class="language-typescript">let x = 42;
+let y = x;
+x = 99;</code></pre>
+          <p>Questions :</p>
+          <ul class="simple">
+            <li><p>Which parts are names, and which parts are values?</p></li>
+            <li><p>After the last line, what is the value of <code>y</code>?</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Practice answers: names vs values</h2>
+          <ul class="simple">
+            <li><p><code>x</code> and <code>y</code> are names; <code>42</code> and <code>99</code> are values.</p></li>
+            <li><p>For numbers, <code>let y = x;</code> copies the current value, so <code>y</code> remains <code>42</code>.</p></li>
+          </ul>
         </section>
       </section>
 
       <!-- SECTION: Bindings & Symbol Tables -->
       <section>
-        <section>
-          <h2>Bindings and Symbol Tables</h2>
+        <section class="title-slide slide level1">
+          <h1>Bindings and Symbol Tables</h1>
         </section>
 
         <section id="bindings-and-environments" class="frame">
           <h2>Bindings and environments</h2>
-          <p>A binding connects parts of the program description to each other.</p>
-          <p>Examples of bindings:</p>
+          <p>A <strong>binding</strong> connects parts of the program description to each other.</p>
           <ul>
-            <li><p>A name bound to a memory location</p>
-              <ul>
-                <li><p>Example: in C, the name x is placed at some offset in a stack frame</p></li>
-              </ul>
-            </li>
-            <li><p>A name bound to a type</p>
-              <ul>
-                <li><p>Example: the compiler records that x has type int</p></li>
-              </ul>
-            </li>
-            <li><p>A function name bound to a piece of code</p>
-              <ul>
-                <li><p>Example: the name max refers to the code that computes a maximum</p></li>
-              </ul>
-            </li>
+            <li><p>A name bound to a type (x has type int)</p></li>
+            <li><p>A name bound to a storage location (x is stored at some stack slot)</p></li>
+            <li><p>A storage location bound to a current value (that slot currently contains 42)</p></li>
+            <li><p>A function name bound to code (max refers to some function body)</p></li>
           </ul>
-          <p>The environment is the collection of all bindings that are currently in effect during execution.</p>
-          <ul>
-            <li><p>At a given point in the program, each visible name has some meaning: where it is stored, what type it has, what value it currently holds.</p></li>
-          </ul>
+          <p>The environment is the set of bindings currently in effect during execution.</p>
         </section>
 
         <section id="binding-types" class="frame">
-          <h2>Binding Types</h2>
-          <p>A single declaration can create several different bindings.</p>
+          <h2>Declaration, initialization, assignment</h2>
           <ul>
-            <li><p>Declaration versus assignment versus initialization</p>
-              <ul>
-                <li><p>Declaration introduces a name and its type</p>
-                  <ul><li><p>C: int x;</p></li></ul>
-                </li>
-                <li><p>Initialization gives a first value at the same time</p>
-                  <ul><li><p>C: int x = 0;</p></li></ul>
-                </li>
-                <li><p>Assignment changes the value later</p>
-                  <ul><li><p>C: x = x + 1;</p></li></ul>
-                </li>
-              </ul>
-            </li>
+            <li><p>Declaration introduces a name (and often a type).</p></li>
+            <li><p>Initialization gives a first value at the same time.</p></li>
+            <li><p>Assignment changes a value later.</p></li>
+          </ul>
+          <pre data-xleftmargin="8pt"><code class="language-c">int x;      // declaration
+int y = 0;  // declaration + initialization
+y = y + 1;  // assignment</code></pre>
+        </section>
 
-            <li><p>Different kinds of information can be bound</p>
-              <ul>
-                <li><p>Type binding: associate a name with a type</p>
-                  <ul><li><p>x has type int</p></li></ul>
-                </li>
-                <li><p>Storage binding: associate a name with a location</p>
-                  <ul><li><p>x is at some offset in the current stack frame</p></li></ul>
-                </li>
-                <li><p>Value binding: associate a location with a current value</p>
-                  <ul><li><p>the location for x currently holds 42</p></li></ul>
-                </li>
-              </ul>
-            </li>
+        <section id="binding-times" class="frame">
+          <h2>When do bindings happen?</h2>
+          <p>Some bindings happen earlier than others.</p>
+          <ul>
+            <li><p><strong>Language design time:</strong>keywords and primitive types exist</p></li>
+            <li><p><strong>Compile time:</strong> many type checks and stack layout decisions</p></li>
+            <li><p><strong>Link/load time:</strong> addresses of globals and functions</p></li>
+            <li><p><strong>Run time:</strong> parameter values, heap allocations, dynamic dispatch</p></li>
+          </ul>
+          <p>Earlier binding enables more checking and optimization. Later binding enables flexibility.</p>
+        </section>
 
-            <li><p>Early versus late binding</p>
-              <ul>
-                <li><p>Some bindings are fixed at compile time, such as the type of x.</p></li>
-                <li><p>Others are decided at run time, such as which method a virtual call uses in an object oriented language.</p></li>
-              </ul>
-            </li>
+        <section>
+          <h2>Practice: binding times</h2>
+          <p>Match each item to a typical binding time:</p>
+          <ul class="simple">
+            <li><p>Choosing keywords like <code>while</code>, <code>return</code></p></li>
+            <li><p>Deciding that <code>x</code> has type <code>int</code></p></li>
+            <li><p>Assigning an address to a global variable</p></li>
+            <li><p>Binding an argument value to a parameter when calling a function</p></li>
+          </ul>
+          <p>Questions :</p>
+          <ul class="simple">
+            <li><p>Which are design time, compile time, link/load time, runtime?</p></li>
           </ul>
         </section>
 
-        <section id="when-do-bindings-happen" class="frame">
-          <h2>When do bindings happen</h2>
-          <p>A binding does not always happen at the same time.</p>
-          <p>Typical binding times:</p>
-          <ul>
-            <li><p>Language design time</p>
-              <ul><li><p>designers decide which keywords exist and what the primitive types are</p></li></ul>
-            </li>
-            <li><p>Compile time</p>
-              <ul>
-                <li><p>the compiler decides that x has type int</p></li>
-                <li><p>the compiler decides where in the stack frame x will live</p></li>
-              </ul>
-            </li>
-            <li><p>Link and load time</p>
-              <ul><li><p>the linker decides the address of global variables and functions</p></li></ul>
-            </li>
-            <li><p>Run time</p>
-              <ul>
-                <li><p>parameter values are bound to parameters when a function is called</p></li>
-                <li><p>heap objects are given locations when allocated</p></li>
-              </ul>
-            </li>
+        <section>
+          <h2>Practice answers: binding times</h2>
+          <ul class="simple">
+            <li><p>Keywords like <code>while</code>, <code>return</code>: language design time</p></li>
+            <li><p><code>x</code> has type <code>int</code>: compile time</p></li>
+            <li><p>Address of a global variable: link/load time</p></li>
+            <li><p>Argument value bound to a parameter: runtime</p></li>
           </ul>
-          <p>Earlier bindings allow more static checking and optimization.<br />
-             Later bindings allow more flexibility, but some errors only show up when you run the program.</p>
         </section>
 
         <section id="bindings-in-c" class="frame">
           <h2>Bindings in C</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
 data-numbersep="1em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-c">#include &lt;stdio.h&gt;
-// name -&gt; static storage location
 int global_counter = 0;
+
 int increment(int x) {
-  // x is bound to argument on each call
-  int local = x + 1;    // local has stack storage
-  global_counter++;     // uses global binding
+  int local = x + 1;
+  global_counter++;
   return local;
 }
+
 int main(void) {
   int n = 10;
   int result = increment(n);
   printf("%d %d\n", result, global_counter);
 }</code></pre>
           <ul>
-            <li><p>x and local are created and destroyed each call</p></li>
-            <li><p>global_counter is created once and lives for the whole program</p></li>
+            <li><p><code>x</code> and <code>local</code> get fresh stack storage each call.</p></li>
+            <li><p><code>global_counter</code> is allocated once and exists for the full program run.</p></li>
           </ul>
         </section>
 
         <section id="symbol-tables-in-a-compiler" class="frame">
           <h2>Symbol tables in a compiler</h2>
           <ul>
-            <li><p>Internally, a compiler or interpreter needs a data structure to track bindings.</p></li>
-            <li><p>This structure is usually called a symbol table.</p></li>
-            <li><p>For each name that has been declared, the symbol table may store:</p>
-              <ul>
-                <li><p>the string that spells the name</p></li>
-                <li><p>what kind of thing it is (variable, function, type, parameter, etc.)</p></li>
-                <li><p>its type</p></li>
-                <li><p>which scope it belongs to (block, function, module)</p></li>
-                <li><p>where it is stored (stack offset, global address, or heap information)</p></li>
-                <li><p>perhaps extra flags for debugging or optimization</p></li>
-              </ul>
-            </li>
-            <li><p>There is often not just one table but a family of tables, one per scope, connected in a tree-like structure.</p></li>
+            <li><p>A symbol table tracks bindings discovered from declarations.</p></li>
+            <li><p>For each name, it may store kind, type, scope, and storage info.</p></li>
+            <li><p>Often there is one table per scope, linked to a parent scope.</p></li>
           </ul>
         </section>
 
@@ -330,80 +254,69 @@ int main(void) {
           <h2>Toy symbol table operations</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
 data-numbersep="1em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-plaintext">open_scope()
-  create a new table with parent = current scope
-  set current scope to this new table
-
 insert(name, info)
-  add name -&gt; info to current scope
-  if name already exists in current scope, report an error
-
 lookup(name)
-  search current scope for name
-  if not found, search parent scope
-  repeat until found or no more parents
-  if not found at all, report an error
-
-close_scope()
-  set current scope to its parent</code></pre>
-          <p>The static semantics of a language (such as "name already declared" or "name not declared") follows from simple rules on these symbol tables.</p>
+close_scope()</code></pre>
+          <p>Rules like “already declared” and “not declared” are enforced by these operations.</p>
         </section>
 
         <section id="symbol-tables-and-nested-scopes" class="frame">
           <h2>Symbol tables and nested scopes</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\scriptsize" data-tabsize="1"><code class="language-c">int x = 1;        // global scope
+data-numbersep="1em" data-frame="leftline" data-fontsize="\scriptsize" data-tabsize="1"><code class="language-c">int x = 1;
 void f() {
-    int y = 2;    // function scope
-    {
-        int z = 3;  // inner block scope
-        int x = 4;  // shadows global x
-    }
+  int y = 2;
+  {
+    int z = 3;
+    int x = 4;  // shadows global x
+  }
 }</code></pre>
-          <p>We can imagine one symbol table per scope:</p>
-          <ul>
-            <li><p>Global table</p>
-              <ul>
-                <li><p>x, kind = variable, scope = global</p></li>
-                <li><p>f, kind = function, scope = global</p></li>
-              </ul>
-            </li>
-            <li><p>Function table for f, parent = global</p>
-              <ul><li><p>y, kind = variable, scope = f</p></li></ul>
-            </li>
-            <li><p>Inner block table, parent = f</p>
-              <ul>
-                <li><p>z, kind = variable, scope = inner block</p></li>
-                <li><p>x, kind = variable, scope = inner block</p></li>
-              </ul>
-            </li>
+          <p>Lookup searches the current scope first, then walks to parents.</p>
+          <p> Example: ts_symbol_table_demo.ts</p>
+        </section>
+
+        <section>
+          <h2>Practice: lookup in nested scopes</h2>
+          <p>Using the code below, answer what <code>lookup(x)</code> finds at each point:</p>
+          <pre><code data-trim data-noescape class="language-c">int x = 1;
+void f() {
+  int y = 2;
+  {
+    int x = 4;
+    // Point A
+  }
+  // Point B
+}</code></pre>
+          <p>Questions :</p>
+          <ul class="simple">
+            <li><p>At Point A, which <code>x</code> is found?</p></li>
+            <li><p>At Point B, which <code>x</code> is found?</p></li>
           </ul>
-          <p>lookup(x) in the inner block first finds x in the inner block table and does not see the global x. lookup(y) in the inner block climbs to the function table and finds y there.</p>
+        </section>
+
+        <section>
+          <h2>Practice answers: lookup in nested scopes</h2>
+          <ul class="simple">
+            <li><p>Point A: the inner block’s <code>x</code> (value 4).</p></li>
+            <li><p>Point B: the global <code>x</code> (value 1), because the inner block scope ended.</p></li>
+          </ul>
         </section>
       </section>
 
       <!-- SECTION: Scope -->
       <section>
-        <section>
-          <h2>Scope</h2>
+        <section class="title-slide slide level1">
+          <h1>Scope</h1>
         </section>
 
         <section id="what-scope-means" class="frame">
           <h2>What scope means</h2>
-          <p>Scope answers the question: where in the program text does a binding apply?</p>
+          <p><strong>Scope</strong> is the region of program text where a name refers to a particular binding.</p>
           <ul>
-            <li><p>If a variable is declared in one block, can you use it in a different block?</p></li>
-            <li><p>If two variables in different places have the same spelling, are they the same variable or different ones?</p></li>
+            <li><p><strong>Static scope:</strong> determined by the program’s textual nesting.</p></li>
+            <li><p><strong>Dynamic scope:</strong> determined by the call chain at runtime.</p></li>
           </ul>
-          <p>Two main models:</p>
-          <ul>
-            <li><p>Static scope (also called lexical scope)</p>
-              <ul><li><p>scope depends on the structure of the program text</p></li></ul>
-            </li>
-            <li><p>Dynamic scope</p>
-              <ul><li><p>scope depends on which functions called which at run time</p></li></ul>
-            </li>
-          </ul>
-          <p>Most modern languages (TypeScript, C, Python, Java, etc.) use static scope.</p>
+          <p>Most modern languages use static scope.</p>
         </section>
 
         <section id="static-scope-example-in-typescript" class="frame">
@@ -419,101 +332,39 @@ function outer() {
   inner();
 }
 outer();</code></pre>
-          <ul>
-            <li><p>The name x inside inner refers to the x declared inside inner (the closest declaration in the surrounding text).</p></li>
-            <li><p>The name y inside inner refers to the y declared in outer, because inner is textually inside outer.</p></li>
-            <li><p>The global x is hidden inside inner by the inner x.</p></li>
-          </ul>
-          <p>The meaning of inner is determined completely by the surrounding code, not by who calls outer or inner.</p>
-          <p>ts_static_scope.ts</p>
-        </section>
-
-        <section id="block-scope-and-shadowing-in-c" class="frame">
-          <h2>Block scope and shadowing in C</h2>
-          <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-c">#include &lt;stdio.h&gt;
-int main(void) {
-  int x = 10;
-  printf("outer x = %d\n", x);
-  {
-    int x = 20;  // shadows outer x in this block
-    printf("inner x = %d\n", x);
-  }
-  printf("outer x again = %d\n", x);
-}</code></pre>
-          <ul>
-            <li><p>The outer declaration of x is visible from its declaration down to the end of main, except where it is shadowed.</p></li>
-            <li><p>Inside the inner block, there is a new declaration of x. This x hides the outer x inside the block.</p></li>
-            <li><p>After the inner block ends, the inner x goes away, and the outer x is visible again.</p></li>
-          </ul>
+          <p>The meaning of names inside <code>inner</code> is determined by the surrounding code.</p>
+          <p>Example: ts_static_scope.ts</p>
         </section>
 
         <section id="dynamic-scope-thought-experiment" class="frame">
           <h2>Dynamic scope thought experiment</h2>
-          <p>Many mainstream languages do not use dynamic scope, but it is useful to understand what it would do.</p>
           <pre data-xleftmargin="8pt" data-linenos=""
 data-numbersep="1em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-plaintext">var x = 1;
-function f() {
-  print(x);
-}
+function f() { print(x); }
 function g() {
   var x = 2;
   f();
 }
 g();</code></pre>
           <ul>
-            <li><p>Static scope:</p>
-              <ul>
-                <li><p>f looks at the place it was defined.</p></li>
-                <li><p>It sees the global x and prints 1.</p></li>
-              </ul>
-            </li>
-            <li><p>Dynamic scope:</p>
-              <ul>
-                <li><p>f looks at who called it.</p></li>
-                <li><p>It sees x in g and would print 2.</p></li>
-              </ul>
-            </li>
+            <li><p>Static scope prints 1.</p></li>
+            <li><p>Dynamic scope would print 2.</p></li>
           </ul>
-          <p>Under dynamic scope, changing who calls f might silently change what x it sees.</p>
-        </section>
-
-        <section id="static-scope-in-practice" class="frame">
-          <h2>Static scope in practice</h2>
-          <p>Reasons static scope is preferred in most modern languages:</p>
-          <ul>
-            <li><p>You can read a function and determine which variable each name refers to by following the source code structure.</p></li>
-            <li><p>Tools like editors and IDEs can</p>
-              <ul>
-                <li><p>jump from a use of a name to its definition</p></li>
-                <li><p>rename a variable safely</p></li>
-              </ul>
-            </li>
-            <li><p>Refactoring (such as moving code around or changing callers) does not suddenly change which x a function sees.</p></li>
-          </ul>
-          <p>Dynamic scope can be useful in narrow situations but tends to make larger programs hard to reason about.</p>
         </section>
 
         <section id="python-legb-rule" class="frame">
           <h2>Python LEGB rule</h2>
-          <p>Python uses lexical scope but describes it using the LEGB order:</p>
           <ul>
-            <li><p>L: local scope inside the current function</p></li>
-            <li><p>E: enclosing function scopes (if there are nested functions)</p></li>
-            <li><p>G: global scope (names defined at module level)</p></li>
-            <li><p>B: builtins (names that Python provides automatically)</p></li>
+            <li><p>L: local</p></li>
+            <li><p>E: enclosing</p></li>
+            <li><p>G: global</p></li>
+            <li><p>B: builtins</p></li>
           </ul>
-          <p>When Python sees a name, it searches in this order until it finds a binding.</p>
-          <p>Python also provides two keywords that change how assignments behave:</p>
-          <ul>
-            <li><p>global: assign to a name in the module scope</p></li>
-            <li><p>nonlocal: assign to a name in an enclosing (but not global) function scope</p></li>
-          </ul>
-          <p>py_legb.py</p>
+          <p>Python is still static scope; LEGB describes the search order.</p>
         </section>
 
         <section id="python-legb-rule-in-a-small-example" class="frame">
-          <h2>Python LEGB rule in a small example</h2>
+          <h2>LEGB in a small example</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
 data-numbersep="1em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-python">x = "global"
 def outer():
@@ -522,135 +373,49 @@ def outer():
     print(x)
   inner()
 outer()</code></pre>
-          <p>Applying LEGB:</p>
-          <ul>
-            <li><p>inner looks for x.</p></li>
-            <li><p>L (local to inner): no x is assigned here, so no match.</p></li>
-            <li><p>E (enclosing functions): outer has x = "outer", so that is used.</p></li>
-            <li><p>G (global): x = "global" is ignored, because a match was already found.</p></li>
-            <li><p>B (builtins): not reached.</p></li>
-          </ul>
-          <p>The program prints outer, not global, because the name x in inner is resolved to the nearest enclosing function scope.</p>
-        </section>
-
-        <section id="python-enclosing-scope-and-nonlocal" class="frame">
-          <h2>Python enclosing scope and nonlocal</h2>
-          <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-python">def make_counter():
-  count = 0
-  def inc():
-    nonlocal count
-    count += 1
-    return count
-  return inc
-
-c1 = make_counter()
-print(c1())  # 1
-print(c1())  # 2
-c2 = make_counter()
-print(c2())  # 1 (separate counter)</code></pre>
-          <ul>
-            <li><p>count is created when make_counter is called.</p></li>
-            <li><p>inc is a function that lives inside make_counter and refers to count.</p></li>
-            <li><p>nonlocal count means: update the count that lives in the nearest enclosing function scope.</p></li>
-            <li><p>Each call to make_counter creates a new count and a new inc that refers to that count, so c1 and c2 are independent counters.</p></li>
-          </ul>
-        </section>
-
-        <section id="python-global-example" class="frame">
-          <h2>Python global example</h2>
-          <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">counter = 0  # module level (global) name
-
-def bump():
-  global counter
-  counter += 1
-
-bump()
-bump()
-print(counter)  # 2</code></pre>
-          <ul>
-            <li><p>The name counter is first defined at module level with value 0.</p></li>
-            <li><p>The function bump uses the global keyword to say that assignments to counter should change the module level counter.</p></li>
-            <li><p>Each call to bump increases the shared global counter.</p></li>
-          </ul>
-          <p>This pattern is sometimes convenient but tends to spread state across the program, which can make debugging harder.</p>
+          <p>Search order finds <code>x</code> in the enclosing scope (outer), so it prints <code>outer</code>.</p>
+        <p>Example: py_legb.py</p>
         </section>
       </section>
 
       <!-- SECTION: Lifetime -->
       <section>
-        <section>
-          <h2>Lifetime</h2>
+        <section class="title-slide slide level1">
+          <h1>Lifetime</h1>
         </section>
 
         <section id="scope-versus-lifetime" class="frame">
-          <h2>Scope versus lifetime</h2>
-          <p>It is easy to mix up scope and lifetime, but they are different ideas.</p>
+          <h2>Scope vs. lifetime</h2>
           <ul>
-            <li><p>Scope is about the region in the code where a name refers to a particular binding.</p></li>
-            <li><p>Lifetime is about the period during program execution when a piece of storage actually exists.</p></li>
+            <li><p><storng>Scope:</storng> where a name can be used in the program text.</p></li>
+            <li><p><strong>Lifetime:</strong> when storage exists during execution.</p></li>
+            <ul>
+            <li><p>Static lifetime: exists for the entire program run.</p></li>
+            <li><p>Stack (automatic) lifetime: exists during a call or block.</p></li>
+            <li><p>Heap (dynamic) lifetime: exists from allocation until freed (or garbage-collected).</p></li>
           </ul>
-          <p>Examples:</p>
-          <ul>
-            <li><p>A variable can be out of scope but still alive if it is captured in a closure and the closure is stored somewhere else.</p></li>
-            <li><p>A variable can be in scope but not yet initialized, which can lead to bugs if you use it too early.</p></li>
           </ul>
-        </section>
-
-        <section id="storage-lifetime" class="frame">
-          <h2>Storage lifetime</h2>
-          <p>Most languages distinguish three main lifetimes:</p>
-          <ul>
-            <li><p>Static or global lifetime</p>
-              <ul>
-                <li><p>storage exists from program start until program end</p></li>
-                <li><p>used for global variables and sometimes for static locals</p></li>
-              </ul>
-            </li>
-            <li><p>Stack or automatic lifetime</p>
-              <ul>
-                <li><p>storage is allocated when entering a function or block</p></li>
-                <li><p>storage is reclaimed automatically when leaving that function or block</p></li>
-              </ul>
-            </li>
-            <li><p>Heap or dynamic lifetime</p>
-              <ul>
-                <li><p>storage is requested explicitly (for example with malloc or new)</p></li>
-                <li><p>storage is freed explicitly or by a garbage collector</p></li>
-              </ul>
-            </li>
-          </ul>
-          <p>Languages differ in which combinations they support and how they manage heap storage.</p>
         </section>
 
         <section id="c-storage-duration-example" class="frame">
           <h2>C storage duration example</h2>
           <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-c">#include &lt;stdlib.h&gt;
-int global_var = 0;        // static duration
+int global_var = 0;
 void foo(void) {
-  static int cached = 0; // static duration, but block scope
-  int local = 1;         // automatic (stack) duration
-  int *heap_ptr = malloc(sizeof(int)); // heap allocation
+  static int cached = 0;
+  int local = 1;
+  int *heap_ptr = malloc(sizeof(int));
   *heap_ptr = local + cached;
   cached++;
   free(heap_ptr);
 }</code></pre>
-          <ul>
-            <li><p>global_var: static lifetime. It is allocated before main starts and exists for the entire run of the program.</p></li>
-            <li><p>cached: static lifetime, but cannot be seen outside foo.</p></li>
-            <li><p>local: automatic stack lifetime. lives only during a call to foo.</p></li>
-            <li><p>heap_ptr lives on the stack in foo, but the integer it points to lives on the heap between malloc and free.</p></li>
-          </ul>
         </section>
 
-        <section id="check-your-understanding-lifetime" class="frame">
-          <h2>Check your understanding: lifetime</h2>
-          <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-c">#include &lt;stdlib.h&gt;
-
-int global_flag = 0;
+        <section>
+          <h2>Practice: classify lifetime</h2>
+          <p>In the code below, classify each as static, stack, or heap lifetime:</p>
+          <pre><code data-trim data-noescape class="language-c">int global_flag = 0;
 
 int *make_ptr(void) {
   static int stored = 0;
@@ -659,12 +424,22 @@ int *make_ptr(void) {
   *heap_val = 2;
   return heap_val;
 }</code></pre>
-          <p>For each of the following, which lifetime does it have?</p>
-          <ul>
-            <li><p>global_flag: static lifetime</p></li>
-            <li><p>stored: static lifetime, but block scope</p></li>
-            <li><p>local: stack lifetime</p></li>
-            <li><p>the integer pointed to by heap_val: heap lifetime</p></li>
+          <p>Questions :</p>
+          <ul class="simple">
+            <li><p>What lifetime does <code>global_flag</code> have?</p></li>
+            <li><p>What lifetime does <code>stored</code> have?</p></li>
+            <li><p>What lifetime does <code>local</code> have?</p></li>
+            <li><p>What lifetime does the integer allocated by <code>malloc</code> have?</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Practice answers: classify lifetime</h2>
+          <ul class="simple">
+            <li><p><code>global_flag</code>: static lifetime</p></li>
+            <li><p><code>stored</code>: static lifetime (but only visible inside the function)</p></li>
+            <li><p><code>local</code>: stack lifetime</p></li>
+            <li><p>malloc’d integer: heap lifetime</p></li>
           </ul>
         </section>
 
@@ -672,43 +447,22 @@ int *make_ptr(void) {
           <h2>Lifetime bugs in C</h2>
           <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\scriptsize" data-tabsize="1"><code class="language-c">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
 int *bad_pointer(void) {
-  int local = 42;   // stack storage
-  return &amp;local;    // returns address of local
+  int local = 42;
+  return &amp;local;
 }
+
 void leak(void) {
-  int *p = malloc(sizeof(int)); // heap
-  *p = 10; /* forgot to call free(p); */
-}
-int main(void) {
-  int *q = bad_pointer();
-  printf("%d\n", *q);  // undefined behavior: q points to dead stack memory
-  leak();              // memory is never freed
+  int *p = malloc(sizeof(int));
+  *p = 10; /* forgot free(p); */
 }</code></pre>
           <ul>
-            <li><p>Returning the address of a local variable creates a dangling pointer. The stack slot for local becomes invalid when bad_pointer returns.</p></li>
-            <li><p>Forgetting to free heap memory in leak causes a memory leak, where allocated storage is never reclaimed.</p></li>
-            <li><p>Lifetime errors are a major source of bugs in low level languages with manual memory management.</p></li>
+            <li><p>Returning <code>&amp;local</code> creates a dangling pointer.</p></li>
+            <li><p>Forgetting <code>free</code> creates a memory leak.</p></li>
           </ul>
-          <p>c_dangling.c</p>
-        </section>
-
-        <section id="stack-and-heap-mental-model" class="frame">
-          <h2>Stack and heap mental model</h2>
-          <p>Stack storage:</p>
-          <ul>
-            <li><p>very fast to allocate and free</p></li>
-            <li><p>last in, first out discipline: the most recent call is the first to return</p></li>
-            <li><p>good for temporary variables and parameters</p></li>
-            <li><p>size is usually limited</p></li>
-          </ul>
-          <p>Heap storage:</p>
-          <ul>
-            <li><p>can be allocated and freed in any order</p></li>
-            <li><p>can hold objects whose lifetime does not match a single function call</p></li>
-            <li><p>often managed by the programmer (C) or by a garbage collector (Python, TypeScript)</p></li>
-            <li><p>can lead to memory leaks or fragmentation if not managed carefully</p></li>
-          </ul>
+          <p>Example: c_dangling.c</p>
         </section>
 
         <section id="closures-and-extended-lifetime-in-typescript" class="frame">
@@ -720,182 +474,115 @@ data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize
   };
 }
 const add10 = makeAdder(10);
-console.log(add10(5));   // 15
-console.log(add10(20));  // 30</code></pre>
-          <ul>
-            <li><p>When makeAdder runs, it creates a parameter n and then returns an inner function that uses n.</p></li>
-            <li><p>That inner function is a closure: it carries an environment that remembers the value of n.</p></li>
-            <li><p>Even after makeAdder has returned, n is kept alive because add10 still uses it.</p></li>
-            <li><p>The lifetime of n is therefore tied to the lifetime of the closure, not to the stack frame of makeAdder.</p></li>
-          </ul>
-          <p>ts_closure_lifetime.ts</p>
+console.log(add10(5));</code></pre>
+          <p>The function returned from <code>makeAdder</code> keeps <code>n</code> alive after <code>makeAdder</code> returns.</p>
+          
         </section>
 
-        <section id="lifetime-in-c-versus-garbage-collected-languages" class="frame">
-          <h2>Lifetime in C versus garbage collected languages</h2>
-          <p>C and languages like Python or TypeScript handle storage lifetime differently.</p>
-          <ul>
-            <li><p>In C</p>
-              <ul>
-                <li><p>Static and stack lifetimes are managed by the compiler and the call stack.</p></li>
-                <li><p>Heap lifetimes are managed by the programmer using malloc and free.</p></li>
-                <li><p>Bugs such as leaks, use after free, and double free can happen if frees are not matched correctly to allocations.</p></li>
-              </ul>
-            </li>
-            <li><p>In Python or TypeScript</p>
-              <ul>
-                <li><p>Heap objects are allocated automatically when needed.</p></li>
-                <li><p>A garbage collector reclaims objects when they are no longer reachable from any variables or closures.</p></li>
-                <li><p>Program code can still keep references around longer than needed and effectively "leak" memory, but the collector prevents classic use after free errors.</p></li>
-              </ul>
-            </li>
+        <section>
+          <h2>Practice: scope vs lifetime (closure)</h2>
+          <p>Consider:</p>
+          <pre><code data-trim data-noescape class="language-typescript">function makeCounter() {
+  let count = 0;
+  return () => {
+    count += 1;
+    return count;
+  };
+}
+const c = makeCounter();</code></pre>
+          <p>Questions :</p>
+          <ul class="simple">
+            <li><p>Where is <code>count</code> in scope?</p></li>
+            <li><p>How long does the storage for <code>count</code> stay alive?</p></li>
           </ul>
-          <p>Closures in garbage collected languages naturally extend the lifetime of captured values. In C, similar behavior must be programmed using heap allocation and careful manual lifetime management.</p>
+          <p>Example: ts_closure_lifetime.ts</p>
+        </section>
+
+        <section>
+          <h2>Practice answers: scope vs lifetime (closure)</h2>
+          <ul class="simple">
+            <li><p><code>count</code> is in scope inside <code>makeCounter</code> and inside the returned arrow function body.</p></li>
+            <li><p>The storage for <code>count</code> stays alive as long as the returned function is reachable (here, while <code>c</code> can be called).</p></li>
+          </ul>
         </section>
       </section>
 
       <!-- SECTION: Expressions & Side Effects -->
       <section>
-        <section>
-          <h2>Expressions and Side Effects</h2>
+        <section class="title-slide slide level1">
+          <h1>Expressions and Side Effects</h1>
         </section>
 
         <section id="expressions" class="frame">
-          <h2>Expressions</h2>
-          <p>When we run a piece of code, two different things can happen:</p>
+          <h2>Expressions and Side Effects</h2>
+          <p>An <strong>expression</strong> is code that evaluates to a value.</p>
           <ul>
-            <li><p>it produces a value that can be used in a larger expression</p></li>
-            <li><p>it may also change something else in the program or outside world</p></li>
+            <li><p><code>3 + 4</code> evaluates to 7</p></li>
+            <li><p><code>square(5)</code> evaluates to 25</p></li>
           </ul>
-          <p>Expression:</p>
+          <p>A <strong>side effect</strong> is a change that happens in addition to producing a value.</p>
           <ul>
-            <li><p>an expression is code that evaluates to a value</p></li>
-            <li><p>examples:</p>
-              <ul>
-                <li><p>3 + 4 evaluates to 7</p></li>
-                <li><p>square(5) evaluates to 25</p></li>
-                <li><p>"hi".upper() evaluates to "HI"</p></li>
-              </ul>
-            </li>
-            <li><p>when we only care about the value, we can think in a math-like way</p></li>
+            <li><p>assignment to a variable</p></li>
+            <li><p>mutating an array/object</p></li>
+            <li><p>printing, file I/O</p></li>
           </ul>
         </section>
 
-        <section id="side-effects" class="frame">
-          <h2>Side effects</h2>
-          <p>Side effect:</p>
-          <ul>
-            <li><p>a side effect is any change that happens in addition to producing a value</p></li>
-            <li><p>typical side effects:</p>
-              <ul>
-                <li><p>updating a variable or a field</p></li>
-                <li><p>printing to the screen or writing to a file</p></li>
-                <li><p>modifying a list, dictionary, or global state</p></li>
-              </ul>
-            </li>
-          </ul>
-          <p>A useful habit when reading code:</p>
-          <ul>
-            <li><p>first ask: what value does this expression compute</p></li>
-            <li><p>then ask: what else does this code change while computing that value</p></li>
-          </ul>
-        </section>
 
         <section id="referential-transparency" class="frame">
           <h2>Referential transparency</h2>
-          <p>Referential transparency is a property of expressions and functions.</p>
+          <p>An expression is referentially transparent if you can replace it with its value without changing program behavior.</p>
           <ul>
-            <li><p>An expression is referentially transparent if replacing that expression with its value does not change the observable behavior of the program.</p></li>
-            <li><p>A function is referentially transparent if</p>
-              <ul>
-                <li><p>its result depends only on its arguments</p></li>
-                <li><p>it does not cause visible side effects when called</p></li>
-              </ul>
-            </li>
+            <li><p><code>3 + 4</code> is referentially transparent</p></li>
+            <li><p>a function that updates a global counter is not</p></li>
           </ul>
-          <p>Examples:</p>
-          <ul>
-            <li><p>3 + 4 is referentially transparent: it always evaluates to 7 and does not change anything else.</p></li>
-            <li><p>A function that reads and updates a global counter is not referentially transparent, because replacing the call with its result would change the value of the counter.</p></li>
-          </ul>
-          <p>Referential transparency is a key idea in functional programming, because it supports algebra like reasoning and easier testing.</p>
         </section>
 
         <section id="pure-and-impure-functions-in-python" class="frame">
           <h2>Pure and impure functions in Python</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># pure function
-def square(x):
+data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def square(x):
   return x * x
 
-# impure function with side effect
 acc = 0
 def add_to_acc(x):
   global acc
   acc += x
   return acc</code></pre>
-          <ul>
-            <li><p>square(x) depends only on x and does not change any external state. Calling square(3) is always 9, no matter when you call it.</p></li>
-            <li><p>add_to_acc(x) reads and updates the global variable acc. The result depends on how many times you have called it before.</p></li>
-            <li><p>If you see the call add_to_acc(3) in a large program, you cannot know its result without knowing the entire history of acc.</p></li>
-          </ul>
           <p>py_pure_impure.py</p>
         </section>
 
-        <section id="side-effects-and-hidden-state-in-typescript" class="frame">
-          <h2>Side effects and hidden state in TypeScript</h2>
-          <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let cache: number[] = [];
+        <section>
+          <h2>Practice: identify side effects</h2>
+          <p>Consider:</p>
+          <pre><code data-trim data-noescape class="language-typescript">let cache: number[] = [];
 function computeAndCache(x: number): number {
   const result = x * x;
-  // side effect on outer binding cache
   cache.push(result);
   return result;
-}
-computeAndCache(3);
-computeAndCache(3);</code></pre>
-          <ul>
-            <li><p>The function computeAndCache both returns a value and modifies the array cache defined outside the function.</p></li>
-            <li><p>The second call to computeAndCache(3) behaves differently from the first if other code looks at cache.</p></li>
-            <li><p>This style is sometimes needed, but it makes reasoning about the program harder than if we only had pure functions.</p></li>
+}</code></pre>
+          <p>Questions :</p>
+          <ul class="simple">
+            <li><p>What value does the function return?</p></li>
+            <li><p>What side effect does it have?</p></li>
+            <li><p>Why can repeated calls be harder to reason about?</p></li>
           </ul>
         </section>
 
-        <section id="pure-computation-versus-hidden-state" class="frame">
-          <h2>Pure computation versus hidden state</h2>
-          <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function square(x: number): number {
-  return x * x;
-}
-
-let cache2: number[] = [];
-function computeAndCache(x: number): number {
-  const result = x * x;
-  cache2.push(result);  // side effect
-  return result;
-}</code></pre>
-          <ul>
-            <li><p>square computes x times x and returns the result.</p>
-              <ul>
-                <li><p>Calling square(3) is always 9.</p></li>
-                <li><p>Nothing else in the program changes.</p></li>
-              </ul>
-            </li>
-            <li><p>computeAndCache also computes x times x, but it modifies cache2.</p>
-              <ul>
-                <li><p>The state of cache2 depends on how many times and in what order computeAndCache has been called.</p></li>
-                <li><p>Code elsewhere that reads cache2 will see different results depending on this history.</p></li>
-              </ul>
-            </li>
+        <section>
+          <h2>Practice answers: identify side effects</h2>
+          <ul class="simple">
+            <li><p>Return value: <code>x * x</code>.</p></li>
+            <li><p>Side effect: modifies <code>cache</code> by pushing into it.</p></li>
+            <li><p>Because program state changes, you need to know history to predict what other code sees in <code>cache</code>.</p></li>
           </ul>
-          <p>When reading code, it is useful to separate what value a function returns from what hidden state it might change while computing that value.</p>
         </section>
       </section>
 
-      <!-- SECTION: Pitfalls (Shadowing, Hoisting, var/let/const) -->
+      <!-- SECTION: Common Pitfalls -->
       <section>
-        <section>
-          <h2>Common Pitfalls</h2>
+        <section class="title-slide slide level1">
+          <h1>Common Pitfalls</h1>
         </section>
 
         <section id="shadowing-pitfall-in-c" class="frame">
@@ -905,69 +592,61 @@ data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-ta
 void add(int values[], int n) {
   for (int i = 0; i &lt; n; i++) {
     int total = values[i];  // shadows global total
-    // code that was intended to update the global total
+    // intended: total += values[i];
   }
 }</code></pre>
-          <ul>
-            <li><p>The programmer probably meant to write total += values[i]; and to refer to the global total.</p></li>
-            <li><p>Instead, a new local variable total is declared inside the loop. This local total hides the global total inside the loop.</p></li>
-            <li><p>The code compiles and runs, but the global total never changes.</p></li>
-            <li><p>This kind of shadowing bug appears in many languages, not just in C.</p></li>
-          </ul>
         </section>
-
         <section id="shadowing-in-typescript-and-python" class="frame">
-          <h2>Shadowing in TypeScript and Python</h2>
-          <pre data-xleftmargin="3pt" data-linenos=""
+  <h2>Shadowing in TypeScript and Python</h2>
+
+  <p>Shadowing happens when an inner scope introduces a new name that hides an outer one.</p>
+
+  <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-typescript">// TypeScript
 let total = 0;
 function add(values: number[]): void {
-  for (let i = 0; i &lt; values.length; i++) {
+  for (let i = 0; i < values.length; i++) {
     let total = values[i];   // shadows outer total
     // intended: total += values[i];
   }
 }</code></pre>
-          <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-python"># python
+
+  <pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-python"># Python
 total = 0
 def add(values):
   for v in values:
-    total = v   # rebinds global total without using it
+    total = v   # creates a new local name "total"
     # intended: total += v</code></pre>
-          <ul>
-            <li><p>The name total is reused in a way that hides or replaces the original meaning.</p></li>
-            <li><p>The code compiles or runs, but it does not update the intended accumulation variable.</p></li>
-            <li><p>Many teams use linters that warn when a local variable shadows a name from an outer scope, to avoid these mistakes.</p></li>
-          </ul>
-          <p>ts_shadow.ts</p>
-        </section>
+
+  <ul>
+    <li><p>TypeScript example: the loop declares a new <code>total</code>, so the outer <code>total</code> is never updated.</p></li>
+    <li><p>Python example: assigning to <code>total</code> inside <code>add</code> makes it a local variable, so this does not update the global <code>total</code>.</p></li>
+    <li><p>Many linters warn about shadowing because it often matches “I didn’t mean to create a new variable.”</p></li>
+  </ul>
+
+  <p>Example: ts_shadow.ts</p>
+</section>
 
         <section id="hoisting-with-var-in-javascript-or-typescript" class="frame">
-          <h2>Hoisting with var in JavaScript or TypeScript</h2>
+          <h2>Hoisting with var</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
 data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demo() {
-  console.log(msg); // prints undefined, not a ReferenceError
+  console.log(msg);
   var msg = "hello";
 }</code></pre>
-          <p>The actual behavior is easier to see if we rewrite how the engine thinks:</p>
+          <p>Equivalent mental model:</p>
           <pre data-xleftmargin="8pt" data-linenos=""
 data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demo() {
-  var msg;              // declaration is hoisted
-  console.log(msg);     // msg exists but is undefined
+  var msg;
+  console.log(msg);
   msg = "hello";
 }</code></pre>
-          <p>The key points:</p>
-          <ul>
-            <li><p>Declarations with var are moved (hoisted) to the top of their function.</p></li>
-            <li><p>The variable exists from the start of the function but has value undefined until the assignment line.</p></li>
-            <li><p>This can hide bugs because reading msg before the assignment does not cause an immediate error.</p></li>
-          </ul>
-          <p>ts_hoist.ts</p>
+          <p>Example: ts_hoist.ts</p>
         </section>
 
         <section id="summary-of-var-let-and-const" class="frame">
           <h2>Summary of var, let, and const</h2>
-          <p>Common differences in JavaScript and TypeScript:</p>
           <div class="center">
             <table>
               <thead>
@@ -1000,33 +679,46 @@ data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabs
               </tbody>
             </table>
           </div>
-          <p>Notes:</p>
-          <ul>
-            <li><p>var creates one binding per function, visible throughout the function body and usable before its line with value undefined.</p></li>
-            <li><p>let and const create bindings that are limited to the nearest block, such as a loop body or an if body.</p></li>
-            <li><p>let and const names exist from the start of the block but cannot be used until the declaration line is executed (temporal dead zone).</p></li>
-            <li><p>const prevents reassignment of the variable name after initialization.</p></li>
-          </ul>
         </section>
 
         <section id="let-and-const-scope-and-temporal-dead-zone" class="frame">
-          <h2>let and const: scope and temporal dead zone</h2>
+          <h2>let and const: temporal dead zone</h2>
+          <p>Unlike <code>var</code>, <code>let</code> and <code>const</code> do not allow reading the variable before the declaration line executes.</p>
           <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demoLetConst() {
-  console.log(msg); // ReferenceError (temporal dead zone)
+  console.log(msg); // ReferenceError
   let msg = "hello";
-
-  const greeting = "hi";
-  console.log(greeting); // ok
-  // greeting = "hey";   // error: cannot reassign a const
 }</code></pre>
-          <ul>
-            <li><p>let and const are block scoped: the names only exist inside the nearest block, such as this function body.</p></li>
-            <li><p>From the start of the block until the let or const line, the name is in the temporal dead zone and cannot be used.</p></li>
-            <li><p>Variables declared with let can be reassigned after they are initialized.</p></li>
-            <li><p>Variables declared with const cannot be reassigned to a new value.</p></li>
+          <p>Example: ts_tdz.ts</p>
+        </section>
+
+        <section>
+          <h2>Practice: var vs let behavior</h2>
+          <p>Predict what happens:</p>
+          <pre><code data-trim data-noescape class="language-typescript">function A() {
+  console.log(x);
+  var x = 10;
+}
+
+function B() {
+  console.log(y);
+  let y = 10;
+}</code></pre>
+          <p>Questions :</p>
+          <ul class="simple">
+            <li><p>What does <code>A()</code> output?</p></li>
+            <li><p>What does <code>B()</code> do?</p></li>
+            <li><p>Which concept explains the difference?</p></li>
           </ul>
-          <p>ts_tdz.ts</p>
+        </section>
+
+        <section>
+          <h2>Practice answers: var vs let behavior</h2>
+          <ul class="simple">
+            <li><p><code>A()</code> prints <code>undefined</code> (hoisted <code>var</code> declaration).</p></li>
+            <li><p><code>B()</code> throws <code>ReferenceError</code> (temporal dead zone for <code>let</code>).</p></li>
+            <li><p>The difference is explained by hoisting vs temporal dead zone.</p></li>
+          </ul>
         </section>
 
         <section id="block-scope-in-loops-let" class="frame">
@@ -1037,10 +729,6 @@ data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-ta
     setTimeout(() =&gt; console.log("let:", i), 0);
   }
 }</code></pre>
-          <ul>
-            <li><p>In loopLet, the declaration let i creates a new binding of i for each iteration of the loop body.</p></li>
-            <li><p>Each arrow function captures the i from its own iteration, so the outputs are let: 0, let: 1, let: 2.</p></li>
-          </ul>
         </section>
 
         <section id="var-in-loops-classic-closure-bug" class="frame">
@@ -1050,94 +738,26 @@ data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabs
   for (var i = 0; i &lt; 3; i++) {
     setTimeout(() =&gt; console.log(i), 0);
   }
-}
-// prints: 3, 3, 3</code></pre>
-          <ul>
-            <li><p>With var, the variable i is scoped to the whole function loopVar, not to the body of the for loop.</p></li>
-            <li><p>The arrow function captures a reference to the single variable i.</p></li>
-            <li><p>By the time the timeouts run, the loop has finished and i has value 3.</p></li>
-            <li><p>Using let instead of var in the loop header creates a new binding for i at each iteration, which avoids this bug.</p></li>
-          </ul>
-        </section>
-      </section>
-
-      <!-- SECTION: Practice -->
-      <section>
-        <section>
-          <h2>Practice</h2>
-        </section>
-
-        <!-- Practice 1: Question -->
-        <section id="practice-1-q" class="frame">
-          <h2>Practice 1: Scope vs Lifetime</h2>
-          <p>Consider the TypeScript code:</p>
-          <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function makeCounter() {
-  let count = 0;
-  return () => {
-    count += 1;
-    return count;
-  };
-}
-
-const c = makeCounter();
-// Question:
-// 1) Where is "count" in scope?
-// 2) How long does "count" stay alive?</code></pre>
-          <p>Answer in words (no need for formal definitions).</p>
-        </section>
-
-        <!-- Practice 1: Answer -->
-        <section id="practice-1-a" class="frame">
-          <h2>Practice 1: Answer</h2>
-          <ul>
-            <li><p><strong>Scope:</strong> The name <code>count</code> is in scope inside <code>makeCounter</code> and inside the returned arrow function body (because that function is nested inside the text of <code>makeCounter</code>).</p></li>
-            <li><p><strong>Lifetime:</strong> The storage for <code>count</code> stays alive as long as the returned closure is reachable (here, as long as <code>c</code> can still be called). Even after <code>makeCounter</code> returns, <code>count</code> remains alive because the closure uses it.</p></li>
-          </ul>
-        </section>
-
-        <!-- Practice 2: Question -->
-        <section id="practice-2-q" class="frame">
-          <h2>Practice 2: var vs let</h2>
-          <p>Predict what each prints (or whether it errors):</p>
-          <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function A() {
-  console.log(x);
-  var x = 10;
-}
-
-function B() {
-  console.log(y);
-  let y = 10;
 }</code></pre>
-          <p>Assume you call <code>A()</code> and then <code>B()</code>.</p>
-        </section>
-
-        <!-- Practice 2: Answer -->
-        <section id="practice-2-a" class="frame">
-          <h2>Practice 2: Answer</h2>
-          <ul>
-            <li><p><code>A()</code> prints <code>undefined</code> (because <code>var x</code> is hoisted; the name exists before assignment).</p></li>
-            <li><p><code>B()</code> throws a <code>ReferenceError</code> (temporal dead zone for <code>let y</code>; the name cannot be used before the declaration line executes).</p></li>
-          </ul>
+          <p>It prints 3, 3, 3 because there is only one function-scoped <code>i</code>.</p>
+          <p>Example: ts_loop_capture.ts</p>
         </section>
       </section>
 
       <!-- SECTION: Wrap-up -->
       <section>
-        <section>
-          <h2>Wrap-up</h2>
+        <section class="title-slide slide level1">
+          <h1>Wrap-up</h1>
         </section>
 
         <section id="wrap-up-summary" class="frame">
           <h2>Summary</h2>
           <ul>
-            <li><p>Names are human-friendly labels; machines ultimately use locations.</p></li>
-            <li><p>Bindings connect names to types, locations, and values; environments collect active bindings.</p></li>
-            <li><p>Scope: where in the program text a name refers to a binding (usually lexical / static).</p></li>
-            <li><p>Lifetime: when storage exists at runtime (static, stack, heap, closure-extended).</p></li>
-            <li><p>Side effects complicate reasoning; referential transparency makes code easier to reason about.</p></li>
-            <li><p>Shadowing and hoisting are common sources of bugs; <code>let</code>/<code>const</code> reduce foot-guns vs <code>var</code>.</p></li>
+            <li><p>Names, bindings, scope, and lifetime explain how programs connect text to runtime behavior.</p></li>
+            <li><p>Symbol tables model how implementations track bindings across nested scopes.</p></li>
+            <li><p>Static scope is predictable because it follows program structure.</p></li>
+            <li><p>Lifetime issues explain bugs in manual memory management and why closures matter.</p></li>
+            <li><p>Side effects complicate reasoning; shadowing and hoisting create common bugs.</p></li>
           </ul>
         </section>
       </section>
@@ -1150,25 +770,25 @@ function B() {
   <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
   <script src="../_static/revealjs/plugin/math/math.js"></script>
 
-<script>
+  <script>
     var revealjsConfig = new Object();
-    Object.assign(revealjsConfig, 
+    Object.assign(revealjsConfig,
     { "disableLayout": true,
-    "controls": true, 
-    "progress": true, 
-    "hash": true, 
-    "center": true, 
-    "transition": "slide", 
-    "slideNumber": true, 
-    "scrollActivationWidth": null,
-    "mouseWheel": false, 
-    "width": 800, "height": 540 });
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": null,
+      "mouseWheel": false,
+      "width": 800, "height": 540
+    });
 
     revealjsConfig.plugins = [
       RevealNotes, RevealHighlight, RevealMath,
     ];
 
-    // More info https://github.com/hakimel/reveal.js#configuration
     Reveal.initialize(revealjsConfig);
   </script>
 

@@ -150,7 +150,13 @@
             </li>
           </ul>
         </section>
+      </section>
 
+
+      <section>
+        <section  class="title-slide slide level1">
+          <h1>Context Free Grammars</h1>
+        </section>
         <!-- SPLIT: Context-Free Grammars (CFGs): Informal Idea -->
         <section>
           <h2>CFGs: Informal idea</h2>
@@ -299,45 +305,6 @@ LPAREN("(")  IDENT(y)    PLUS("+")  NUMBER(3)  RPAREN(")")</code></pre>
             </li>
           </ul>
         </section>
-
-        <section>
-          <h2>A Tiny Arithmetic Expression Grammar</h2>
-          <p>Terminals (coming from the lexer):</p>
-          <ul class="simple">
-            <li>
-              <p><code>NUM</code>, <code>+</code>, <code>*</code>, <code>(</code>, <code>)</code></p>
-            </li>
-          </ul>
-          <p>Nonterminals:</p>
-          <ul class="simple">
-            <li>
-              <p><code>Expr</code>, <code>Term</code>, <code>Factor</code></p>
-            </li>
-          </ul>
-          <p>Grammar:
-            \[
-            \begin{array}{rcl}
-            \text{Expr} &\rightarrow& \text{Expr} + \text{Term} \;\mid\; \text{Term} \\
-            \text{Term} &\rightarrow& \text{Term} * \text{Factor} \;\mid\; \text{Factor} \\
-            \text{Factor} &\rightarrow& ( \text{Expr} ) \;\mid\; \text{NUM}
-            \end{array}
-            \]</p>
-          <p>This grammar generates strings like:</p>
-          <ul class="simple">
-            <li>
-              <p><code>NUM</code></p>
-            </li>
-            <li>
-              <p><code>NUM + NUM</code></p>
-            </li>
-            <li>
-              <p><code>NUM * NUM + NUM</code></p>
-            </li>
-            <li>
-              <p><code>(NUM + NUM) * NUM</code></p>
-            </li>
-          </ul>
-        </section>
       </section>
 
       <!-- =========================================================
@@ -393,6 +360,44 @@ LPAREN("(")  IDENT(y)    PLUS("+")  NUMBER(3)  RPAREN(")")</code></pre>
 &lt;term&gt;   ::= &lt;factor&gt; (&quot;*&quot; &lt;factor&gt;)*
 &lt;factor&gt; ::= &quot;(&quot; &lt;expr&gt; &quot;)&quot; | NUM</code></pre>
           <p>EBNF is easier to read and closer to how we think about repetition and options.</p>
+        </section>
+               <section>
+          <h2>A Tiny Arithmetic Expression Grammar</h2>
+          <p>Terminals (coming from the lexer):</p>
+          <ul class="simple">
+            <li>
+              <p><code>NUM</code>, <code>+</code>, <code>*</code>, <code>(</code>, <code>)</code></p>
+            </li>
+          </ul>
+          <p>Nonterminals:</p>
+          <ul class="simple">
+            <li>
+              <p><code>Expr</code>, <code>Term</code>, <code>Factor</code></p>
+            </li>
+          </ul>
+          <p>Grammar:
+            \[
+            \begin{array}{rcl}
+            \text{Expr} &\rightarrow& \text{Expr} + \text{Term} \;\mid\; \text{Term} \\
+            \text{Term} &\rightarrow& \text{Term} * \text{Factor} \;\mid\; \text{Factor} \\
+            \text{Factor} &\rightarrow& ( \text{Expr} ) \;\mid\; \text{NUM}
+            \end{array}
+            \]</p>
+          <p>This grammar generates strings like:</p>
+          <ul class="simple">
+            <li>
+              <p><code>NUM</code></p>
+            </li>
+            <li>
+              <p><code>NUM + NUM</code></p>
+            </li>
+            <li>
+              <p><code>NUM * NUM + NUM</code></p>
+            </li>
+            <li>
+              <p><code>(NUM + NUM) * NUM</code></p>
+            </li>
+          </ul>
         </section>
 
         <!-- SPLIT: Derivations slide into two -->
@@ -919,6 +924,7 @@ ConditionalExpression
           </ul>
 
         </section>
+
         <section>
           <h2>Bottom-up parsing</h2>
 
@@ -1037,65 +1043,6 @@ ConditionalExpression
             </li>
           </ul>
           
-        </section>
-
-        <section>
-          <h2>Designing a grammar for expressions (1)</h2>
-          <p>Suppose we want a tiny expression language with:</p>
-          <ul class="simple">
-            <li>
-              <p>numbers, <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></p>
-            </li>
-            <li>
-              <p>parentheses for grouping</p>
-            </li>
-            <li>
-              <p>usual math rules:</p>
-              <ul>
-                <li>
-                  <p><code>*</code> and <code>/</code> bind tighter than <code>+</code> and <code>-</code></p>
-                </li>
-                <li>
-                  <p><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> are left-associative</p>
-                </li>
-              </ul>
-            </li>
-          </ul>
-          <p>A naive grammar might be:</p>
-          <pre><code data-trim data-noescape class="language-text">Expr ::= Expr &quot;+&quot; Expr
-      |  Expr &quot;*&quot; Expr
-      |  NUM</code></pre>
-
-        </section>
-
-        <section>
-          <h2>Designing a grammar for expressions (2)</h2>
-
-          <pre><code data-trim data-noescape class="language-text">Expr ::= Expr &quot;+&quot; Expr
-      |  Expr &quot;*&quot; Expr
-      |  NUM</code></pre>
-          <p>Problems:</p>
-          <ul class="simple">
-            <li>
-              <p>ambiguous: <code>NUM + NUM * NUM</code> has two parse trees</p>
-            </li>
-            <li>
-              <p>no explicit precedence or associativity</p>
-            </li>
-          </ul>
-          <p>Our design strategy:</p>
-          <ul class="simple">
-            <li>
-              <p>introduce layers that match precedence: <code>Expr</code> for <code>+</code>- and <code>Term</code> for
-                <code>*</code>/</p>
-            </li>
-            <li>
-              <p>use repetition patterns (or left recursion) to encode associativity</p>
-            </li>
-            <li>
-              <p>let <code>Factor</code> handle base cases and parentheses</p>
-            </li>
-          </ul>
         </section>
 
         <section>
@@ -1383,27 +1330,6 @@ console.log(JSON.stringify(ast, null, 2));</code></pre>
         </section>
 
         <section>
-          <h2>What Does the AST Look Like for 1 + 2 * 3?</h2>
-          <p>For input <code>1 + 2 * 3</code>, the AST should encode precedence:</p>
-          <pre><code data-trim data-noescape class="language-typescript">{
-  "type": "BinaryExpr",
-  "op": "+",
-  "left": { "type": "NumberLiteral", "value": 1 },
-  "right": {
-    "type": "BinaryExpr",
-    "op": "*",
-    "left":  { "type": "NumberLiteral", "value": 2 },
-    "right": { "type": "NumberLiteral", "value": 3 }
-  }
-}</code></pre>
-          <p>This corresponds to the intended meaning:
-            \[
-            1 + (2 * 3)
-            \]
-            The grammar and recursive descent structure enforce this.</p>
-        </section>
-
-        <section>
           <h2>Error Handling in Recursive Descent</h2>
           <p>Basic approach in this example:</p>
           <ul class="simple">
@@ -1479,31 +1405,8 @@ console.log(JSON.stringify(ast, null, 2));</code></pre>
 
         <section>
           <h2>Bottom-up parsing: shift-reduce idea (2)</h2>
-          <p>Bottom-up parsers:</p>
+                    <p>Shift-reduce algorithm (very high level):</p>
           <ul class="simple">
-            <li>
-              <p>build the parse tree from the leaves up toward the root</p>
-            </li>
-            <li>
-              <p>most common family: LR parsers (including LALR)</p>
-            </li>
-            <li>
-              <p>key mechanism: shift-reduce algorithm</p>
-            </li>
-          </ul>
-          <p>Shift-reduce algorithm (very high level):</p>
-          <ul class="simple">
-            <li>
-              <p>maintain:</p>
-              <ul>
-                <li>
-                  <p>a stack of grammar symbols and parser states</p>
-                </li>
-                <li>
-                  <p>the remaining input tokens</p>
-                </li>
-              </ul>
-            </li>
             <li>
               <p>two main actions:</p>
               <ul>

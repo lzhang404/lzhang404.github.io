@@ -2,10 +2,9 @@
 <html lang="en" data-content_root="../">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-  <title>Introduction to Data Structure and Algorithm I</title>
+<title>Introduction to Data Structure and Algorithm I</title>
 
   <!-- Match the same Reveal + course styling pattern (like m02_lexical.html) -->
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
@@ -17,45 +16,6 @@
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-  <style>
-    /* Light-touch table styling to resemble booktabs */
-    table.booktabs {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: 0.92em;
-    }
-    table.booktabs thead tr {
-      border-bottom: 2px solid #333;
-    }
-    table.booktabs tbody tr:first-child {
-      border-top: 1px solid #333;
-    }
-    table.booktabs tbody tr {
-      border-bottom: 1px solid #ddd;
-    }
-    table.booktabs th, table.booktabs td {
-      padding: 6px 10px;
-      text-align: left;
-      vertical-align: top;
-    }
-    .two-col {
-      display: flex;
-      gap: 24px;
-      align-items: flex-start;
-    }
-    .two-col > div {
-      flex: 1;
-    }
-    .small-note {
-      font-size: 0.9em;
-      opacity: 0.9;
-    }
-    .center {
-      text-align: center;
-    }
-  </style>
 </head>
 
 <body>
@@ -1150,7 +1110,7 @@ void initializeArray(int a[], int n) {
 
   <script>
     var revealjsConfig = new Object();
-    Object.assign(revealjsConfig, {
+    Object.assign(revealjsConfig, { "disableLayout": true,
       "controls": true,
       "progress": true,
       "hash": true,

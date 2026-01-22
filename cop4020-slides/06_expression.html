@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+<title>Expressions, Assignment, and Control Flow</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Expressions, Assignment, and Control Flow</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Module 6</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="slide level2">
+
+        <section id="overviews" class="frame">
+          <h2>Overviews</h2>
+          <ul>
+            <li>
+              <p>Expressions: evaluation order, side effects,
+                short-circuit</p>
+            </li>
+            <li>
+              <p>Assignment: statements vs expressions, compound assignment,
+                destructuring</p>
+            </li>
+            <li>
+              <p>Sequences and blocks: sequencing, scoping, readability</p>
+            </li>
+            <li>
+              <p>Selection: if/else, switch, match (TypeScript, C, Python,
+                Rust)</p>
+            </li>
+            <li>
+              <p>Iteration: while, for, foreach, iterators and generators</p>
+            </li>
+            <li>
+              <p>Guarded commands: motivation, semantics, examples</p>
+            </li>
+            <li>
+              <p>Industry angle: controlling side effects, avoiding subtle branch
+                bugs</p>
+            </li>
+          </ul>
+        </section>
+        <section id="expressions-what-they-are" class="frame">
+          <h2>Expressions: What They Are</h2>
+          <ul>
+            <li>
+              <p>An expression is a syntactic form that can be evaluated to
+                produce a value.</p>
+            </li>
+            <li>
+              <p>Key properties that differ across languages:</p>
+              <ul>
+                <li>
+                  <p>Evaluation order: which subexpression runs first</p>
+                </li>
+                <li>
+                  <p>Side effects: whether evaluation changes program state</p>
+                </li>
+                <li>
+                  <p>Definedness: whether the language specifies behavior for all
+                    cases</p>
+                </li>
+                <li>
+                  <p>Type rules: whether expression types are inferred or
+                    annotated</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Common sources of confusion:</p>
+              <ul>
+                <li>
+                  <p>Operator precedence vs evaluation order are different
+                    concepts</p>
+                </li>
+                <li>
+                  <p>A program can be type-correct but still have unspecified behavior
+                    in some languages</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section id="operator-precedence-vs-evaluation-order" class="frame">
+          <h2>Operator Precedence vs Evaluation Order</h2>
+          <ul>
+            <li>
+              <p>Operator precedence decides how an expression is grouped (its
+                parse tree).</p>
+            </li>
+            <li>
+              <p>Evaluation order decides when the grouped pieces are
+                executed.</p>
+            </li>
+            <li>
+              <p>Example grouping:</p>
+              <ul>
+                <li>
+                  <p><span class="math inline">\(1 + 2 * 3\)</span> groups as <span class="math inline">\(1 + (2 *
+                      3)\)</span> due to precedence</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Evaluation order matters when:</p>
+              <ul>
+                <li>
+                  <p>function calls have side effects</p>
+                </li>
+                <li>
+                  <p>operands update shared state</p>
+                </li>
+                <li>
+                  <p>short-circuit logic can skip work</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section id="evaluation-order-left-to-right-example" class="frame">
+          <h2>Evaluation order: left to right example</h2>
+          <p>TypeScript evaluates function arguments from left to right:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function log(label: string, value: number): number {
+  console.log(label, value);
+  return value;
+}
+let x = 1;
+let y = log(&quot;first&quot;, x++)
+      + log(&quot;second&quot;, x++);
+// Output:
+// first 1
+// second 2
+// After expression: x is 3, y is 3</code></pre>
+          <p>ts_eval_order.ts</p>
+        </section>
+        <section id="evaluation-order-c-can-be-tricky" class="frame">
+          <h2>Evaluation order: C can be tricky</h2>
+          <p>In C, order of evaluation of subexpressions is often not
+            specified:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">#include &lt;stdio.h&gt;
+int inc(const char *label, int *p) {
+  printf(&quot;%s %d\n&quot;, label, *p);
+  return (*p)++;
+}
+
+int main(void) {
+  int x = 1;
+  int y = inc(&quot;first&quot;, &amp;x) + inc(&quot;second&quot;, &amp;x);
+  printf(&quot;x = %d, y = %d\n&quot;, x, y);
+}</code></pre>
+          <ul>
+            <li>
+              <p>The language specification does not guarantee which inc call
+                happens first</p>
+            </li>
+            <li>
+              <p>Compilers may choose different orders</p>
+            </li>
+            <li>
+              <p>Code that depends on a particular order is fragile and may be
+                incorrect</p>
+            </li>
+          </ul>
+          <p>c_eval_order.c</p>
+        </section>
+        <section id="side-effects" class="frame">
+          <h2>Side effects</h2>
+          <ul>
+            <li>
+              <p>A side effect is any observable change in program state besides
+                returning a value</p>
+              <ul>
+                <li>
+                  <p>Modifying a variable or object field</p>
+                </li>
+                <li>
+                  <p>Writing to a file or network</p>
+                </li>
+                <li>
+                  <p>Printing to the console</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Expressions with side effects can be harder to reason about</p>
+              <ul>
+                <li>
+                  <p>Value depends on when and how many times the expression is
+                    evaluated</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Many languages allow side effects almost anywhere</p>
+              <ul>
+                <li>
+                  <p>Assignment as an expression in C, C++</p>
+                </li>
+                <li>
+                  <p>Function calls with side effects in any language</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Some styles and languages try to limit side effects</p>
+              <ul>
+                <li>
+                  <p>Pure functions, functional programming, immutable data</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section id="side-effects-inside-expressions" class="frame">
+          <h2>Side effects inside expressions</h2>
+          <p>TypeScript example combining value and side effect:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let arr = [1, 2];
+
+function pushAndSum(value: number): number {
+  arr.push(value);        // side effect
+  return arr.reduce((a, b) =&gt; a + b, 0);
+}
+
+let total = pushAndSum(3) + pushAndSum(4);
+
+// After expression:
+// arr is [1, 2, 3, 4]
+// total is 6 + 10 = 16</code></pre>
+          <ul>
+            <li>
+              <p>The result depends on the order and number of calls</p>
+            </li>
+            <li>
+              <p>Avoid hidden side effects inside complex expressions when
+                possible</p>
+            </li>
+          </ul>
+        </section>
+        <section id="short-circuit-boolean-evaluation" class="frame">
+          <h2>Short-circuit boolean evaluation</h2>
+          <ul>
+            <li>
+              <p>Boolean operators and and or in many languages are
+                short-circuiting</p>
+              <ul>
+                <li>
+                  <p>In a and b, if a is false, b is not evaluated</p>
+                </li>
+                <li>
+                  <p>In a or b, if a is true, b is not evaluated</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>This is useful for</p>
+              <ul>
+                <li>
+                  <p>Avoiding unnecessary work</p>
+                </li>
+                <li>
+                  <p>Avoiding errors when later expressions would be unsafe</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>It also means that boolean expressions can control side
+                effects</p>
+              <ul>
+                <li>
+                  <p>Second expression may or may not run</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <p>ts_sideeffect.ts</p>
+        </section>
+        <section id="short-circuit-as-a-safety-guard-typescript" class="frame">
+          <h2>Short-Circuit as a Safety Guard (TypeScript)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type User = { name: string } | null;
+
+function greet(u: User) {
+  if (u !== null &amp;&amp; u.name.length &gt; 0) {
+    console.log(&quot;hello&quot;, u.name);
+  } else {
+    console.log(&quot;no user&quot;);
+  }
+}</code></pre>
+          <ul>
+            <li>
+              <p>The second condition is only evaluated when u is not
+                null</p>
+            </li>
+            <li>
+              <p>This is one of the most common and safe uses of
+                short-circuit</p>
+            </li>
+          </ul>
+          <p>ts_short_circuit.ts</p>
+        </section>
+        <section id="short-circuit-as-a-safety-guard-python" class="frame">
+          <h2>Short-Circuit as a Safety Guard (Python)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def greet(u):
+    # u is either None or a dict with &quot;name&quot;
+    if u is not None and len(u[&quot;name&quot;]) &gt; 0:
+        print(&quot;hello&quot;, u[&quot;name&quot;])
+    else:
+        print(&quot;no user&quot;)</code></pre>
+          <ul>
+            <li>
+              <p>The <code>and</code> operator short-circuits like
+                <code>&amp;&amp;</code>
+              </p>
+            </li>
+            <li>
+              <p>This avoids exceptions when u is None</p>
+            </li>
+          </ul>
+        </section>
+        <section id="short-circuit-with-side-effects-pitfall" class="frame">
+          <h2>Short-Circuit with Side Effects: Pitfall</h2>
+          <p>Short-circuit can hide control flow inside expressions.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// typescript
+let connected = false;
+function connect(): boolean {
+  console.log(&quot;connecting...&quot;);
+  connected = true;
+  return connected;
+}
+// works, but the intent is not obvious
+connected || connect();  </code></pre>
+          <p>Guideline:</p>
+          <ul>
+            <li>
+              <p>Prefer an explicit if statement when the right side has side
+                effects</p>
+            </li>
+          </ul>
+          <p>ts_short_circuit_pitfall.ts</p>
+        </section>
+        <section id="short-circuit-return-values" class="frame">
+          <h2>Short-Circuit Return Values</h2>
+          <p>In TypeScript / JavaScript:</p>
+          <ul>
+            <li>
+              <p>A <code>&amp;&amp;</code> B returns either A or B (not
+                necessarily a boolean)</p>
+            </li>
+            <li>
+              <p>A <code>||</code> B returns either A or B</p>
+            </li>
+          </ul>
+          <p>In Python:</p>
+          <ul>
+            <li>
+              <p><em>and</em> and <em>or</em> also return one of the
+                operands</p>
+            </li>
+          </ul>
+          <p>Consequence:</p>
+          <ul>
+            <li>
+              <p>This enables idioms like default values</p>
+            </li>
+            <li>
+              <p>It can also cause bugs when you expected a boolean</p>
+            </li>
+          </ul>
+        </section>
+        <section id="default-values-with-short-circuit-typescript" class="frame">
+          <h2>Default Values with Short-Circuit (TypeScript)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function label(name: string | undefined) {
+  let shown1 = name || &quot;anonymous&quot;;
+  let shown2 = name ?? &quot;anonymous&quot;; // nullish coalescing
+
+  console.log({ shown1, shown2 });
+}
+
+label(undefined);
+label(&quot;&quot;);</code></pre>
+          <ul>
+            <li>
+              <p><code>||</code> treats empty string as falsey</p>
+            </li>
+            <li>
+              <p><code>??</code> only replaces null or undefined</p>
+            </li>
+          </ul>
+          <p>ts_default_val.ts</p>
+        </section>
+        <section id="default-values-with-short-circuit-python" class="frame">
+          <h2>Default Values with Short-Circuit (Python)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def label(name):
+    shown = name or &quot;anonymous&quot;
+    print(shown)
+
+label(None)
+label(&quot;&quot;)</code></pre>
+          <p>Note:</p>
+          <ul>
+            <li>
+              <p>Empty string behaves like false in Python</p>
+            </li>
+            <li>
+              <p>If empty string is a valid value, use an explicit check
+                instead</p>
+            </li>
+          </ul>
+        </section>
+        <section id="assignment-models" class="frame">
+          <h2>Assignment Models</h2>
+          <p>Assignment connects a name to a value (or updates a storage
+            location).</p>
+          <p>Key questions:</p>
+          <ul>
+            <li>
+              <p>Is assignment a statement, an expression, or both</p>
+            </li>
+            <li>
+              <p>Does assignment copy a value or copy a reference</p>
+            </li>
+            <li>
+              <p>What is the type behavior (implicit conversions,
+                coercions)</p>
+            </li>
+            <li>
+              <p>Are there compound assignments and destructuring forms</p>
+            </li>
+          </ul>
+        </section>
+        <section id="assignment-as-an-expression-c-typescript" class="frame">
+          <h2>Assignment as an Expression (C, TypeScript)</h2>
+          <p>In C and JavaScript, assignment produces a value.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">#include &lt;stdio.h&gt;
+
+int main(void) {
+  int x = 0;
+  int y = (x = 5);  // assignment yields 5
+  printf(&quot;x=%d y=%d\n&quot;, x, y);
+  return 0;
+}</code></pre>
+          <p>Implication:</p>
+          <ul>
+            <li>
+              <p>compact code is possible</p>
+            </li>
+            <li>
+              <p>bugs happen when = is confused with ==</p>
+            </li>
+          </ul>
+          <p>c_assign_expr.c</p>
+        </section>
+        <section id="assignment-is-a-statement-python" class="frame">
+          <h2>Assignment is a Statement (Python)</h2>
+          <p>In Python, assignment is a statement, not a general expression.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">x = 5
+# y = (x = 5)   # syntax error in Python
+y = x
+print(x, y)</code></pre>
+          <p>Benefit:</p>
+          <ul>
+            <li>
+              <p>fewer accidental assignments inside conditions</p>
+            </li>
+          </ul>
+          <p>Related feature:</p>
+          <ul>
+            <li>
+              <p>Python has a dedicated assignment expression operator := for
+                limited cases</p>
+            </li>
+          </ul>
+        </section>
+        <section id="compound-assignment" class="frame">
+          <h2>Compound Assignment</h2>
+          <p>Compound assignment updates a location using an operator.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let x = 10;
+x += 5;   // x = x + 5
+x *= 2;   // x = x * 2
+console.log(x);</code></pre>
+          <p>Notes:</p>
+          <ul>
+            <li>
+              <p>C and TypeScript support many compound operators</p>
+            </li>
+            <li>
+              <p>Python also supports them (+=, *=, etc.)</p>
+            </li>
+            <li>
+              <p>With objects, += may mutate or allocate depending on language and
+                type</p>
+            </li>
+          </ul>
+        </section>
+        <section id="chained-assignment-readability-vs-risk" class="frame">
+          <h2>Chained Assignment: Readability vs Risk</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// typescript
+let a: number, b: number, c: number;
+a = b = c = 0;
+console.log(a, b, c);</code></pre>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># python
+a = b = c = 0
+print(a, b, c)</code></pre>
+          <ul>
+            <li>
+              <p>Works well for immutable values (numbers, strings)</p>
+            </li>
+            <li>
+              <p>Can be surprising for mutable objects if all names reference the
+                same object</p>
+            </li>
+          </ul>
+        </section>
+        <section id="chained-assignment-with-mutability-python" class="frame">
+          <h2>Chained Assignment with Mutability (Python)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">a = b = []
+a.append(1)
+print(a)  # [1]
+print(b)  # [1]</code></pre>
+          <ul>
+            <li>
+              <p>a and b refer to the same list object</p>
+            </li>
+            <li>
+              <p>mutation through one name is observed through the other</p>
+            </li>
+          </ul>
+          <p>Safer pattern:</p>
+          <ul>
+            <li>
+              <p>a = [] ; b = []</p>
+            </li>
+          </ul>
+        </section>
+        <section id="destructuring-and-multiple-assignment" class="frame">
+          <h2>Destructuring and Multiple Assignment</h2>
+          <p>TypeScript destructuring:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let pair: [number, string] = [7, &quot;seven&quot;];
+let [n, s] = pair;
+
+let obj = { x: 1, y: 2 };
+let { x, y } = obj;
+
+console.log(n, s, x, y);</code></pre>
+          <p>Python tuple unpacking:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">n, s = (7, &quot;seven&quot;)
+x, y = [1, 2]
+print(n, s, x, y)</code></pre>
+        </section>
+        <section id="assignment-in-conditions-what-happens" class="frame">
+          <h2>Assignment in conditions: what happens?</h2>
+          <p>C code:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">int x = 5;
+if (x = 0) {
+  printf(&quot;x is zero\n&quot;);
+} else {
+  printf(&quot;x is nonzero\n&quot;);
+}</code></pre>
+          <p>Questions to discuss:</p>
+          <ul>
+            <li>
+              <p>What does x = 0 do to the value stored in x?</p>
+            </li>
+            <li>
+              <p>What is the value of the expression x = 0?</p>
+            </li>
+            <li>
+              <p>Which branch runs, and what is printed?</p>
+            </li>
+            <li>
+              <p>How would you write the intended version in C?</p>
+            </li>
+          </ul>
+          <p>Compare with Python:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">x = 5
+
+# if x = 0:        # syntax error in Python
+#     print(&quot;x is zero&quot;)</code></pre>
+<p>c_assign_cond.c</p>
+        </section>
+        <section id="sequences-and-blocks" class="frame">
+          <h2>Sequences and Blocks</h2>
+          <ul>
+            <li>
+              <p>A sequence is a way to express multiple computations in
+                order.</p>
+            </li>
+            <li>
+              <p>A block groups statements into a single syntactic unit:</p>
+              <ul>
+                <li>
+                  <p>often introduces a scope</p>
+                </li>
+                <li>
+                  <p>often controls lifetime of locals</p>
+                </li>
+                <li>
+                  <p>often used after if/while/for</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Different languages emphasize different mechanisms:</p>
+              <ul>
+                <li>
+                  <p>C, TypeScript: braces define blocks; semicolons separate
+                    statements</p>
+                </li>
+                <li>
+                  <p>Python: indentation defines blocks; newline separates
+                    statements</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section id="blocks-and-scope" class="frame">
+          <h2>Blocks and scope</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">//typescript
+let x = 1;
+{
+  let x = 2;        // inner x shadows outer x
+  console.log(x);   // prints 2
+}
+console.log(x);     // prints 1</code></pre>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># python
+x = 1
+if True:
+  x = 2          # modifies same x
+print(x)           # prints 2</code></pre>
+          <ul>
+            <li>
+              <p>In TypeScript, block scope with let and const</p>
+            </li>
+            <li>
+              <p>In Python, if and while blocks do not introduce a new local
+                scope</p>
+            </li>
+          </ul>
+          <p>py_block_scope.py ts_block_scope.py</p>
+        </section>
+        <section id="selection-constructs" class="frame">
+          <h2>Selection Constructs</h2>
+          <p>Selection chooses a control-flow path based on conditions or
+            patterns.</p>
+          <p>Common forms:</p>
+          <ul>
+            <li>
+              <p>if / else if / else</p>
+            </li>
+            <li>
+              <p>switch (C, TypeScript) with cases</p>
+            </li>
+            <li>
+              <p>match (Rust), match/case (Python) with pattern matching</p>
+            </li>
+          </ul>
+          <p>Design choices:</p>
+          <ul>
+            <li>
+              <p>fall-through vs no fall-through</p>
+            </li>
+            <li>
+              <p>exhaustiveness checking (compile-time guarantees)</p>
+            </li>
+            <li>
+              <p>pattern matching richness (values, types, structure)</p>
+            </li>
+          </ul>
+        </section>
+        <section id="selection-if-statements" class="frame">
+          <h2>Selection: if statements</h2>
+          <ul>
+            <li>
+              <p>if statements choose between blocks based on a boolean
+                condition</p>
+            </li>
+            <li>
+              <p>General forms</p>
+              <ul>
+                <li>
+                  <p>Single branch if (condition) block</p>
+                </li>
+                <li>
+                  <p>Two-way if (condition) block else block</p>
+                </li>
+                <li>
+                  <p>Multi-way if, else if, else chains</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Conditions are often expressions that evaluate to boolean</p>
+              <ul>
+                <li>
+                  <p>Some languages allow non-boolean values used as truthy or
+                    falsy</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Nesting ifs leads to many possible paths, which can be a source
+                of bugs</p>
+            </li>
+          </ul>
+        </section>
+        <section id="if-else-basic-pattern-typescript" class="frame">
+          <h2>If / Else: Basic Pattern (TypeScript)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function category(score: number): string {
+  if (score &gt;= 90) {
+    return &quot;A&quot;;
+  } else if (score &gt;= 80) {
+    return &quot;B&quot;;
+  } else if (score &gt;= 70) {
+    return &quot;C&quot;;
+  } else {
+    return &quot;F&quot;;
+  }
+}</code></pre>
+          <ul>
+            <li>
+              <p>ordered conditions implement a priority</p>
+            </li>
+            <li>
+              <p>readability improves when conditions are simple and side-effect
+                free</p>
+            </li>
+          </ul>
+        </section>
+        <section id="if-else-common-bug-pattern" class="frame">
+          <h2>If / Else: Common Bug Pattern</h2>
+          <p>Confusing assignment with equality is a classic error in languages
+            where assignment is an expression.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C
+int ok = 0;
+/* bug: assigns 1 to ok, condition becomes true */
+if (ok = 1) {
+  /* ... */
+}</code></pre>
+          <p>Safer patterns:</p>
+          <ul>
+            <li>
+              <p>enable compiler warnings</p>
+            </li>
+            <li>
+              <p>prefer explicit comparisons: ok == 1</p>
+            </li>
+            <li>
+              <p>keep assignments out of conditions</p>
+            </li>
+          </ul>
+        </section>
+        <section id="multi-way-selection-switch-and-match" class="frame">
+          <h2>Multi-way selection: switch and match</h2>
+          <ul>
+            <li>
+              <p>When there are many discrete cases, if chains become
+                verbose</p>
+            </li>
+            <li>
+              <p>switch in C, C++, Java, TypeScript</p>
+              <ul>
+                <li>
+                  <p>Compares a value against several constant cases</p>
+                </li>
+                <li>
+                  <p>Typically allows fallthrough unless break is used</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>match expressions in some languages, for example Rust</p>
+              <ul>
+                <li>
+                  <p>Use pattern matching</p>
+                </li>
+                <li>
+                  <p>Usually are expressions that produce a value</p>
+                </li>
+                <li>
+                  <p>Often must be exhaustive: every case handled</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section id="switch-in-c" class="frame">
+          <h2>Switch in C</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-c">int day = 3;
+switch (day) {
+  case 1:
+    printf(&quot;Monday\n&quot;);
+    break;
+  case 2:
+    printf(&quot;Tuesday\n&quot;);
+    break;
+  case 3:
+  case 4:
+    printf(&quot;Midweek\n&quot;);
+    break;
+  default:
+    printf(&quot;Other day\n&quot;);
+    break;
+}</code></pre>
+          <ul>
+            <li>
+              <p>Without break, execution would fall through to the next
+                case</p>
+            </li>
+            <li>
+              <p>fallthrough can be useful but is also a common source of
+                bugs</p>
+            </li>
+          </ul>
+          <p>c_switch.c</p>
+        </section>
+        <section id="switch-in-typescript-similar-shape-different-use" class="frame">
+          <h2>Switch in TypeScript: Similar Shape, Different Use</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function httpMessage(code: number): string {
+  switch (code) {
+    case 200: return &quot;OK&quot;;
+    case 404: return &quot;Not Found&quot;;
+    case 500: return &quot;Server Error&quot;;
+    default:  return &quot;Unknown&quot;;
+  }
+}</code></pre>
+          <p>Notes:</p>
+          <ul>
+            <li>
+              <p>returning directly avoids forgetting break</p>
+            </li>
+            <li>
+              <p>for complex logic, match-like patterns can be clearer</p>
+            </li>
+          </ul>
+        </section>
+        <section id="pattern-matching-motivation" class="frame">
+          <h2>Pattern Matching: Motivation</h2>
+          <p>Pattern matching lets you select branches by structure, not only by
+            boolean conditions.</p>
+          <p>Benefits:</p>
+          <ul>
+            <li>
+              <p>often more readable than chained if/else</p>
+            </li>
+            <li>
+              <p>encourages explicit handling of all cases</p>
+            </li>
+            <li>
+              <p>can destructure data while branching</p>
+            </li>
+          </ul>
+          <p>Languages:</p>
+          <ul>
+            <li>
+              <p>Rust: match is central and exhaustiveness-checked</p>
+            </li>
+            <li>
+              <p>Python: match/case supports structural patterns (3.10+)</p>
+            </li>
+            <li>
+              <p>TypeScript: common alternative is discriminated unions plus
+                switch</p>
+            </li>
+          </ul>
+        </section>
+        <section id="rust-match-as-an-expression" class="frame">
+          <h2>Rust match as an expression</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-rust">fn classify_score(score: i32) -&gt; &amp;&#39;static str {
+    match score {
+        0..=59 =&gt; &quot;fail&quot;,
+        60..=79 =&gt; &quot;pass&quot;,
+        80..=89 =&gt; &quot;good&quot;,
+        90..=100 =&gt; &quot;excellent&quot;,
+        _ =&gt; &quot;invalid&quot;,
+    }
+}</code></pre>
+          <ul>
+            <li>
+              <p>match must handle all possible patterns, or use a catch all
+                pattern</p>
+            </li>
+            <li>
+              <p>match returns a value, so it is an expression, not just a
+                statement</p>
+            </li>
+            <li>
+              <p>Range patterns and other pattern forms make multi-way selection
+                concise</p>
+            </li>
+          </ul>
+        </section>
+        <section id="python-matchcase-structural-patterns" class="frame">
+          <h2>Python match/case: Structural Patterns</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">def handle(m):
+    match m:
+        case (&quot;move&quot;, x, y):
+            return x + y
+        case (&quot;write&quot;, s):
+            return len(s)
+        case (&quot;quit&quot;,):
+            return 0
+        case _:
+            return -1</code></pre>
+          <p>Notes:</p>
+          <ul>
+            <li>
+              <p>patterns can match shapes such as tuples and literals</p>
+            </li>
+            <li>
+              <p>the wildcard case <span class="math inline">\(\_\)</span> acts
+                like default</p>
+            </li>
+          </ul>
+        </section>
+        <section id="iteration-constructs" class="frame">
+          <h2>Iteration Constructs</h2>
+          <p>Iteration repeats a computation.</p>
+          <p>Common forms:</p>
+          <ul>
+            <li>
+              <p>while: repeat while condition holds</p>
+            </li>
+            <li>
+              <p>for: counting loop or general loop with explicit control</p>
+            </li>
+            <li>
+              <p>foreach: iterate over elements of a collection</p>
+            </li>
+            <li>
+              <p>iterators: abstract the notion of producing next
+                elements</p>
+            </li>
+          </ul>
+          <p>Typical design choices:</p>
+          <ul>
+            <li>
+              <p>where the loop variable is scoped</p>
+            </li>
+            <li>
+              <p>whether the language exposes iterators directly</p>
+            </li>
+            <li>
+              <p>how termination is represented (condition, StopIteration, option
+                type)</p>
+            </li>
+          </ul>
+        </section>
+        <section id="while-loop-basic-form-typescript" class="frame">
+          <h2>while Loop: Basic Form (TypeScript)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let n = 5;
+let acc = 1;
+
+while (n &gt; 1) {
+  acc *= n;
+  n--;
+}
+
+console.log(acc);</code></pre>
+          <ul>
+            <li>
+              <p>ensure the loop makes progress toward termination</p>
+            </li>
+            <li>
+              <p>keep mutation localized and easy to see</p>
+            </li>
+          </ul>
+        </section>
+        <section id="for-loops-with-counters" class="frame">
+          <h2>For loops with counters</h2>
+          <p>C style:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">int sum = 0;
+
+for (int i = 1; i &lt;= 10; i++) {
+  sum += i;
+}</code></pre>
+          <p>TypeScript style:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let sum = 0;
+
+for (let i = 1; i &lt;= 10; i++) {
+  sum += i;
+}</code></pre>
+          <ul>
+            <li>
+              <p>Initialization, condition, and update are bundled
+                together</p>
+            </li>
+            <li>
+              <p>Helps avoid forgetting to update the loop variable</p>
+            </li>
+          </ul>
+        </section>
+        <section id="foreach-iterating-collections-python" class="frame">
+          <h2>foreach: Iterating Collections (Python)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">nums = [1, 2, 3, 4]
+total = 0
+
+for x in nums:
+    total += x
+
+print(total)</code></pre>
+          <p>Notes:</p>
+          <ul>
+            <li>
+              <p>for in Python is a foreach over an iterator</p>
+            </li>
+            <li>
+              <p>loop variable remains in scope after the loop</p>
+            </li>
+          </ul>
+        </section>
+        <section id="foreach-iterating-collections-typescript" class="frame">
+          <h2>foreach: Iterating Collections (TypeScript)</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let nums = [1, 2, 3, 4];
+let total = 0;
+
+for (const x of nums) {
+  total += x;
+}
+
+console.log(total);</code></pre>
+          <p>Notes:</p>
+          <ul>
+            <li>
+              <p>for..of iterates values from an iterable</p>
+            </li>
+            <li>
+              <p>for..in iterates property names (different meaning)</p>
+            </li>
+          </ul>
+        </section>
+        <section id="iterators-conceptually" class="frame">
+          <h2>Iterators conceptually</h2>
+          <ul>
+            <li>
+              <p>An iterator is an abstraction that produces a sequence of
+                values</p>
+              <ul>
+                <li>
+                  <p>Has an internal state</p>
+                </li>
+                <li>
+                  <p>Each call to next gives the next value or signals the
+                    end</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Many languages define iterator protocols</p>
+              <ul>
+                <li>
+                  <p>for loops can work with any object that implements the
+                    protocol</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Iterators separate how to produce values from how to consume
+                them</p>
+              <ul>
+                <li>
+                  <p>Makes code more modular and testable</p>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section id="iterator-protocol-in-typescript" class="frame">
+          <h2>Iterator Protocol in TypeScript</h2>
+          <p>JavaScript defines an iterator protocol using
+            <em>Symbol.iterator</em>.
+          </p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function range(n: number) {
+  return {
+    [Symbol.iterator]() {
+      let i = 0;
+      return {
+        next() {
+          if (i &lt; n) return { value: i++, done: false };
+          return { value: undefined, done: true };
+        }
+      };
+    }
+  };
+}
+for (const x of range(4)) {
+  console.log(x);
+}</code></pre>
+          <ul>
+            <li>
+              <p>iterators separate producing values from consuming them.
+                <em>done</em> signals termination
+              </p>
+            </li>
+          </ul>
+        </section>
+        <section id="generators-in-typescript" class="frame">
+          <h2>Generators in TypeScript</h2>
+          <p>Generators provide a compact way to write iterators.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function* range(n: number) {
+  for (let i = 0; i &lt; n; i++) {
+    yield i;
+  }
+}
+
+for (const x of range(4)) {
+  console.log(x);
+}</code></pre>
+          <p>Notes:</p>
+          <ul>
+            <li>
+              <p>yield produces values one at a time</p>
+            </li>
+            <li>
+              <p>control resumes after yield on the next iteration step</p>
+            </li>
+          </ul>
+          <p>ts_generator.ts</p>
+        </section>
+        <section id="iterators-in-python" class="frame">
+          <h2>Iterators in Python</h2>
+          <p>Python uses iter() and next() under the hood for for-loops.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">it = iter([10, 20, 30])
+print(next(it))
+print(next(it))
+print(next(it))</code></pre>
+          <p>Notes:</p>
+          <ul>
+            <li>
+              <p>when exhausted, <em>next</em> raises StopIteration</p>
+            </li>
+            <li>
+              <p><em>for</em> handles StopIteration automatically</p>
+            </li>
+          </ul>
+        </section>
+        <section id="guarded-commands-dijkstra-motivation" class="frame">
+          <h2>Guarded Commands (Dijkstra): Motivation</h2>
+          <p>Guarded commands are a control model designed to emphasize
+            correctness.</p>
+          <p>Core idea:</p>
+          <ul>
+            <li>
+              <p>replace single-condition branching with a set of guarded
+                alternatives</p>
+            </li>
+            <li>
+              <p>if multiple guards are true, any may be chosen</p>
+            </li>
+            <li>
+              <p>if no guard is true, the command is blocked (or fails)</p>
+            </li>
+          </ul>
+          <p>Why it is interesting in a programming languages course:</p>
+          <ul>
+            <li>
+              <p>it separates the notion of enabling conditions from chosen
+                actions</p>
+            </li>
+            <li>
+              <p>it connects well to reasoning about programs (preconditions and
+                invariants)</p>
+            </li>
+          </ul>
+        </section>
+        <section id="guarded-commands-syntax-pseudo-code" class="frame">
+          <h2>Guarded Commands: Syntax (Pseudo-Code)</h2>
+          <p>Selection (if-like):</p>
+          <ul>
+            <li>
+              <p>if</p>
+              <ul>
+                <li>
+                  <p>G1 <span class="math inline">\(\rightarrow\)</span> S1</p>
+                </li>
+                <li>
+                  <p>G2 <span class="math inline">\(\rightarrow\)</span> S2</p>
+                </li>
+                <li>
+                  <p>...</p>
+                </li>
+                <li>
+                  <p>Gn <span class="math inline">\(\rightarrow\)</span> Sn</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>fi</p>
+            </li>
+          </ul>
+          <p>Iteration (while-like):</p>
+          <ul>
+            <li>
+              <p>do</p>
+              <ul>
+                <li>
+                  <p>G1 <span class="math inline">\(\rightarrow\)</span> S1</p>
+                </li>
+                <li>
+                  <p>G2 <span class="math inline">\(\rightarrow\)</span> S2</p>
+                </li>
+                <li>
+                  <p>...</p>
+                </li>
+                <li>
+                  <p>Gn <span class="math inline">\(\rightarrow\)</span> Sn</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>od</p>
+            </li>
+          </ul>
+          <p>Meaning:</p>
+          <ul>
+            <li>
+              <p>Gi is a boolean guard</p>
+            </li>
+            <li>
+              <p>Si is a statement sequence</p>
+            </li>
+          </ul>
+        </section>
+        <section id="guarded-selection-semantics" class="frame">
+          <h2>Guarded Selection: Semantics</h2>
+          <p>For guarded if:</p>
+          <ul>
+            <li>
+              <p>Evaluate which guards are true</p>
+            </li>
+            <li>
+              <p>If at least one guard is true, choose one true guard and execute
+                its statement</p>
+            </li>
+            <li>
+              <p>If no guards are true, the command has no enabled action</p>
+            </li>
+          </ul>
+          <p>Why this matters:</p>
+          <ul>
+            <li>
+              <p>it avoids committing to an arbitrary priority order</p>
+            </li>
+            <li>
+              <p>it forces you to consider completeness: do you cover all
+                cases</p>
+            </li>
+          </ul>
+          <p>How languages simulate this:</p>
+          <ul>
+            <li>
+              <p>explicit if/else chains with carefully designed
+                conditions</p>
+            </li>
+            <li>
+              <p>match with guards (Rust) or case guards (Python) in structured
+                forms</p>
+            </li>
+          </ul>
+        </section>
+        <section id="guarded-commands-example-absolute-value" class="frame">
+          <h2>Guarded commands example: Absolute Value</h2>
+          <p>Pseudo code :</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-plaintext">if x &lt; 0  -&gt; x := -x
+[] x == 0 -&gt; skip
+[] x &gt; 0  -&gt; x := x
+fi</code></pre>
+          <ul>
+            <li>
+              <p>exactly one guard is true for any integer x</p>
+            </li>
+            <li>
+              <p>completeness is easy to argue</p>
+            </li>
+          </ul>
+        </section>
+        <section id="guarded-iteration-semantics" class="frame">
+          <h2>Guarded Iteration: Semantics</h2>
+          <p>For guarded do:</p>
+          <ul>
+            <li>
+              <p>While at least one guard is true, choose one true guard and
+                execute its statement</p>
+            </li>
+            <li>
+              <p>Stop when all guards are false</p>
+            </li>
+          </ul>
+          <p>Reasoning style:</p>
+          <ul>
+            <li>
+              <p>pick an invariant that remains true after any enabled
+                action</p>
+            </li>
+            <li>
+              <p>prove termination by showing progress toward a state where all
+                guards are false</p>
+            </li>
+          </ul>
+          <p>This viewpoint connects to concurrency:</p>
+          <ul>
+            <li>
+              <p>multiple guards can represent different enabled actions in a
+                system</p>
+            </li>
+          </ul>
+        </section>
+        <section id="guarded-commands-vs-mainstream-control-flow" class="frame">
+          <h2>Guarded commands vs mainstream control flow</h2>
+          <ul>
+            <li>
+              <p>Guarded commands emphasize correctness reasoning</p>
+              <ul>
+                <li>
+                  <p>Loop invariants and termination arguments</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Mainstream languages use deterministic if, switch, while,
+                for</p>
+            </li>
+            <li>
+              <p>Conceptually, guarded commands can be compiled into standard
+                control flow</p>
+              <ul>
+                <li>
+                  <p>Choose one true guard in some fixed order</p>
+                </li>
+                <li>
+                  <p>Use usual if and while constructs</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Studying guarded commands helps understand the structure of
+                control flow</p>
+            </li>
+          </ul>
+        </section>
+        <section id="industry-angle-controlling-side-effects" class="frame">
+          <h2>Industry angle: controlling side effects</h2>
+          <ul>
+            <li>
+              <p>Side effects in expressions can make code hard to understand</p>
+              <ul>
+                <li>
+                  <p>Hidden mutations, unexpected I/O, global state changes</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Common practices</p>
+              <ul>
+                <li>
+                  <p>Keep expressions mostly pure, side effects in clearly marked
+                    statements</p>
+                </li>
+                <li>
+                  <p>Avoid assignment inside conditions when possible</p>
+                </li>
+                <li>
+                  <p>Limit the scope of variables and mutable state</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Functional style in TypeScript, Python, and other languages</p>
+              <ul>
+                <li>
+                  <p>Use map, filter, reduce instead of manual loops when
+                    appropriate</p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>Tests and code review often focus on surprising side
+                effects</p>
+            </li>
+          </ul>
+        </section>
+        <section id="avoiding-subtle-branch-bugs" class="frame">
+          <h2>Avoiding subtle branch bugs</h2>
+          <p>Problematic C code:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">if (x = 0) {
+  printf(&quot;zero\n&quot;);
+}</code></pre>
+          <p>Intended:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">if (x == 0) {
+  printf(&quot;zero\n&quot;);
+}</code></pre>
+          <ul>
+            <li>
+              <p>In C, x = 0 is an expression that evaluates to 0</p>
+            </li>
+            <li>
+              <p>The condition is always false, and x is modified</p>
+            </li>
+          </ul>
+          <p>Safer styles:</p>
+          <ul>
+            <li>
+              <p>Use comparisons in conditions, not assignments</p>
+            </li>
+            <li>
+              <p>In languages where assignment is only a statement, this bug
+                cannot occur</p>
+            </li>
+            <li>
+              <p>Use linters and compiler warnings to catch suspicious
+                constructs</p>
+            </li>
+          </ul>
+        </section>
+        <section id="summary" class="frame">
+          <h2>Summary</h2>
+          <ul>
+            <li>
+              <p>Evaluation order and side effects strongly influence program
+                behavior</p>
+            </li>
+            <li>
+              <p>Short-circuit boolean operators control both work and
+                safety</p>
+            </li>
+            <li>
+              <p>Assignments, sequences, and blocks are the foundation of
+                imperative code</p>
+            </li>
+            <li>
+              <p>Selection and iteration constructs shape control flow</p>
+            </li>
+            <li>
+              <p>Iterators provide a higher level view of looping</p>
+            </li>
+            <li>
+              <p>Guarded commands offer an abstract model to reason about
+                programs</p>
+            </li>
+            <li>
+              <p>In practice, careful handling of side effects and branches
+                reduces bugs</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true, "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540 });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    // More info https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>
