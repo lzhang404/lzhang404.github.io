@@ -255,6 +255,52 @@ y = y + 1;  // assignment</code></pre>
           </div>
         </section>
 
+        <section id="function-scope-vs-block-scope" class="frame">
+          <h2>Function scope vs block scope</h2>
+
+          <p>
+            Scope answers: where can I use a name in the source code?
+          </p>
+
+          <ul>
+            <li><p><em>Function scope</em>: a name is visible anywhere inside the function body.</p></li>
+            <li><p><em>Block scope</em>: a name is visible only inside the nearest <code>{ ... }</code> block.</p></li>
+          </ul>
+
+          <pre data-xleftmargin="8pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function scopes() {
+          if (true) {
+            var a = 1;   // function-scoped
+            let b = 2;   // block-scoped
+          }
+
+          console.log(a); // OK: a is visible in the whole function
+          // console.log(b); // Error: b is not visible here
+        }</code></pre>
+
+          <ul>
+            <li><p><code>var</code> is function-scoped (or global-scoped if not inside a function).</p></li>
+            <li><p><code>let</code> / <code>const</code> are block-scoped.</p></li>
+          </ul>
+        </section>
+        <section id="what-hoisting-means" class="frame">
+          <h2>Hoisting vs. temporal dead zone</h2>
+
+          <p>
+            In JavaScript/TypeScript, some names exist in the scope before the declaration line runs.
+            What differs is what happens if you try to use them early.
+          </p>
+
+          <ul>
+            <li><p><code>var</code>: the name exists; reading it early gives <code>undefined</code>.</p></li>
+            <li><p><code>let</code>/<code>const</code>: the name exists, but reading it early throws (the “temporal dead zone”).</p></li>
+          </ul>
+
+          <p>
+            This is why “hoisting” is not just “moved to the top” — the rules depend on the declaration kind.
+          </p>
+        </section>
+
+        
         <!-- MOVED HERE: hoisting / var-let-const / TDZ -->
         <section id="hoisting-with-var-in-javascript-or-typescript" class="frame">
           <h2>Hoisting with var</h2>
@@ -473,8 +519,45 @@ data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-ta
     setTimeout(() =&gt; console.log("let:", i), 0);
   }
 }</code></pre>
+<p>It prints let: 0, let: 1, let: 2 because each iteration has its own block-scoped <code>i</code>.</p>
+
         </section>
 
+        <section id="closure-capture-in-callbacks" class="frame">
+          <h2>Capture in callbacks</h2>
+
+          <p>
+            When you create a callback inside a scope, the callback can capture variables from that scope.
+            The key question is: do all callbacks share one variable, or does each callback get its own?
+          </p>
+
+          <ul>
+            <li><p>With <code>var</code>, the loop index is typically one function-scoped variable shared by all callbacks.</p></li>
+            <li><p>With <code>let</code>, each loop iteration gets a fresh block-scoped binding.</p></li>
+          </ul>
+        </section>
+
+        <section id="closure-definition" class="frame">
+          <h2>What is a closure?</h2>
+
+          <p>
+            A <em>closure</em> is a function together with the variables it captures from surrounding scopes.
+          </p>
+
+          <ul>
+            <li><p>A <em>free variable</em> is a name used in a function that is not defined inside that function.</p></li>
+            <li><p>When a function is created, it “remembers” the surrounding environment needed for its free variables.</p></li>
+            <li><p>This is how nested functions can keep using outer variables even after the outer function returns.</p></li>
+          </ul>
+
+          <pre data-xleftmargin="8pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function outer() {
+          let n = 10;              // captured variable
+          return function inner(x: number) {
+            return x + n;          // n is a free variable in inner
+          };
+        }</code></pre>
+        </section>
+        
         <section id="var-in-loops-classic-closure-bug" class="frame">
           <h2>var in loops: classic closure bug</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
