@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-<title>Data Types &amp; Type Systems</title>
+  <title>Data Types &amp; Type Systems</title>
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
@@ -40,55 +40,396 @@
           <h2>Overview and Goals</h2>
         </section>
 
-        <!-- Break the overview into two slides to avoid crowding -->
         <section id="overview-1" class="frame">
           <h2>Overview (1/2)</h2>
           <ul>
-            <li>
-              <p>Primitive types</p>
-            </li>
-            <li>
-              <p>Static vs dynamic typing</p>
-            </li>
-            <li>
-              <p>Strong vs weak typing</p>
-            </li>
-            <li>
-              <p>Type errors and type safety</p>
-            </li>
-            <li>
-              <p>Introduction to the TypeScript type system</p>
-            </li>
-            <li>
-              <p>Industry motivation for TypeScript</p>
-            </li>
+            <li><p>Why types? type errors, type safety, and what can go wrong</p></li>
+            <li><p>Static vs dynamic typing</p></li>
+            <li><p>Strong vs weak typing</p></li>
+            <li><p>Why industry uses TypeScript</p></li>
+            <li><p>TypeScript basics: annotations, inference, any vs unknown</p></li>
           </ul>
         </section>
 
         <section id="overview-2" class="frame">
           <h2>Overview (2/2)</h2>
           <ul>
-            <li>
-              <p>Composite types: arrays, records, unions, enums</p>
-            </li>
-            <li>
-              <p>Algebraic data types (conceptual)</p>
-            </li>
-            <li>
-              <p>Generics and parametric polymorphism</p>
-            </li>
-            <li>
-              <p>Subtyping and inheritance vs interfaces</p>
-            </li>
-            <li>
-              <p>Nominal vs structural typing</p>
-            </li>
-            <li>
-              <p>More TypeScript: interfaces, generics, unions, intersections</p>
-            </li>
-            <li>
-              <p>Industry angle: designing API and library types</p>
-            </li>
+            <li><p>Data types: primitive vs composite</p></li>
+            <li><p>Composite types: arrays, records, maps</p></li>
+            <li><p>Unions/enums and the “tagged union” idea</p></li>
+            <li><p>ADTs (conceptual) and generics</p></li>
+            <li><p>Subtyping and nominal vs structural typing</p></li>
+            <li><p>Industry angle: designing API and library types</p></li>
+          </ul>
+        </section>
+
+        <section id="roadmap" class="frame">
+          <h2>Roadmap</h2>
+          <ol>
+            <li><p>Motivation: type errors and type safety</p></li>
+            <li><p>Typing dimensions (static/dynamic, strong/weak)</p></li>
+            <li><p>TypeScript: what it is and why teams use it</p></li>
+            <li><p>Primitive and composite data types</p></li>
+            <li><p>Unions, ADTs, generics, subtyping, structural typing</p></li>
+            <li><p>Designing types for APIs</p></li>
+          </ol>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Why Types? (Motivation)
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Why Types?</h2>
+        </section>
+
+        <section id="type-errors-and-type-safety" class="frame">
+          <h2>Type errors and type safety</h2>
+
+          <p>Type error:</p>
+          <ul>
+            <li><p>Program uses a value in a way that does not match its type.</p></li>
+            <li><p>Examples: add integer to string, call something that is not a function.</p></li>
+          </ul>
+
+          <p>Type safety (informal):</p>
+          <ul>
+            <li><p>A language is type-safe if well-typed programs do not cause certain type errors at runtime.</p></li>
+            <li><p>Static type systems try to catch type errors before execution.</p></li>
+            <li><p>Dynamic checks catch type errors when that code path runs.</p></li>
+          </ul>
+
+          <p>Reality check:</p>
+          <ul>
+            <li><p>C is not type-safe (casts/pointers can break abstractions).</p></li>
+            <li><p>Java/C#/Rust aim for stronger safety guarantees.</p></li>
+            <li><p>TypeScript increases safety on top of JavaScript.</p></li>
+          </ul>
+        </section>
+
+        <section id="type-errors-in-practice" class="frame">
+          <h2>Type errors in practice</h2>
+
+          <p>Compile-time type error (C / TypeScript):</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C: compile-time error
+int n = 10;
+n = "hello";   // incompatible types</code></pre>
+
+          <p>Runtime type error (Python):</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python: runtime error
+x = 10
+y = "20"
+z = x + y  # TypeError happens when this line runs</code></pre>
+
+          <p>Undefined behavior (C):</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C: undefined behavior, not a well-defined type error
+int *p = NULL;
+*p = 42;   // may crash or do anything</code></pre>
+
+          <p>Files: py_runtime_type_error.py, c_undefined_behavior.c</p>
+        </section>
+
+        <section id="motivation-takeaway" class="frame">
+          <h2>Takeaway</h2>
+          <ul>
+            <li><p>Types are a tool for preventing entire categories of bugs.</p></li>
+            <li><p>Different languages enforce types at different times (before run vs during run).</p></li>
+            <li><p>Some languages allow “escape hatches” that reduce safety (casts, any, unchecked reflection).</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Typing Dimensions (static/dynamic, strong/weak)
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Typing Dimensions</h2>
+        </section>
+
+        <section id="static-vs-dynamic-typing" class="frame">
+          <h2>Static vs dynamic typing</h2>
+          <p>Static typing:</p>
+          <ul>
+            <li><p>Many checks happen before the program runs.</p></li>
+            <li><p>Examples: C, C++, Java, C#, Rust, Go, TypeScript.</p></li>
+          </ul>
+
+          <p>Dynamic typing:</p>
+          <ul>
+            <li><p>Types are checked at runtime when the code path runs.</p></li>
+            <li><p>Examples: Python, Ruby, JavaScript, Lua, PHP.</p></li>
+          </ul>
+
+          <p>Mixed world:</p>
+          <ul>
+            <li><p>TypeScript adds static checking on top of JavaScript.</p></li>
+            <li><p>Some languages add optional type hints + external checkers.</p></li>
+          </ul>
+        </section>
+
+        <section id="static-vs-dynamic-examples" class="frame">
+          <h2>Static vs dynamic: examples</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C: static typing
+int n = 10;
+n = "hello";   // compile-time error</code></pre>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python: dynamic typing
+n = 10
+n = "hello"    # allowed, type changes at runtime</code></pre>
+
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// TypeScript: static checking
+let n: number = 10;
+n = "hello";   // type error from TypeScript checker</code></pre>
+        </section>
+
+        <section id="static-vs-dynamic-trade-offs-1" class="frame">
+          <h2>Static vs dynamic: trade-offs</h2>
+          <p>Static typing:</p>
+          <ul>
+            <li><p>Catch many mistakes earlier.</p></li>
+            <li><p>Better refactoring and tooling.</p></li>
+            <li><p>Types document intent.</p></li>
+            <li><p>May add up-front design/boilerplate.</p></li>
+          </ul>
+        </section>
+
+        <section id="static-vs-dynamic-trade-offs-2" class="frame">
+          <h2>Static vs dynamic: trade-offs (cont.)</h2>
+          <p>Dynamic typing:</p>
+          <ul>
+            <li><p>Flexible and concise.</p></li>
+            <li><p>Great for scripts and experiments.</p></li>
+            <li><p>Some errors appear only in rarely executed paths.</p></li>
+            <li><p>Large systems can drift without strong interfaces/contracts.</p></li>
+          </ul>
+
+          <p>Many teams mix both:</p>
+          <ul>
+            <li><p>TypeScript + JavaScript.</p></li>
+            <li><p>Python + optional type hints + checkers.</p></li>
+          </ul>
+        </section>
+
+        <section id="strong-vs-weak-typing" class="frame">
+          <h2>Strong vs weak typing</h2>
+          <p>Strong typing (informal):</p>
+          <ul>
+            <li><p>Fewer implicit conversions between “unrelated” types.</p></li>
+            <li><p>Mixing incompatible types tends to error out.</p></li>
+          </ul>
+
+          <p>Weak typing (informal):</p>
+          <ul>
+            <li><p>More implicit conversions/coercions.</p></li>
+            <li><p>Can “make something work” but also create surprises.</p></li>
+          </ul>
+
+          <p>Note:</p>
+          <ul>
+            <li><p>Strong/weak are not precise definitions; usage varies.</p></li>
+            <li><p>Use these terms as a rough description of coercion behavior.</p></li>
+          </ul>
+        </section>
+
+        <section id="strong-vs-weak-vs-static-vs-dynamic" class="frame">
+          <h2>Strong vs weak vs static vs dynamic</h2>
+          <p>Two mostly independent axes:</p>
+          <ul>
+            <li><p>When are checks done? (static vs dynamic)</p></li>
+            <li><p>How much coercion is allowed? (strong vs weak)</p></li>
+          </ul>
+
+          <p>Rough examples:</p>
+          <ul>
+            <li><p>Static and relatively strong: Java, C#, Rust, Haskell.</p></li>
+            <li><p>Static and weaker: C (casts, pointer tricks).</p></li>
+            <li><p>Dynamic and strong-ish: Python, Ruby.</p></li>
+            <li><p>Dynamic and weaker: JavaScript coercions.</p></li>
+          </ul>
+
+          <p>Takeaway:</p>
+          <ul>
+            <li><p>Static vs dynamic is about timing.</p></li>
+            <li><p>Strong vs weak is about coercions/strictness.</p></li>
+          </ul>
+        </section>
+
+        <section id="weak-typing-example-javascript" class="frame">
+          <h2>Weak typing example: JavaScript</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-javascript">// JavaScript implicit conversions
+1 + "2"        // "12"   (number + string -> string)
+"3" * "4"      // 12     (strings converted to numbers)
+true + 1       // 2
+false == 0     // true
+"0" == 0       // true</code></pre>
+
+          <p>Python behaves differently:</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">1 + "2"     # TypeError in Python
+"3" * "4"   # TypeError
+True + 1    # result is 2, but bool is a subclass of int</code></pre>
+          <p>Example: node js_coercions.js</p>
+        </section>
+
+        <section id="practice-1-question" class="frame">
+          <h2>Practice 1: Match the error timing</h2>
+          <p>For each snippet, where would the problem show up?</p>
+          <ul>
+            <li><p>Compile time</p></li>
+            <li><p>Runtime</p></li>
+            <li><p>Runs (but may be surprising)</p></li>
+          </ul>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-c">// A (C)
+int n = 10;
+n = "hello";</code></pre>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-python"># B (Python)
+x = 10
+y = "20"
+z = x + y</code></pre>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-javascript">// C (JavaScript)
+1 + "2"</code></pre>
+        </section>
+
+        <section id="practice-1-answer" class="frame">
+          <h2>Practice 1: Answer</h2>
+          <ul>
+            <li><p>A (C): compile time (incompatible types)</p></li>
+            <li><p>B (Python): runtime (TypeError when the line runs)</p></li>
+            <li><p>C (JavaScript): runs but surprising (string concatenation: "12")</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: TypeScript Basics (moved earlier for coherence)
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>TypeScript Basics</h2>
+        </section>
+
+        <section id="what-is-typescript" class="frame">
+          <h2>What is TypeScript?</h2>
+          <ul>
+            <li><p>Superset of JavaScript with static checking.</p></li>
+            <li><p>Compiles down to plain JavaScript.</p></li>
+            <li><p>Designed for large applications and teams.</p></li>
+            <li><p>Can be gradually added to existing JavaScript code.</p></li>
+          </ul>
+
+          <p>Big picture:</p>
+          <ul>
+            <li><p>Same runtime as JavaScript.</p></li>
+            <li><p>Better tooling: autocomplete, refactoring, safer renaming.</p></li>
+            <li><p>Helps catch bugs before shipping.</p></li>
+          </ul>
+        </section>
+
+        <section id="why-industry-adopts-typescript" class="frame">
+          <h2>Why industry adopts TypeScript</h2>
+          <ul>
+            <li><p>Better editor support and refactoring tools.</p></li>
+            <li><p>Fewer runtime type errors in production.</p></li>
+            <li><p>Clear contracts between modules and services.</p></li>
+            <li><p>Easier onboarding for new team members.</p></li>
+            <li><p>Works well with modern frameworks (React, Angular, Vue).</p></li>
+          </ul>
+
+          <p>Typed languages are common across stacks:</p>
+          <ul>
+            <li><p>Backend: Java, C#, Go, Rust.</p></li>
+            <li><p>Systems: C, C++, Rust.</p></li>
+            <li><p>Front end: TypeScript.</p></li>
+          </ul>
+        </section>
+
+        <section id="typescript-basic-annotations" class="frame">
+          <h2>TypeScript: basic annotations</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// variable annotations
+let count: number = 0;
+let name: string = "Alice";
+let done: boolean = false;
+
+// function annotations
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// arrays
+let nums: number[] = [1, 2, 3];
+let names: Array&lt;string&gt; = ["a", "b"];</code></pre>
+          <p>TypeScript checks that you use these values in a safe way.</p>
+        </section>
+
+        <section id="type-inference-in-typescript" class="frame">
+          <h2>Type inference in TypeScript</h2>
+          <p>TypeScript often infers types without explicit annotations.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let x = 10;         // inferred as number
+let message = "hi"; // inferred as string
+
+function square(n: number) {
+  return n * n;     // inferred return type: number
+}
+
+let result = square(5); // number
+result = "oops";        // error</code></pre>
+        </section>
+
+        <section id="any-vs-unknown-in-typescript" class="frame">
+          <h2>any vs unknown in TypeScript</h2>
+
+          <p><code>any</code>:</p>
+          <ul>
+            <li><p>Opt-out of checking.</p></li>
+            <li><p>Use sparingly (especially in public APIs).</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let value: any = 42;
+value = "hello";
+value.toUpperCase();   // allowed, no error
+value.nonExisting();   // still allowed</code></pre>
+
+          <p><code>unknown</code>:</p>
+          <ul>
+            <li><p>For “I don’t know yet,” but forces narrowing before use.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let value: unknown = 42;
+
+if (typeof value === "number") {
+  let double = value * 2;    // ok
+}
+
+// value.toUpperCase(); // error: unknown is not string</code></pre>
+          <p>Example: ts_any_unknown.ts</p>
+        </section>
+
+        <section id="practice-any-unknown" class="frame">
+          <h2>Practice: any or unknown?</h2>
+          <p>You are parsing JSON from the network. Which type is safer for the first step?</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-typescript">const raw = JSON.parse(text);
+// choose: any or unknown?
+const data: ??? = raw;</code></pre>
+          <ul>
+            <li><p>Answer: <code>unknown</code> is safer because it forces checks before use.</p></li>
           </ul>
         </section>
       </section>
@@ -105,80 +446,52 @@
           <h2>Primitive types across languages</h2>
           <p>Common primitive types:</p>
           <ul>
-            <li>
-              <p>Numeric: int, float, double</p>
-            </li>
-            <li>
-              <p>Boolean: true or false</p>
-            </li>
-            <li>
-              <p>Character: single Unicode or byte char</p>
-            </li>
-            <li>
-              <p>String: sequence of characters</p>
-            </li>
+            <li><p>Numeric: int, float, double</p></li>
+            <li><p>Boolean: true or false</p></li>
+            <li><p>Character: single Unicode or byte char</p></li>
+            <li><p>String: sequence of characters</p></li>
           </ul>
+
           <p>How some languages handle them:</p>
           <ul>
-            <li>
-              <p>C: int, double, char, no built-in string type (uses char arrays)</p>
-            </li>
-            <li>
-              <p>Java, C#: int, double, boolean, char, String classes</p>
-            </li>
-            <li>
-              <p>JavaScript: number, boolean, string (no separate int vs float)</p>
-            </li>
-            <li>
-              <p>Python: int, float, bool, str</p>
-            </li>
-            <li>
-              <p>Rust, Go: many numeric sizes (i32, u64, float32, etc.)</p>
-            </li>
+            <li><p>C: int, double, char, no built-in string type (char arrays)</p></li>
+            <li><p>Java/C#: int, double, boolean, char, String class</p></li>
+            <li><p>JavaScript: number, boolean, string (no separate int vs float)</p></li>
+            <li><p>Python: int, float, bool, str</p></li>
+            <li><p>Rust/Go: many numeric sizes (i32, u64, f32, etc.)</p></li>
           </ul>
         </section>
 
-        <!-- Split overflow slide into concept + examples -->
         <section id="numeric-types-and-overflow-1" class="frame">
           <h2>Numeric types and overflow</h2>
           <p>Fixed-size integers (C, C++, Java, C#, Rust):</p>
           <ul>
-            <li>
-              <p>int32, int64, etc. have a maximum and minimum value.</p>
-            </li>
-            <li>
-              <p>Overflow wraps around or is undefined, depending on language.</p>
-            </li>
+            <li><p>int32, int64, etc. have a maximum and minimum value.</p></li>
+            <li><p>Overflow behavior depends on the language.</p></li>
           </ul>
+
           <p>Unbounded integers (Python, Java BigInteger, Haskell Integer):</p>
           <ul>
-            <li>
-              <p>Integers can grow arbitrarily large (limited by memory).</p>
-            </li>
-            <li>
-              <p>No overflow, but arithmetic can be slower.</p>
-            </li>
+            <li><p>Integers can grow arbitrarily large (limited by memory).</p></li>
+            <li><p>No overflow, but arithmetic can be slower.</p></li>
           </ul>
+
           <p>JavaScript and TypeScript:</p>
           <ul>
-            <li>
-              <p><code>number</code> is usually a 64-bit floating point value.</p>
-            </li>
-            <li>
-              <p><code>BigInt</code> exists for integers that cannot fit in <code>number</code>.</p>
-            </li>
+            <li><p><code>number</code> is usually 64-bit floating point.</p></li>
+            <li><p><code>BigInt</code> exists for integers that cannot fit in <code>number</code>.</p></li>
           </ul>
         </section>
 
         <section id="numeric-types-and-overflow-2" class="frame">
           <h2>Numeric types and overflow: examples</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C: overflow wraps (on typical 32-bit int)
-int x = 2147483647; // INT_MAX
-x = x + 1;          // overflow: wraps to negative</code></pre>
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C: signed overflow is undefined behavior (not guaranteed wrap)
+int x = 2147483647; // INT_MAX (typical 32-bit)
+x = x + 1;          // undefined behavior in C for signed int overflow</code></pre>
 
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python: big integers, no overflow
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python: big integers, no overflow
 x = 2 ** 100
 print(x)  # very large integer</code></pre>
         </section>
@@ -186,20 +499,20 @@ print(x)  # very large integer</code></pre>
         <section id="primitive-types-examples" class="frame">
           <h2>Primitive types: examples</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C
 int count = 10;
 double price = 19.99;
 char letter = 'A';</code></pre>
 
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python
 count = 10           # int
 price = 19.99        # float
 letter = "A"         # string of length 1
 flag = True          # bool</code></pre>
 
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-javascript">// JavaScript
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-javascript">// JavaScript
 let count = 10;      // number
 let price = 19.99;   // number
 let name = "Alice";  // string
@@ -210,517 +523,27 @@ let done = false;    // boolean</code></pre>
           <h2>Strings and characters across languages</h2>
           <p>Characters:</p>
           <ul>
-            <li>
-              <p>C: <code>char</code> is usually one byte, often ASCII.</p>
-            </li>
-            <li>
-              <p>Java, C#: <code>char</code> is a Unicode code unit.</p>
-            </li>
-            <li>
-              <p>Python, JavaScript: no separate char type, just strings of length 1.</p>
-            </li>
+            <li><p>C: <code>char</code> is usually one byte.</p></li>
+            <li><p>Java/C#: <code>char</code> is a Unicode code unit.</p></li>
+            <li><p>Python/JavaScript: no separate char type (strings of length 1).</p></li>
           </ul>
+
           <p>Strings:</p>
           <ul>
-            <li>
-              <p>C: char arrays with <code>'\0'</code> terminator.</p>
-            </li>
-            <li>
-              <p>Java, C#: immutable <code>String</code> objects.</p>
-            </li>
-            <li>
-              <p>Python: immutable <code>str</code>, full Unicode.</p>
-            </li>
-            <li>
-              <p>JavaScript, TypeScript: immutable <code>string</code>.</p>
-            </li>
+            <li><p>C: char arrays with <code>'\0'</code> terminator.</p></li>
+            <li><p>Java/C#: immutable <code>String</code> objects.</p></li>
+            <li><p>Python: immutable <code>str</code>, Unicode.</p></li>
+            <li><p>JavaScript/TypeScript: immutable <code>string</code>.</p></li>
           </ul>
+
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C string: char array with terminator
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C string: char array with terminator
 char msg[] = "hi";     // 'h', 'i', '\0'</code></pre>
 
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python string
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python string
 msg = "hi"
 ch = msg[0]   # "h"</code></pre>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           SECTION: Typing Dimensions (static/dynamic, strong/weak)
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Typing Dimensions</h2>
-        </section>
-
-        <section id="static-vs-dynamic-typing" class="frame">
-          <h2>Static vs dynamic typing</h2>
-          <p>Static typing:</p>
-          <ul>
-            <li>
-              <p>Variable types are known at compile time.</p>
-            </li>
-            <li>
-              <p>Types are checked before the program runs.</p>
-            </li>
-            <li>
-              <p>Examples: C, C++, Java, C#, Rust, Go, TypeScript.</p>
-            </li>
-          </ul>
-          <p>Dynamic typing:</p>
-          <ul>
-            <li>
-              <p>Values have types, variables can hold any type.</p>
-            </li>
-            <li>
-              <p>Types are checked at runtime.</p>
-            </li>
-            <li>
-              <p>Examples: Python, Ruby, JavaScript, Lua, PHP.</p>
-            </li>
-          </ul>
-          <p>Mixed world:</p>
-          <ul>
-            <li>
-              <p>TypeScript adds static types on top of JavaScript.</p>
-            </li>
-            <li>
-              <p>Many languages add optional type hints or type checkers.</p>
-            </li>
-          </ul>
-        </section>
-
-        <section id="static-vs-dynamic-examples" class="frame">
-          <h2>Static vs dynamic: examples</h2>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C: static typing
-int n = 10;
-n = "hello";   // compile-time error</code></pre>
-
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python: dynamic typing
-n = 10
-n = "hello"    # allowed, type changes at runtime</code></pre>
-
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// TypeScript: static typing
-let n: number = 10;
-n = "hello";   // type error from TypeScript compiler</code></pre>
-        </section>
-
-        <!-- Split trade-offs slide (it can get crowded) -->
-        <section id="static-vs-dynamic-trade-offs-1" class="frame">
-          <h2>Static vs dynamic: trade-offs</h2>
-          <p>Static typing (C, C++, Java, C#, Rust, Go, TypeScript):</p>
-          <ul>
-            <li>
-              <p>Catch many errors at compile time.</p>
-            </li>
-            <li>
-              <p>Better IDE support and refactoring tools.</p>
-            </li>
-            <li>
-              <p>More explicit design: types document intent.</p>
-            </li>
-            <li>
-              <p>Sometimes more boilerplate, slower prototyping.</p>
-            </li>
-          </ul>
-        </section>
-
-        <section id="static-vs-dynamic-trade-offs-2" class="frame">
-          <h2>Static vs dynamic: trade-offs (cont.)</h2>
-          <p>Dynamic typing (Python, Ruby, JavaScript, Lua, PHP):</p>
-          <ul>
-            <li>
-              <p>Very flexible and concise.</p>
-            </li>
-            <li>
-              <p>Good for quick scripts and experiments.</p>
-            </li>
-            <li>
-              <p>Type errors show up only when code path runs.</p>
-            </li>
-            <li>
-              <p>Large codebases can become harder to maintain.</p>
-            </li>
-          </ul>
-          <p>Many teams mix both:</p>
-          <ul>
-            <li>
-              <p>TypeScript + JavaScript.</p>
-            </li>
-            <li>
-              <p>Python with optional type hints and type checkers.</p>
-            </li>
-          </ul>
-        </section>
-
-        <!-- Strong vs weak split -->
-        <section id="strong-vs-weak-typing" class="frame">
-          <h2>Strong vs weak typing</h2>
-          <p>Strong typing (informal idea):</p>
-          <ul>
-            <li>
-              <p>The language tries to prevent mixing incompatible types.</p>
-            </li>
-            <li>
-              <p>Fewer implicit conversions between unrelated types.</p>
-            </li>
-            <li>
-              <p>Examples: Python, Java, C#, Rust, Haskell.</p>
-            </li>
-          </ul>
-          <p>Weak typing (informal idea):</p>
-          <ul>
-            <li>
-              <p>Language allows more implicit conversions.</p>
-            </li>
-            <li>
-              <p>May convert between number and string automatically.</p>
-            </li>
-            <li>
-              <p>C allows many casts, JavaScript coerces types in comparisons.</p>
-            </li>
-          </ul>
-          <p>Note:</p>
-          <ul>
-            <li>
-              <p>Terms strong and weak are not precisely defined.</p>
-            </li>
-            <li>
-              <p>You will see them used in slightly different ways.</p>
-            </li>
-          </ul>
-        </section>
-
-        <section id="strong-vs-weak-vs-static-vs-dynamic" class="frame">
-          <h2>Strong vs weak vs static vs dynamic</h2>
-          <p>Two mostly independent axes:</p>
-          <ul>
-            <li>
-              <p>When are types checked? (static vs dynamic)</p>
-            </li>
-            <li>
-              <p>How many implicit conversions are allowed? (strong vs weak)</p>
-            </li>
-          </ul>
-          <p>Rough examples:</p>
-          <ul>
-            <li>
-              <p>Static and relatively strong: Java, C#, Rust, Haskell.</p>
-            </li>
-            <li>
-              <p>Static and weaker: C (casts, pointer tricks).</p>
-            </li>
-            <li>
-              <p>Dynamic and strong-ish: Python, Ruby.</p>
-            </li>
-            <li>
-              <p>Dynamic and weaker: JavaScript with coercions.</p>
-            </li>
-          </ul>
-          <p>Takeaway:</p>
-          <ul>
-            <li>
-              <p>Static vs dynamic is about timing of checks.</p>
-            </li>
-            <li>
-              <p>Strong vs weak is about how strict the checks are.</p>
-            </li>
-          </ul>
-        </section>
-
-        <section id="weak-typing-example-javascript" class="frame">
-          <h2>Weak typing example: JavaScript</h2>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-javascript">// JavaScript implicit conversions
-1 + "2"        // "12"   (number + string -> string)
-"3" * "4"      // 12     (strings converted to numbers)
-true + 1       // 2
-false == 0     // true
-"0" == 0       // true</code></pre>
-          <p>Python would behave differently:</p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python">1 + "2"     # TypeError in Python
-"3" * "4"   # TypeError
-True + 1    # result is 2, but bool is a subclass of int</code></pre>
-          <p>Example: js_coercions.js</p>
-        </section>
-
-        <!-- Practice (inserted "in between") -->
-
-        <section id="practice-1-question" class="frame">
-          <h2>Practice 1: Match the error timing</h2>
-          <p>For each snippet, where would the problem show up?</p>
-          <ul>
-            <li>
-              <p><strong>Compile time</strong></p>
-            </li>
-            <li>
-              <p><strong>Runtime</strong></p>
-            </li>
-            <li>
-              <p><strong>Runs (but may be surprising)</strong></p>
-            </li>
-          </ul>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-            data-tabsize="1"><code class="language-c">// A (C)
-int n = 10;
-n = "hello";</code></pre>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-            data-tabsize="1"><code class="language-python"># B (Python)
-x = 10
-y = "20"
-z = x + y</code></pre>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-            data-tabsize="1"><code class="language-javascript">// C (JavaScript)
-1 + "2"</code></pre>
-        </section>
-
-        <section id="practice-1-answer" class="frame">
-          <h2>Practice 1: Answer</h2>
-          <ul>
-            <li>
-              <p><strong>A (C):</strong> compile time (incompatible types)</p>
-            </li>
-            <li>
-              <p><strong>B (Python):</strong> runtime (TypeError when the line runs)</p>
-            </li>
-            <li>
-              <p><strong>C (JavaScript):</strong> runs, but may be surprising (string concatenation: <code>"12"</code>)
-              </p>
-            </li>
-          </ul>
-          <p>Takeaway: <em>static vs dynamic</em> is about when checks happen; <em>strong vs weak</em> is about how many
-            coercions/conversions are allowed.</p>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           SECTION: Type Errors and Type Safety
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Type Errors and Type Safety</h2>
-        </section>
-
-        <section id="type-errors-and-type-safety" class="frame">
-          <h2>Type errors and type safety</h2>
-          <p>Type error:</p>
-          <ul>
-            <li>
-              <p>Program tries to use a value in a way that does not match its type.</p>
-            </li>
-            <li>
-              <p>Examples: add integer to string, call something that is not a function.</p>
-            </li>
-          </ul>
-          <p>Type safety:</p>
-          <ul>
-            <li>
-              <p>A language is type-safe if well-typed programs do not cause certain type errors at runtime.</p>
-            </li>
-            <li>
-              <p>Static type systems try to catch type errors before execution.</p>
-            </li>
-            <li>
-              <p>Dynamic checks catch type errors when that code path runs.</p>
-            </li>
-          </ul>
-          <p>Examples:</p>
-          <ul>
-            <li>
-              <p>C is not type-safe: pointer casts can break abstract types.</p>
-            </li>
-            <li>
-              <p>Java, C#, Rust, Haskell aim for stronger type safety.</p>
-            </li>
-            <li>
-              <p>TypeScript increases type safety on top of JavaScript.</p>
-            </li>
-          </ul>
-        </section>
-
-        <section id="type-errors-in-practice" class="frame">
-          <h2>Type errors in practice</h2>
-          <p>Compile-time type error (C / TypeScript):</p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C: compile-time error
-int n = 10;
-n = "hello";   // incompatible types</code></pre>
-
-          <p>Runtime type error (Python):</p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python: runtime error
-x = 10
-y = "20"
-z = x + y  # TypeError happens when this line runs</code></pre>
-
-          <p>Undefined behavior (C):</p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C: undefined behavior, not a well-defined type error
-int *p = NULL;
-*p = 42;   // may crash or do anything</code></pre>
-        </section>
-        <p>py_runtime_type_error.py c_undefined_behavior.c </p>
-      </section>
-
-      <!-- =========================================================
-           SECTION: TypeScript Basics
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>TypeScript Basics</h2>
-        </section>
-
-        <section id="what-is-typescript" class="frame">
-          <h2>What is TypeScript?</h2>
-          <ul>
-            <li>
-              <p>Superset of JavaScript with static typing.</p>
-            </li>
-            <li>
-              <p>Compiles down to plain JavaScript.</p>
-            </li>
-            <li>
-              <p>Designed for large applications and teams.</p>
-            </li>
-            <li>
-              <p>Adds types, interfaces, generics, modules, and more.</p>
-            </li>
-            <li>
-              <p>Can be gradually added to existing JavaScript code.</p>
-            </li>
-          </ul>
-          <p>Big picture:</p>
-          <ul>
-            <li>
-              <p>Same runtime as JavaScript.</p>
-            </li>
-            <li>
-              <p>Better tooling: autocompletion, refactoring, safe renaming.</p>
-            </li>
-            <li>
-              <p>Helps catch bugs before shipping to users.</p>
-            </li>
-          </ul>
-        </section>
-
-        <section id="typescript-basic-annotations" class="frame">
-          <h2>TypeScript: basic annotations</h2>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// variable annotations
-let count: number = 0;
-let name: string = "Alice";
-let done: boolean = false;
-
-// function annotations
-function add(a: number, b: number): number {
-  return a + b;
-}
-
-// arrays
-let nums: number[] = [1, 2, 3];
-let names: Array&lt;string&gt; = ["a", "b"];</code></pre>
-          <p>TypeScript checks that you use these values in a type-safe way.</p>
-        </section>
-
-        <section id="type-inference-in-typescript" class="frame">
-          <h2>Type inference in TypeScript</h2>
-          <p>TypeScript often infers types without explicit annotations.</p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let x = 10;         // inferred as number
-let message = "hi"; // inferred as string
-
-function square(n: number) {
-  return n * n;     // return type is inferred as number
-}
-
-let result = square(5); // result is number
-result = "oops";        // error</code></pre>
-          <p>Benefits:</p>
-          <ul>
-            <li>
-              <p>Less typing for the programmer.</p>
-            </li>
-            <li>
-              <p>Still get the benefits of static type checking.</p>
-            </li>
-          </ul>
-        </section>
-
-        <section id="any-vs-unknown-in-typescript" class="frame">
-          <h2>any vs unknown in TypeScript</h2>
-          <p><code>any</code>:</p>
-          <ul>
-            <li>
-              <p>Opt-out of type checking.</p>
-            </li>
-            <li>
-              <p>You can do anything with a value of type <code>any</code>.</p>
-            </li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let value: any = 42;
-value = "hello";
-value.toUpperCase();   // allowed, no error
-value.nonExisting();   // still allowed, no error</code></pre>
-
-          <p><code>unknown</code>:</p>
-          <ul>
-            <li>
-              <p>Safer alternative to <code>any</code>.</p>
-            </li>
-            <li>
-              <p>You must check or narrow the type before using it.</p>
-            </li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">let value: unknown = 42;
-if (typeof value === "number") {
-  let double = value * 2;    // ok, value is number here
-}
-// value.toUpperCase();   // error, unknown is not string</code></pre>
-<p>ts_any_unknown.ts</p>
-        </section>
-
-        <section id="why-industry-adopts-typescript" class="frame">
-          <h2>Why industry adopts TypeScript</h2>
-          <p>Common reasons teams move from plain JavaScript to TypeScript:</p>
-          <ul>
-            <li>
-              <p>Better editor support and refactoring tools.</p>
-            </li>
-            <li>
-              <p>Fewer runtime type errors in production.</p>
-            </li>
-            <li>
-              <p>Clear contracts between modules and services.</p>
-            </li>
-            <li>
-              <p>Easier onboarding for new team members.</p>
-            </li>
-            <li>
-              <p>Works well with modern frameworks (React, Angular, Vue).</p>
-            </li>
-          </ul>
-          <p>Other typed languages in industry:</p>
-          <ul>
-            <li>
-              <p>Backend: Java, C#, Go, Rust.</p>
-            </li>
-            <li>
-              <p>Data and scripting: Python, R, Julia, Ruby.</p>
-            </li>
-            <li>
-              <p>Systems: C, C++, Rust.</p>
-            </li>
-          </ul>
         </section>
       </section>
 
@@ -736,43 +559,29 @@ if (typeof value === "number") {
           <h2>Composite types: arrays and records</h2>
           <p>Arrays and lists:</p>
           <ul>
-            <li>
-              <p>Ordered sequence of elements.</p>
-            </li>
-            <li>
-              <p>Usually all elements have the same type.</p>
-            </li>
+            <li><p>Ordered sequence of elements.</p></li>
+            <li><p>Often all elements have the same type.</p></li>
           </ul>
+
           <p>Records and objects:</p>
           <ul>
-            <li>
-              <p>Group different fields under one name.</p>
-            </li>
-            <li>
-              <p>Fields usually have different types.</p>
-            </li>
+            <li><p>Group fields under one name.</p></li>
+            <li><p>Fields can have different types.</p></li>
           </ul>
+
           <p>Examples:</p>
           <ul>
-            <li>
-              <p>C: arrays, structs.</p>
-            </li>
-            <li>
-              <p>Java, C#: arrays, classes.</p>
-            </li>
-            <li>
-              <p>Python: list, dict, namedtuple, dataclass.</p>
-            </li>
-            <li>
-              <p>JavaScript, TypeScript: arrays, plain objects.</p>
-            </li>
+            <li><p>C: arrays, structs.</p></li>
+            <li><p>Java/C#: arrays, classes.</p></li>
+            <li><p>Python: list, dict, dataclass.</p></li>
+            <li><p>JavaScript/TypeScript: arrays, plain objects.</p></li>
           </ul>
         </section>
 
         <section id="arrays-and-records-examples" class="frame">
           <h2>Arrays and records: examples</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">// C
 int nums[3] = {1, 2, 3};
 struct Point {
   int x;
@@ -781,7 +590,7 @@ struct Point {
 struct Point p = { .x = 10, .y = 20 };</code></pre>
 
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// TypeScript
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// TypeScript
 let nums: number[] = [1, 2, 3];
 type Point = {
   x: number;
@@ -794,80 +603,58 @@ let p: Point = { x: 10, y: 20 };</code></pre>
           <h2>Maps and dictionaries</h2>
           <p>Associative collections:</p>
           <ul>
-            <li>
-              <p>Store key-value pairs.</p>
-            </li>
-            <li>
-              <p>Often called maps, dictionaries, hash tables.</p>
-            </li>
+            <li><p>Store key-value pairs.</p></li>
+            <li><p>Often called maps, dictionaries, hash tables.</p></li>
           </ul>
+
           <p>Common forms:</p>
           <ul>
-            <li>
-              <p>C++: <code>map</code>, <code>unordered_map</code>.</p>
-            </li>
-            <li>
-              <p>Java, C#: <code>Map</code>, <code>HashMap</code>, <code>Dictionary</code>.</p>
-            </li>
-            <li>
-              <p>Python: <code>dict</code>.</p>
-            </li>
-            <li>
-              <p>JavaScript: plain objects and <code>Map</code>.</p>
-            </li>
-            <li>
-              <p>TypeScript: <code>Record</code> types and <code>Map</code>.</p>
-            </li>
+            <li><p>C++: <code>map</code>, <code>unordered_map</code>.</p></li>
+            <li><p>Java/C#: <code>Map</code>, <code>Dictionary</code>.</p></li>
+            <li><p>Python: <code>dict</code>.</p></li>
+            <li><p>JavaScript: objects and <code>Map</code>.</p></li>
+            <li><p>TypeScript: <code>Record</code> types and <code>Map</code>.</p></li>
           </ul>
+
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python dict
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-python"># Python dict
 ages = {"Alice": 30, "Bob": 25}
 print(ages["Alice"])   # 30</code></pre>
 
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// TypeScript Record
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// TypeScript Record
 type Ages = Record&lt;string, number&gt;;
 const ages: Ages = { Alice: 30, Bob: 25 };</code></pre>
         </section>
 
-        <!-- Unions & enums split into multiple slides -->
         <section id="unions-and-enums-1" class="frame">
           <h2>Unions and enums</h2>
           <p>Unions:</p>
           <ul>
-            <li>
-              <p>A value that may be one of several types or variants.</p>
-            </li>
-            <li>
-              <p>In C: <code>union</code> type (unsafe, manual use).</p>
-            </li>
-            <li>
-              <p>In TypeScript: safe tagged unions with union types.</p>
-            </li>
+            <li><p>A value that may be one of several variants.</p></li>
+            <li><p>C has <code>union</code> (unsafe if you read the wrong field).</p></li>
+            <li><p>TypeScript has union types and safe narrowing.</p></li>
           </ul>
+
           <p>Enums:</p>
           <ul>
-            <li>
-              <p>Fixed set of named constants.</p>
-            </li>
-            <li>
-              <p>Often used for states or modes.</p>
-            </li>
+            <li><p>Fixed set of named constants (states/modes).</p></li>
           </ul>
         </section>
 
         <section id="unions-and-enums-2" class="frame">
           <h2>Union example in C (unsafe if misused)</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\small" data-tabsize="1"><code class="language-c">// C union: unsafe if misused
+data-fontsize="\small" data-tabsize="1"><code class="language-c">// C union: unsafe if misused
 union IntOrFloat {
   int i;
   float f;
 };
+
 int main(void) {
   union IntOrFloat x;
   x.i = 42;           // store an int
-  // Now read as float: type punning, undefined behavior
+  // reading as float is not a safe “type conversion”
   printf("%f\n", x.f);
   return 0;
 }</code></pre>
@@ -877,15 +664,12 @@ int main(void) {
           <h2>Tagged unions pattern in C</h2>
           <p>Safer pattern in C:</p>
           <ul>
-            <li>
-              <p>Combine an enum tag with a union.</p>
-            </li>
-            <li>
-              <p>The tag says which union member is valid.</p>
-            </li>
+            <li><p>Combine an enum tag with a union.</p></li>
+            <li><p>The tag says which union member is valid.</p></li>
           </ul>
+
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\small" data-tabsize="1"><code class="language-c">enum Kind { IS_INT, IS_FLOAT };
+data-fontsize="\small" data-tabsize="1"><code class="language-c">enum Kind { IS_INT, IS_FLOAT };
 
 struct Value {
   enum Kind tag;
@@ -902,15 +686,15 @@ void print_value(struct Value v) {
     printf("float: %f\n", v.u.f);
   }
 }</code></pre>
+
           <p>This idea is similar to TypeScript unions with a <code>kind</code> field.</p>
-          <p>c_tagged_union.c</p>
+          <p>Example: c_tagged_union.c</p>
         </section>
 
         <section id="unions-and-enums-in-typescript" class="frame">
           <h2>Unions and enums in TypeScript</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">// TypeScript union and enum
-enum Direction {
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">enum Direction {
   North,
   South,
   East,
@@ -920,21 +704,20 @@ enum Direction {
 type Result =
   | { kind: "ok"; value: number }
   | { kind: "error"; message: string };</code></pre>
-        <p>ts_discriminate_union.ts</p>
+          <p>Example: ts_discriminate_union.ts</p>
         </section>
 
         <section id="practice-2-question" class="frame">
           <h2>Practice 2: Narrow a union</h2>
           <p>Given this type:</p>
           <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-            data-tabsize="1"><code class="language-typescript">type Result =
+data-tabsize="1"><code class="language-typescript">type Result =
   | { kind: "ok"; value: number }
   | { kind: "error"; message: string };</code></pre>
 
-          <p>Write the missing code so it returns a <code>number</code> in the ok case, and throws an error in the error
-            case:</p>
+          <p>Write the missing code so it returns a <code>number</code> in the ok case, and throws an error in the error case:</p>
           <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-            data-tabsize="1"><code class="language-typescript">function unwrap(r: Result): number {
+data-tabsize="1"><code class="language-typescript">function unwrap(r: Result): number {
   // TODO
 }</code></pre>
         </section>
@@ -942,11 +725,11 @@ type Result =
         <section id="practice-2-answer" class="frame">
           <h2>Practice 2: Answer</h2>
           <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-            data-tabsize="1"><code class="language-typescript">function unwrap(r: Result): number {
+data-tabsize="1"><code class="language-typescript">function unwrap(r: Result): number {
   if (r.kind === "ok") {
-    return r.value;              // r is the ok variant here
+    return r.value;
   } else {
-    throw new Error(r.message);  // r is the error variant here
+    throw new Error(r.message);
   }
 }</code></pre>
           <p>TypeScript uses the <code>kind</code> field to narrow the union safely.</p>
@@ -963,125 +746,83 @@ type Result =
 
         <section id="algebraic-data-types-informal-idea" class="frame">
           <h2>Algebraic data types (informal idea)</h2>
-          <p>Algebraic data types (ADTs):</p>
           <ul>
-            <li>
-              <p>Built from simpler types using sum and product.</p>
-            </li>
-            <li>
-              <p>Product type: combine fields (like records).</p>
-            </li>
-            <li>
-              <p>Sum type: choose one of several variants (like unions).</p>
-            </li>
+            <li><p>Built from simpler types using sum and product.</p></li>
+            <li><p>Product type: combine fields (records/tuples).</p></li>
+            <li><p>Sum type: choose one of several variants (unions).</p></li>
           </ul>
+
           <p>Haskell style:</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-haskell">data Result = Ok Int
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-haskell">data Result = Ok Int
             | Error String
 
 data Point = Point Int Int</code></pre>
+
           <p>TypeScript can mimic this:</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type Result =
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type Result =
   | { kind: "ok"; value: number }
   | { kind: "error"; message: string };</code></pre>
         </section>
 
         <section id="generics-and-parametric-polymorphism" class="frame">
           <h2>Generics and parametric polymorphism</h2>
-          <p>Parametric polymorphism:</p>
           <ul>
-            <li>
-              <p>Functions and types that work for any type parameter.</p>
-            </li>
-            <li>
-              <p>Often called generics in industry languages.</p>
-            </li>
+            <li><p>Write code once, reuse for many types (type parameters).</p></li>
+            <li><p>Industry term: generics (or templates in C++).</p></li>
           </ul>
-          <p>Examples:</p>
+
+          <p>Examples across languages:</p>
           <ul>
-            <li>
-              <p>Java: <code>List&lt;T&gt;</code>, <code>Map&lt;K, V&gt;</code>.</p>
-            </li>
-            <li>
-              <p>C#: <code>List&lt;T&gt;</code>, <code>Dictionary&lt;TKey, TValue&gt;</code>.</p>
-            </li>
-            <li>
-              <p>C++: templates.</p>
-            </li>
-            <li>
-              <p>Rust: <code>Vec&lt;T&gt;</code>, <code>Option&lt;T&gt;</code>.</p>
-            </li>
-            <li>
-              <p>Haskell: list type <code>[a]</code>, <code>Maybe a</code>.</p>
-            </li>
-            <li>
-              <p>TypeScript: <code>Array&lt;T&gt;</code>, <code>Promise&lt;T&gt;</code>.</p>
-            </li>
+            <li><p>Java: <code>List&lt;T&gt;</code>, <code>Map&lt;K, V&gt;</code></p></li>
+            <li><p>Rust: <code>Vec&lt;T&gt;</code>, <code>Option&lt;T&gt;</code></p></li>
+            <li><p>TypeScript: <code>Array&lt;T&gt;</code>, <code>Promise&lt;T&gt;</code></p></li>
           </ul>
         </section>
 
         <section id="polymorphism" class="frame">
           <h2>Polymorphism</h2>
-          <p>Polymorphism = "many forms". Common kinds:</p>
+          <p>Polymorphism = “many forms”. Common kinds:</p>
 
           <p>Ad-hoc polymorphism:</p>
           <ul>
-            <li>
-              <p>Function overloading, operator overloading.</p>
-            </li>
-            <li>
-              <p>Example: C++ <code>operator+</code>, Java method overloading.</p>
-            </li>
+            <li><p>Overloading, operator overloading.</p></li>
           </ul>
 
           <p>Parametric polymorphism:</p>
           <ul>
-            <li>
-              <p>Same code works for any type parameter.</p>
-            </li>
-            <li>
-              <p>Example: Java <code>List&lt;T&gt;</code>, TypeScript <code>Array&lt;T&gt;</code>, Haskell
-                <code>[a]</code>.</p>
-            </li>
+            <li><p>Generics: same code works for any type parameter.</p></li>
           </ul>
 
           <p>Subtype polymorphism:</p>
           <ul>
-            <li>
-              <p>Code works for a base type, can be called with subtypes.</p>
-            </li>
-            <li>
-              <p>Example: Java <code>Shape s = new Circle(); s.area()</code>.</p>
-            </li>
+            <li><p>Code works for a base type and can be called with subtypes.</p></li>
           </ul>
-
-          <p>Many modern languages support more than one kind at the same time.</p>
         </section>
 
         <section id="generics-in-typescript" class="frame">
           <h2>Generics in TypeScript</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function first&lt;T&gt;(items: T[]): T | undefined {
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function first&lt;T&gt;(items: T[]): T | undefined {
   return items[0];
 }
 
 let nums = [1, 2, 3];
 let names = ["a", "b", "c"];
 
-let n = first(nums);   // n is number | undefined
-let s = first(names);  // s is string | undefined</code></pre>
+let n = first(nums);   // number | undefined
+let s = first(names);  // string | undefined</code></pre>
 
           <p>Generic interface:</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">interface Box&lt;T&gt; {
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">interface Box&lt;T&gt; {
   value: T;
 }
 
 let intBox: Box&lt;number&gt; = { value: 42 };
 let strBox: Box&lt;string&gt; = { value: "hello" };</code></pre>
-        <p>ts_generics.ts</p>
+          <p>Example: ts_generics.ts</p>
         </section>
       </section>
 
@@ -1097,56 +838,40 @@ let strBox: Box&lt;string&gt; = { value: "hello" };</code></pre>
           <h2>Subtyping and inheritance</h2>
           <p>Subtyping:</p>
           <ul>
-            <li>
-              <p>If S is a subtype of T, values of S can be used where T is expected.</p>
-            </li>
+            <li><p>If S is a subtype of T, values of S can be used where T is expected.</p></li>
           </ul>
+
           <p>Inheritance:</p>
           <ul>
-            <li>
-              <p>Class B extends class A and inherits fields and methods.</p>
-            </li>
-            <li>
-              <p>Often introduces a subtype relation: B is a subtype of A.</p>
-            </li>
+            <li><p>Class B extends class A and inherits fields and methods.</p></li>
+            <li><p>Often introduces a subtype relation: B is a subtype of A.</p></li>
           </ul>
+
           <p>Examples:</p>
           <ul>
-            <li>
-              <p>Java: <code>class Circle extends Shape</code>.</p>
-            </li>
-            <li>
-              <p>C#: <code>class SqlConnection extends DbConnection</code>.</p>
-            </li>
-            <li>
-              <p>Many object oriented languages link inheritance and subtyping.</p>
-            </li>
+            <li><p>Java: <code>class Circle extends Shape</code></p></li>
+            <li><p>C#: <code>class SqlConnection extends DbConnection</code></p></li>
           </ul>
         </section>
 
         <section id="nominal-vs-structural-typing" class="frame">
           <h2>Nominal vs structural typing</h2>
+
           <p>Nominal typing:</p>
           <ul>
-            <li>
-              <p>Types are equal only if they have the same name.</p>
-            </li>
-            <li>
-              <p>Java, C#, C, C++ follow this approach for classes and structs.</p>
-            </li>
+            <li><p>Types match by name/declared identity.</p></li>
+            <li><p>Common in Java/C#/C++ classes.</p></li>
           </ul>
+
           <p>Structural typing:</p>
           <ul>
-            <li>
-              <p>Types are compatible if their structures match.</p>
-            </li>
-            <li>
-              <p>TypeScript and Go use structural typing for many types.</p>
-            </li>
+            <li><p>Types are compatible if their structures match.</p></li>
+            <li><p>TypeScript (and Go) use structural typing for many types.</p></li>
           </ul>
-          <p>Simple TypeScript example:</p>
+
+          <p>TypeScript example:</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">interface Point {
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">interface Point {
   x: number;
   y: number;
 }
@@ -1156,33 +881,38 @@ interface Pixel {
 }
 let p: Point = { x: 1, y: 2 };
 let px: Pixel = p;  // ok: structure matches</code></pre>
-        <p> ts_structural.ts</p>
+          <p>Example: ts_structural.ts</p>
         </section>
 
         <section id="interfaces-and-structural-typing-in-typescript" class="frame">
           <h2>Interfaces and structural typing in TypeScript</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">interface Person {
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">interface Person {
   name: string;
   age: number;
 }
+
 function greet(p: Person) {
   console.log("Hello, " + p.name);
 }
+
 const user = {
   name: "Alice",
   age: 30,
   email: "a@example.com"
 };
+
 greet(user); // ok: user has at least name and age</code></pre>
           <p>Only the needed fields and types must match.</p>
         </section>
 
         <section id="union-and-intersection-types-in-typescript" class="frame">
           <h2>Union and intersection types in TypeScript</h2>
+
           <p>Union types:</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type Id = number | string;
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type Id = number | string;
+
 function printId(id: Id) {
   if (typeof id === "string") {
     console.log(id.toUpperCase());
@@ -1193,9 +923,10 @@ function printId(id: Id) {
 
           <p>Intersection types:</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type HasId = { id: number };
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type HasId = { id: number };
 type HasName = { name: string };
 type User = HasId &amp; HasName;
+
 const u: User = { id: 1, name: "Bob" };</code></pre>
         </section>
       </section>
@@ -1210,32 +941,22 @@ const u: User = { id: 1, name: "Bob" };</code></pre>
 
         <section id="designing-robust-api-types" class="frame">
           <h2>Designing robust API types</h2>
-          <p>When designing a library or service API:</p>
           <ul>
-            <li>
-              <p>Use interfaces and type aliases to describe data shapes.</p>
-            </li>
-            <li>
-              <p>Use enums or string unions for finite choices.</p>
-            </li>
-            <li>
-              <p>Use generics to keep APIs reusable.</p>
-            </li>
-            <li>
-              <p>Avoid <code>any</code> in public APIs when possible.</p>
-            </li>
-            <li>
-              <p>Use union types or result types for errors and success.</p>
-            </li>
+            <li><p>Use interfaces/type aliases to describe data shapes.</p></li>
+            <li><p>Use enums or string unions for finite choices.</p></li>
+            <li><p>Use generics to keep APIs reusable.</p></li>
+            <li><p>Avoid <code>any</code> in public APIs when possible.</p></li>
+            <li><p>Use union/result types for success vs error.</p></li>
           </ul>
+
           <p>Example result type in TypeScript:</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type ApiResult&lt;T&gt; =
+data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">type ApiResult&lt;T&gt; =
   | { ok: true; data: T }
   | { ok: false; error: string };</code></pre>
-          <p>This pattern also appears in Rust (<code>Result&lt;T, E&gt;</code>) and Haskell (<code>Either e a</code>).
-          </p>
-          <p>ts_api_result.ts</p>
+
+          <p>This pattern also appears in Rust (<code>Result&lt;T, E&gt;</code>) and Haskell (<code>Either e a</code>).</p>
+          <p>Example: ts_api_result.ts</p>
         </section>
       </section>
 
@@ -1249,32 +970,13 @@ const u: User = { id: 1, name: "Bob" };</code></pre>
 
         <section id="summary" class="frame">
           <h2>Summary</h2>
-          <p>By the end of this module, you should be able to:</p>
           <ul>
-            <li>
-              <p>Recognize common primitive types and how languages represent them.</p>
-            </li>
-            <li>
-              <p>Explain overflow vs unbounded integers and where it matters.</p>
-            </li>
-            <li>
-              <p>Distinguish static vs dynamic typing, and strong vs weak typing.</p>
-            </li>
-            <li>
-              <p>Describe type errors, type safety, and why undefined behavior is different.</p>
-            </li>
-            <li>
-              <p>Use TypeScript basics: annotations, inference, <code>any</code> vs <code>unknown</code>.</p>
-            </li>
-            <li>
-              <p>Work with composite types: arrays, records, maps, unions, enums.</p>
-            </li>
-            <li>
-              <p>Explain ADTs, generics, and structural typing at a high level.</p>
-            </li>
-            <li>
-              <p>Design clearer API types using generics and result-style unions.</p>
-            </li>
+            <li><p>Types help prevent bugs by restricting how values can be used.</p></li>
+            <li><p>Static vs dynamic is about when checks happen; strong vs weak is about coercions.</p></li>
+            <li><p>TypeScript adds static checking while keeping JavaScript’s runtime.</p></li>
+            <li><p>Primitives and composites are the building blocks of data modeling.</p></li>
+            <li><p>Unions + tags lead naturally to ADTs and safe case analysis.</p></li>
+            <li><p>Generics support reuse; structural typing affects how APIs accept values.</p></li>
           </ul>
         </section>
       </section>
@@ -1307,7 +1009,6 @@ const u: User = { id: 1, name: "Bob" };</code></pre>
       RevealNotes, RevealHighlight, RevealMath,
     ];
 
-    // More info https://github.com/hakimel/reveal.js#configuration
     Reveal.initialize(revealjsConfig);
   </script>
 

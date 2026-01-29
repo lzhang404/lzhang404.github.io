@@ -56,10 +56,11 @@
           <h2>Roadmap</h2>
           <ol>
             <li><p>Names</p></li>
-            <li><p>Bindings and symbol tables</p></li>
-            <li><p>Scope (static vs dynamic)</p></li>
+            <li><p>Bindings (including binding-time quirks like hoisting/TDZ)</p></li>
+            <li><p>Symbol tables</p></li>
+            <li><p>Scope (static vs dynamic, shadowing, capture)</p></li>
             <li><p>Lifetime (static/stack/heap/closures)</p></li>
-            <li><p>Expressions, side effects, and common pitfalls</p></li>
+            <li><p>Expressions and side effects (reasoning about state)</p></li>
           </ol>
         </section>
       </section>
@@ -218,6 +219,106 @@ y = y + 1;  // assignment</code></pre>
           </ul>
         </section>
 
+        <section id="summary-of-var-let-and-const" class="frame">
+          <h2>var, let, and const</h2>
+          <div class="center">
+            <table>
+              <thead>
+                <tr>
+                  <th style="text-align:left;">keyword</th>
+                  <th style="text-align:left;">scope</th>
+                  <th style="text-align:left;">before declaration</th>
+                  <th style="text-align:left;">reassignment</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="text-align:left;">var</td>
+                  <td style="text-align:left;">function scope</td>
+                  <td style="text-align:left;">hoisted, value undefined</td>
+                  <td style="text-align:left;">allowed</td>
+                </tr>
+                <tr>
+                  <td style="text-align:left;">let</td>
+                  <td style="text-align:left;">block scope</td>
+                  <td style="text-align:left;">temporal dead zone</td>
+                  <td style="text-align:left;">allowed</td>
+                </tr>
+                <tr>
+                  <td style="text-align:left;">const</td>
+                  <td style="text-align:left;">block scope</td>
+                  <td style="text-align:left;">temporal dead zone</td>
+                  <td style="text-align:left;">not allowed</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- MOVED HERE: hoisting / var-let-const / TDZ -->
+        <section id="hoisting-with-var-in-javascript-or-typescript" class="frame">
+          <h2>Hoisting with var</h2>
+          <p>
+            Hoisting (in TypeScript/JavaScript) is the runtime behavior where certain declarations are processed before the code “runs” line-by-line, so the name can exist earlier in the scope than where it appears in the source
+          </p>
+          <pre data-xleftmargin="8pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demo() {
+  console.log(msg); //undefined
+  var msg = "hello";
+}</code></pre>
+          <p>Equivalent mental model:</p>
+          <pre data-xleftmargin="8pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demo() {
+  var msg;
+  console.log(msg);
+  msg = "hello";
+}</code></pre>
+          <p>Example: npx ts-node ts_hoist.ts</p>
+        </section>
+
+        
+
+        <section id="let-and-const-scope-and-temporal-dead-zone" class="frame">
+          <h2>let and const: temporal dead zone</h2>
+          <p>Unlike <code>var</code>, <code>let</code> and <code>const</code> do not allow reading the variable before the declaration line executes (this is the temporal dead zone).</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demoLetConst() {
+  console.log(msg); // ReferenceError
+  let msg = "hello";
+}</code></pre>
+          <p>Example: npx ts-node ts_tdz.ts</p>
+        </section>
+
+        <section>
+          <h2>Practice: var vs let behavior</h2>
+          <p>Predict what happens:</p>
+          <pre><code data-trim data-noescape class="language-typescript">function A() {
+  console.log(x);
+  var x = 10;
+}
+
+function B() {
+  console.log(y);
+  let y = 10;
+}</code></pre>
+          <p>Questions :</p>
+          <ul class="simple">
+            <li><p>What does <code>A()</code> output?</p></li>
+            <li><p>What does <code>B()</code> do?</p></li>
+            <li><p>Which concept explains the difference?</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Practice answers: var vs let behavior</h2>
+          <ul class="simple">
+            <li><p><code>A()</code> prints <code>undefined</code> (hoisted <code>var</code> declaration).</p></li>
+            <li><p><code>B()</code> throws <code>ReferenceError</code> (temporal dead zone for <code>let</code>).</p></li>
+            <li><p>The difference is explained by hoisting vs temporal dead zone.</p></li>
+          </ul>
+        </section>
+        <!-- END moved block -->
+
         <section id="bindings-in-c" class="frame">
           <h2>Bindings in C</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
@@ -272,7 +373,6 @@ void f() {
   }
 }</code></pre>
           <p>Lookup searches the current scope first, then walks to parents.</p>
-          <p> Example: ts_symbol_table_demo.ts</p>
         </section>
 
         <section>
@@ -292,6 +392,7 @@ void f() {
             <li><p>At Point A, which <code>x</code> is found?</p></li>
             <li><p>At Point B, which <code>x</code> is found?</p></li>
           </ul>
+          <p>Example: npx ts-node ts_symbol_table_demo.ts</p>
         </section>
 
         <section>
@@ -319,6 +420,74 @@ void f() {
           <p>Most modern languages use static scope.</p>
         </section>
 
+        <!-- MOVED HERE: shadowing + capture -->
+        <section id="shadowing-pitfall-in-c" class="frame">
+          <h2>Shadowing pitfall in C</h2>
+          <pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">int total = 0;
+void add(int values[], int n) {
+  for (int i = 0; i &lt; n; i++) {
+    int total = values[i];  // shadows global total
+    // intended: total += values[i];
+  }
+}</code></pre>
+        </section>
+
+        <section id="shadowing-in-typescript-and-python" class="frame">
+          <h2>Shadowing in TypeScript and Python</h2>
+
+          <p>Shadowing happens when an inner scope introduces a new name that hides an outer one.</p>
+
+          <pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-typescript">// TypeScript
+let total = 0;
+function add(values: number[]): void {
+  for (let i = 0; i < values.length; i++) {
+    let total = values[i];   // shadows outer total
+    // intended: total += values[i];
+  }
+}</code></pre>
+
+          <pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-python"># Python
+total = 0
+def add(values):
+  for v in values:
+    total = v   # creates a new local name "total"
+    # intended: total += v</code></pre>
+
+          <ul>
+            <li><p>TypeScript example: the loop declares a new <code>total</code>, so the outer <code>total</code> is never updated.</p></li>
+            <li><p>Python example: assigning to <code>total</code> inside <code>add</code> makes it a local variable, so this does not update the global <code>total</code>.</p></li>
+            <li><p>Many linters warn about shadowing because it often matches “I didn’t mean to create a new variable.”</p></li>
+          </ul>
+
+          <p>Example: npx ts-node ts_shadow.ts</p>
+        </section>
+
+        <section id="block-scope-in-loops-let" class="frame">
+          <h2>Block scope in loops: let</h2>
+          <pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function loopLet() {
+  for (let i = 0; i &lt; 3; i++) {
+    setTimeout(() =&gt; console.log("let:", i), 0);
+  }
+}</code></pre>
+        </section>
+
+        <section id="var-in-loops-classic-closure-bug" class="frame">
+          <h2>var in loops: classic closure bug</h2>
+          <pre data-xleftmargin="8pt" data-linenos=""
+data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function loopVar() {
+  for (var i = 0; i &lt; 3; i++) {
+    setTimeout(() =&gt; console.log(i), 0);
+  }
+}</code></pre>
+          <p>It prints 3, 3, 3 because there is only one function-scoped <code>i</code>.</p>
+          <p>Example: npx ts-node ts_loop_capture.ts</p>
+        </section>
+        <!-- END moved block -->
+
         <section id="static-scope-example-in-typescript" class="frame">
           <h2>Static scope example in TypeScript</h2>
           <pre data-xleftmargin="8pt" data-linenos=""
@@ -333,7 +502,7 @@ function outer() {
 }
 outer();</code></pre>
           <p>The meaning of names inside <code>inner</code> is determined by the surrounding code.</p>
-          <p>Example: ts_static_scope.ts</p>
+          <p>Example: npx ts-node ts_static_scope.ts</p>
         </section>
 
         <section id="dynamic-scope-thought-experiment" class="frame">
@@ -374,7 +543,7 @@ def outer():
   inner()
 outer()</code></pre>
           <p>Search order finds <code>x</code> in the enclosing scope (outer), so it prints <code>outer</code>.</p>
-        <p>Example: py_legb.py</p>
+          <p>Example: py_legb.py</p>
         </section>
       </section>
 
@@ -387,13 +556,13 @@ outer()</code></pre>
         <section id="scope-versus-lifetime" class="frame">
           <h2>Scope vs. lifetime</h2>
           <ul>
-            <li><p><storng>Scope:</storng> where a name can be used in the program text.</p></li>
+            <li><p><strong>Scope:</strong> where a name can be used in the program text.</p></li>
             <li><p><strong>Lifetime:</strong> when storage exists during execution.</p></li>
-            <ul>
+          </ul>
+          <ul>
             <li><p>Static lifetime: exists for the entire program run.</p></li>
             <li><p>Stack (automatic) lifetime: exists during a call or block.</p></li>
             <li><p>Heap (dynamic) lifetime: exists from allocation until freed (or garbage-collected).</p></li>
-          </ul>
           </ul>
         </section>
 
@@ -476,7 +645,6 @@ data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize
 const add10 = makeAdder(10);
 console.log(add10(5));</code></pre>
           <p>The function returned from <code>makeAdder</code> keeps <code>n</code> alive after <code>makeAdder</code> returns.</p>
-          
         </section>
 
         <section>
@@ -528,7 +696,6 @@ const c = makeCounter();</code></pre>
           </ul>
         </section>
 
-
         <section id="referential-transparency" class="frame">
           <h2>Referential transparency</h2>
           <p>An expression is referentially transparent if you can replace it with its value without changing program behavior.</p>
@@ -549,7 +716,7 @@ def add_to_acc(x):
   global acc
   acc += x
   return acc</code></pre>
-          <p>py_pure_impure.py</p>
+          <p>Example: py_pure_impure.py</p>
         </section>
 
         <section>
@@ -576,171 +743,6 @@ function computeAndCache(x: number): number {
             <li><p>Side effect: modifies <code>cache</code> by pushing into it.</p></li>
             <li><p>Because program state changes, you need to know history to predict what other code sees in <code>cache</code>.</p></li>
           </ul>
-        </section>
-      </section>
-
-      <!-- SECTION: Common Pitfalls -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Common Pitfalls</h1>
-        </section>
-
-        <section id="shadowing-pitfall-in-c" class="frame">
-          <h2>Shadowing pitfall in C</h2>
-          <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-c">int total = 0;
-void add(int values[], int n) {
-  for (int i = 0; i &lt; n; i++) {
-    int total = values[i];  // shadows global total
-    // intended: total += values[i];
-  }
-}</code></pre>
-        </section>
-        <section id="shadowing-in-typescript-and-python" class="frame">
-  <h2>Shadowing in TypeScript and Python</h2>
-
-  <p>Shadowing happens when an inner scope introduces a new name that hides an outer one.</p>
-
-  <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-typescript">// TypeScript
-let total = 0;
-function add(values: number[]): void {
-  for (let i = 0; i < values.length; i++) {
-    let total = values[i];   // shadows outer total
-    // intended: total += values[i];
-  }
-}</code></pre>
-
-  <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-python"># Python
-total = 0
-def add(values):
-  for v in values:
-    total = v   # creates a new local name "total"
-    # intended: total += v</code></pre>
-
-  <ul>
-    <li><p>TypeScript example: the loop declares a new <code>total</code>, so the outer <code>total</code> is never updated.</p></li>
-    <li><p>Python example: assigning to <code>total</code> inside <code>add</code> makes it a local variable, so this does not update the global <code>total</code>.</p></li>
-    <li><p>Many linters warn about shadowing because it often matches “I didn’t mean to create a new variable.”</p></li>
-  </ul>
-
-  <p>Example: ts_shadow.ts</p>
-</section>
-
-        <section id="hoisting-with-var-in-javascript-or-typescript" class="frame">
-          <h2>Hoisting with var</h2>
-          <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demo() {
-  console.log(msg);
-  var msg = "hello";
-}</code></pre>
-          <p>Equivalent mental model:</p>
-          <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demo() {
-  var msg;
-  console.log(msg);
-  msg = "hello";
-}</code></pre>
-          <p>Example: ts_hoist.ts</p>
-        </section>
-
-        <section id="summary-of-var-let-and-const" class="frame">
-          <h2>Summary of var, let, and const</h2>
-          <div class="center">
-            <table>
-              <thead>
-                <tr>
-                  <th style="text-align:left;">keyword</th>
-                  <th style="text-align:left;">scope</th>
-                  <th style="text-align:left;">before declaration</th>
-                  <th style="text-align:left;">reassignment</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="text-align:left;">var</td>
-                  <td style="text-align:left;">function scope</td>
-                  <td style="text-align:left;">hoisted, value undefined</td>
-                  <td style="text-align:left;">allowed</td>
-                </tr>
-                <tr>
-                  <td style="text-align:left;">let</td>
-                  <td style="text-align:left;">block scope</td>
-                  <td style="text-align:left;">temporal dead zone</td>
-                  <td style="text-align:left;">allowed</td>
-                </tr>
-                <tr>
-                  <td style="text-align:left;">const</td>
-                  <td style="text-align:left;">block scope</td>
-                  <td style="text-align:left;">temporal dead zone</td>
-                  <td style="text-align:left;">not allowed</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section id="let-and-const-scope-and-temporal-dead-zone" class="frame">
-          <h2>let and const: temporal dead zone</h2>
-          <p>Unlike <code>var</code>, <code>let</code> and <code>const</code> do not allow reading the variable before the declaration line executes.</p>
-          <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function demoLetConst() {
-  console.log(msg); // ReferenceError
-  let msg = "hello";
-}</code></pre>
-          <p>Example: ts_tdz.ts</p>
-        </section>
-
-        <section>
-          <h2>Practice: var vs let behavior</h2>
-          <p>Predict what happens:</p>
-          <pre><code data-trim data-noescape class="language-typescript">function A() {
-  console.log(x);
-  var x = 10;
-}
-
-function B() {
-  console.log(y);
-  let y = 10;
-}</code></pre>
-          <p>Questions :</p>
-          <ul class="simple">
-            <li><p>What does <code>A()</code> output?</p></li>
-            <li><p>What does <code>B()</code> do?</p></li>
-            <li><p>Which concept explains the difference?</p></li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Practice answers: var vs let behavior</h2>
-          <ul class="simple">
-            <li><p><code>A()</code> prints <code>undefined</code> (hoisted <code>var</code> declaration).</p></li>
-            <li><p><code>B()</code> throws <code>ReferenceError</code> (temporal dead zone for <code>let</code>).</p></li>
-            <li><p>The difference is explained by hoisting vs temporal dead zone.</p></li>
-          </ul>
-        </section>
-
-        <section id="block-scope-in-loops-let" class="frame">
-          <h2>Block scope in loops: let</h2>
-          <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function loopLet() {
-  for (let i = 0; i &lt; 3; i++) {
-    setTimeout(() =&gt; console.log("let:", i), 0);
-  }
-}</code></pre>
-        </section>
-
-        <section id="var-in-loops-classic-closure-bug" class="frame">
-          <h2>var in loops: classic closure bug</h2>
-          <pre data-xleftmargin="8pt" data-linenos=""
-data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function loopVar() {
-  for (var i = 0; i &lt; 3; i++) {
-    setTimeout(() =&gt; console.log(i), 0);
-  }
-}</code></pre>
-          <p>It prints 3, 3, 3 because there is only one function-scoped <code>i</code>.</p>
-          <p>Example: ts_loop_capture.ts</p>
         </section>
       </section>
 
