@@ -319,7 +319,7 @@ data-numbersep="1em" data-frame="leftline" data-fontsize="\normalsize" data-tabs
   console.log(msg);
   msg = "hello";
 }</code></pre>
-          <p>Example: npx ts-node ts_hoist.ts</p>
+          <p>Example: node ts_hoist.js</p>
         </section>
 
         
@@ -332,7 +332,7 @@ data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-ta
   console.log(msg); // ReferenceError
   let msg = "hello";
 }</code></pre>
-          <p>Example: npx ts-node ts_tdz.ts</p>
+          <p>Example: node ts_hoist_let.js</p>
         </section>
 
         <section>
@@ -511,32 +511,7 @@ def add(values):
           <p>Example: npx ts-node ts_shadow.ts</p>
         </section>
 
-        <section id="block-scope-in-loops-let" class="frame">
-          <h2>Block scope in loops: let</h2>
-          <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function loopLet() {
-  for (let i = 0; i &lt; 3; i++) {
-    setTimeout(() =&gt; console.log("let:", i), 0);
-  }
-}</code></pre>
-<p>It prints let: 0, let: 1, let: 2 because each iteration has its own block-scoped <code>i</code>.</p>
-
-        </section>
-
-        <section id="closure-capture-in-callbacks" class="frame">
-          <h2>Capture in callbacks</h2>
-
-          <p>
-            When you create a callback inside a scope, the callback can capture variables from that scope.
-            The key question is: do all callbacks share one variable, or does each callback get its own?
-          </p>
-
-          <ul>
-            <li><p>With <code>var</code>, the loop index is typically one function-scoped variable shared by all callbacks.</p></li>
-            <li><p>With <code>let</code>, each loop iteration gets a fresh block-scoped binding.</p></li>
-          </ul>
-        </section>
-
+      
         <section id="closure-definition" class="frame">
           <h2>What is a closure?</h2>
 
@@ -557,7 +532,32 @@ data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-ta
           };
         }</code></pre>
         </section>
-        
+      <section id="closure-capture-in-callbacks" class="frame">
+          <h2>Capture in callbacks</h2>
+
+          <p>
+            When you create a callback inside a scope, the callback can capture variables from that scope.
+            The key question is: do all callbacks share one variable, or does each callback get its own?
+          </p>
+
+          <ul>
+            <li><p>With <code>var</code>, the loop index is typically one function-scoped variable shared by all callbacks.</p></li>
+            <li><p>With <code>let</code>, each loop iteration gets a fresh block-scoped binding.</p></li>
+          </ul>
+        </section>
+
+        <section id="block-scope-in-loops-let" class="frame">
+          <h2>Block scope in loops: let</h2>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize" data-tabsize="1"><code class="language-typescript">function loopLet() {
+              for (let i = 0; i &lt; 3; i++) {
+                setTimeout(() =&gt; console.log("let:", i), 0);
+              }
+            }</code></pre>
+            <p>It prints let: 0, let: 1, let: 2 because each iteration has its own block-scoped <code>i</code>.</p>
+
+        </section>
+
         <section id="var-in-loops-classic-closure-bug" class="frame">
           <h2>var in loops: classic closure bug</h2>
           <pre data-xleftmargin="8pt" data-linenos=""

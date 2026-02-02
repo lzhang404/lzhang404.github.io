@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Review: Modules 1–5</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- Title -->
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Review: Modules 1–5</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Midterm Review</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Overview and Roadmap
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Overview</h2>
+        </section>
+
+        <section id="review-midterm-overview" class="frame">
+          <h2>Midterm Overview</h2>
+          <ul>
+            <li><p>Covers module 1–5 and project 1</p></li>
+            <li><p>75 mins, requires lock down browser</p></li>
+            <li><p>Exam format: multiple choice, fill in blanks, and short answer questions</p></li>
+            <li><p>One letter-size front and back cheatsheet</p></li>
+            
+          </ul>
+        </section>
+
+        <section id="review-what-covered" class="frame">
+          <h2>What this review covers</h2>
+          <ul>
+            <li><p>Module 1–2: lexical structure and scanning (tokens, regex patterns, longest match, DFA)</p></li>
+            <li><p>Module 3: grammars, parsing, and ASTs (BNF/EBNF, ambiguity, precedence/associativity)</p></li>
+            <li><p>Module 4: names, bindings, scope, lifetime (shadowing, hoisting, TDZ, closures)</p></li>
+            <li><p>Module 5: data types and type systems (static/dynamic, strong/weak, unions/narrowing, generics, structural typing)</p></li>
+          </ul>
+        </section>
+
+        <section id="review-pipeline" class="frame">
+          <h2>One pipeline to remember</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">source text
+  → (M1–M2) lexer/scanner → tokens
+  → (M3) parser           → AST
+  → (M4) name resolution  → resolved bindings
+  → (M5) type checking    → typed program / runtime checks</code></pre>
+          <ul>
+            <li><p>Each stage reduces ambiguity and catches a category of errors.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           MODULE 1: Lexical Structure + Regex
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Module 1: Lexical Structure</h2>
+        </section>
+
+        <section id="m1-token-definition" class="frame">
+          <h2>Token, lexeme, attribute</h2>
+          <ul>
+            <li><p>Lexeme: the exact character sequence in the source.</p></li>
+            <li><p>Token: a category (token-name) plus an optional attribute.</p></li>
+            <li><p>Typical representation: ⟨token-name, attribute⟩.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">"123"  → ⟨NUMBER, 123⟩
+"sum"  → ⟨IDENT, "sum"⟩
+"+"    → ⟨OP, "+"⟩</code></pre>
+        </section>
+
+        <section id="m1-why-lexing" class="frame">
+          <h2>What a lexer/scanner does</h2>
+          <ul>
+            <li><p>Input: raw source characters.</p></li>
+            <li><p>Output: a stream of tokens (with positions).</p></li>
+            <li><p>Skips: whitespace and comments (but updates line/column/index).</p></li>
+            <li><p>Goal: turn characters into a structured sequence for the parser.</p></li>
+          </ul>
+        </section>
+
+        <section id="m1-longest-match" class="frame">
+          <h2>Two rules that decide most lexer outputs</h2>
+          <ul>
+            <li><p>Longest match: consume the longest prefix that forms a valid token.</p></li>
+            <li><p>Rule priority: if two token rules match the same length, choose the higher-priority rule.</p></li>
+            <li><p>Shared-prefix operators: recognize the longer one first (<code>==</code> before <code>=</code>).</p></li>
+            <li><p>Keywords: often scan as IDENT, then upgrade using a keyword table.</p></li>
+          </ul>
+        </section>
+
+        <section id="m1-regex-role" class="frame">
+          <h2>Regex in lexing</h2>
+          <ul>
+            <li><p>A regex describes the set of lexemes a rule matches (a regular language).</p></li>
+            <li><p>Lexers apply regex-like rules repeatedly to form tokens.</p></li>
+            <li><p>Anchors (<code>^</code>, <code>$</code>) matter when you want to match the whole lexeme.</p></li>
+          </ul>
+        </section>
+
+        <section id="m1-regex-cheatsheet" class="frame">
+          <h2>Regex mini-cheatsheet (JS/TS)</h2>
+          <ul>
+            <li><p><code>^</code> start, <code>$</code> end</p></li>
+            <li><p><code>[0-9]</code> digit, <code>[a-fA-F0-9]</code> hex digit</p></li>
+            <li><p><code>+</code> 1+, <code>*</code> 0+, <code>?</code> optional</p></li>
+            <li><p><code>()</code> group, <code>|</code> alternative</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">decimal integer:   ^[0-9]+$
+identifier:        ^[A-Za-z_][A-Za-z0-9_]*$
+whitespace:        ^[ \t\r\n]+$</code></pre>
+        </section>
+
+        <section id="m1-hex-integers" class="frame">
+          <h2>Hex integer literals (token rule)</h2>
+          <ul>
+            <li><p>Syntax: starts with <code>0x</code> or <code>0X</code>, then 1+ hex digits.</p></li>
+            <li><p>No underscores, no suffixes.</p></li>
+            <li><p>Whole lexeme must match (anchors).</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">hex integer (only): ^0[xX][0-9a-fA-F]+$</code></pre>
+        </section>
+
+        <section id="m1-tokenization-example" class="frame">
+          <h2>Scanner stopping point (intuition)</h2>
+          <p>Assume NUMBER is <code>[0-9]+</code> and IDENT begins with a letter/_.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-text">Input: 123x</code></pre>
+          <ul>
+            <li><p>The NUMBER rule matches <code>123</code>, then stops at <code>x</code>.</p></li>
+            <li><p>The scanner emits NUMBER(123) and leaves <code>x</code> for the next token.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           MODULE 2: DFAs + Scanning Behavior
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Module 2: DFAs and Scanning</h2>
+        </section>
+
+        <section id="m2-dfa-definition" class="frame">
+          <h2>Definition: DFA</h2>
+          <ul>
+            <li><p>A DFA (deterministic finite automaton) is a 5-tuple:</p></li>
+            <li><p>Q (finite set of states), Σ (input alphabet), δ (transition function), q0 (start state), F (accepting states).</p></li>
+            <li><p>Deterministic means: for each state and input character, there is at most one next state.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">δ: Q × Σ → Q
+(transition function maps (state, char) to the next state)</code></pre>
+        </section>
+
+        <section id="m2-dfa-lexing" class="frame">
+          <h2>How DFAs relate to scanning</h2>
+          <ul>
+            <li><p>Token patterns like identifiers and numbers are regular languages.</p></li>
+            <li><p>A DFA can recognize each pattern by reading characters left-to-right.</p></li>
+            <li><p>Lexers simulate these DFAs to decide how many characters to consume.</p></li>
+            <li><p>Longest match: keep going while transitions exist; remember the last accepting state.</p></li>
+          </ul>
+        </section>
+
+        <section id="m2-integer-dfa-intuition" class="frame">
+          <h2>Integer DFA intuition for [0-9]+</h2>
+          <ul>
+            <li><p>Start → on digit → in “number” state (accepting)</p></li>
+            <li><p>Keep consuming digits while possible</p></li>
+            <li><p>Stop when next char is not a digit</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">Input: 123x
+Read 1,2,3  → still accepting NUMBER
+Read x      → no transition → stop, emit NUMBER(123)</code></pre>
+        </section>
+
+        <section id="m2-shared-prefix-ops" class="frame">
+          <h2>Shared-prefix operators</h2>
+          <ul>
+            <li><p>When multiple operators share a prefix, longest-match is essential.</p></li>
+            <li><p>Example: language includes <code>=</code> and <code>==</code>.</p></li>
+            <li><p>Scanner should prefer <code>==</code> when the input begins with <code>==</code>.</p></li>
+          </ul>
+        </section>
+
+        <section id="m2-lexer-errors" class="frame">
+          <h2>Lexer errors (what to include)</h2>
+          <ul>
+            <li><p>Unexpected character and its position (index/line/column)</p></li>
+            <li><p>Context snippet if you provide it (helpful)</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">Unexpected character '@' at line 3, col 12</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           MODULE 3: Grammars, EBNF, Ambiguity, Precedence, AST
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Module 3: Grammars, Parsing, ASTs</h2>
+        </section>
+
+        <section id="m3-grammar-basics" class="frame">
+          <h2>Grammar basics</h2>
+          <ul>
+            <li><p>A context-free grammar defines how tokens form valid programs.</p></li>
+            <li><p>Nonterminals (like Expr) expand using productions.</p></li>
+            <li><p>Terminals are token kinds (NUM, IDENT, "+", etc.).</p></li>
+          </ul>
+        </section>
+
+        <section id="m3-bnf-ebnf" class="frame">
+          <h2>BNF vs EBNF (the * operator)</h2>
+          <ul>
+            <li><p>BNF uses only productions; EBNF adds repetition operators.</p></li>
+            <li><p>In EBNF, <code>(X)*</code> means “repeat X zero or more times”.</p></li>
+            <li><p>So <code>Term (("+" Term)*)</code> means: a Term, then zero or more + Term groups.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">Expr ::= Term (("+"|"-") Term)*</code></pre>
+        </section>
+
+        <section id="m3-ambiguity" class="frame">
+          <h2>Ambiguity</h2>
+          <ul>
+            <li><p>A grammar is ambiguous if a string has more than one parse tree.</p></li>
+            <li><p>Ambiguity often appears when precedence/associativity is not encoded.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">Expr ::= Expr "+" Expr | Expr "*" Expr | NUM</code></pre>
+        </section>
+
+        <section id="m3-precedence-assoc" class="frame">
+          <h2>Precedence and associativity (how grammar encodes it)</h2>
+          <ul>
+            <li><p>Precedence: put higher-precedence nonterminal “lower” (nested) in the grammar.</p></li>
+            <li><p>Associativity: loops like <code>(...)*</code> usually build left-associative trees in recursive descent.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">Expr   ::= Term (("+"|"-") Term)*
+Term   ::= Factor (("*"|"/") Factor)*
+Factor ::= "(" Expr ")" | NUM</code></pre>
+        </section>
+
+        <section id="m3-recursive-descent" class="frame">
+          <h2>Recursive descent parsing (implementation strategy)</h2>
+          <ul>
+            <li><p>Typical strategy: one function per nonterminal.</p></li>
+            <li><p>Each function consumes tokens and returns an AST node.</p></li>
+            <li><p>Errors happen when the next token cannot satisfy what the grammar requires.</p></li>
+          </ul>
+        </section>
+
+        <section id="m3-ast-definition" class="frame">
+          <h2>AST: what it keeps vs drops</h2>
+          <ul>
+            <li><p>AST keeps the essential structure for evaluation and analysis.</p></li>
+            <li><p>AST drops syntax-only details (like parentheses nodes).</p></li>
+            <li><p>Operator precedence is reflected by tree shape.</p></li>
+          </ul>
+        </section>
+
+        <section id="m3-ast-json-example" class="frame">
+          <h2>AST example (JSON style)</h2>
+          <p>Expression:</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">5 + 2 * (4 - 1)</code></pre>
+
+          <p>AST (JSON style, parentheses removed):</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-json">{
+  "type": "BinaryExpr",
+  "op": "+",
+  "left": { "type": "NumberLiteral", "value": 5 },
+  "right": {
+    "type": "BinaryExpr",
+    "op": "*",
+    "left": { "type": "NumberLiteral", "value": 2 },
+    "right": {
+      "type": "BinaryExpr",
+      "op": "-",
+      "left": { "type": "NumberLiteral", "value": 4 },
+      "right": { "type": "NumberLiteral", "value": 1 }
+    }
+  }
+}</code></pre>
+        </section>
+
+        <section id="m3-parser-errors" class="frame">
+          <h2>Parser errors: what you should report</h2>
+          <ul>
+            <li><p>Expected token(s)</p></li>
+            <li><p>Actual token found (type and lexeme)</p></li>
+            <li><p>Position</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">Expected ")" after expression, got IDENT("as") at index 42</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           MODULE 4: Names, Bindings, Scope, Lifetime
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Module 4: Names, Bindings, Scope, Lifetime</h2>
+        </section>
+
+        <section id="m4-terms" class="frame">
+          <h2>Definitions (must-know)</h2>
+          <ul>
+            <li><p>Name: identifier text in the program (<code>x</code>, <code>f</code>).</p></li>
+            <li><p>Binding: association from a name to an entity (value/location/function).</p></li>
+            <li><p>Scope: region of program text where a binding is visible.</p></li>
+            <li><p>Lifetime: how long storage exists during execution.</p></li>
+          </ul>
+        </section>
+
+        <section id="m4-static-scoping" class="frame">
+          <h2>Static (lexical) scoping</h2>
+          <ul>
+            <li><p>Free variables in a function refer to bindings in the environment where the function was defined.</p></li>
+            <li><p>Not based on who calls the function (that would be dynamic scoping).</p></li>
+          </ul>
+        </section>
+
+        <section id="m4-shadowing" class="frame">
+          <h2>Shadowing</h2>
+          <ul>
+            <li><p>An inner scope can introduce a new binding with the same name.</p></li>
+            <li><p>References resolve to the nearest binding in scope.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-typescript">let x = 1;
+function g() {
+  let x = 2;
+  return x;
+}</code></pre>
+        </section>
+
+        <section id="m4-hoisting-tdz" class="frame">
+          <h2>Hoisting and TDZ</h2>
+          <ul>
+            <li><p><code>var</code> is function-scoped and hoisted; read-before-assign yields <code>undefined</code>.</p></li>
+            <li><p><code>let</code>/<code>const</code> are block-scoped; access before initialization throws <code>ReferenceError</code> (TDZ).</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function demoVar() {
+  console.log(msg); // undefined
+  var msg = "hello";
+}
+
+function demoLet() {
+  // console.log(msg); // ReferenceError (TDZ)
+  let msg = "hello";
+}</code></pre>
+        </section>
+
+        <section id="m4-closures" class="frame">
+          <h2>Closures</h2>
+          <ul>
+            <li><p>A closure is a function + the environment of captured variables.</p></li>
+            <li><p>Closures make free variables keep working after the outer function returns.</p></li>
+            <li><p>Captures bindings, not “snapshots” of values.</p></li>
+          </ul>
+        </section>
+
+        <section id="m4-closure-loop" class="frame">
+          <h2>Closure + loop binding</h2>
+          <ul>
+            <li><p><code>var</code>: one shared binding across iterations.</p></li>
+            <li><p><code>let</code>: a fresh binding each iteration.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const fs1: (() =&gt; number)[] = [];
+for (var i = 0; i &lt; 3; i++) fs1.push(() =&gt; i);
+console.log(fs1[0](), fs1[1](), fs1[2]());</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           MODULE 5: Data Types & Type Systems
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Module 5: Data Types &amp; Type Systems</h2>
+        </section>
+
+        <section id="m5-types-why" class="frame">
+          <h2>Why types?</h2>
+          <ul>
+            <li><p>Types restrict how values can be used (prevent categories of bugs).</p></li>
+            <li><p>Type systems aim to detect invalid uses early or at runtime.</p></li>
+            <li><p>Type error: using a value in a way that does not match its type.</p></li>
+          </ul>
+        </section>
+
+        <section id="m5-static-dynamic" class="frame">
+          <h2>Static vs dynamic typing</h2>
+          <ul>
+            <li><p>Static vs dynamic differs mainly in when type checks happen.</p></li>
+            <li><p>Static: many checks before running.</p></li>
+            <li><p>Dynamic: checks happen when the code path runs.</p></li>
+            <li><p>TypeScript: static checking, JavaScript runtime behavior.</p></li>
+          </ul>
+        </section>
+
+        <section id="m5-strong-weak" class="frame">
+          <h2>Strong vs weak typing (coercion)</h2>
+          <ul>
+            <li><p>Strong/weak is about implicit conversions between unrelated types.</p></li>
+            <li><p>JavaScript allows many coercions (surprising results).</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-javascript">1 + "2"        // "12"
+"3" * "4"      // 12
+false == 0     // true</code></pre>
+        </section>
+
+        <section id="m5-unions" class="frame">
+          <h2>Unions and narrowing</h2>
+          <ul>
+            <li><p>Union: a value may be one of several variants.</p></li>
+            <li><p>Narrowing: refine the union to a specific variant using checks.</p></li>
+            <li><p>Discriminated union: a shared tag field (like <code>kind</code>) drives narrowing.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type Result =
+  | { kind: "ok"; value: number }
+  | { kind: "error"; message: string };</code></pre>
+        </section>
+
+        <section id="m5-any-unknown" class="frame">
+          <h2>any vs unknown</h2>
+          <ul>
+            <li><p><code>any</code>: opt out of checking; unsafe operations allowed.</p></li>
+            <li><p><code>unknown</code>: forces narrowing/validation before use.</p></li>
+            <li><p>Safer default for “data from outside” (network, JSON, user input).</p></li>
+          </ul>
+        </section>
+
+        <section id="m5-tagged-union-c" class="frame">
+          <h2>Tagged unions vs raw C unions</h2>
+          <ul>
+            <li><p>Raw <code>union</code>: you can read the wrong field with no built-in protection.</p></li>
+            <li><p>Tagged union: tag indicates which variant is valid before reading data.</p></li>
+            <li><p>This is the same idea as TypeScript discriminated unions.</p></li>
+          </ul>
+        </section>
+
+        <section id="m5-generics" class="frame">
+          <h2>Generics (parametric polymorphism)</h2>
+          <ul>
+            <li><p>Enable reuse: write code once that works for many types using type parameters.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function first&lt;T&gt;(items: T[]): T | undefined {
+  return items[0];
+}</code></pre>
+        </section>
+
+        <section id="m5-structural-typing" class="frame">
+          <h2>Structural typing</h2>
+          <ul>
+            <li><p>Compatibility is based on matching required fields/types (shape).</p></li>
+            <li><p>Extra fields are allowed if the required structure matches.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-typescript">interface Person { name: string; age: number; }
+function greet(p: Person) { console.log(p.name); }
+
+const user = { name: "Alice", age: 30, email: "a@example.com" };
+greet(user);</code></pre>
+        </section>
+      </section>
+
+
+
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig,
+      {
+        "disableLayout": true,
+        "controls": true,
+        "progress": true,
+        "hash": true,
+        "center": true,
+        "transition": "slide",
+        "slideNumber": true,
+        "scrollActivationWidth": null,
+        "mouseWheel": false,
+        "width": 800, "height": 540
+      });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>
