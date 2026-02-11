@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Templates in C++</title>
+
+  <!-- Same styling pattern as your other Reveal exports -->
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Optional: code highlighting theme if your site uses it (many Reveal setups do) -->
+  <!-- <link rel="stylesheet" href="../_static/revealjs/plugin/highlight/monokai.css"> -->
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- =========================================================
+           Title
+           ========================================================= -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Templates in C++</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Overview
+           ========================================================= -->
+      <section>
+        <section class="frame">
+          <h2>Outline</h2>
+          <ul>
+            <li><p>Motivation: why templates exist</p></li>
+            <li><p>Function templates: write once, use for many types</p></li>
+            <li><p>Template argument deduction vs explicit template arguments</p></li>
+            <li><p>Constraints: what operations must a type support?</p></li>
+            <li><p>Class templates: generic classes (like STL containers)</p></li>
+            <li><p>Multiple template parameters (Key/Value style)</p></li>
+            <li><p>Template code organization: why “header-only” is common</p></li>
+            <li><p>Common errors: confusing compiler messages and how to interpret them</p></li>
+            <li><p>Summary + review questions</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Learning goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li><p>Explain how templates reduce duplication and maintenance cost</p></li>
+            <li><p>Write a function template and explain how it is instantiated</p></li>
+            <li><p>Predict what <code class="inline">T</code> becomes when calling a template</p></li>
+            <li><p>Use explicit template arguments when deduction fails</p></li>
+            <li><p>Write and use a class template with methods</p></li>
+            <li><p>Explain why templates usually must live in headers</p></li>
+            <li><p>Diagnose common template compilation errors</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Big idea (generic programming)</h2>
+          <p>
+            Templates let you write algorithms and data structures that are <strong>type-independent</strong>.
+          </p>
+          <ul>
+            <li><p>You provide the algorithm once</p></li>
+            <li><p>The compiler generates type-specific versions as needed</p></li>
+            <li><p>This is how the STL works: <code class="inline">vector&lt;T&gt;</code>, <code class="inline">stack&lt;T&gt;</code>, <code class="inline">map&lt;K,V&gt;</code>, …</p></li>
+          </ul>
+          <p class="small-note">Important: templates are a compile-time feature, not a runtime feature.</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Motivation
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Motivation</h2>
+        </section>
+
+        <section class="frame">
+          <h2>Problem: same logic, many types</h2>
+          <p>Suppose we want a function that returns the minimum of three items.</p>
+          <ul>
+            <li><p>Works for <code class="inline">int</code>, <code class="inline">double</code>, <code class="inline">char</code>, <code class="inline">string</code>, etc.</p></li>
+            <li><p>But the logic is always: compare and keep the smallest</p></li>
+          </ul>
+          <p>Without templates, you end up writing many almost-identical functions.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Redundant code (two versions)</h2>
+          <p>Same algorithm, copied for different types:</p>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">// min of 3 ints
+int TripleMinInt(int item1, int item2, int item3) {
+  int minVal = item1;
+  if (item2 &lt; minVal) minVal = item2;
+  if (item3 &lt; minVal) minVal = item3;
+  return minVal;
+}
+
+// min of 3 chars
+char TripleMinChar(char item1, char item2, char item3) {
+  char minVal = item1;
+  if (item2 &lt; minVal) minVal = item2;
+  if (item3 &lt; minVal) minVal = item3;
+  return minVal;
+}</code></pre>
+
+          <ul>
+            <li><p>Maintenance issue: fix a bug in one → must fix it everywhere</p></li>
+            <li><p>More code = more chances for mistakes</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Template solution</h2>
+          <ul>
+            <li><p>Write the algorithm once</p></li>
+            <li><p>Replace the type (<code class="inline">int</code>, <code class="inline">char</code>, …) with a placeholder type <code class="inline">T</code></p></li>
+            <li><p>The compiler “fills in” the type later when you call it</p></li>
+          </ul>
+          <p class="small-note">You can think of templates as “recipes” for generating real code.</p>
+        </section>
+
+        <!-- Light Q/A -->
+        <section class="frame">
+          <h2>Quick check</h2>
+          <p>In the two functions above, what is the only real difference?</p>
+          <ul>
+            <li><p>A) The algorithm is different</p></li>
+            <li><p>B) The return type and parameter types are different</p></li>
+            <li><p>C) The number of comparisons is different</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Quick check: answer</h2>
+          <ul>
+            <li><p><strong>B</strong>: only the types differ; the algorithm is the same.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Function Templates
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Function Templates</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Function template syntax</h2>
+          <p>General pattern:</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+T name(T p1, T p2 /* ... */) {
+  // uses T like a normal type
+}</code></pre>
+
+          <ul>
+            <li><p><code class="inline">template &lt;typename T&gt;</code> introduces a template parameter named <code class="inline">T</code></p></li>
+            <li><p><code class="inline">T</code> can be used as a type in parameters, locals, return type</p></li>
+            <li><p>When called, the compiler picks a concrete type for <code class="inline">T</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>TripleMin as a template</h2>
+          <p>This version works for any <code class="inline">T</code> that supports <code class="inline">&lt;</code> comparison.</p>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+T TripleMin(T item1, T item2, T item3) {
+  T minVal = item1;
+  if (item2 &lt; minVal) minVal = item2;
+  if (item3 &lt; minVal) minVal = item3;
+  return minVal;
+}</code></pre>
+
+          <p class="small-note">
+            If you try a type that does not define <code class="inline">operator&lt;</code>, the compiler will error.
+          </p>
+        </section>
+
+        <section class="frame">
+          <h2>Calling a function template</h2>
+          <p>In most cases, you just call it like a normal function:</p>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int a = TripleMin(10, 5, 7);         // T deduced as int
+char b = TripleMin('z', 'a', 'm');   // T deduced as char
+
+std::string s1 = "cat", s2 = "apple", s3 = "zoo";
+std::string c = TripleMin(s1, s2, s3); // T deduced as std::string</code></pre>
+
+          <ul>
+            <li><p>This is called <strong>template argument deduction</strong></p></li>
+            <li><p>The compiler looks at the argument types and decides what <code class="inline">T</code> is</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>What the compiler generates (instantiation)</h2>
+          <p>When you call <code class="inline">TripleMin</code> for different types, the compiler generates different functions:</p>
+
+          <ul>
+            <li><p><code class="inline">TripleMin&lt;int&gt;(int,int,int)</code></p></li>
+            <li><p><code class="inline">TripleMin&lt;char&gt;(char,char,char)</code></p></li>
+            <li><p><code class="inline">TripleMin&lt;std::string&gt;(std::string, std::string, std::string)</code></p></li>
+          </ul>
+
+          <p class="small-note">
+            This happens at compile time; there is no runtime “template engine.”
+          </p>
+        </section>
+
+        <section class="frame">
+          <h2>Common gotcha: mixed types</h2>
+          <p>This template expects all parameters to be the same type <code class="inline">T</code>:</p>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">// Won't compile in many cases:
+auto x = TripleMin(1, 2.5, 3);</code></pre>
+
+          <ul>
+            <li><p>Why? Arguments are <code class="inline">int</code>, <code class="inline">double</code>, <code class="inline">int</code></p></li>
+            <li><p>Compiler can’t pick ONE <code class="inline">T</code> that matches exactly (without conversions)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Fix 1: explicit template argument</h2>
+          <p>Force a specific type:</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">auto x = TripleMin&lt;double&gt;(1, 2.5, 3);</code></pre>
+
+          <ul>
+            <li><p>Now all arguments are converted to <code class="inline">double</code></p></li>
+            <li><p>So <code class="inline">T = double</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Fix 2: multiple template parameters</h2>
+          <p>If you really want mixed types, define multiple placeholders:</p>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">template &lt;typename T1, typename T2, typename T3&gt;
+auto TripleMinMixed(T1 a, T2 b, T3 c) {
+  auto minVal = a;
+  if (b &lt; minVal) minVal = b;
+  if (c &lt; minVal) minVal = c;
+  return minVal;
+}</code></pre>
+
+          <p class="small-note">But now you must think carefully about the return type and conversions.</p>
+        </section>
+
+        <!-- Light Q/A -->
+        <section class="frame">
+          <h2>Practice: will it compile?</h2>
+          <p>Assume <code class="inline">TripleMin</code> is the single-<code class="inline">T</code> template.</p>
+          <ul>
+            <li><p>1) <code class="inline">TripleMin(3, 2, 1)</code></p></li>
+            <li><p>2) <code class="inline">TripleMin(3, 2.0, 1)</code></p></li>
+            <li><p>3) <code class="inline">TripleMin&lt;double&gt;(3, 2.0, 1)</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice: answer</h2>
+          <ul>
+            <li><p>1) Yes: all <code class="inline">int</code> → <code class="inline">T=int</code></p></li>
+            <li><p>2) Usually no: mixed <code class="inline">int</code>/<code class="inline">double</code> makes deduction fail</p></li>
+            <li><p>3) Yes: you explicitly set <code class="inline">T=double</code>, so ints convert to double</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Template Requirements / Constraints
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Template Constraints</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Templates require operations</h2>
+          <p>
+            Templates don’t magically work for every type — the type must support the operations used inside the template.
+          </p>
+          <ul>
+            <li><p>In <code class="inline">TripleMin</code>, we use <code class="inline">&lt;</code> to compare</p></li>
+            <li><p>So the type must define a meaningful <code class="inline">operator&lt;</code></p></li>
+          </ul>
+          <p class="small-note">
+            If the operation doesn’t exist, the error appears during instantiation (when the template is used).
+          </p>
+        </section>
+
+        <section class="frame">
+          <h2>Example: custom type needs &lt;</h2>
+          <p>If you want <code class="inline">TripleMin</code> to work for your own class, define ordering:</p>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">struct Point {
+  int x, y;
+};
+
+// define an ordering (example: compare x then y)
+bool operator&lt;(const Point& a, const Point& b) {
+  if (a.x != b.x) return a.x &lt; b.x;
+  return a.y &lt; b.y;
+}
+
+// Now TripleMin(Point, Point, Point) can compile.</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Class Templates
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Class Templates</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Class template concept</h2>
+          <p>A class template is a blueprint for generating classes with different internal types.</p>
+          <ul>
+            <li><p>Example: <code class="inline">std::vector&lt;int&gt;</code> vs <code class="inline">std::vector&lt;std::string&gt;</code></p></li>
+            <li><p>Same class design; different element type</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>TripleItem class template</h2>
+          <p>Stores three values of the same type and can compute the minimum.</p>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+class TripleItem {
+public:
+  TripleItem(T v1, T v2, T v3)
+    : item1(v1), item2(v2), item3(v3) {}
+
+  void PrintAll() const {
+    std::cout &lt;&lt; "(" &lt;&lt; item1 &lt;&lt; ", " &lt;&lt; item2 &lt;&lt; ", " &lt;&lt; item3 &lt;&lt; ")\\n";
+  }
+
+  T MinItem() const {
+    T minVal = item1;
+    if (item2 &lt; minVal) minVal = item2;
+    if (item3 &lt; minVal) minVal = item3;
+    return minVal;
+  }
+
+private:
+  T item1, item2, item3;
+};</code></pre>
+
+          <p class="small-note">
+            Requirement: <code class="inline">T</code> must support <code class="inline">&lt;</code> and also printing if you call <code class="inline">PrintAll()</code>.
+          </p>
+        </section>
+
+        <section class="frame">
+          <h2>Using TripleItem</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">TripleItem&lt;int&gt; triInts(9999, 5555, 6666);
+triInts.PrintAll();
+std::cout &lt;&lt; "min = " &lt;&lt; triInts.MinItem() &lt;&lt; "\\n";
+
+TripleItem&lt;std::string&gt; triStr("cat", "apple", "zoo");
+std::cout &lt;&lt; triStr.MinItem() &lt;&lt; "\\n";</code></pre>
+        </section>
+
+        <!-- Light Q/A -->
+        <section class="frame">
+          <h2>Quick check</h2>
+          <p>What happens if <code class="inline">T</code> does NOT support printing with <code class="inline">&lt;&lt;</code>?</p>
+          <ul>
+            <li><p>A) The class won’t compile at all</p></li>
+            <li><p>B) It compiles unless you call <code class="inline">PrintAll()</code></p></li>
+            <li><p>C) It prints garbage at runtime</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Quick check: answer</h2>
+          <ul>
+            <li><p><strong>B</strong>: templates compile the parts you use. If you never call <code class="inline">PrintAll()</code>, that code may never be instantiated.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Multiple Template Parameters (Key/Value)
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Multiple Template Parameters</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Why have more than one type?</h2>
+          <p>Some structures naturally store different types in different roles.</p>
+          <ul>
+            <li><p>Example: key/value pairs (like a dictionary)</p></li>
+            <li><p>Key might be a <code class="inline">string</code>, value might be an <code class="inline">int</code></p></li>
+            <li><p>Or key might be an <code class="inline">int</code>, value might be a custom object</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Simple key/value class template</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">template &lt;typename Key, typename Value&gt;
+class Entry {
+public:
+  Entry(const Key& k, const Value& v) : key(k), value(v) {}
+  const Key& getKey() const { return key; }
+  const Value& getValue() const { return value; }
+private:
+  Key key;
+  Value value;
+};</code></pre>
+
+          <p class="small-note">This is the idea behind many STL components (pairs, maps, unordered_maps).</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Template Organization
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Template Organization</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Why templates are usually “header-only”</h2>
+          <p>The compiler must see the full template definition when it instantiates it.</p>
+          <ul>
+            <li><p>If method bodies are hidden in a <code class="inline">.cpp</code>, other files can’t instantiate new template types.</p></li>
+            <li><p>This leads to linker errors (undefined references) or missing symbols.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common patterns</h2>
+          <ul>
+            <li><p><strong>All in header:</strong> declarations + definitions in <code class="inline">.hpp</code></p></li>
+            <li><p><strong>Header + .tpp:</strong> declare in <code class="inline">.hpp</code>, define in <code class="inline">.tpp</code> and include it</p></li>
+            <li><p><strong>Explicit instantiation:</strong> define in <code class="inline">.cpp</code>, then explicitly instantiate supported types</p></li>
+          </ul>
+          <p class="small-note">In most CS courses, the “header-only” approach is simplest.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Example: .hpp includes implementation</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">// TripleItem.hpp
+#pragma once
+#include &lt;iostream&gt;
+
+template &lt;typename T&gt;
+class TripleItem {
+  // declarations...
+};
+
+// include implementation at the bottom
+#include "TripleItem.tpp"</code></pre>
+          <p class="small-note">This keeps headers cleaner while still letting the compiler see definitions.</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Common Errors
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Common Template Errors</h1>
+        </section>
+
+        <section class="frame">
+          <h2>1) “no matching function”</h2>
+          <ul>
+            <li><p>Often caused by template argument deduction failing</p></li>
+            <li><p>Common reason: mixed argument types for a single-<code class="inline">T</code> template</p></li>
+            <li><p>Fix: cast, or specify <code class="inline">&lt;T&gt;</code> explicitly, or redesign template</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>2) “invalid operands to operator&lt;”</h2>
+          <ul>
+            <li><p>The type doesn’t support the operation your template uses</p></li>
+            <li><p>Fix: define the operator for your custom type, or change the template to use a comparator</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>3) Linker errors for templates</h2>
+          <ul>
+            <li><p>Template definitions are not visible when instantiated</p></li>
+            <li><p>Fix: move definitions to header (or include .tpp), or explicitly instantiate</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Summary + Review
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Review</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Summary</h2>
+          <ul>
+            <li><p>Templates let you write code that works for many types (generic programming)</p></li>
+            <li><p>Function templates reduce repeated algorithm code</p></li>
+            <li><p>Class templates generalize data structures (STL style)</p></li>
+            <li><p>Types used with templates must support the required operations</p></li>
+            <li><p>Template definitions usually live in headers so the compiler can instantiate them</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Review questions</h2>
+          <ul>
+            <li><p>What does “instantiation” mean for templates?</p></li>
+            <li><p>Why might <code class="inline">TripleMin(1, 2.0, 3)</code> fail to compile?</p></li>
+            <li><p>What operations must <code class="inline">T</code> support for <code class="inline">TripleMin</code> to work?</p></li>
+            <li><p>Why are templates commonly implemented in header files?</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Review answers</h2>
+          <ul>
+            <li><p>Instantiation is when the compiler generates a concrete function/class for a specific type.</p></li>
+            <li><p>Deduction may fail because the arguments have different types for a single-<code class="inline">T</code> template.</p></li>
+            <li><p><code class="inline">T</code> must support <code class="inline">&lt;</code> comparison (and printing if you print values).</p></li>
+            <li><p>The compiler must see the full template definition when generating code for specific types.</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <!-- Plugins -->
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
