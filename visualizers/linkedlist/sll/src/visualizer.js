@@ -297,7 +297,7 @@ export class SinglyLinkedListOperationsVisualizer {
 
     const gap = 180;
     const startX = 50;
-    const mainY = 10;
+    const mainY = 20;
     const detachedY = 150;
     const width = 150;
     const height = 78;

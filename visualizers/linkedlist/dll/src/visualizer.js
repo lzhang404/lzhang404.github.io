@@ -297,7 +297,7 @@ export class DoublyLinkedListOperationsVisualizer {
 
     const gap = 180;
     const startX = 50;
-    const mainY = 16;
+    const mainY = 20;
     const detachedY = 185;
     const width = 150;
     const height = 104;
