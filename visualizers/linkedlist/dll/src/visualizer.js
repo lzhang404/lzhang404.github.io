@@ -51,7 +51,7 @@ const POINTER_STYLE = {
   new: { nodeClass: "node-new", pointerClass: "ptr-new" },
 };
 
-export class SinglyLinkedListOperationsVisualizer {
+export class DoublyLinkedListOperationsVisualizer {
   constructor() {
     this.listInput = qs("#list-input");
     this.operationSelect = qs("#operation");
@@ -79,7 +79,7 @@ export class SinglyLinkedListOperationsVisualizer {
     this.timer = null;
     this.prevPointers = null;
 
-    this.list = { kind: "sll", head: null, tail: null, nodes: [] };
+    this.list = { kind: "dll", head: null, tail: null, nodes: [] };
     this.nextId = 0;
 
     this.nodeElements = new Map();
@@ -172,7 +172,7 @@ export class SinglyLinkedListOperationsVisualizer {
     this.message.textContent = "";
     const base = createList(parsed.nums ?? [], 0);
     this.list = {
-      kind: "sll",
+      kind: "dll",
       head: base.head,
       tail: base.tail,
       nodes: base.nodes,
@@ -297,10 +297,10 @@ export class SinglyLinkedListOperationsVisualizer {
 
     const gap = 180;
     const startX = 50;
-    const mainY = 10;
-    const detachedY = 150;
+    const mainY = 16;
+    const detachedY = 185;
     const width = 150;
-    const height = 78;
+    const height = 104;
 
     const byId = (id) => list.nodes.find((n) => n.id === id) ?? null;
 
@@ -316,15 +316,21 @@ export class SinglyLinkedListOperationsVisualizer {
       rect.setAttribute("height", height);
       group.appendChild(rect);
 
+      const textPrev = document.createElementNS(SVG_NS, "text");
+      textPrev.setAttribute("x", x + 14);
+      textPrev.setAttribute("y", y + 28);
+      textPrev.textContent = `prev: ${node.prev != null ? "←" : "null"}`;
+      group.appendChild(textPrev);
+
       const textData = document.createElementNS(SVG_NS, "text");
-      textData.setAttribute("x", x + 18);
-      textData.setAttribute("y", y + 32);
+      textData.setAttribute("x", x + 14);
+      textData.setAttribute("y", y + 54);
       textData.textContent = `data: ${node.data}`;
       group.appendChild(textData);
 
       const textNext = document.createElementNS(SVG_NS, "text");
-      textNext.setAttribute("x", x + 18);
-      textNext.setAttribute("y", y + 58);
+      textNext.setAttribute("x", x + 14);
+      textNext.setAttribute("y", y + 80);
       textNext.textContent = `next: ${node.next != null ? "→" : "null"}`;
       group.appendChild(textNext);
 
@@ -358,9 +364,25 @@ export class SinglyLinkedListOperationsVisualizer {
       line.setAttribute("class", `arrow arrow-next${detachedSet.has(node.id) ? " arrow-detached" : ""}`);
       line.setAttribute("marker-end", "url(#arrowHead)");
       line.setAttribute("x1", fromRect.left + fromRect.width);
-      line.setAttribute("y1", fromRect.top + fromRect.height / 2);
+      line.setAttribute("y1", fromRect.top + fromRect.height * 0.62);
       line.setAttribute("x2", toRect.left);
-      line.setAttribute("y2", toRect.top + toRect.height / 2);
+      line.setAttribute("y2", toRect.top + toRect.height * 0.62);
+      this.gArrows.appendChild(line);
+    });
+
+    list.nodes.forEach((node) => {
+      if (!node || node.prev == null) return;
+      const target = byId(node.prev);
+      const fromRect = this.nodePositions.get(node.id);
+      const toRect = this.nodePositions.get(target?.id ?? node.prev);
+      if (!fromRect || !toRect) return;
+      const line = document.createElementNS(SVG_NS, "line");
+      line.setAttribute("class", `arrow arrow-prev${detachedSet.has(node.id) ? " arrow-detached" : ""}`);
+      line.setAttribute("marker-end", "url(#arrowHead)");
+      line.setAttribute("x1", fromRect.left);
+      line.setAttribute("y1", fromRect.top + fromRect.height * 0.32);
+      line.setAttribute("x2", toRect.left + toRect.width);
+      line.setAttribute("y2", toRect.top + toRect.height * 0.32);
       this.gArrows.appendChild(line);
     });
   }
@@ -407,7 +429,7 @@ export class SinglyLinkedListOperationsVisualizer {
       if (alreadyRendered) return;
 
       const x = Number(rect.getAttribute("x")) + Number(rect.getAttribute("width")) / 2;
-      const y = Number(rect.getAttribute("y")) - 20;
+      const y = Number(rect.getAttribute("y")) - 12;
       const pointerKeys = pointersByNode.get(nodeId) ?? [];
       const labels = pointerKeys.map((pointerKey) => pointerLabels[pointerKey] ?? config.find((c) => c.key === pointerKey)?.label ?? pointerKey);
       const pointerClass = labels.length === 1 ? (style?.pointerClass ?? "") : "ptr-multi";

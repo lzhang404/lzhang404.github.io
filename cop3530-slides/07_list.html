@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>List ADT &amp; Linked Lists in C++</title>
+
+  <!-- Same styling pattern as your other Reveal exports -->
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  </head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- =========================================================
+           Title
+           ========================================================= -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>List ADT &amp; Linked Lists in C++</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Overview
+           ========================================================= -->
+      <section>
+        <section class="frame">
+          <h2>Outline</h2>
+          <ul>
+            <li><p>List ADT: operations and meaning (implementation-independent)</p></li>
+            <li><p>Singly-linked list: nodes, <code class="inline">head</code>/<code class="inline">tail</code>, invariants</p></li>
+            <li><p>Core operations: append, prepend, search, insert-after, remove-after, remove-by-value</p></li>
+            <li><p>Traversal: iterative and recursive</p></li>
+            <li><p>Doubly-linked lists: <code class="inline">prev</code> pointer + updated pointer rules</p></li>
+            <li><p>Circular lists: stopping condition changes</p></li>
+            <li><p>Complexity + common pointer bugs</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Learning goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li><p>Explain what the List ADT specifies (and what it does not)</p></li>
+            <li><p>Draw linked lists correctly and state key invariants</p></li>
+            <li><p>Identify which pointers must change for each list operation</p></li>
+            <li><p>Reason about empty / one-node / middle / tail cases</p></li>
+            <li><p>Compare singly vs doubly linked lists (trade-offs)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Big idea</h2>
+          <p>
+            The <strong>List ADT</strong> tells us <em>what</em> a list can do.
+            A linked list decides <em>how</em> to do it using nodes and pointers.
+          </p>
+          <ul>
+            <li><p>ADT = behavior + operations (no storage details)</p></li>
+            <li><p>Implementation = nodes + pointers + invariants</p></li>
+            <li><p>Most bugs come from missing special cases (empty / tail updates / deleting nodes)</p></li>
+          </ul>
+          <p class="small-note">Always draw the pointer picture first, then write code.</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           List ADT
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>List ADT</h1>
+        </section>
+
+        <section class="frame">
+          <h2>What is a List ADT?</h2>
+          <p><strong>Definition:</strong> an ordered collection of elements.</p>
+          <ul>
+            <li><p>There is a concept of “first”, “second”, … “last”</p></li>
+            <li><p>The ADT defines operations and what they mean</p></li>
+            <li><p>The ADT does not force arrays or pointers</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common list operations</h2>
+          <ul>
+            <li><p><strong>Append(x)</strong>: add <code class="inline">x</code> to the end</p></li>
+            <li><p><strong>Prepend(x)</strong>: add <code class="inline">x</code> to the front</p></li>
+            <li><p><strong>InsertAfter(node, x)</strong>: add <code class="inline">x</code> after a given node</p></li>
+            <li><p><strong>RemoveAfter(node)</strong>: remove after node (or remove head if node is null)</p></li>
+            <li><p><strong>Remove(x)</strong>: remove first occurrence of <code class="inline">x</code></p></li>
+            <li><p><strong>Contains(x)</strong>: return true/false</p></li>
+          </ul>
+          <p class="small-note">Performance depends on implementation.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Implementation choices</h2>
+          <ul>
+            <li><p><strong>Dynamic array</strong>: fast indexing, expensive middle insert/delete</p></li>
+            <li><p><strong>Linked list</strong>: flexible insert/delete, slower indexing/search</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Singly Linked Lists
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Singly-Linked Lists</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Singly-Linked List (implementation of List ADT)</h2>
+          <p>A singly-linked list is a concrete way to implement a list ADT.</p>
+
+          <ul>
+            <li>
+              <p>Each node has:</p>
+              <ul>
+                <li><p><strong>data</strong> (the value)</p></li>
+                <li><p><strong>next</strong> (pointer to the next node)</p></li>
+              </ul>
+            </li>
+
+            <li>
+              <p>The list has:</p>
+              <ul>
+                <li><p><strong>head</strong> pointer (first node)</p></li>
+                <li><p><strong>tail</strong> pointer (last node)</p></li>
+              </ul>
+            </li>
+
+            <li><p>The list grows/shrinks dynamically.</p></li>
+            <li><p>Each node knows only about the next one.</p></li>
+            <li><p>Cannot directly access elements by index.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Visual model + invariants</h2>
+          <img
+            src = "../_static/images/singly_linkedlist.png"
+            alt = "A example singly linked list"
+            style="display:block; margin: 0.6em auto; max-width: 30%; max-height: 30%; height:auto;"
+          >
+            <li><p>Empty: <code class="inline">head == nullptr</code> and <code class="inline">tail == nullptr</code></p></li>
+            <li><p>Non-empty: <code class="inline">tail-&gt;next == nullptr</code></p></li>
+            <li><p>Traversal follows <code class="inline">next</code> pointers starting from <code class="inline">head</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Node class (typical)</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+  class Node {
+    T data;
+    Node&lt;T&gt;* next;
+
+  public:
+    Node() : next(nullptr) {}
+    Node(const T&amp; data) : data(data), next(nullptr) {}
+};</code></pre>
+
+      </section>
+
+        <section class="frame">
+          <h2>Append (add to end)</h2>
+          <p>Two cases: empty vs non-empty.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void Append(Node&lt;T&gt;* newNode) {
+  if (newNode == nullptr) return;
+
+  // Ensure the new node does not carry an old link
+  newNode-&gt;next = nullptr;
+
+  // Case 1: empty list
+  if (head == nullptr) {
+    head = newNode;
+    tail = newNode;
+    return;
+  }
+
+  // Case 2: non-empty list
+  tail-&gt;next = newNode;
+  tail = newNode;
+}</code></pre>
+
+          <p class="small-note">Append is O(1) only if you maintain <code class="inline">tail</code>.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Prepend (add to front)</h2>
+          <ul><li><p>Time complexity is O(1)</p></li></ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void Prepend(Node&lt;T&gt;* newNode) {
+  if (newNode == nullptr) return;
+
+  // New node becomes the first node
+  newNode-&gt;next = head;
+  head = newNode;
+
+  // If the list was empty before, head and tail should both point to newNode
+  if (tail == nullptr) {
+    tail = newNode;
+  }
+}</code></pre>
+
+        </section>
+
+        <section class="frame">
+          <h2>Search / Contains</h2>
+          <ul>
+            <li><p>Searches for the first node containing a specific value.</p></li>
+            <li><p>Sequential traversal from head to tail.</p></li>
+            <li><p>Returns pointer to the node if found, else null.</p></li>
+            <li><p>Time complexity is O(n)</p></li>
+          </ul>
+          
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+Node&lt;T&gt;* Search(const T&amp; target) const {
+  Node&lt;T&gt;* current = head;
+  while (current != nullptr) {
+    if (current-&gt;data == target) {
+      return current;          // Found
+    }
+    current = current-&gt;next;   // Move forward
+  }
+  return nullptr;              // Not found
+}</code></pre>
+
+        </section>
+
+        <section class="frame">
+          <h2>InsertAfter (given a node)</h2>
+          <p>Three cases: empty list, insert after tail and insert in middle.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">
+void InsertAfter(Node&lt;T&gt;* currentNode, Node&lt;T&gt;* newNode) {
+  if (newNode == nullptr) return;
+  // Make sure the node doesn't accidentally keep an old link.
+  newNode-&gt;next = nullptr;
+  // Case 1: empty list
+  if (head == nullptr) {
+    head = newNode;
+    tail = newNode;
+    return;
+  }
+  // If list is not empty, caller must provide a valid currentNode.
+  if (currentNode == nullptr) return;
+  // Case 2: insert after tail
+  if (currentNode == tail) {
+    tail-&gt;next = newNode;
+    tail = newNode;
+    return;
+  }
+  // Case 3: insert in the middle
+  newNode-&gt;next = currentNode-&gt;next;
+  currentNode-&gt;next = newNode;
+};</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>RemoveAfter</h2>
+          <p>
+            Convention used in many course implementations:
+            if <code class="inline">cur == nullptr</code>, remove the head.
+          </p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void RemoveAfter(Node&lt;T&gt;* curNode) {
+  // Special case: remove head
+  if (curNode == nullptr) {
+    if (head == nullptr) return;              // empty list
+    Node&lt;T&gt;* removed = head;
+    Node&lt;T&gt;* sucNode = head-&gt;next;            // successor of head
+    head = sucNode;
+    if (sucNode == nullptr) {                 // removed last item
+      tail = nullptr;
+    }
+    delete removed;
+    return;
+  }
+
+  // Remove node AFTER curNode (only if it exists)
+  if (curNode-&gt;next != nullptr) {
+    Node&lt;T&gt;* removed = curNode-&gt;next;
+    Node&lt;T&gt;* sucNode = curNode-&gt;next-&gt;next;   // successor after removed
+    curNode-&gt;next = sucNode;
+    if (sucNode == nullptr) {                 // removed tail
+      tail = curNode;
+    }
+    delete removed;
+  }
+}</code></pre>
+
+
+        </section>
+
+        <section class="frame">
+          <h2>Remove(value)</h2>
+          <p>Track <code class="inline">prev</code> so you can reconnect around the removed node.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+bool RemoveValue(const T&amp; targetValue) {
+  Node&lt;T&gt;* curNode = head;
+  Node&lt;T&gt;* prevNode = nullptr;
+
+  // Find the first node whose data == targetValue
+  while (curNode != nullptr &amp;&amp; curNode-&gt;data != targetValue) {
+    prevNode = curNode;
+    curNode = curNode-&gt;next;
+  }
+
+  // Not found
+  if (curNode == nullptr) {
+    return false;
+  }
+
+  // curNode is the node to remove.
+  // Our RemoveAfter convention:
+  //   RemoveAfter(nullptr) removes head
+  //   RemoveAfter(prevNode) removes prevNode-&gt;next
+  RemoveAfter(prevNode);
+  return true;
+}</code></pre>
+
+        </section>
+
+        <section class="frame">
+          <h2>Traversal (iterative)</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void Traverse(Node&lt;T&gt;* head) {
+  Node&lt;T&gt;* cur = head;
+  while (cur != nullptr) {
+    std::cout &lt;&lt; cur-&gt;data &lt;&lt; " ";
+    cur = cur-&gt;next;
+  }
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Traversal (recursive)</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void TraverseRec(Node&lt;T&gt;* node) {
+  if (node == nullptr) return;
+  std::cout &lt;&lt; node-&gt;data &lt;&lt; " ";
+  TraverseRec(node-&gt;next);
+}</code></pre>
+          <p class="small-note">Still O(n); recursion uses the call stack.</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Doubly Linked Lists
+           ========================================================= -->
+      <!-- =========================================================
+     Doubly Linked Lists  (UPDATED: match SLL style + real C++)
+     ========================================================= -->
+<section>
+  <section class="title-slide slide level1">
+    <h1>Doubly-Linked Lists</h1>
+  </section>
+
+  <section class="frame">
+    <h2>What changes?</h2>
+    <ul>
+      <li><p>Each node stores both <code class="inline">next</code> and <code class="inline">prev</code></p></li>
+      <li><p>Backward traversal becomes possible</p></li>
+      <li><p>Insert/remove in the middle updates <strong>two directions</strong></p></li>
+      <li><p>Trade-off: more memory and more pointer updates</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Visual model + invariants</h2>
+    <img
+      src="../_static/images/doubly_linkedlist.png"
+      alt="An example doubly linked list"
+      style="display:block; margin: 0.6em 0; max-width: 38%; max-height: 38%; height:auto;"
+    >
+    <ul>
+      <li><p>Empty: <code class="inline">head == nullptr</code> and <code class="inline">tail == nullptr</code></p></li>
+      <li><p>Non-empty: <code class="inline">head-&gt;prev == nullptr</code> and <code class="inline">tail-&gt;next == nullptr</code></p></li>
+      <li><p>For any middle node <code class="inline">x</code>: <code class="inline">x-&gt;next-&gt;prev == x</code> and <code class="inline">x-&gt;prev-&gt;next == x</code></p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>DNode class (typical)</h2>
+    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+class DNode {
+public:
+  T data;
+  DNode&lt;T&gt;* next;
+  DNode&lt;T&gt;* prev;
+
+  DNode() : data(), next(nullptr), prev(nullptr) {}
+  DNode(const T&amp; value) : data(value), next(nullptr), prev(nullptr) {}
+};</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>InsertAfter (given a node)</h2>
+    <p>Three cases: empty list, insert after tail, insert in middle.</p>
+    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void InsertAfter(DNode&lt;T&gt;* currentNode, DNode&lt;T&gt;* newNode) {
+  if (newNode == nullptr) return;
+
+  // Detach any old links (safety for teaching examples)
+  newNode-&gt;next = nullptr;
+  newNode-&gt;prev = nullptr;
+
+  // Case 1: empty list
+  if (head == nullptr) {
+    head = newNode;
+    tail = newNode;
+    return;
+  }
+
+  // Non-empty list: caller must provide a valid currentNode
+  if (currentNode == nullptr) return;
+
+  // Case 2: insert after tail
+  if (currentNode == tail) {
+    newNode-&gt;prev = tail;
+    tail-&gt;next = newNode;
+    tail = newNode;
+    return;
+  }
+
+  // Case 3: insert in the middle
+  DNode&lt;T&gt;* sucNode = currentNode-&gt;next;
+
+  newNode-&gt;prev = currentNode;
+  newNode-&gt;next = sucNode;
+
+  currentNode-&gt;next = newNode;
+  sucNode-&gt;prev = newNode;
+}</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>RemoveNode (given a node)</h2>
+    <p>Handles: only node, remove head, remove tail, remove middle.</p>
+    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void RemoveNode(DNode&lt;T&gt;* target) {
+  if (target == nullptr) return;
+  if (head == nullptr) return;
+
+  // Case 1: removing the only node
+  if (target == head &amp;&amp; target == tail) {
+    head = nullptr;
+    tail = nullptr;
+    delete target;
+    return;
+  }
+
+  // Case 2: remove head
+  if (target == head) {
+    DNode&lt;T&gt;* sucNode = head-&gt;next;
+    head = sucNode;
+    head-&gt;prev = nullptr;
+    delete target;
+    return;
+  }
+
+  // Case 3: remove tail
+  if (target == tail) {
+    DNode&lt;T&gt;* preNode = tail-&gt;prev;
+    tail = preNode;
+    tail-&gt;next = nullptr;
+    delete target;
+    return;
+  }
+
+  // Case 4: remove in the middle
+  DNode&lt;T&gt;* preNode = target-&gt;prev;
+  DNode&lt;T&gt;* sucNode = target-&gt;next;
+
+  preNode-&gt;next = sucNode;
+  sucNode-&gt;prev = preNode;
+
+  delete target;
+}</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>Traversal (forward)</h2>
+    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void TraverseForward() const {
+  DNode&lt;T&gt;* cur = head;
+  while (cur != nullptr) {
+    std::cout &lt;&lt; cur-&gt;data &lt;&lt; " ";
+    cur = cur-&gt;next;
+  }
+}</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>Traversal (backward)</h2>
+    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void TraverseBackward() const {
+  DNode&lt;T&gt;* cur = tail;
+  while (cur != nullptr) {
+    std::cout &lt;&lt; cur-&gt;data &lt;&lt; " ";
+    cur = cur-&gt;prev;
+  }
+}</code></pre>
+    <p class="small-note">
+      This is the main benefit: reverse traversal is O(n) without extra work.
+    </p>
+  </section>
+</section>
+
+
+      <!-- =========================================================
+           Circular Lists
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Circular Lists</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Circular singly-linked list</h2>
+          <ul>
+            <li><p>Tail points back to head (no <code class="inline">nullptr</code> at the end)</p></li>
+            <li><p>Traversal stops when you return to the starting node</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">head
+  |
+  v
++----+    +----+    +----+
+| 9  |--&gt; | 19 |--&gt; | 99 |
++----+    +----+    +----+
+  ^                    |
+  |____________________|</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Complexity + Pitfalls (kept, but not "review" slides)
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Complexity &amp; Pitfalls</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Typical time complexities</h2>
+          <ul>
+            <li><p>Append: O(1) with <code class="inline">tail</code>, otherwise O(n)</p></li>
+            <li><p>Prepend: O(1)</p></li>
+            <li><p>Search / Contains: O(n)</p></li>
+            <li><p>InsertAfter (given node pointer): O(1)</p></li>
+            <li><p>RemoveAfter (given node pointer): O(1)</p></li>
+            <li><p>Remove(value): O(n)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Pointer bug checklist</h2>
+          <ul>
+            <li><p>Missing empty-list case (head/tail updates)</p></li>
+            <li><p>Removed last node but forgot to update <code class="inline">tail</code></p></li>
+            <li><p>Overwrote <code class="inline">next</code> before saving the old successor</p></li>
+            <li><p>Memory leak: removed node not deleted</p></li>
+            <li><p>Dangling pointer: used node after deletion</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <!-- Plugins -->
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>

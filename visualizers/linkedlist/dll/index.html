@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Singly Linked List Operations Visualizer</title>
+  <title>Doubly Linked List Operations Visualizer</title>
   <link rel="stylesheet" href="../styles.css" />
   <link rel="stylesheet" href="../../shared/code-styles.css" />
 </head>
 <body>
-  <header>Singly Linked List Operations</header>
+  <header>Doubly Linked List Operations</header>
   <main>
     <section class="panel left-panel">
       <div class="controls">
@@ -57,7 +57,7 @@
 
       <div class="viz">
         <div id="step-message" class="step-message"></div>
-        <svg id="viz" viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg">
+        <svg id="viz" viewBox="0 0 960 360" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <marker id="arrowHead" markerWidth="12" markerHeight="8" refX="12" refY="4" orient="auto">
               <polygon points="0 0, 12 4, 0 8"></polygon>
@@ -65,7 +65,7 @@
           </defs>
         </svg>
         <div class="viz-note">
-          Solid arrows show the <code>next</code> pointer links of the singly linked list.
+          Solid gray arrows show <code>next</code> links. Pink arrows show <code>prev</code> links.
         </div>
       </div>
     </section>

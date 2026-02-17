@@ -44,15 +44,17 @@ export function createList(values, startId = 0) {
   const nodes = values.map((value) => ({
     id: nextId++,
     data: Number(value),
+    prev: null,
     next: null,
   }));
 
   for (let i = 0; i < nodes.length - 1; i += 1) {
     nodes[i].next = nodes[i + 1].id;
+    nodes[i + 1].prev = nodes[i].id;
   }
 
   return {
-    kind: "sll",
+    kind: "dll",
     head: nodes[0]?.id ?? null,
     tail: nodes.at(-1)?.id ?? null,
     nodes,
@@ -62,22 +64,28 @@ export function createList(values, startId = 0) {
 
 function cloneList(list) {
   return {
-    kind: "sll",
+    kind: "dll",
     head: list.head,
     tail: list.tail,
     nodes: list.nodes.map((node) => ({
       id: node.id,
       data: node.data,
-      next: node.next,
+      prev: node.prev ?? null,
+      next: node.next ?? null,
     })),
   };
+}
+
+function nodeById(list, id) {
+  return list.nodes.find((node) => node.id === id) ?? null;
 }
 
 function cloneListForViz(list) {
   const nodes = list.nodes.map((node) => ({
     id: node.id,
     data: node.data,
-    next: node.next,
+    prev: node.prev ?? null,
+    next: node.next ?? null,
   }));
 
   const order = [];
@@ -94,7 +102,7 @@ function cloneListForViz(list) {
   const detached = nodes.filter((n) => !orderSet.has(n.id)).map((n) => n.id);
 
   return {
-    kind: "sll",
+    kind: "dll",
     head: list.head,
     tail: list.tail,
     nodes,
@@ -103,20 +111,22 @@ function cloneListForViz(list) {
   };
 }
 
-function nodeById(list, id) {
-  return list.nodes.find((node) => node.id === id) ?? null;
-}
-
-function ensureTail(list) {
+function ensureLinks(list) {
   let tail = null;
+  let prev = null;
   const visited = new Set();
   let cur = list.head;
+
   while (cur != null && !visited.has(cur)) {
     visited.add(cur);
-    tail = cur;
     const node = nodeById(list, cur);
-    cur = node?.next ?? null;
+    if (!node) break;
+    node.prev = prev;
+    tail = node.id;
+    prev = node.id;
+    cur = node.next ?? null;
   }
+
   list.tail = tail;
 }
 
@@ -124,6 +134,7 @@ function sanitizeList(list) {
   const visited = [];
   const seen = new Set();
   let cur = list.head;
+
   while (cur != null && !seen.has(cur)) {
     seen.add(cur);
     visited.push(cur);
@@ -137,16 +148,17 @@ function sanitizeList(list) {
     .map((node) => ({
       id: node.id,
       data: node.data,
-      next: node.next,
+      prev: node.prev ?? null,
+      next: node.next ?? null,
     }));
 
   const sanitized = {
-    kind: "sll",
+    kind: "dll",
     head: list.head,
     tail: list.tail,
     nodes,
   };
-  ensureTail(sanitized);
+  ensureLinks(sanitized);
   return sanitized;
 }
 
@@ -173,7 +185,7 @@ function pointerState(base, overrides = {}) {
 }
 
 function createNode(id, data) {
-  return { id, data, next: null };
+  return { id, data, prev: null, next: null };
 }
 
 function generateAppendSteps(steps, list, params, ctx) {
@@ -184,22 +196,10 @@ function generateAppendSteps(steps, list, params, ctx) {
   const newNode = createNode(newNodeId, value);
   list.nodes.push(newNode);
 
-  addStep(
-    steps,
-    list,
-    [2],
-    `Create new node with data ${value}.`,
-    pointerState(list, { new: newNodeId })
-  );
+  addStep(steps, list, [2], `Create new node with data ${value}.`, pointerState(list, { new: newNodeId }));
 
   if (list.head == null) {
-    addStep(
-      steps,
-      list,
-      [3],
-      "List is empty, head is nullptr.",
-      pointerState(list, { new: newNodeId })
-    );
+    addStep(steps, list, [3], "List is empty, head is nullptr.", pointerState(list, { new: newNodeId }));
     list.head = newNodeId;
     list.tail = newNodeId;
     addStep(
@@ -209,24 +209,11 @@ function generateAppendSteps(steps, list, params, ctx) {
       "Set both head and tail to the new node.",
       pointerState(list, { head: list.head, tail: list.tail, new: newNodeId })
     );
-    addStep(
-      steps,
-      list,
-      [6],
-      "Return; append finished.",
-      pointerState(list, { head: list.head, tail: list.tail })
-    );
     return;
   }
 
   let curId = list.head;
-  addStep(
-    steps,
-    list,
-    [8],
-    "Initialize cur to the head node.",
-    pointerState(list, { cur: curId, new: newNodeId })
-  );
+  addStep(steps, list, [8], "Initialize cur to the head node.", pointerState(list, { cur: curId, new: newNodeId }));
 
   while (true) {
     const curNode = nodeById(list, curId);
@@ -235,38 +222,27 @@ function generateAppendSteps(steps, list, params, ctx) {
       steps,
       list,
       [9],
-      hasNext
-        ? "cur->next is not nullptr; stay in the loop."
-        : "cur->next is nullptr; cur is at the tail.",
+      hasNext ? "cur->next is not nullptr; keep traversing." : "cur->next is nullptr; cur is at tail.",
       pointerState(list, { cur: curId, new: newNodeId })
     );
     if (!hasNext) break;
     curId = curNode?.next ?? null;
-    addStep(
-      steps,
-      list,
-      [10],
-      "Advance cur to the next node.",
-      pointerState(list, { cur: curId, new: newNodeId })
-    );
+    addStep(steps, list, [10], "Advance cur to next node.", pointerState(list, { cur: curId, new: newNodeId }));
   }
 
   const curNode = nodeById(list, curId);
-  if (curNode) curNode.next = newNodeId;
-  addStep(
-    steps,
-    list,
-    [12],
-    "Link cur->next to the new node.",
-    pointerState(list, { cur: curId, new: newNodeId })
-  );
-
+  if (curNode) {
+    curNode.next = newNodeId;
+    newNode.prev = curNode.id;
+  }
   list.tail = newNodeId;
+
+  addStep(steps, list, [12], "Link cur->next to newNode.", pointerState(list, { cur: curId, new: newNodeId }));
   addStep(
     steps,
     list,
-    [13],
-    "Update tail to the new node.",
+    [13, 14],
+    "Set newNode->prev to cur and move tail to newNode.",
     pointerState(list, { cur: curId, new: newNodeId, tail: list.tail })
   );
 }
@@ -279,39 +255,33 @@ function generatePrependSteps(steps, list, params, ctx) {
   const newNode = createNode(newNodeId, value);
   list.nodes.push(newNode);
 
-  addStep(
-    steps,
-    list,
-    [2],
-    `Create new node with data ${value}.`,
-    pointerState(list, { new: newNodeId })
-  );
+  addStep(steps, list, [2], `Create new node with data ${value}.`, pointerState(list, { new: newNodeId }));
 
   newNode.next = list.head;
-  addStep(
-    steps,
-    list,
-    [3],
-    "Point newNode->next to the current head.",
-    pointerState(list, { new: newNodeId })
-  );
+  addStep(steps, list, [3], "Point newNode->next to current head.", pointerState(list, { new: newNodeId }));
+
+  if (list.head != null) {
+    const headNode = nodeById(list, list.head);
+    if (headNode) headNode.prev = newNodeId;
+    addStep(
+      steps,
+      list,
+      [4, 5],
+      "Current head exists; set head->prev to newNode.",
+      pointerState(list, { head: list.head, new: newNodeId })
+    );
+  }
 
   list.head = newNodeId;
-  addStep(
-    steps,
-    list,
-    [4],
-    "Move head to the new node.",
-    pointerState(list, { head: list.head, new: newNodeId, tail: list.tail })
-  );
+  addStep(steps, list, [7], "Move head to newNode.", pointerState(list, { head: list.head, new: newNodeId, tail: list.tail }));
 
   if (list.tail == null) {
     list.tail = newNodeId;
     addStep(
       steps,
       list,
-      [5, 6],
-      "List was empty; update tail to the new node as well.",
+      [8, 9],
+      "List was empty; set tail to newNode.",
       pointerState(list, { head: list.head, tail: list.tail, new: newNodeId })
     );
   }
@@ -325,20 +295,15 @@ function generateInsertAfterSteps(steps, list, params, ctx) {
   const newNodeId = ctx.nextId++;
   const newNode = createNode(newNodeId, value);
   list.nodes.push(newNode);
-  addStep(
-    steps,
-    list,
-    [6],
-    `Allocate new node with data ${value}.`,
-    pointerState(list, { target: list.head, new: newNodeId })
-  );
+
+  addStep(steps, list, [6], `Allocate new node with data ${value}.`, pointerState(list, { target: list.head, new: newNodeId }));
 
   let targetId = list.head;
   addStep(
     steps,
     list,
     [2],
-    "Start searching for targetValue at the head.",
+    "Start searching for targetValue at head.",
     pointerState(list, { target: targetId, new: newNodeId })
   );
 
@@ -349,9 +314,7 @@ function generateInsertAfterSteps(steps, list, params, ctx) {
       steps,
       list,
       [3],
-      matches
-        ? `Found targetValue ${targetValue}.`
-        : `target->data (${targetNode?.data}) != ${targetValue}; continue searching.`,
+      matches ? `Found targetValue ${targetValue}.` : `target->data (${targetNode?.data}) != ${targetValue}; continue.`,
       pointerState(list, { target: targetId, new: newNodeId })
     );
     if (matches) break;
@@ -360,61 +323,48 @@ function generateInsertAfterSteps(steps, list, params, ctx) {
       steps,
       list,
       [4],
-      targetId == null
-        ? "Reached end of list; targetValue not found yet."
-        : "Advance target to the next node.",
+      targetId == null ? "Reached end; targetValue not found yet." : "Advance target to next.",
       pointerState(list, { target: targetId, new: newNodeId })
     );
   }
 
   if (targetId == null) {
-    addStep(
-      steps,
-      list,
-      [5],
-      "target is nullptr; targetValue not found. Abort insertion.",
-      pointerState(list, { new: newNodeId })
-    );
+    addStep(steps, list, [5], "target is nullptr; abort insertion.", pointerState(list, { new: newNodeId }));
     list.nodes = list.nodes.filter((node) => node.id !== newNodeId);
-    addStep(
-      steps,
-      list,
-      [5],
-      "Discard allocated new node; list remains unchanged.",
-      pointerState(list, {})
-    );
+    addStep(steps, list, [5], "Discard allocated newNode; list unchanged.", pointerState(list, {}));
     return;
   }
 
   const targetNode = nodeById(list, targetId);
   newNode.next = targetNode?.next ?? null;
-  addStep(
-    steps,
-    list,
-    [7],
-    "Set newNode->next to target->next.",
-    pointerState(list, { target: targetId, new: newNodeId })
-  );
+  addStep(steps, list, [7], "Set newNode->next to target->next.", pointerState(list, { target: targetId, new: newNodeId }));
 
-  if (targetNode) targetNode.next = newNodeId;
-  addStep(
-    steps,
-    list,
-    [9],
-    "Link target->next to the new node.",
-    pointerState(list, { target: targetId, new: newNodeId })
-  );
+  newNode.prev = targetId;
+  addStep(steps, list, [8], "Set newNode->prev to target.", pointerState(list, { target: targetId, new: newNodeId }));
 
-  if (list.tail === targetId) {
+  if (targetNode?.next != null) {
+    const rightNode = nodeById(list, targetNode.next);
+    if (rightNode) rightNode.prev = newNodeId;
+    addStep(
+      steps,
+      list,
+      [9, 10],
+      "target->next exists; set target->next->prev to newNode.",
+      pointerState(list, { target: targetId, new: newNodeId })
+    );
+  } else {
     list.tail = newNodeId;
     addStep(
       steps,
       list,
-      [9, 10, 11, 12],
-      "Target was the tail; update tail to the new node.",
+      [11, 12],
+      "target was tail; move tail to newNode.",
       pointerState(list, { target: targetId, new: newNodeId, tail: list.tail })
     );
   }
+
+  if (targetNode) targetNode.next = newNodeId;
+  addStep(steps, list, [14], "Link target->next to newNode.", pointerState(list, { target: targetId, new: newNodeId }));
 }
 
 function generateRemoveAfterSteps(steps, list, params) {
@@ -422,13 +372,7 @@ function generateRemoveAfterSteps(steps, list, params) {
   if (!Number.isFinite(targetValue)) return;
 
   let targetId = list.head;
-  addStep(
-    steps,
-    list,
-    [2],
-    "Start at the head to find targetValue.",
-    pointerState(list, { target: targetId })
-  );
+  addStep(steps, list, [2], "Start at head to find targetValue.", pointerState(list, { target: targetId }));
 
   while (targetId != null) {
     const targetNode = nodeById(list, targetId);
@@ -437,9 +381,7 @@ function generateRemoveAfterSteps(steps, list, params) {
       steps,
       list,
       [3],
-      matches
-        ? `target->data == ${targetValue}; stop searching.`
-        : `target->data (${targetNode?.data}) != ${targetValue}; keep searching.`,
+      matches ? `target->data == ${targetValue}; stop.` : `target->data (${targetNode?.data}) != ${targetValue}; continue.`,
       pointerState(list, { target: targetId })
     );
     if (matches) break;
@@ -448,39 +390,24 @@ function generateRemoveAfterSteps(steps, list, params) {
       steps,
       list,
       [4],
-      targetId == null
-        ? "Next pointer is nullptr; targetValue not found."
-        : "Advance target to target->next.",
+      targetId == null ? "Reached end; targetValue not found." : "Advance target to target->next.",
       pointerState(list, { target: targetId })
     );
   }
 
   if (targetId == null) {
-    addStep(
-      steps,
-      list,
-      [5],
-      "target is nullptr; nothing to remove.",
-      pointerState(list, {})
-    );
+    addStep(steps, list, [6], "target is nullptr; nothing removed.", pointerState(list, {}));
     return;
   }
 
   const targetNode = nodeById(list, targetId);
   if (!targetNode || targetNode.next == null) {
-    addStep(
-      steps,
-      list,
-      [6],
-      "target->next is nullptr; no node exists after target.",
-      pointerState(list, { target: targetId })
-    );
+    addStep(steps, list, [5], "target->next is nullptr; nothing after target.", pointerState(list, { target: targetId }));
     return;
   }
 
   const removedId = targetNode.next;
   const removedNode = nodeById(list, removedId);
-  const removedValue = removedNode?.data;
   addStep(
     steps,
     list,
@@ -490,34 +417,35 @@ function generateRemoveAfterSteps(steps, list, params) {
   );
 
   targetNode.next = removedNode?.next ?? null;
-  addStep(
-    steps,
-    list,
-    [8],
-    "Bypass the removed node by linking target->next to removed->next.",
-    pointerState(list, { target: targetId, cur: removedId })
-  );
+  addStep(steps, list, [8], "Link target->next to removed->next.", pointerState(list, { target: targetId, cur: removedId }));
 
-  if (list.tail === removedId) {
+  if (removedNode?.next != null) {
+    const rightNode = nodeById(list, removedNode.next);
+    if (rightNode) rightNode.prev = targetId;
+    addStep(
+      steps,
+      list,
+      [8, 9],
+      "Set removed->next->prev to target.",
+      pointerState(list, { target: targetId, cur: removedId })
+    );
+  } else {
     list.tail = targetId;
     addStep(
       steps,
       list,
-      [9, 10, 11],
-      "Removed node was the tail; update tail to target.",
+      [11, 12],
+      "Removed node was tail; update tail to target.",
       pointerState(list, { target: targetId, cur: removedId, tail: list.tail })
     );
   }
 
-  if (removedNode) removedNode.next = null;
+  if (removedNode) {
+    removedNode.prev = null;
+    removedNode.next = null;
+  }
   list.nodes = list.nodes.filter((node) => node.id !== removedId);
-  addStep(
-    steps,
-    list,
-    [12],
-    `Delete the removed node (${removedValue}); it is no longer in the list.`,
-    pointerState(list, { target: targetId, tail: list.tail })
-  );
+  addStep(steps, list, [14], "Delete removed node.", pointerState(list, { target: targetId, tail: list.tail }));
 }
 
 function generateRemoveByValueSteps(steps, list, params) {
@@ -528,9 +456,7 @@ function generateRemoveByValueSteps(steps, list, params) {
     steps,
     list,
     [2],
-    list.head == null
-      ? "List is empty; nothing to remove."
-      : "List is not empty; continue.",
+    list.head == null ? "List is empty; nothing to remove." : "List is not empty; continue.",
     pointerState(list, { cur: list.head })
   );
 
@@ -538,44 +464,53 @@ function generateRemoveByValueSteps(steps, list, params) {
 
   const headNode = nodeById(list, list.head);
   if (headNode?.data === value) {
-    const oldHeadId = headNode?.id ?? null;
+    const oldHeadId = headNode.id;
     addStep(
       steps,
       list,
       [3],
-      `Head matches value ${value}; mark current head as old head.`,
+      `Head matches ${value}; mark node as old head.`,
       pointerState(list, { cur: oldHeadId }),
       { cur: "old head" }
     );
-    list.head = headNode?.next ?? null;
+
+    list.head = headNode.next ?? null;
     addStep(
       steps,
       list,
-      [4],
-      "Move head to old head->next. Head now points to the new head.",
+      [5],
+      "Move head to removed->next.",
       pointerState(list, { head: list.head, cur: oldHeadId }),
       { cur: "old head" }
     );
+
+    if (list.head != null) {
+      const newHead = nodeById(list, list.head);
+      if (newHead) newHead.prev = null;
+      addStep(
+        steps,
+        list,
+        [6],
+        "Set new head->prev to nullptr.",
+        pointerState(list, { head: list.head, cur: oldHeadId }),
+        { cur: "old head" }
+      );
+    }
+
     if (list.tail === oldHeadId) {
       list.tail = list.head;
       addStep(
         steps,
         list,
-        [5],
-        "Removed node was also tail; update tail to the new head.",
+        [7],
+        "Removed node was also tail; update tail to head.",
         pointerState(list, { head: list.head, tail: list.tail, cur: oldHeadId }),
         { cur: "old head" }
       );
     }
+
     list.nodes = list.nodes.filter((node) => node.id !== oldHeadId);
-    ensureTail(list);
-    addStep(
-      steps,
-      list,
-      [7],
-      "Delete old head node.",
-      pointerState(list, { head: list.head, tail: list.tail })
-    );
+    addStep(steps, list, [8], "Delete old head node.", pointerState(list, { head: list.head, tail: list.tail }));
     return;
   }
 
@@ -584,7 +519,7 @@ function generateRemoveByValueSteps(steps, list, params) {
   addStep(
     steps,
     list,
-    [8, 9],
+    [11, 12],
     "Initialize prev to head and cur to head->next.",
     pointerState(list, { prev: prevId, cur: curId })
   );
@@ -595,10 +530,8 @@ function generateRemoveByValueSteps(steps, list, params) {
     addStep(
       steps,
       list,
-      [10],
-      matches
-        ? `cur->data matches ${value}; stop searching.`
-        : `cur->data (${curNode?.data}) != ${value}; continue searching.`,
+      [13],
+      matches ? `cur->data matches ${value}; stop.` : `cur->data (${curNode?.data}) != ${value}; continue.`,
       pointerState(list, { prev: prevId, cur: curId })
     );
     if (matches) break;
@@ -607,69 +540,51 @@ function generateRemoveByValueSteps(steps, list, params) {
     addStep(
       steps,
       list,
-      [11, 12],
-      curId == null
-        ? "Reached end of list while searching."
-        : "Advance prev and cur forward.",
+      [14, 15],
+      curId == null ? "Reached end while searching." : "Advance prev and cur.",
       pointerState(list, { prev: prevId, cur: curId })
     );
   }
 
   if (curId == null) {
-    addStep(
-      steps,
-      list,
-      [13],
-      "cur is nullptr; value not found. Nothing removed.",
-      pointerState(list, { prev: prevId })
-    );
+    addStep(steps, list, [17], "cur is nullptr; value not found.", pointerState(list, { prev: prevId }));
     return;
   }
 
   const prevNode = nodeById(list, prevId);
   const curNode = nodeById(list, curId);
   if (prevNode) prevNode.next = curNode?.next ?? null;
-  const removedValue = curNode?.data;
-  addStep(
-    steps,
-    list,
-    [14],
-    "Link prev->next to cur->next to bypass cur.",
-    pointerState(list, { prev: prevId, cur: curId })
-  );
+  addStep(steps, list, [18], "Link prev->next to cur->next.", pointerState(list, { prev: prevId, cur: curId }));
+
+  if (curNode?.next != null) {
+    const rightNode = nodeById(list, curNode.next);
+    if (rightNode) rightNode.prev = prevId;
+    addStep(
+      steps,
+      list,
+      [19],
+      "Set cur->next->prev to prev.",
+      pointerState(list, { prev: prevId, cur: curId })
+    );
+  }
 
   if (list.tail === curId) {
     list.tail = prevId;
     addStep(
       steps,
       list,
-      [18],
+      [20],
       "Removed node was tail; update tail to prev.",
       pointerState(list, { prev: prevId, cur: curId, tail: list.tail })
     );
   }
 
-  if (curNode) curNode.next = null;
   list.nodes = list.nodes.filter((node) => node.id !== curId);
-  addStep(
-    steps,
-    list,
-    [19],
-    `Delete the removed node (${removedValue}).`,
-    pointerState(list, { prev: prevId, tail: list.tail })
-  );
-
-  ensureTail(list);
+  addStep(steps, list, [21], "Delete removed node.", pointerState(list, { prev: prevId, tail: list.tail }));
 }
 
 function generateTraversalSteps(steps, list) {
-  addStep(
-    steps,
-    list,
-    [2],
-    "Start traversal at the head.",
-    pointerState(list, { cur: list.head })
-  );
+  addStep(steps, list, [2], "Start traversal at head.", pointerState(list, { cur: list.head }));
 
   let curId = list.head;
   while (true) {
@@ -677,29 +592,15 @@ function generateTraversalSteps(steps, list) {
       steps,
       list,
       [3],
-      curId == null
-        ? "cur is nullptr; stop looping."
-        : "cur is not nullptr; execute loop body.",
+      curId == null ? "cur is nullptr; stop." : "cur is not nullptr; execute loop.",
       pointerState(list, { cur: curId })
     );
     if (curId == null) break;
 
     const curNode = nodeById(list, curId);
-    addStep(
-      steps,
-      list,
-      [4],
-      `Visit cur->data (${curNode?.data}).`,
-      pointerState(list, { cur: curId })
-    );
+    addStep(steps, list, [4], `Visit cur->data (${curNode?.data}).`, pointerState(list, { cur: curId }));
     curId = curNode?.next ?? null;
-    addStep(
-      steps,
-      list,
-      [5],
-      "Advance cur to cur->next.",
-      pointerState(list, { cur: curId })
-    );
+    addStep(steps, list, [5], "Advance cur to cur->next.", pointerState(list, { cur: curId }));
   }
 }
 
@@ -727,8 +628,7 @@ export function generateOperationSteps(operation, sourceList, params, nextId) {
   const ctx = { nextId };
 
   generator(steps, working, params, ctx);
-
-  ensureTail(working);
+  ensureLinks(working);
 
   return {
     steps,
