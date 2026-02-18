@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Project 2 Kickoff + Finish (Module 6 + Module 7)</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+  <!-- Title -->
+  <section>
+    <section data-background-color="white"
+             data-background-image="../_static/logo.png"
+             data-background-size="50%"
+             data-background-position="top center"
+             data-background-repeat="no-repeat"
+             class="title-slide">
+      <h1>Project 2 Roadmap</h1>
+      <div class="subtitle docutils container">
+        <p>Module 6 starter + Module 7 finish</p>
+        <p>Liting Zhang</p>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================== -->
+  <!-- MODULE 6: (KEEP ALL)  -->
+  <!-- ===================== -->
+  <section>
+    <section  class="frame">
+      <h2>Module 6</h2>
+      <p>Expressions, Assignment, and Control Flow</p>
+      <p>Milestone A: get a real program runner working (no functions yet)</p>
+    </section>
+
+    <!-- Where we are -->
+    <section id="where-we-are" class="frame">
+      <h2>Where you are after Project 1</h2>
+      <ul>
+        <li><p>You built an expressions-only interpreter:</p></li>
+      </ul>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\normalsize"><code class="language-plaintext">input string → tokens → AST (Expr) → eval(expr, env) → number</code></pre>
+      <ul>
+        <li><p>Core skills you already have:</p>
+          <ul>
+            <li><p>lexer that emits tokens</p></li>
+            <li><p>recursive-descent parser with precedence (Expr/Term/Power/Factor)</p></li>
+            <li><p>AST + evaluator with an environment lookup</p></li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section id="where-we-are-going" class="frame">
+      <h2>Project 2 goal (Module 6 portion)</h2>
+      <ul>
+        <li><p>Turn “expression tool” into “program interpreter”:</p></li>
+      </ul>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\normalsize"><code class="language-plaintext">program file → tokens → AST (Stmt/Program) → execute(program, env) → result</code></pre>
+      <ul>
+        <li><p>Module 6 topics map directly to:</p>
+          <ul>
+            <li><p>precedence + evaluation order</p></li>
+            <li><p>short-circuit (&&, ||)</p></li>
+            <li><p>assignment, blocks, scope</p></li>
+            <li><p>if/else and while</p></li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section id="module6-milestone" class="frame">
+      <h2>Milestone A you can complete now</h2>
+      <p>This milestone is fully supported by Module 6.</p>
+      <ul>
+        <li><p>booleans: true/false, !, &&, ||, comparisons</p></li>
+        <li><p>statements: let, assignment, expression statements</p></li>
+        <li><p>blocks with scope: { ... }</p></li>
+        <li><p>control flow: if/else, while</p></li>
+        <li><p>program result rule: last executed expression statement (or null)</p></li>
+        <li><p>error rules: undefined var, bad assignment, non-boolean condition</p></li>
+      </ul>
+    </section>
+
+    <!-- Step plan -->
+    <section id="recommended-order" class="frame">
+      <h2>Recommended build order</h2>
+      <ol>
+        <li><p>Lexer: add keywords, punctuation, multi-character operators</p></li>
+        <li><p>Expressions: extend precedence ladder (||, &&, ==, &lt;=, ...)</p></li>
+        <li><p>Parser: add statements + blocks + program parser</p></li>
+        <li><p>Runtime: add booleans + scoped environments</p></li>
+        <li><p>Executor: if/else, while, program result</p></li>
+        <li><p>Short-circuit semantics for && and ||</p></li>
+      </ol>
+      <p>Keep each step runnable with small tests before moving on.</p>
+    </section>
+
+    <!-- Lexer -->
+    <section id="lexer-new-tokens" class="frame">
+      <h2>Step 1: Expand the lexer</h2>
+      <p>Your Project 1 lexer already handles:</p>
+      <ul>
+        <li><p>NUMBER, IDENT</p></li>
+        <li><p>+ - * / ^ ( )</p></li>
+      </ul>
+      <p>Project 2 (Module 6 milestone) adds:</p>
+      <ul>
+        <li><p>keywords: let if else while return true false</p></li>
+        <li><p>punctuation: { } ; ,</p></li>
+        <li><p>operators: = == != &lt; &lt;= &gt; &gt;= && || !</p></li>
+      </ul>
+    </section>
+
+    <section id="lexer-multichar" class="frame">
+      <h2>Multi-character tokens (critical)</h2>
+      <p>Project 1 was mostly “single-char tokens”. Now you need lookahead.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function peek(input: string, i: number): string | null {
+  return i + 1 < input.length ? input[i + 1] : null;
+}
+
+// Examples:
+if (ch === "=" && peek(input, i) === "=") { /* emit == */ }
+else if (ch === "=") { /* emit = */ }
+
+if (ch === "&" && peek(input, i) === "&") { /* emit && */ }
+else if (ch === "&") { throw new Error("single & is not allowed"); }</code></pre>
+      <ul>
+        <li><p>Same idea for !=, &lt;=, &gt;=, ||</p></li>
+      </ul>
+    </section>
+
+    <section id="lexer-keywords" class="frame">
+      <h2>Keywords vs IDENT</h2>
+      <p>Lex identifiers as strings first, then re-label if it matches a keyword.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">const keywords: Record&lt;string, TokenType&gt; = {
+  let: TokenType.LET,
+  if: TokenType.IF,
+  else: TokenType.ELSE,
+  while: TokenType.WHILE,
+  return: TokenType.RETURN,
+  true: TokenType.TRUE,
+  false: TokenType.FALSE,
+};
+
+if (keywords[ident] !== undefined) emit(keywords[ident], ident);
+else emit(TokenType.IDENT, ident);</code></pre>
+    </section>
+
+    <!-- Expressions / precedence -->
+    <section id="expr-precedence-ladder" class="frame">
+      <h2>Step 2: Extend expression precedence</h2>
+      <p>Project 1 precedence ended at + and -.</p>
+      <p>Project 2 adds logical + comparison layers:</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Expr → Or
+
+Or          → And ("||" And)*
+And         → Equality ("&&" Equality)*
+Equality    → Comparison (("==" | "!=") Comparison)*
+Comparison  → Add (("<" | "<=" | ">" | ">=") Add)*
+Add         → Mul (("+"|"-") Mul)*
+Mul         → Power (("*"|"/") Power)*
+Power       → Unary ("^" Power)?        // right-associative
+Unary       → ("+"|"-"|"!") Unary | Primary
+Primary     → NUM | true | false | IDENT | "(" Expr ")"</code></pre>
+    </section>
+
+    <section id="parser-shape" class="frame">
+      <h2>Parser shape (same pattern as Project 1)</h2>
+      <p>You already used “one function per precedence level”. Keep that style.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">// New top:
+parseExpr(): ExprNode { return this.parseOr(); }
+
+parseOr(): ExprNode {
+  let node = this.parseAnd();
+  while (this.match(TokenType.OROR)) {
+    const right = this.parseAnd();
+    node = { type: "BinaryExpr", op: "||", left: node, right };
+  }
+  return node;
+}</code></pre>
+      <ul>
+        <li><p>Repeat the pattern for And / Equality / Comparison</p></li>
+      </ul>
+    </section>
+
+    <!-- Statements / program -->
+    <section id="stmt-grammar-module6" class="frame">
+      <h2>Step 3: Add statements + blocks</h2>
+      <p>Module 6 control flow features correspond to this subset:</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Program   ::= Stmt* EOF
+
+Stmt      ::= LetStmt | AssignStmt | ExprStmt | IfStmt | WhileStmt | ReturnStmt | Block
+
+LetStmt   ::= "let" IDENT "=" Expr ";"
+AssignStmt::= IDENT "=" Expr ";"
+ExprStmt  ::= Expr ";"
+
+Block     ::= "{" Stmt* "}"
+
+IfStmt    ::= "if" "(" Expr ")" Block ("else" Block)?
+WhileStmt ::= "while" "(" Expr ")" Block
+
+ReturnStmt::= "return" Expr? ";"</code></pre>
+    </section>
+
+    <section id="parse-program-api" class="frame">
+      <h2>Parser API changes</h2>
+      <p>Project 1 had <code>parse(): ExprNode</code>.</p>
+      <p>Project 2 adds program-level parsing:</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">parseProgram(): StmtNode[] { ... }
+parseStmt(): StmtNode { ... }
+parseBlock(): BlockStmt { ... }</code></pre>
+      <ul>
+        <li><p>Common pattern: if you see <code>IDENT</code> and next is <code>=</code>, parse assignment; otherwise parse expression statement.</p></li>
+      </ul>
+    </section>
+
+    <!-- Runtime: values + env -->
+    <section id="values-now" class="frame">
+      <h2>Step 4: Runtime values (Module 6 milestone)</h2>
+      <p>Project 1 returned only numbers.</p>
+      <p>Project 2 needs booleans now:</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type Value =
+  | { kind: "number"; value: number }
+  | { kind: "boolean"; value: boolean }
+  | { kind: "null" };</code></pre>
+      <ul>
+        <li><p>Later (Module 7 milestone) you will add function values.</p></li>
+      </ul>
+    </section>
+
+    <section id="scoped-env" class="frame">
+      <h2>Step 5: Scoped environments (blocks)</h2>
+      <p>Project 1 used a plain object environment.</p>
+      <p>Project 2 needs nested scopes with lookup and assignment update rules.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">class Env {
+  constructor(public parent: Env | null,
+              public values = new Map&lt;string, Value&gt;()) {}
+
+  define(name: string, v: Value) { this.values.set(name, v); }
+
+  lookup(name: string): Value {
+    if (this.values.has(name)) return this.values.get(name)!;
+    if (this.parent) return this.parent.lookup(name);
+    throw new Error(`Undefined variable '${name}'`);
+  }
+
+  assign(name: string, v: Value): void {
+    if (this.values.has(name)) { this.values.set(name, v); return; }
+    if (this.parent) { this.parent.assign(name, v); return; }
+    throw new Error(`Assign to undefined variable '${name}'`);
+  }
+}</code></pre>
+    </section>
+
+    <!-- Execution -->
+    <section id="exec-model" class="frame">
+      <h2>Step 6: Execute statements (not just expressions)</h2>
+      <p>Separate expression evaluation from statement execution.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type ExecResult =
+  | { type: "normal" }
+  | { type: "return"; value: Value };
+
+function execStmt(s: StmtNode, env: Env): ExecResult { ... }
+function evalExpr(e: ExprNode, env: Env): Value { ... }</code></pre>
+      <ul>
+        <li><p>Even in Milestone A, implement <code>return</code> bubbling so your control flow is ready for functions later.</p></li>
+      </ul>
+    </section>
+
+    <section id="if-while-rules" class="frame">
+      <h2>if / while rules you must enforce</h2>
+      <ul>
+        <li><p>Condition must evaluate to a boolean, otherwise error.</p></li>
+        <li><p>Blocks run in a new child scope.</p></li>
+      </ul>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function asBool(v: Value): boolean {
+  if (v.kind !== "boolean") throw new Error("Condition must be boolean");
+  return v.value;
+}
+
+// while:
+while (asBool(evalExpr(cond, env))) {
+  const r = execBlock(body, new Env(env));
+  if (r.type === "return") return r;
+}</code></pre>
+    </section>
+
+    <section id="short-circuit-semantics" class="frame">
+      <h2>Short-circuit semantics (Module 6 focus)</h2>
+      <p>Do not evaluate the right side if the result is already determined.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">case "BinaryExpr": {
+  if (node.op === "&&") {
+    const left = evalExpr(node.left, env);
+    const b = asBool(left);
+    if (!b) return { kind: "boolean", value: false }; // skip RHS
+    return evalExpr(node.right, env);                 // RHS decides
+  }
+  if (node.op === "||") {
+    const left = evalExpr(node.left, env);
+    const b = asBool(left);
+    if (b) return { kind: "boolean", value: true };   // skip RHS
+    return evalExpr(node.right, env);
+  }
+  // other operators evaluate both sides
+}</code></pre>
+    </section>
+
+    <!-- Program result + grading -->
+    <section id="program-result" class="frame">
+      <h2>Program result rule (for deterministic grading)</h2>
+      <ul>
+        <li><p>The program result is the value of the last executed expression statement.</p></li>
+        <li><p>If no expression statement executes, the result is null.</p></li>
+        <li><p>A bare <code>return;</code> returns null.</p></li>
+      </ul>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">let x = 1;
+x + 2;
+Result: 3
+
+let x = 1;
+let y = 2;
+Result: null</code></pre>
+    </section>
+
+    <section id="error-rules-now" class="frame">
+      <h2>Error rules to implement now (Milestone A)</h2>
+      <ul>
+        <li><p>referencing an undefined variable</p></li>
+        <li><p>assigning to a variable that does not exist in any enclosing scope</p></li>
+        <li><p>if/while condition that does not evaluate to a boolean</p></li>
+      </ul>
+      <p>These are the most common bugs when moving from expressions → programs.</p>
+    </section>
+
+    <section id="test-incrementally" class="frame">
+      <h2>Test incrementally (tiny programs)</h2>
+      <p>Write small .tl files and run them often:</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">// p2_let_assign.tl
+let x = 1;
+x = x + 2;
+x + 0;         // result should be 3</code></pre>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">// p2_if_else.tl
+let x = 5;
+if (x >= 10) { 1; } else { 2; }   // result should be 2</code></pre>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">// p2_while.tl
+let n = 4;
+let acc = 1;
+while (n > 1) { acc = acc * n; n = n - 1; }
+acc;          // result should be 24</code></pre>
+    </section>
+
+    <section id="short-circuit-test" class="frame">
+      <h2>Short-circuit test program</h2>
+      <p>Design a case where evaluating RHS would crash if not short-circuited.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">// p2_shortcircuit.tl
+let ok = false;
+ok && undefinedVar;   // should NOT error (RHS skipped)
+true || undefinedVar; // should NOT error (RHS skipped)</code></pre>
+      <ul>
+        <li><p>If this errors, your &&/|| are not short-circuiting.</p></li>
+      </ul>
+    </section>
+
+    <section id="postpone-module7" class="frame">
+      <h2>What to postpone until Module 7</h2>
+      <ul>
+        <li><p>fun expressions, call expressions, closures</p></li>
+        <li><p>calling non-functions and arity mismatch checks</p></li>
+        <li><p>return behavior inside functions (your return bubbling can exist already)</p></li>
+      </ul>
+      <p>After Module 6, you can already run meaningful programs with state and control flow.</p>
+    </section>
+
+    <section id="wrap-m6" class="frame">
+      <h2>Wrap-up: your “Module 6 starter” target</h2>
+      <ul>
+        <li><p>Program files with let/assign/blocks/if/while/booleans work end-to-end.</p></li>
+        <li><p>Correct precedence and short-circuit behavior for && and ||.</p></li>
+        <li><p>Scoped environments with correct update rules.</p></li>
+        <li><p>Clear error behavior for the required cases.</p></li>
+      </ul>
+      <p>Once this is stable, Module 7 adds first-class functions and closures on top.</p>
+    </section>
+  </section>
+
+  <!-- ===================== -->
+  <!-- MODULE 7: ADD-ON      -->
+  <!-- ===================== -->
+  <section>
+    <section class="frame">
+      <h2>Module 7</h2>
+      <p>Subprograms, Parameters, and Closures</p>
+      <p>Milestone B: finish Project 2 with functions + closures</p>
+    </section>
+
+    <section id="m7-what-changes" class="frame">
+      <h2>What changes when we add functions?</h2>
+      <ul>
+        <li><p>Expressions produce more kinds of values (function values)</p></li>
+        <li><p>We add new AST nodes: FunExpr and CallExpr</p></li>
+        <li><p>We need a call boundary:</p>
+          <ul>
+            <li><p>parameter binding</p></li>
+            <li><p>arity checks</p></li>
+            <li><p>return behavior</p></li>
+            <li><p>closure capture (lexical scoping)</p></li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section id="m7-grammar" class="frame">
+      <h2>Module 7 grammar additions</h2>
+      <p>Extend Primary and add Call:</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Unary       ::= ("+"|"-"|"!") Unary | Call
+Call        ::= Primary ("(" ArgList? ")")*
+ArgList     ::= Expr ("," Expr)*
+
+Primary     ::= NUM | true | false | IDENT | FunExpr | "(" Expr ")"
+
+FunExpr     ::= "fun" "(" Params? ")" Block
+Params      ::= IDENT ("," IDENT)*</code></pre>
+      <ul>
+        <li><p>Calls bind tighter than binary operators (so f(1)+2 parses correctly)</p></li>
+        <li><p>("(" ... ")") repeats so you can do makeAdder(10)(3)</p></li>
+      </ul>
+    </section>
+
+    <section id="m7-ast" class="frame">
+      <h2>New AST nodes for Module 7</h2>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">interface FunExprNode {
+  type: "FunExpr";
+  params: string[];
+  body: BlockStmt;
+}
+
+interface CallExprNode {
+  type: "CallExpr";
+  callee: ExprNode;
+  args: ExprNode[];
+}</code></pre>
+      <ul>
+        <li><p>body is a BlockStmt (statements, not an expression)</p></li>
+      </ul>
+    </section>
+
+    <section id="m7-parser-fun" class="frame">
+      <h2>Example implementation: parse FunExpr</h2>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">// In Primary:
+if (this.match(TokenType.FUN)) {
+  this.expect(TokenType.LPAREN, "Expected '(' after fun");
+  const params: string[] = [];
+  if (!this.check(TokenType.RPAREN)) {
+    do {
+      const id = this.expect(TokenType.IDENT, "Expected parameter name");
+      params.push(id.lexeme);
+    } while (this.match(TokenType.COMMA));
+  }
+  this.expect(TokenType.RPAREN, "Expected ')'");
+  const body = this.parseBlock(); // expects '{'
+  return { type: "FunExpr", params, body };
+}</code></pre>
+    </section>
+
+    <section id="m7-parser-call" class="frame">
+      <h2>Example implementation: parse CallExpr</h2>
+      <p>Calls are “postfix” after Primary and can repeat.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">private parseCall(): ExprNode {
+  let node = this.parsePrimary();
+
+  while (this.match(TokenType.LPAREN)) {
+    const args: ExprNode[] = [];
+    if (!this.check(TokenType.RPAREN)) {
+      do {
+        args.push(this.parseExpr());
+      } while (this.match(TokenType.COMMA));
+    }
+    this.expect(TokenType.RPAREN, "Expected ')'");
+    node = { type: "CallExpr", callee: node, args };
+  }
+
+  return node;
+}
+
+// Then Unary becomes:
+private parseUnary(): ExprNode {
+  const tok = this.current();
+  if (tok.type === TokenType.PLUS || tok.type === TokenType.MINUS || tok.type === TokenType.BANG) {
+    this.pos++;
+    const expr = this.parseUnary();
+    return { type: "UnaryExpr", op: tok.lexeme, expr };
+  }
+  return this.parseCall();
+}</code></pre>
+    </section>
+
+    <section id="m7-values" class="frame">
+      <h2>Runtime values: add function values (closures)</h2>
+      <p>A function value must store code + captured environment.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type Value =
+  | { kind: "number"; value: number }
+  | { kind: "boolean"; value: boolean }
+  | { kind: "null" }
+  | { kind: "function"; params: string[]; body: BlockStmt; closure: Env };</code></pre>
+      <ul>
+        <li><p>closure = the Env at function creation time</p></li>
+      </ul>
+    </section>
+
+    <section id="m7-eval-fun" class="frame">
+      <h2>Example implementation: evaluating FunExpr</h2>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">case "FunExpr":
+  return {
+    kind: "function",
+    params: node.params,
+    body: node.body,
+    closure: env, // capture lexical environment
+  };</code></pre>
+      <ul>
+        <li><p>If closure capture is wrong, nested functions won't “remember” variables</p></li>
+      </ul>
+    </section>
+
+    <section id="m7-call-semantics" class="frame">
+      <h2>Call semantics (the function contract)</h2>
+      <ul>
+        <li><p>Evaluate callee (must be function)</p></li>
+        <li><p>Evaluate args left-to-right</p></li>
+        <li><p>Arity must match (else error)</p></li>
+        <li><p>Create callEnv whose parent is fn.closure</p></li>
+        <li><p>Bind params using define (like let)</p></li>
+        <li><p>Execute body; return result or null</p></li>
+      </ul>
+    </section>
+
+    <section id="m7-eval-call-impl" class="frame">
+      <h2>Example implementation: evaluating CallExpr</h2>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">case "CallExpr": {
+  const calleeV = evalExpr(node.callee, env);
+  if (calleeV.kind !== "function") throw new Error("Calling a non-function");
+
+  const fn = calleeV;
+  if (node.args.length !== fn.params.length) throw new Error("Arity mismatch");
+
+  // Evaluate args left-to-right
+  const argVals = node.args.map(a => evalExpr(a, env));
+
+  // New call environment chains to closure
+  const callEnv = new Env(fn.closure);
+
+  for (let i = 0; i < fn.params.length; i++) {
+    callEnv.define(fn.params[i], argVals[i]);
+  }
+
+  const r = execBlock(fn.body, callEnv);
+  if (r.type === "return") return r.value;
+  return { kind: "null" };
+}</code></pre>
+    </section>
+
+    <section id="m7-return-bubbling" class="frame">
+      <h2>Return bubbling (why ExecResult matters)</h2>
+      <p>Return has to escape nested blocks/loops up to the call site.</p>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function execBlock(b: BlockStmt, env: Env): ExecResult {
+  const blockEnv = new Env(env); // block scope
+  for (const s of b.stmts) {
+    const r = execStmt(s, blockEnv);
+    if (r.type === "return") return r; // bubble up
+  }
+  return { type: "normal" };
+}</code></pre>
+    </section>
+
+    <section id="m7-closure-demo" class="frame">
+      <h2>Closure demo (Project 2 end goal)</h2>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">let makeAdder = fun(x) {
+  return fun(y) { return x + y; };
+};
+
+let add10 = makeAdder(10);
+add10(3);                // expect 13</code></pre>
+      <ul>
+        <li><p>Works only if inner function captures x from makeAdder's environment</p></li>
+      </ul>
+    </section>
+
+    <section id="m7-new-errors" class="frame">
+      <h2>New required errors (Module 7)</h2>
+      <ul>
+        <li><p>Calling a non-function value</p></li>
+        <li><p>Wrong number of arguments (arity mismatch)</p></li>
+      </ul>
+      <p>These are part of the function call contract.</p>
+    </section>
+
+    <section id="m7-smoke-tests" class="frame">
+      <h2>Milestone B smoke tests</h2>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">// D: simple function call
+let inc = fun(x) { return x + 1; };
+inc(41);                    // expect 42</code></pre>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">// E: arity mismatch should error
+let f = fun(x, y) { return x; };
+f(1);                       // error</code></pre>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">// F: call non-function should error
+let x = 3;
+x(1);                       // error</code></pre>
+    </section>
+
+    <section id="wrap-m7" class="frame">
+      <h2>Wrap-up: Module 7 finish line</h2>
+      <ul>
+        <li><p>Functions are values: FunExpr → function Value</p></li>
+        <li><p>Calls create a new call scope chained to the closure scope</p></li>
+        <li><p>Return bubbles up to the call boundary</p></li>
+        <li><p>With closures, you can implement makeAdder and similar patterns</p></li>
+      </ul>
+    </section>
+  </section>
+
+</div>
+</div>
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+  var revealjsConfig = new Object();
+  Object.assign(revealjsConfig, {
+    "disableLayout": true,
+    "controls": true,
+    "progress": true,
+    "hash": true,
+    "center": true,
+    "transition": "slide",
+    "slideNumber": true,
+    "scrollActivationWidth": null,
+    "mouseWheel": false,
+    "width": 960,
+    "height": 540
+  });
+
+  revealjsConfig.plugins = [
+    RevealNotes, RevealHighlight, RevealMath,
+  ];
+
+  Reveal.initialize(revealjsConfig);
+</script>
+
+</body>
+</html>

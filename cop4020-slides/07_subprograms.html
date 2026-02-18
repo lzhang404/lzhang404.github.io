@@ -5,11 +5,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-  <title>Subprograms and Parameters</title>
+  <title>Subprograms, Parameters, and Closures</title>
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
-  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=40f0a724" />
   <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
   <script src="../_static/design-tabs.js?v=f930bc37"></script>
 
@@ -21,7 +21,9 @@
   <div class="reveal">
     <div class="slides" role="main">
 
+      <!-- ========================= -->
       <!-- Title -->
+      <!-- ========================= -->
       <section>
         <section data-background-color="white"
                  data-background-image="../_static/logo.png"
@@ -31,59 +33,129 @@
                  class="title-slide">
           <h1>Subprograms, Parameters, and Closures</h1>
           <div class="subtitle docutils container">
-            <p><strong>Module 7</strong></p>
+            <p>Module 7</p>
             <p>Liting Zhang</p>
           </div>
         </section>
       </section>
 
-      <!-- Overview -->
+      <!-- ========================= -->
+      <!-- Big Picture -->
+      <!-- ========================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Overview</h1>
+          <h1>Big Picture</h1>
         </section>
 
-        <section id="overview" class="frame">
-          <h2>Overview</h2>
+        <section class="frame">
+          <h2>Why this module matters</h2>
           <ul>
-            <li><p>Subprograms as contracts: inputs, outputs, effects, errors, timing</p></li>
-            <li><p>First-class functions: passing behavior as values</p></li>
-            <li><p>Parameter passing: reassignment vs mutation</p></li>
-            <li><p>Defaults, options objects, varargs: readable call sites</p></li>
-            <li><p>Callbacks and async: composition, errors, cancellation</p></li>
-            <li><p>Closures in practice: stale state, retention, patterns</p></li>
+            <li><p>“Call a function” sounds simple, but languages make different choices.</p></li>
+            <li><p>Those choices change correctness (aliasing), performance (copy vs reference), and reasoning (async timing).</p></li>
+            <li><p>Goal: predict behavior without guessing or “just running it.”</p></li>
           </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">PL questions we will answer:
+- What gets evaluated first?
+- What gets copied vs aliased?
+- What environment does a function use?
+- What happens on the stack at call/return?
+- How are errors and timing communicated?</code></pre>
+<p>example: ts_seprate_comp.ts</p>
         </section>
 
-        <section id="learning-goals" class="frame">
+        <section class="frame">
+          <h2>From Module 4 (what we assume you remember)</h2>
+          <ul>
+            <li><p>Names and bindings</p></li>
+            <li><p>Lexical scope and closures (definition-level basics)</p></li>
+            <li><p>Lifetime (stack vs heap) at a high level</p></li>
+          </ul>
+          <p>This module zooms in on call semantics, parameter mechanisms, dynamic invocation, polymorphism, and control abstractions.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Roadmap</h2>
+          <ol>
+            <li><p>Subprogram contracts (what callers can rely on)</p></li>
+            <li><p>Calls at runtime: activation records and referencing environments</p></li>
+            <li><p>Parameters: association, modes, passing methods, aliasing</p></li>
+            <li><p>Dynamic invocation: passing subprograms as values</p></li>
+            <li><p>Signature design: defaults, options, varargs</p></li>
+            <li><p>Polymorphism: overloading vs generics (what “one name” means)</p></li>
+            <li><p>Errors + async control flow + cancellation</p></li>
+            <li><p>Closures in practice: timing + retention</p></li>
+            <li><p>Coroutines as a control abstraction</p></li>
+          </ol>
+        </section>
+
+        <section class="frame">
           <h2>Learning goals</h2>
           <ul>
-            <li><p>Describe what a caller must know to use a subprogram safely</p></li>
-            <li><p>Use function values to build reusable control patterns</p></li>
-            <li><p>Predict what changes across a call boundary</p></li>
-            <li><p>Redesign a signature to improve readability and evolution</p></li>
-            <li><p>Refactor callback-heavy async into async/await with correct error handling</p></li>
-            <li><p>Recognize closure-related production bugs and apply fixes</p></li>
+            <li><p>State what a caller must know to use a subprogram safely</p></li>
+            <li><p>Explain what the runtime does on call/return (frames, environments)</p></li>
+            <li><p>Compare parameter passing methods and predict observable effects</p></li>
+            <li><p>Explain dynamic invocation and how environments are chosen</p></li>
+            <li><p>Describe overloading vs generics and their tradeoffs</p></li>
+            <li><p>Use async mechanisms with correct error handling and cancellation</p></li>
           </ul>
         </section>
 
-        <section id="core-idea-contract" class="frame">
-          <h2>Core idea: subprograms are contracts</h2>
-          <p>A subprogram is not just code. It is an interface promise.</p>
+        <section class="frame">
+          <h2>Key terminology (subprogram, procedure, function)</h2>
           <ul>
-            <li><p>Inputs: parameter types + meaning</p></li>
-            <li><p>Outputs: return type + meaning</p></li>
-            <li><p>Effects: mutation, I/O, global state, logging</p></li>
-            <li><p>Errors: throw, return codes, callbacks, promise rejection</p></li>
-            <li><p>Timing: sync vs async, may run later, may run multiple times</p></li>
+            <li><p>Subprogram: a named unit of code that can be invoked (called)</p></li>
+            <li><p>Procedure: used mainly for actions (often returns void / None)</p></li>
+            <li><p>Function: value-oriented (returns a value)</p></li>
+            <li><p>Method: a subprogram associated with an object/class (OOP)</p></li>
+            <li><p>Routine: common general term (Ada, some texts)</p></li>
+          </ul>
+          <p>Many languages blur the boundary; what matters is contract + effects.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Vocabulary you may see:
+- C / C++: function (and methods in C++)
+- Java / C#: method (functions are methods inside classes)
+- Python: function, method
+- Ada: procedure / function (explicit modes in/out/in out)</code></pre>
+<p>example: ts_procedure_vs_func.ts</p>
+        </section>
+      </section>
+
+      <!-- ========================= -->
+      <!-- Contracts -->
+      <!-- ========================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Subprograms as Contracts</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Contract</h2>
+          <p>A contract is the behavior a caller can rely on without reading the body.</p>
+          <ul>
+            <li><p>Inputs: parameter types and meaning</p></li>
+            <li><p>Outputs: return value and meaning</p></li>
+            <li><p>Effects: mutation, I/O, global state</p></li>
+            <li><p>Errors: how failures are reported (exceptions, codes, results)</p></li>
+            <li><p>Timing: sync/async, may run later, may run multiple times</p></li>
           </ul>
         </section>
 
-        <section id="contract-checklist-example" class="frame">
-          <h2>Contract checklist example</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">// What must a caller know?
+        <section class="frame">
+          <h2>Contract vs signature (definition)</h2>
+          <ul>
+            <li><p>Signature: parameter profile + return type (what the header states)</p></li>
+            <li><p>Contract: signature plus effects, errors, and timing rules</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">A “good” contract answers:
+- What does this compute or do?
+- What assumptions must hold at the call site?
+- What can change in the outside world?
+- How do I handle failure?
+- When does the result become available?</code></pre>
+        </section>
 
-type User = { id: string; name: string };
+        <section class="frame">
+          <h2>Contract example (async + errors + effects)</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type User = { id: string; name: string };
 
 async function fetchUser(id: string): Promise&lt;User&gt; {
   const r = await fetch("/api/users/" + id);
@@ -91,112 +163,348 @@ async function fetchUser(id: string): Promise&lt;User&gt; {
   return (await r.json()) as User;
 }</code></pre>
           <ul>
-            <li><p>Inputs: id is a string user id</p></li>
-            <li><p>Output: resolves to User</p></li>
             <li><p>Effects: network I/O</p></li>
-            <li><p>Errors: throws (promise rejection)</p></li>
-            <li><p>Timing: async (later)</p></li>
+            <li><p>Errors: promise rejection (exception inside async)</p></li>
+            <li><p>Timing: completes later</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice: contract reading</h2>
+          <p>What important contract details are missing from this interface?</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">declare function writeFile(path: string, data: Uint8Array): void;</code></pre>
+          <ul>
+            <li><p>Overwrite vs append?</p></li>
+            <li><p>Possible errors and signaling mechanism?</p></li>
+            <li><p>Blocking vs non-blocking?</p></li>
+            <li><p>Atomicity: could it partially write?</p></li>
+            <li><p>Permissions / encoding / path rules?</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Takeaway</h2>
+          <ul>
+            <li><p>When control flow or errors cross boundaries (callbacks/async), contracts must include timing + error rules.</p></li>
+            <li><p>When mutation is possible, contracts should state what can be modified.</p></li>
           </ul>
         </section>
       </section>
 
-      <!-- Procedures and Functions -->
+      <!-- ========================= -->
+      <!-- Calls at Runtime (REORDERED FOR FLOW) -->
+      <!-- ========================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Procedures and Functions</h1>
+          <h1>Calls at Runtime</h1>
         </section>
 
-        <section id="procedures-vs-functions" class="frame">
-          <h2>Procedures vs functions</h2>
-          <p>Procedure-like intent</p>
+        <section class="frame">
+          <h2>Abstract machine view of a call</h2>
           <ul>
-            <li><p>Do an action, often returns void / None</p></li>
-            <li><p>Common for logging, I/O, mutation</p></li>
+            <li><p>Evaluate argument expressions (order may matter)</p></li>
+            <li><p>Bind parameter names to argument values/locations</p></li>
+            <li><p>Execute the body using those bindings</p></li>
+            <li><p>Return (or raise error)</p></li>
           </ul>
-          <p>Function-like intent</p>
-          <ul>
-            <li><p>Compute and return a value</p></li>
-            <li><p>Easier to test when pure</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function logLogin(userId: string): void {
-  console.log("login", userId);
-}
+          <p>Next: what “bindings you can use” means (environment), then how runtimes implement it (frames).</p>
+        </section>
 
-function discount(price: number, rate: number): number {
-  return price * (1 - rate);
+        <section class="frame">
+          <h2>Local referencing environment (definition)</h2>
+          <p>The referencing environment is the collection of all bindings a subprogram can use while it runs.</p>
+          <ul>
+            <li><p>Formal parameters</p></li>
+            <li><p>Local variables</p></li>
+            <li><p>Nonlocals captured from surrounding scopes (if nested functions exist)</p></li>
+          </ul>
+          <p>PL idea: this answers “what names are in scope with meaning at runtime?”</p>
+        </section>
+
+        <section class="frame">
+          <h2>How is the environment represented at runtime?</h2>
+          <ul>
+            <li><p>Most local bindings live in the <strong>activation record</strong> for the call</p></li>
+            <li><p>The runtime also needs a way to find the caller and (sometimes) nonlocals</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Common links (conceptual):
+- Dynamic link: points to caller’s frame (return/unwind support)
+- Static link or environment pointer: supports nonlocal access (nested scopes)
+- Closure environment: heap-allocated captured bindings that outlive the call</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Activation record (stack frame) intuition</h2>
+          <p>An activation record (also called a stack frame) is the runtime data structure that represents one active call of a subprogram.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Typical frame contents (varies by runtime):
+- return address
+- parameters (values or references)
+- locals and temporaries
+- bookkeeping (saved registers, debug info)</code></pre>
+          <ul>
+            <li><p>Frames enable recursion: each call gets fresh locals/parameters.</p></li>
+            <li><p>Returning normally pops the frame; exceptions may unwind multiple frames.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Call stack model</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Top of stack = most recent call.
+
+Calling a function:
+- push a new frame
+- jump to callee code
+
+Returning:
+- restore caller context
+- pop the frame</code></pre>
+          <p>Lifetime of stack-allocated locals is “until return” unless a closure forces retention elsewhere.</p>
+          <p>Example: c_stack_frames.c</p>
+        </section>
+
+        <section class="frame">
+          <h2>Nested calls create nested frames</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function f(x: number): number { return g(x + 1) + 10; }
+function g(y: number): number { return y * 2; }
+console.log(f(3));</code></pre>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Conceptual call stack (top is most recent):
+frame for g(y=4)
+frame for f(x=3)
+frame for main</code></pre>
+          <p>Now the “environment” idea is concrete: each frame contributes bindings.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Recursion relies on fresh bindings per call</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function fact(n: number): number {
+  if (n === 0) return 1;
+  return n * fact(n - 1);
 }</code></pre>
-        </section>
-
-        <section id="design-guideline-query-command" class="frame">
-          <h2>Design guideline: query vs command</h2>
           <ul>
-            <li><p>Query: returns information, no state change</p></li>
-            <li><p>Command: changes state, return value is often not the point</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">class Cart {
-  private total = 0;
-
-  add(priceCents: number): void {  // command
-    this.total += priceCents;
-  }
-
-  getTotal(): number {            // query
-    return this.total;
-  }
-}</code></pre>
-          <p>Mixing the two makes code harder to reason about.</p>
-        </section>
-
-        <section id="practice-query-command" class="frame">
-          <h2>Practice: query or command?</h2>
-          <p>Classify each function by intent.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function nowMs(): number {
-  return Date.now();
-}
-
-function pushAndReturn(xs: number[], x: number): number {
-  xs.push(x);
-  return xs.length;
-}
-
-function sum(xs: number[]): number {
-  return xs.reduce((a, b) => a + b, 0);
-}</code></pre>
-          <ul>
-            <li><p>Which ones have side effects?</p></li>
-            <li><p>Which ones are easiest to unit test?</p></li>
+            <li><p>Each call has its own <code>n</code> binding (different frame slot)</p></li>
+            <li><p>Space cost is maximum depth of frames (unless optimized)</p></li>
           </ul>
         </section>
 
-        <section id="practice-query-command-answer" class="frame">
-          <h2>Practice answers</h2>
+        <section class="frame">
+          <h2>Activation records across runtimes</h2>
           <ul>
-            <li><p><code>sum</code> is function-like (no effects if reduce is pure)</p></li>
-            <li><p><code>pushAndReturn</code> is command-like (mutates xs)</p></li>
-            <li><p><code>nowMs</code> looks function-like but depends on external time (not pure)</p></li>
+            <li><p>C/C++: stack frames are central; pointers/references expose low-level effects</p></li>
+            <li><p>JVM/.NET: still have call stacks, but allocation/GC/exceptions are runtime-managed</p></li>
+            <li><p>Python/JS: frames exist conceptually; VM/runtime manages details</p></li>
+            <li><p>Functional languages: tail-call optimization (when supported) can change stack growth</p></li>
+          </ul>
+          <p>PL takeaway: the abstract machine model stays the same even when implementations differ.</p>
+        </section>
+      </section>
+
+      <!-- ========================= -->
+      <!-- Parameters -->
+      <!-- ========================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Parameters</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Two separate issues (don’t mix them)</h2>
+          <ul>
+            <li><p>Association: how arguments match parameters (position, name, defaults, varargs)</p></li>
+            <li><p>Passing method: what is transmitted (value, reference, copy-in/out, etc.)</p></li>
+          </ul>
+          <p>A third issue interacts with both: argument evaluation order (when side effects exist).</p>
+        </section>
+
+        <section class="frame">
+          <h2>parameter, argument, arity, profile</h2>
+          <ul>
+            <li><p>Parameter (formal): named input in the subprogram definition</p></li>
+            <li><p>Argument (actual): expression/value provided at the call site</p></li>
+            <li><p>Arity: number of parameters a subprogram expects</p></li>
+            <li><p>Parameter profile: the full signature shape (types, order, count)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Parameter association mechanisms</h2>
+          <ul>
+            <li><p>Positional association: match by position (C/C++, Java, JS default)</p></li>
+            <li><p>Keyword association: match by name (Python, Swift, Kotlin; JS often uses options objects)</p></li>
+            <li><p>Defaults: omitted arguments get default values (Python, JS, C++; Java via overloads, etc.)</p></li>
+            <li><p>Variable parameters: varargs/rest (<code>*args</code>, <code>params</code>, <code>...</code>)</p></li>
+          </ul>
+          <p>JS/TS often simulates keyword arguments with a record (“options object”).</p>
+        </section>
+
+        <section class="frame">
+          <h2>Parameter modes (intent)</h2>
+          <ul>
+            <li><p>In: data flows into the subprogram</p></li>
+            <li><p>Out: data is produced for the caller</p></li>
+            <li><p>InOut: bidirectional</p></li>
+          </ul>
+          <p>Modes describe intent; concrete languages implement them with specific passing methods.</p>
+        </section>
+
+        <section class="frame">
+          <h2>From modes to implementations</h2>
+          <p>Different passing methods create different observable behavior when mutation exists.</p>
+          <ul>
+            <li><p>Pass-by-value: typical for In</p></li>
+            <li><p>Pass-by-result: typical for Out (copy out at return)</p></li>
+            <li><p>Pass-by-reference: typical for InOut (aliasing)</p></li>
+            <li><p>Pass-by-value-result: InOut (copy in + copy out)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Out parameters (example idea)</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-csharp">void Fixer(out int x, out int y) {
+  x = 17;
+  y = 35;
+}
+// Fixer(out a, out b);</code></pre>
+          <p>Caller provides locations; callee assigns outputs; values are “received” by the caller.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Argument evaluation order (observable with side effects)</h2>
+          <p>If argument expressions mutate state, order becomes part of the language spec (or unspecified behavior).</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">let i = 0;
+function next(): number { i++; return i; }
+
+function f(a: number, b: number) { console.log(a, b); }
+f(next(), next());</code></pre>
+          <ul>
+            <li><p>Left-to-right prints <code>1 2</code></p></li>
+            <li><p>Right-to-left prints <code>2 1</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Aliasing is the main source of surprises</h2>
+          <ul>
+            <li><p>Aliasing: two names refer to the same location/object</p></li>
+            <li><p>With aliasing, “update through one name” changes what the other name observes</p></li>
+            <li><p>Aliasing can come from reference parameters or shared objects</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Pass-by-sharing (JS/TS, Python, Java): reassignment vs mutation</h2>
+          <ul>
+            <li><p>Reassigning a parameter is local to the callee</p></li>
+            <li><p>Mutating a shared object is visible to the caller</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function bump(n: number): void { n = n + 1; }
+function mutate(u: { name: string }): void { u.name = "new"; }
+
+let x = 10; bump(x); console.log(x);                     // 10
+let a = { name: "old" }; mutate(a); console.log(a.name); // "new"</code></pre>
+          <p>Objects are shared; variable bindings are reassigned locally.</p>
+          <p>example: ts_param.ts</p>
+        </section>
+
+        <section class="frame">
+          <h2>Practice: predict the output</h2>
+          <p>Assume pass-by-sharing like JS/TS/Python objects.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function change(n: number, obj: { v: number }): void {
+  n = n + 100;
+  obj.v = obj.v + 100;
+}
+let a = 1;
+let b = { v: 1 };
+change(a, b);
+console.log(a);
+console.log(b.v);</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Practice answer (with reasoning)</h2>
+          <ul>
+            <li><p><code>a</code> stays <code>1</code> because numbers are passed as values (no shared object to mutate)</p></li>
+            <li><p><code>b.v</code> becomes <code>101</code> because <code>b</code> and <code>obj</code> refer to the same object</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Pass-by-reference (contrast)</h2>
+          <p>If parameters alias caller variables, reassignment updates the caller’s variable.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">void reassign(int& x) { x = 99; }  // caller changes</code></pre>
+          <p>Reference passing is powerful, but increases aliasing risk.</p>
+          <p>example: cpp_param_passing.cpp</p>
+        </section>
+
+        <section class="frame">
+          <h2>Implementation tradeoffs</h2>
+          <ul>
+            <li><p>Copying (by-value) is simple but expensive for large data</p></li>
+            <li><p>Referencing is efficient but increases aliasing risk</p></li>
+            <li><p>Mitigations: immutability, read-only types, const/ref qualifiers, defensive copying</p></li>
           </ul>
         </section>
       </section>
 
-      <!-- First-Class Functions -->
+      <!-- ========================= -->
+      <!-- Dynamic invocation + function values -->
+      <!-- ========================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>First-Class Functions</h1>
+          <h1>Dynamic Invocation</h1>
         </section>
 
-        <section id="first-class-meaning" class="frame">
-          <h2>First-class functions</h2>
+        <section class="frame">
+          <h2>Dynamic invocation (definition)</h2>
+          <p>Dynamic invocation means selecting which subprogram to call at runtime.</p>
           <ul>
-            <li><p>Assign to variables</p></li>
-            <li><p>Pass as arguments</p></li>
-            <li><p>Return from functions</p></li>
-            <li><p>Store in data structures</p></li>
+            <li><p>Functions as values (JS/TS, Python)</p></li>
+            <li><p>Function pointers (C/C++)</p></li>
+            <li><p>Delegates (C#)</p></li>
+            <li><p>Interfaces + lambdas + method references (Java)</p></li>
+            <li><p>Reflection-based invocation (some Java/C# APIs)</p></li>
           </ul>
-          <p>This enables callbacks and higher-order APIs.</p>
+          <p>“Call target chosen at runtime” changes typing and environment questions.</p>
         </section>
 
-        <section id="lambda-and-function-types-ts" class="frame">
-          <h2>TypeScript: function types</h2>
+        <section class="frame">
+          <h2>Dynamic invocation mechanisms across languages</h2>
+          <ul>
+            <li><p>C: function pointers</p></li>
+            <li><p>C++: function objects, lambdas, virtual dispatch (runtime method selection)</p></li>
+            <li><p>Java: interfaces + lambdas; reflection for late-bound calls</p></li>
+            <li><p>C#: delegates; reflection</p></li>
+            <li><p>Python/JS: first-class functions; closures; dictionaries/objects often store callbacks</p></li>
+          </ul>
+          <p>Runtime-selected call targets force you to discuss typing and environment binding.</p>
+        </section>
+
+        <section class="frame">
+          <h2>first-class and higher-order</h2>
+          <ul>
+            <li><p>First-class functions: functions can be treated like values</p></li>
+            <li><p>Store them, pass them, return them, and put them in data structures</p></li>
+            <li><p>Higher-order function: takes a function as input, or returns a function</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">const f = (x: number) =&gt; x + 1;        // store a function value
+function apply(x: number, g: (n: number) =&gt; number) {
+  return g(x);                          // g is a function parameter
+}</code></pre>
+<p>Example: ts_first_class_apply.ts</p>
+        </section>
+
+        <section class="frame">
+          <h2>Relationship</h2>
+          <ul>
+            <li><p>First-class is a language feature (what values are allowed to be)</p></li>
+            <li><p>Higher-order is a programming pattern enabled by that feature</p></li>
+            <li><p>Higher-order APIs move control flow into libraries (inversion of control)</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">First-class functions  =&gt;  can pass behavior as data
+Passing behavior        =&gt;  callbacks, higher-order libraries, frameworks</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Higher-order function example</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type Predicate&lt;T&gt; = (x: T) =&gt; boolean;
 
 function countWhere&lt;T&gt;(xs: T[], p: Predicate&lt;T&gt;): number {
@@ -206,32 +514,30 @@ function countWhere&lt;T&gt;(xs: T[], p: Predicate&lt;T&gt;): number {
 }
 
 console.log(countWhere([1, 2, 3, 4], x =&gt; x % 2 === 0));</code></pre>
+          <p><code>p</code> is behavior supplied by the caller; the library controls when it runs.</p>
         </section>
 
-        <section id="map-filter-reduce" class="frame">
-          <h2>Higher-order functions: map, filter, reduce</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">const nums = [1, 2, 3, 4, 5];
-
-const squares = nums.map(x =&gt; x * x);
-const evens = nums.filter(x =&gt; x % 2 === 0);
-const sum = nums.reduce((acc, x) =&gt; acc + x, 0);
-
-console.log(squares);
-console.log(evens);
-console.log(sum);</code></pre>
-          <p>The callback provides behavior; the library provides control flow.</p>
-        </section>
-
-        <section id="ioc-and-callback-contract" class="frame">
-          <h2>Callbacks and inversion of control</h2>
+        <section class="frame">
+          <h2>Key terms: callback and inversion of control</h2>
           <ul>
-            <li><p>You do not call your callback; the library calls it</p></li>
-            <li><p>Callers need to know when it runs and how errors are reported</p></li>
-            <li><p>Async callbacks run later (after your function returns)</p></li>
+            <li><p>Callback: a function you pass to someone else to be invoked later (or multiple times)</p></li>
+            <li><p>Inversion of control: the library/framework decides when your code runs</p></li>
+          </ul>
+          <p>Timing + error signaling become part of the contract.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Callback contract checklist</h2>
+          <ul>
+            <li><p>When can it run (now vs later)?</p></li>
+            <li><p>How many times (once vs many)?</p></li>
+            <li><p>What errors can cross the boundary and how?</p></li>
+            <li><p>How do we cancel/unregister?</p></li>
+            <li><p>Does the library retain the callback (memory)?</p></li>
           </ul>
         </section>
 
-        <section id="practice-hof-reading" class="frame">
+        <section class="frame">
           <h2>Practice: what runs, and when?</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function register(handler: () =&gt; void): void {
   setTimeout(handler, 0);
@@ -241,12 +547,12 @@ console.log("A");
 register(() =&gt; console.log("B"));
 console.log("C");</code></pre>
           <ul>
-            <li><p>What prints first: A, B, C?</p></li>
-            <li><p>Which line demonstrates async timing?</p></li>
+            <li><p>What prints first?</p></li>
+            <li><p>Which line makes timing part of the contract?</p></li>
           </ul>
         </section>
 
-        <section id="practice-hof-reading-answer" class="frame">
+        <section class="frame">
           <h2>Practice answers</h2>
           <ul>
             <li><p>Print order: A, C, then B</p></li>
@@ -254,132 +560,72 @@ console.log("C");</code></pre>
           </ul>
         </section>
 
-        <section id="java-contrast" class="frame">
-          <h2>Java contrast: function values via interfaces</h2>
-          <p>Java uses lambdas targeting functional interfaces.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">import java.util.function.IntBinaryOperator;
-
-class Demo {
-  static int apply(int a, int b, IntBinaryOperator op) {
-    return op.applyAsInt(a, b);
-  }
-  public static void main(String[] args) {
-    System.out.println(apply(2, 3, (x, y) -> x + y));
-  }
-}</code></pre>
-        </section>
-      </section>
-
-      <!-- Parameters and Argument Passing -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Parameters and Argument Passing</h1>
-        </section>
-
-        <section id="parameter-models" class="frame">
-          <h2>Parameter passing models (conceptual)</h2>
+        <section class="frame">
+          <h2>Passing subprograms as parameters</h2>
           <ul>
-            <li><p>Pass-by-value: parameter gets a copy of a value</p></li>
-            <li><p>Pass-by-reference: parameter aliases caller variable</p></li>
-            <li><p>Pass-by-result / value-result: copy out on return</p></li>
+            <li><p>This is a common form of dynamic invocation</p></li>
+            <li><p>Main challenges: type checking and referencing environments</p></li>
           </ul>
-          <p>Real languages pick a concrete runtime behavior.</p>
         </section>
 
-        <section id="ts-call-boundary" class="frame">
-          <h2>TypeScript: reassignment vs mutation</h2>
+        <section class="frame">
+          <h2>Referencing environment choice (binding strategy)</h2>
           <ul>
-            <li><p>Arguments evaluate to values</p></li>
-            <li><p>The value is assigned to a local parameter variable</p></li>
-            <li><p>Reassigning the parameter does not change caller variable</p></li>
-            <li><p>Mutating a shared object changes what both can observe</p></li>
+            <li><p>Deep binding: uses environment at function creation time (closures; most common)</p></li>
+            <li><p>Shallow binding: uses environment at call time</p></li>
+            <li><p>Ad hoc binding: language-specific special rules</p></li>
           </ul>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function bump(n: number): void { n = n + 1; }
-function mutate(u: { name: string }): void { u.name = "new"; }
-
-let x = 10; bump(x); console.log(x);
-let a = { name: "old" }; mutate(a); console.log(a.name);</code></pre>
-          <p>Example: npx ts-node ts_param.ts</p>
+          <p>This is a runtime design choice about which environment a passed subprogram uses.</p>
+          <p>Example: java_effective_final.java, py_deep_vs_shallow.py</p>
         </section>
 
-        <section id="pass-by-reference-slide" class="frame">
-          <h2>Pass-by-reference (what would be different?)</h2>
-          <ul>
-            <li><p>If parameters alias caller variables, reassignment updates caller</p></li>
-            <li><p>Many mainstream languages restrict this for safety</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">// C++ example idea (reference parameter)
-void reassign(int& x) { x = 99; }  // caller changes</code></pre>
-        </section>
-
-        <section id="practice-call-boundary" class="frame">
-          <h2>Practice: predict the output</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function change(n: number, obj: { v: number }): void {
-  n = n + 100;
-  obj.v = obj.v + 100;
+        <section class="frame">
+          <h2>Mini example (why deep vs shallow matters)</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function makeAdder(x: number) {
+  return (y: number) =&gt; x + y; // closure captures x
 }
 
-let a = 1;
-let b = { v: 1 };
-
-change(a, b);
-
-console.log(a);
-console.log(b.v);</code></pre>
-        </section>
-
-        <section id="practice-call-boundary-answer" class="frame">
-          <h2>Practice answer</h2>
+const add10 = makeAdder(10);
+console.log(add10(5));</code></pre>
           <ul>
-            <li><p><code>a</code> stays 1 (parameter reassignment is local)</p></li>
-            <li><p><code>b.v</code> becomes 101 (mutation of shared object)</p></li>
+            <li><p>Deep binding: <code>x</code> is 10 (captured at creation)</p></li>
+            <li><p>Shallow binding: <code>x</code> would come from caller’s environment (very different)</p></li>
           </ul>
-        </section>
-
-        <section id="python-analogy" class="frame">
-          <h2>Python analogy: reassignment is local, mutation is shared</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-python">def reassign(lst):
-    lst = [99]     # local name now points elsewhere
-
-def mutate(lst):
-    lst.append(99) # mutates shared object
-
-a = [1, 2]
-reassign(a)
-print(a)           # [1, 2]
-mutate(a)
-print(a)           # [1, 2, 99]</code></pre>
         </section>
       </section>
 
-      <!-- Defaults, Named Arguments, Varargs -->
+      <!-- ========================= -->
+      <!-- Signature design + polymorphism -->
+      <!-- ========================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Defaults and API Readability</h1>
+          <h1>Signatures and Polymorphism</h1>
         </section>
 
-        <section id="defaults-ts" class="frame">
-          <h2>Default parameters in TypeScript</h2>
-          <p>Defaults apply when the argument is missing or undefined.</p>
+        <section class="frame">
+          <h2>Signature design (what to expose)</h2>
+          <ul>
+            <li><p>Choose parameters to make intent clear at call sites</p></li>
+            <li><p>Decide whether to use defaults, options objects, or overloads</p></li>
+            <li><p>Make errors and timing visible (sync vs async return types, result objects)</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Design goal:
+Call sites should be readable and hard to misuse.</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Defaults</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function greet(name: string, punctuation: string = "!"): string {
   return "Hello, " + name + punctuation;
 }
-
 console.log(greet("Ada"));
 console.log(greet("Ada", "!!"));</code></pre>
+          <p>Defaults are a form of parameter association (caller can omit arguments).</p>
         </section>
 
-        <section id="why-options-object" class="frame">
-          <h2>Why options objects</h2>
-          <ul>
-            <li><p>Many parameters become unreadable at call sites</p></li>
-            <li><p>Booleans are especially ambiguous</p></li>
-            <li><p>Options objects are easier to extend later</p></li>
-          </ul>
-        </section>
-
-        <section id="options-object-ts" class="frame">
-          <h2>TypeScript: named arguments via options object</h2>
+        <section class="frame">
+          <h2>Named options (record parameter)</h2>
+          <p>Common pattern when the “parameter list” may evolve over time.</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type RequestOptions = { timeoutMs?: number; retries?: number; cache?: boolean; };
 
 function request(url: string, opts: RequestOptions = {}): void {
@@ -390,121 +636,104 @@ function request(url: string, opts: RequestOptions = {}): void {
 }
 
 request("/api/users");
-request("/api/users", { retries: 3, cache: false });
-request("/api/users", { timeoutMs: 5000 });</code></pre>
-          <p>Example: npx ts-node ts_options_object.ts</p>
+request("/api/users", { retries: 3, cache: false });</code></pre>
+<p>Example: ts_options_object.ts</p>
         </section>
 
-        <section id="practice-options-object" class="frame">
-          <h2>Practice: redesign a confusing signature</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function connect(host: string, port: number, timeoutS: number, useTls: boolean): void {
-  console.log(host, port, timeoutS, useTls);
-}
-
-// What does this mean without looking up docs?
-connect("db.local", 5432, 2.0, true);</code></pre>
-          <ul>
-            <li><p>Rewrite with an options object and sensible defaults</p></li>
-            <li><p>Show 2 clearer call sites</p></li>
-          </ul>
-        </section>
-
-        <section id="practice-options-object-answer" class="frame">
-          <h2>Practice answer</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type ConnectOpts = { port?: number; timeoutS?: number; useTls?: boolean };
-
-function connect(host: string, opts: ConnectOpts = {}): void {
-  const port = opts.port ?? 5432;
-  const timeoutS = opts.timeoutS ?? 2.0;
-  const useTls = opts.useTls ?? true;
-  console.log(host, port, timeoutS, useTls);
-}
-
-connect("db.local");
-connect("db.local", { useTls: false, timeoutS: 5.0 });</code></pre>
-        </section>
-
-        <section id="varargs-ts" class="frame">
-          <h2>Variadic parameters (rest args)</h2>
+        <section class="frame">
+          <h2>Varargs (variable parameters)</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function sum(...xs: number[]): number {
-  return xs.reduce((acc, x) => acc + x, 0);
+  return xs.reduce((acc, x) =&gt; acc + x, 0);
 }
-
-console.log(sum(1, 2, 3));
-console.log(sum(10));</code></pre>
+console.log(sum(1, 2, 3));</code></pre>
+          <p>Varargs affect both typing (what profiles are accepted) and runtime packing/unpacking.</p>
         </section>
 
-        <section id="python-keyword-args" class="frame">
-          <h2>Python: default and keyword arguments</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-python">def connect(host, port=5432, timeout_s=2.0):
-    return (host, port, timeout_s)
-
-print(connect("db.local"))
-print(connect("db.local", timeout_s=5.0))
-print(connect(host="db.local", port=6000))</code></pre>
+        <section class="frame">
+          <h2>Overloaded subprograms (ad hoc polymorphism)</h2>
+          <ul>
+            <li><p>Same name, different parameter profiles</p></li>
+            <li><p>Compiler chooses which one based on argument types (compile-time resolution)</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">int max(int a, int b) { return a &gt; b ? a : b; }
+double max(double a, double b) { return a &gt; b ? a : b; }</code></pre>
         </section>
 
-        <section id="python-mutable-default" class="frame">
-          <h2>Python pitfall: mutable default arguments</h2>
-          <p>Default values are evaluated once at function definition.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-python">def add_item(x, xs=[]):
-    xs.append(x)
-    return xs
-
-print(add_item(1))  # [1]
-print(add_item(2))  # [1, 2] surprising</code></pre>
-          <p>Safe pattern uses None.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-python">def add_item_safe(x, xs=None):
-    if xs is None:
-        xs = []
-    xs.append(x)
-    return xs</code></pre>
-        </section>
-
-        <section id="java-overloading" class="frame">
-          <h2>Java: defaults via overloading</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">class Connector {
-  static String connect(String host) {
-    return connect(host, 5432, 2.0);
-  }
-  static String connect(String host, int port) {
-    return connect(host, port, 2.0);
-  }
-  static String connect(String host, int port, double timeoutS) {
-    return host + ":" + port + " timeout=" + timeoutS;
-  }
+        <section class="frame">
+          <h2>Generic subprograms (parametric polymorphism)</h2>
+          <ul>
+            <li><p>One implementation works for many types</p></li>
+            <li><p>Goal: reuse with type safety (no duplicate logic)</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function first&lt;T&gt;(xs: T[]): T | undefined {
+  return xs.length === 0 ? undefined : xs[0];
 }</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Polymorphism categories (quick map)</h2>
+          <ul>
+            <li><p>Ad hoc: overloading (same name, different profiles)</p></li>
+            <li><p>Subtype: object-oriented dispatch (method chosen by runtime type)</p></li>
+            <li><p>Parametric: generics/templates (type parameterization)</p></li>
+          </ul>
+          <p>Always ask “when is the decision made?” compile time vs runtime.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Generics: implementation tradeoffs</h2>
+          <ul>
+            <li><p>Compile-time specialization (C++ templates)</p></li>
+            <li><p>Type erasure (common in Java-like designs)</p></li>
+            <li><p>Constraints and restrictions (bounds, traits, interfaces)</p></li>
+            <li><p>Compile-time vs runtime binding affects performance and reflection</p></li>
+          </ul>
         </section>
       </section>
 
-      <!-- Callback + Async -->
+      <!-- ========================= -->
+      <!-- Errors + Async control flow (REORDERED + FIXED NESTING) -->
+      <!-- ========================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Callbacks and Async Control Flow</h1>
+          <h1>Errors and Async Control Flow</h1>
         </section>
 
-        <section id="closure-recap" class="frame">
-          <h2>Closure recap (already covered in Module 4)</h2>
+        <section class="frame">
+          <h2>exception, promise, rejection</h2>
           <ul>
-            <li><p>Closures: function + captured bindings</p></li>
-            <li><p>Callbacks often run later, so timing matters</p></li>
-            <li><p>Module 4 showed classic loop-capture bugs and fixes</p></li>
+            <li><p>Exception (throw): sync error signaling via non-local control transfer</p></li>
+            <li><p>Promise: a handle for a value that may be available later</p></li>
+            <li><p>Rejection: the promise outcome representing failure</p></li>
           </ul>
-          <p>This module focuses on async contracts: errors, composition, cancellation.</p>
+          <p>Error signaling is part of the contract, not an implementation detail.</p>
         </section>
 
-        <section id="error-signaling" class="frame">
-          <h2>Error signaling patterns</h2>
+        <section class="frame">
+          <h2>Handle a future value (terminology map)</h2>
+          <p>Same concept (a handle to a later result), different names and runtime models.</p>
           <ul>
-            <li><p>Throw (sync): try/catch</p></li>
-            <li><p>Error-first callback: (err, value)</p></li>
-            <li><p>Promise rejection: catch or try/catch with await</p></li>
-            <li><p>Result object: { ok, value, error }</p></li>
+            <li><p>JS/TS: <code>Promise&lt;T&gt;</code> (plus <code>async/await</code>)</p></li>
+            <li><p>Python: <code>asyncio.Future</code> / <code>Task</code> (awaitables)</p></li>
+            <li><p>Java: <code>CompletableFuture</code> (and older <code>Future</code>)</p></li>
+            <li><p>C#: <code>Task</code> / <code>Task&lt;T&gt;</code></p></li>
+            <li><p>Rust: <code>Future</code> (polled by an executor)</p></li>
+            <li><p>Kotlin: <code>Deferred</code> (coroutines)</p></li>
           </ul>
         </section>
 
-        <section id="result-object-pattern" class="frame">
-          <h2>Result object pattern (TypeScript)</h2>
+        <section class="frame">
+          <h2>Error signaling mechanisms (contract choices)</h2>
+          <ul>
+            <li><p>Throw/exception (non-local control transfer)</p></li>
+            <li><p>Return code or sentinel value</p></li>
+            <li><p>Result object (success/failure in the type)</p></li>
+            <li><p>Async errors (callbacks/promises) arrive later</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Result object pattern</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type ParseResult =
   | { ok: true; value: number }
   | { ok: false; error: string };
@@ -513,15 +742,13 @@ function parseIntSafe(s: string): ParseResult {
   const n = Number.parseInt(s, 10);
   if (Number.isNaN(n)) return { ok: false, error: "not an int" };
   return { ok: true, value: n };
-}
-
-const r = parseIntSafe("123x");
-if (r.ok) console.log(r.value);
-else console.log("error", r.error);</code></pre>
+}</code></pre>
+          <p>Callers must handle failure (it is visible in the type).</p>
         </section>
 
-        <section id="callback-hell" class="frame">
-          <h2>Callback-based async style</h2>
+        <section class="frame">
+          <h2>Callback-based async</h2>
+          <p>Contract question: does <code>cb</code> run now or later? once or many times? how are errors represented?</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-typescript">type Callback&lt;T&gt; = (err: Error | null, value?: T) =&gt; void;
 
 function readUser(id: string, cb: Callback&lt;{ id: string; name: string }&gt;): void {
@@ -538,14 +765,11 @@ readUser("u1", (err, user) =&gt; {
     console.log(user.name, orders);
   });
 });</code></pre>
-          <ul>
-            <li><p>Harder to add retries, timeouts, cleanup</p></li>
-            <li><p>Error handling duplicated at each nesting level</p></li>
-          </ul>
         </section>
 
-        <section id="promises" class="frame">
+        <section class="frame">
           <h2>Promises reduce nesting</h2>
+          <p>Control flow becomes “chainable”; errors propagate by rejection.</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-typescript">function readUserP(id: string): Promise&lt;{ id: string; name: string }&gt; {
   return new Promise(resolve =&gt; setTimeout(() =&gt; resolve({ id, name: "Ada" }), 10));
 }
@@ -559,8 +783,13 @@ readUserP("u1")
   .catch(err =&gt; console.log("error", err));</code></pre>
         </section>
 
-        <section id="async-await" class="frame">
-          <h2>async/await for sequential readability</h2>
+        <section class="frame">
+          <h2>async/await for structured control flow</h2>
+          <ul>
+            <li><p>Async: the call returns before the work is finished</p></li>
+            <li><p>Await: suspend the current async function until a promise settles</p></li>
+            <li><p>This changes the usual call/return timing assumption</p></li>
+          </ul>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">async function workflow(): Promise&lt;void&gt; {
   try {
     const user = await readUserP("u1");
@@ -569,14 +798,13 @@ readUserP("u1")
   } catch (err) {
     console.log("error", err);
   }
-}
-workflow();</code></pre>
-          <p>try/catch works for awaited promise rejections.</p>
+}</code></pre>
+<p>ts_callbacks_await.ts</p>
         </section>
 
-        <section id="parallelism" class="frame">
-          <h2>Async composition: sequential vs parallel</h2>
-          <p>Sometimes independent tasks should run concurrently.</p>
+        <section class="frame">
+          <h2>Sequential vs parallel composition</h2>
+          <p>Question: are computations independent? If yes, you can compose in parallel.</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">async function loadTwo(): Promise&lt;void&gt; {
   const p1 = readUserP("u1");
   const p2 = readUserP("u2");
@@ -585,103 +813,71 @@ workflow();</code></pre>
 }</code></pre>
         </section>
 
-        <section id="cancellation" class="frame">
+        <section class="frame">
           <h2>Cancellation (contract detail)</h2>
           <ul>
-            <li><p>Long-running async work often needs cancellation</p></li>
-            <li><p>Common pattern in JS: AbortController / AbortSignal</p></li>
-            <li><p>APIs should document what gets canceled and what cleanup happens</p></li>
+            <li><p>Some async work needs cancellation (timeouts, user navigation, shutdown)</p></li>
+            <li><p>Common patterns: abort signals/tokens and cooperative cancellation</p></li>
+            <li><p>Examples: JS <code>AbortController</code>, C# <code>CancellationToken</code>, Go <code>context</code></p></li>
           </ul>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">// Conceptual: fetch supports AbortSignal
-const c = new AbortController();
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">const c = new AbortController();
 fetch("/api/users", { signal: c.signal }).catch(e =&gt; console.log("err", e));
 c.abort();</code></pre>
+          <p>Cancellation rules belong in the contract (what cleanup happens?).</p>
         </section>
 
-        <section id="practice-refactor" class="frame">
-          <h2>Practice: refactor callbacks to async/await</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-typescript">type Callback&lt;T&gt; = (err: Error | null, value?: T) =&gt; void;
-
-function step1(cb: Callback&lt;number&gt;): void { setTimeout(() =&gt; cb(null, 10), 10); }
-function step2(x: number, cb: Callback&lt;number&gt;): void { setTimeout(() =&gt; cb(null, x + 5), 10); }
-function step3(x: number, cb: Callback&lt;number&gt;): void { setTimeout(() =&gt; cb(null, x * 2), 10); }
-
-step1((e1, a) =&gt; {
-  if (e1 || a === undefined) return console.log("error", e1);
-  step2(a, (e2, b) =&gt; {
-    if (e2 || b === undefined) return console.log("error", e2);
-    step3(b, (e3, c) =&gt; {
-      if (e3 || c === undefined) return console.log("error", e3);
-      console.log("result", c);
-    });
-  });
-});</code></pre>
+        <section class="frame">
+          <h2>Coroutines (control abstraction)</h2>
           <ul>
-            <li><p>Wrap each step in a Promise</p></li>
-            <li><p>Use async/await</p></li>
-            <li><p>One try/catch for errors</p></li>
+            <li><p>Multiple entry points: can suspend and resume</p></li>
+            <li><p>Model: control can be transferred without finishing the subprogram</p></li>
+            <li><p>Used for generators and async/await in many languages</p></li>
           </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-python">def counter():
+  i = 0
+  while True:
+    yield i
+    i += 1
+
+c = counter()
+print(next(c))  # 0
+print(next(c))  # 1</code></pre>
         </section>
 
-        <section id="practice-refactor-answer" class="frame">
-          <h2>Practice answer (sketch)</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-typescript">function step1P(): Promise&lt;number&gt; {
-  return new Promise((resolve, reject) =&gt; {
-    step1((e, v) =&gt; (e || v === undefined) ? reject(e ?? new Error("missing")) : resolve(v));
-  });
-}
-function step2P(x: number): Promise&lt;number&gt; {
-  return new Promise((resolve, reject) =&gt; {
-    step2(x, (e, v) =&gt; (e || v === undefined) ? reject(e ?? new Error("missing")) : resolve(v));
-  });
-}
-function step3P(x: number): Promise&lt;number&gt; {
-  return new Promise((resolve, reject) =&gt; {
-    step3(x, (e, v) =&gt; (e || v === undefined) ? reject(e ?? new Error("missing")) : resolve(v));
-  });
-}
-
-async function run(): Promise&lt;void&gt; {
-  try {
-    const a = await step1P();
-    const b = await step2P(a);
-    const c = await step3P(b);
-    console.log("result", c);
-  } catch (err) {
-    console.log("error", err);
-  }
-}
-run();</code></pre>
+        <section class="frame">
+          <h2>Coroutines and generators across languages</h2>
+          <ul>
+            <li><p>Python: generators (<code>yield</code>) and <code>async</code>/<code>await</code> build on coroutine ideas</p></li>
+            <li><p>C#: iterators (<code>yield return</code>) and async state machines</p></li>
+            <li><p>Kotlin: coroutines are a first-class design feature</p></li>
+            <li><p>Lua: explicit coroutine primitives (<code>coroutine.yield/resume</code>)</p></li>
+            <li><p>Rust: <code>async</code>/<code>await</code> uses futures + an executor</p></li>
+          </ul>
+          <p>“Suspend and resume” is the unifying control abstraction.</p>
         </section>
       </section>
 
-      <!-- Closures in Industry -->
+      <!-- ========================= -->
+      <!-- Closures in practice -->
+      <!-- ========================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Closures in Industry</h1>
+          <h1>Closures in Practice</h1>
         </section>
 
-        <section id="stale-closure" class="frame">
-          <h2>Stale closure pattern</h2>
-          <p>Handlers created earlier may observe older snapshots of state.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">let count = 0;
-
-function makeHandler() {
-  const snapshot = count;
-  return () =&gt; console.log("snapshot", snapshot, "current", count);
-}
-
-const h = makeHandler();
-count = 5;
-h();</code></pre>
+        <section class="frame">
+          <h2>Bridge</h2>
           <ul>
-            <li><p>snapshot is chosen at handler creation</p></li>
-            <li><p>current is read at handler call time</p></li>
+            <li><p>Deep binding (closures) is the most common strategy for passed functions</p></li>
+            <li><p>Here we focus on real-world issues: timing and retention</p></li>
+            <li><p>Stale state: callback observes an older snapshot than intended</p></li>
+            <li><p>Retention: captured objects stay alive while the closure is reachable</p></li>
           </ul>
         </section>
 
-        <section id="practice-stale-closure" class="frame">
-          <h2>Practice: diagnose stale state</h2>
+        <section class="frame">
+          <h2>Stale state: snapshot vs read-latest</h2>
+          <p>Callbacks often run later. What state do they observe?</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">let state = 0;
 
 function register(handler: () =&gt; void): void {
@@ -695,29 +891,24 @@ function render() {
 
 render();
 state = 10;</code></pre>
-          <ul>
-            <li><p>What prints?</p></li>
-            <li><p>Give one fix that avoids relying on a stale snapshot</p></li>
-          </ul>
+          <p>Think: which variables are captured as a snapshot vs read at callback time?</p>
         </section>
 
-        <section id="practice-stale-closure-answer" class="frame">
-          <h2>Practice answers</h2>
-          <ul>
-            <li><p>It prints: snapshot 0 state 10</p></li>
-            <li><p>Fix idea: do not capture snapshot; read state inside the callback when needed</p></li>
-          </ul>
+        <section class="frame">
+          <h2>Fix: read state at callback time</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function renderFixed() {
   register(() =&gt; console.log("state", state));
 }</code></pre>
+          <ul>
+            <li><p>Now the callback reads <code>state</code> when it runs, not when it was registered.</p></li>
+          </ul>
         </section>
 
-        <section id="retention" class="frame">
-          <h2>Retention and accidental memory growth</h2>
+        <section class="frame">
+          <h2>Retention: long-lived handlers keep data alive</h2>
           <ul>
-            <li><p>Long-lived callbacks can keep captured objects alive</p></li>
-            <li><p>If an event system stores your handler, your captures may live “forever”</p></li>
-            <li><p>Mitigation: capture only needed data, avoid capturing large objects</p></li>
+            <li><p>If an event system stores your handler, captured objects can live a long time</p></li>
+            <li><p>Mitigation: capture only what you need; unregister handlers when done</p></li>
           </ul>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-typescript">function makeHandler(big: number[]) {
   return () =&gt; console.log(big.length);
@@ -729,7 +920,17 @@ const handler = makeHandler(big);
 // If handler is stored globally, big stays alive too.</code></pre>
         </section>
 
-        <section id="closure-pattern-memo" class="frame">
+        <section class="frame">
+          <h2>Patterns enabled by closures</h2>
+          <ul>
+            <li><p>Memoization (private cache)</p></li>
+            <li><p>Debounce (private timer)</p></li>
+            <li><p>Dependency injection (capture dependencies)</p></li>
+          </ul>
+          <p>Closures are a way to package behavior + private state.</p>
+        </section>
+
+        <section class="frame">
           <h2>Pattern: memoization</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-typescript">function memoize1&lt;A, R&gt;(f: (a: A) =&gt; R): (a: A) =&gt; R {
   const cache = new Map&lt;A, R&gt;();
@@ -739,15 +940,11 @@ const handler = makeHandler(big);
     cache.set(a, r);
     return r;
   };
-}
-
-const slow = (x: number) =&gt; x * x;
-const fast = memoize1(slow);
-console.log(fast(10));
-console.log(fast(10));</code></pre>
+}</code></pre>
+          <p>Contract note: cache changes effects (memory) and timing (later calls faster).</p>
         </section>
 
-        <section id="closure-pattern-debounce" class="frame">
+        <section class="frame">
           <h2>Pattern: debounce</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-typescript">function debounce(fn: () =&gt; void, delayMs: number): () =&gt; void {
   let timer: ReturnType&lt;typeof setTimeout&gt; | undefined;
@@ -755,72 +952,64 @@ console.log(fast(10));</code></pre>
     if (timer !== undefined) clearTimeout(timer);
     timer = setTimeout(() =&gt; fn(), delayMs);
   };
-}
-
-let fired = 0;
-const h = debounce(() =&gt; { fired++; console.log("fired", fired); }, 200);
-
-h(); h(); h();</code></pre>
+}</code></pre>
+          <p>Contract note: the callback runs later; multiple calls collapse into one execution.</p>
         </section>
 
-        <section id="closure-pattern-di" class="frame">
+        <section class="frame">
           <h2>Pattern: dependency injection</h2>
-          <p>Capture dependencies once instead of using globals everywhere.</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type Logger = { log: (msg: string) =&gt; void };
 
 function makeGreeter(logger: Logger): (name: string) =&gt; void {
   return (name: string) =&gt; logger.log("hello " + name);
-}
-
-const consoleLogger: Logger = { log: (msg) =&gt; console.log(msg) };
-const greet = makeGreeter(consoleLogger);
-greet("Ada");</code></pre>
+}</code></pre>
+          <p>Passing dependencies as values makes behavior configurable and testable.</p>
         </section>
 
-        <section id="rule-of-thumb" class="frame">
+        <section class="frame">
           <h2>Rule of thumb</h2>
-          <p>Use closures for</p>
           <ul>
-            <li><p>Configuration fixed at creation time</p></li>
-            <li><p>Private state (cache, counter)</p></li>
-            <li><p>Dependency injection</p></li>
-          </ul>
-          <p>Avoid closures that capture</p>
-          <ul>
-            <li><p>Large objects unnecessarily</p></li>
-            <li><p>Rapidly changing values when you need the latest state</p></li>
-            <li><p>Hidden state that makes debugging history-dependent</p></li>
+            <li><p>Use closures for configuration and private state</p></li>
+            <li><p>Be careful capturing large objects or stale snapshots</p></li>
+            <li><p>Unregister handlers to reduce retention</p></li>
           </ul>
         </section>
       </section>
 
+      <!-- ========================= -->
       <!-- Wrap-up -->
+      <!-- ========================= -->
       <section>
         <section class="title-slide slide level1">
           <h1>Wrap-up</h1>
         </section>
 
-        <section id="summary" class="frame">
+        <section class="frame">
           <h2>Summary</h2>
           <ul>
             <li><p>Subprograms are contracts: inputs, outputs, effects, errors, timing</p></li>
-            <li><p>First-class functions enable callbacks and higher-order APIs</p></li>
-            <li><p>At call boundaries: reassignment is local; mutation may be shared</p></li>
-            <li><p>Defaults and options objects improve readability and evolution</p></li>
-            <li><p>Promises and async/await improve structure and error handling</p></li>
-            <li><p>Closures are powerful but can cause stale state and retention bugs</p></li>
+            <li><p>Referencing environment explains “what bindings exist”; frames implement it</p></li>
+            <li><p>Parameters: association vs passing method; aliasing explains surprises</p></li>
+            <li><p>Dynamic invocation exists in many forms (values, pointers, delegates)</p></li>
+            <li><p>Passing subprograms raises environment-binding strategy questions</p></li>
+            <li><p>Overloading vs generics are different kinds of polymorphism</p></li>
+            <li><p>Async changes timing; cancellation is part of the contract</p></li>
+            <li><p>Coroutines unify generators and async/await as a control abstraction</p></li>
           </ul>
         </section>
 
-        <section id="review-questions" class="frame">
+        <section class="frame">
           <h2>Review questions</h2>
           <ul>
-            <li><p>List the five parts of a subprogram contract</p></li>
-            <li><p>Why does mutating an object parameter affect the caller but reassigning does not?</p></li>
-            <li><p>When should you prefer an options object over positional parameters?</p></li>
-            <li><p>Compare error handling in throw vs callbacks vs Promise rejection</p></li>
-            <li><p>What is stale closure state and one fix?</p></li>
-            <li><p>How can closures cause retention of large objects?</p></li>
+            <li><p>Name the main parts of a subprogram contract.</p></li>
+            <li><p>What is the local referencing environment?</p></li>
+            <li><p>What is an activation record? What does it contain conceptually?</p></li>
+            <li><p>Separate: association vs passing method. Give an example of each.</p></li>
+            <li><p>Why does aliasing make reasoning harder?</p></li>
+            <li><p>Deep vs shallow binding: what environment is used and when?</p></li>
+            <li><p>Overloading vs generics: how do they differ?</p></li>
+            <li><p>How do async errors differ from sync exceptions?</p></li>
+            <li><p>What is a coroutine and how does it relate to generators?</p></li>
           </ul>
         </section>
       </section>
@@ -857,5 +1046,4 @@ greet("Ada");</code></pre>
   </script>
 
 </body>
-
 </html>
