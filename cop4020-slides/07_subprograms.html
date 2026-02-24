@@ -82,7 +82,7 @@
             <li><p>Dynamic invocation: passing subprograms as values</p></li>
             <li><p>Signature design: defaults, options, varargs</p></li>
             <li><p>Polymorphism: overloading vs generics (what “one name” means)</p></li>
-            <li><p>Errors + async control flow + cancellation</p></li>
+            <li><p>Errors and timing across boundaries</p></li>
             <li><p>Closures in practice: timing + retention</p></li>
             <li><p>Coroutines as a control abstraction</p></li>
           </ol>
@@ -642,6 +642,13 @@ request("/api/users", { retries: 3, cache: false });</code></pre>
 
         <section class="frame">
           <h2>Varargs (variable parameters)</h2>
+          <ul>
+          <li>C uses varargs with less type safety (printf-style).</li>
+          <li>Java has varargs with arrays under the hood. </li>
+          <li>Python uses *args.</li>
+          <li>Many functional languages treat “lists of arguments” naturally.</li>
+
+          </ul>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function sum(...xs: number[]): number {
   return xs.reduce((acc, x) =&gt; acc + x, 0);
 }
@@ -652,11 +659,18 @@ console.log(sum(1, 2, 3));</code></pre>
         <section class="frame">
           <h2>Overloaded subprograms (ad hoc polymorphism)</h2>
           <ul>
+
             <li><p>Same name, different parameter profiles</p></li>
             <li><p>Compiler chooses which one based on argument types (compile-time resolution)</p></li>
           </ul>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">int max(int a, int b) { return a &gt; b ? a : b; }
 double max(double a, double b) { return a &gt; b ? a : b; }</code></pre>
+<ul>
+
+            <li>C++ supports extensive overloading. </li>
+            <li>Java and C# support it.</li>
+            <li>Some languages avoid overloading and instead use different names or type classes/traits.</li>
+</ul>
         </section>
 
         <section class="frame">
@@ -668,6 +682,11 @@ double max(double a, double b) { return a &gt; b ? a : b; }</code></pre>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">function first&lt;T&gt;(xs: T[]): T | undefined {
   return xs.length === 0 ? undefined : xs[0];
 }</code></pre>
+<ul>
+  <li>C++ templates often generate specialized code.</li>
+  <li>Java generics often use type erasure.</li>
+  <li>Rust uses monomorphization for generics.</li>
+</ul>
         </section>
 
         <section class="frame">
@@ -678,6 +697,12 @@ double max(double a, double b) { return a &gt; b ? a : b; }</code></pre>
             <li><p>Parametric: generics/templates (type parameterization)</p></li>
           </ul>
           <p>Always ask “when is the decision made?” compile time vs runtime.</p>
+          <ul>
+            <li>Overloading is typically decided at compile time.</li>
+            <li>OOP dispatch is typically decided at runtime.</li>
+            <li>Generics can be compile-time or runtime depending on the implementation model.</li>
+
+          </ul>
         </section>
 
         <section class="frame">
@@ -694,6 +719,7 @@ double max(double a, double b) { return a &gt; b ? a : b; }</code></pre>
       <!-- ========================= -->
       <!-- Errors + Async control flow (REORDERED + FIXED NESTING) -->
       <!-- ========================= -->
+       <!--
       <section>
         <section class="title-slide slide level1">
           <h1>Errors and Async Control Flow</h1>
@@ -709,18 +735,7 @@ double max(double a, double b) { return a &gt; b ? a : b; }</code></pre>
           <p>Error signaling is part of the contract, not an implementation detail.</p>
         </section>
 
-        <section class="frame">
-          <h2>Handle a future value (terminology map)</h2>
-          <p>Same concept (a handle to a later result), different names and runtime models.</p>
-          <ul>
-            <li><p>JS/TS: <code>Promise&lt;T&gt;</code> (plus <code>async/await</code>)</p></li>
-            <li><p>Python: <code>asyncio.Future</code> / <code>Task</code> (awaitables)</p></li>
-            <li><p>Java: <code>CompletableFuture</code> (and older <code>Future</code>)</p></li>
-            <li><p>C#: <code>Task</code> / <code>Task&lt;T&gt;</code></p></li>
-            <li><p>Rust: <code>Future</code> (polled by an executor)</p></li>
-            <li><p>Kotlin: <code>Deferred</code> (coroutines)</p></li>
-          </ul>
-        </section>
+        
 
         <section class="frame">
           <h2>Error signaling mechanisms (contract choices)</h2>
@@ -765,7 +780,8 @@ readUser("u1", (err, user) =&gt; {
     console.log(user.name, orders);
   });
 });</code></pre>
-        </section>
+</section>
+
 
         <section class="frame">
           <h2>Promises reduce nesting</h2>
@@ -781,6 +797,18 @@ readUserP("u1")
   .then(user =&gt; readOrdersP(user.id).then(orders =&gt; [user, orders] as const))
   .then(([user, orders]) =&gt; console.log(user.name, orders))
   .catch(err =&gt; console.log("error", err));</code></pre>
+        </section>
+<section class="frame">
+          <h2>Handle a future value</h2>
+          <p>Same concept (a handle to a later result), different names and runtime models.</p>
+          <ul>
+            <li><p>JS/TS: <code>Promise&lt;T&gt;</code> (plus <code>async/await</code>)</p></li>
+            <li><p>Python: <code>asyncio.Future</code> / <code>Task</code> (awaitables)</p></li>
+            <li><p>Java: <code>CompletableFuture</code> (and older <code>Future</code>)</p></li>
+            <li><p>C#: <code>Task</code> / <code>Task&lt;T&gt;</code></p></li>
+            <li><p>Rust: <code>Future</code> (polled by an executor)</p></li>
+            <li><p>Kotlin: <code>Deferred</code> (coroutines)</p></li>
+          </ul>
         </section>
 
         <section class="frame">
@@ -856,7 +884,106 @@ print(next(c))  # 1</code></pre>
           <p>“Suspend and resume” is the unifying control abstraction.</p>
         </section>
       </section>
+    -->
+      <!-- ========================= -->
+<!-- Errors + Timing Boundaries (Module 7: contract-level only) -->
+<!-- ========================= -->
+<section>
+  <section class="title-slide slide level1">
+    <h1>Errors and Timing Boundaries</h1>
+  </section>
 
+
+  <section class="frame">
+    <h2>Error signaling mechanisms (contract choices)</h2>
+    <ul>
+      <li><p>Throw/exception: non-local control transfer (caller must catch/handle)</p></li>
+      <li><p>Return code / sentinel value: caller checks explicitly</p></li>
+      <li><p>Result object: success/failure visible in the type</p></li>
+      <li><p>Async errors: delivered later (callback error parameter, or promise rejection)</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Result object pattern (makes failure explicit)</h2>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type ParseResult =
+  | { ok: true; value: number }
+  | { ok: false; error: string };
+
+function parseIntSafe(s: string): ParseResult {
+  const n = Number.parseInt(s, 10);
+  if (Number.isNaN(n)) return { ok: false, error: "not an int" };
+  return { ok: true, value: n };
+}</code></pre>
+    <p>Contract: caller must handle both branches; failure is not “hidden”.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Async as a contract shape</h2>
+    <ul>
+      <li><p>If the return type is a <code>Promise&lt;T&gt;</code>, the result arrives later.</p></li>
+      <li><p>Errors arrive later too (promise rejection).</p></li>
+      <li><p>The caller’s job is to handle both success and failure.</p></li>
+    </ul>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">type User = { id: string; name: string };
+
+async function fetchUser(id: string): Promise&lt;User&gt; {
+  const r = await fetch("/api/users/" + id);
+  if (!r.ok) throw new Error("http " + r.status);
+  return (await r.json()) as User;
+}</code></pre>
+    <p>We study how “later” is scheduled (event loop, tasks, etc.) in Module 11.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Callback contract checklist </h2>
+    <ul>
+      <li><p>When can it run (now vs later)?</p></li>
+      <li><p>How many times (once vs many)?</p></li>
+      <li><p>What errors can cross the boundary and how?</p></li>
+      <li><p>How do we cancel/unregister?</p></li>
+      <li><p>Does the library retain the callback (memory/retention)?</p></li>
+    </ul>
+  </section>
+
+  <!-- ========================= -->
+  <!-- Coroutines: general preview slides (as requested) -->
+  <!-- ========================= -->
+
+  <section class="frame">
+    <h2>Coroutines</h2>
+    <ul>
+      <li><p>Very untypical subprograms</p></li>
+      <li><p>Multiple entry points</p></li>
+      <li><p>Symmetric control transfer</p></li>
+      <li><p>Quasi-concurrent execution</p></li>
+    </ul>
+    <p>Key idea: a coroutine can <strong>suspend</strong> and later <strong>resume</strong> without “returning for good”.</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-python">def counter():
+  i = 0
+  while True:
+    yield i
+    i += 1
+
+c = counter()
+print(next(c))  # 0
+print(next(c))  # 1</code></pre>
+  </section>
+
+  <section class="frame">
+          <h2>Coroutines and generators across languages</h2>
+          <ul>
+            <li><p>Python: generators (<code>yield</code>) and <code>async</code>/<code>await</code> build on coroutine ideas</p></li>
+            <li><p>C#: iterators (<code>yield return</code>) and async state machines</p></li>
+            <li><p>Kotlin: coroutines are a first-class design feature</p></li>
+            <li><p>Lua: explicit coroutine primitives (<code>coroutine.yield/resume</code>)</p></li>
+            <li><p>Rust: <code>async</code>/<code>await</code> uses futures + an executor</p></li>
+          </ul>
+          <p>“Suspend and resume” is the unifying control abstraction.</p>
+        </section>
+      </section>
+
+</section>
       <!-- ========================= -->
       <!-- Closures in practice -->
       <!-- ========================= -->

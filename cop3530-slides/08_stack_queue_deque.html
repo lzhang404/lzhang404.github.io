@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Stack, Queue &amp; Deque</title>
+
+  <!-- Same styling pattern as your other Reveal exports -->
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- =========================================================
+           Title
+           ========================================================= -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Stack, Queue &amp; Deque</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Overview
+           ========================================================= -->
+      <section>
+        <section class="frame">
+          <h2>Outline</h2>
+          <ul>
+            <li><p><strong>Stacks</strong>: ADT rules (LIFO), core ops, step-by-step example</p></li>
+            <li><p><strong>Stack implementations</strong>: linked list vs array (bounded/unbounded)</p></li>
+            <li><p><strong>Queues</strong>: ADT rules (FIFO), core ops, step-by-step example</p></li>
+            <li><p><strong>Queue implementations</strong>: linked list vs array (and why shifting is slow)</p></li>
+            <li><p><strong>Deque</strong>: double-ended queue ops + common uses</p></li>
+            <li><p>Complexity + common bugs</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Learning goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li><p>State the rule that defines each ADT (LIFO vs FIFO)</p></li>
+            <li><p>Predict the result of sequences of operations (push/pop, enqueue/dequeue)</p></li>
+            <li><p>Explain invariants for linked-list implementations (top/front/tail correctness)</p></li>
+            <li><p>Explain bounded vs unbounded resizing strategies for arrays</p></li>
+            <li><p>Compare trade-offs: time, memory, cache locality</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Big idea</h2>
+          <ul>
+            <li><p><strong>ADT</strong> tells us <em>what operations mean</em> (behavior).</p></li>
+            <li><p><strong>Implementation</strong> decides <em>how</em> we store data (nodes/arrays) and keep invariants true.</p></li>
+            <li><p>Most bugs come from forgetting edge cases: empty, one-item, removing last item, resizing.</p></li>
+          </ul>
+          <p class="small-note">Draw the state (top/front/tail, links, size) before writing code.</p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           STACKS
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Stacks</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Stack ADT: definition &amp; behavior</h2>
+          <ul>
+            <li><p><strong>Stack</strong> = collection where insertion/removal happen at one end (the <strong>top</strong>).</p></li>
+            <li><p><strong>Discipline:</strong> LIFO (Last-In, First-Out).</p></li>
+          </ul>
+
+          <h3>Core operations</h3>
+          <ul>
+            <li><p><strong>push(x)</strong>: insert x at the top</p></li>
+            <li><p><strong>pop()</strong>: remove the top item (pre: not empty)</p></li>
+            <li><p><strong>peek()</strong>: read top item without removing (pre: not empty)</p></li>
+            <li><p><strong>isEmpty()</strong>, <strong>size()</strong></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Stack model (LIFO)</h2>
+          <p>Think: <em>plates</em> or <em>browser back button</em>. The last thing you add is the first thing you remove.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">top
+ |
+ v
++---------+
+| newest  |
++---------+
+|   ...   |
++---------+
+| oldest  |
++---------+</code></pre>
+        </section>
+
+        <!-- ===== Step-by-step demo (Food chain stack) ===== -->
+        <section class="frame">
+          <h2>Example: step-by-step operations (food chain)</h2>
+          <p><strong>Start:</strong> empty stack</p>
+          <ul>
+            <li><p>S.isEmpty() = true</p></li>
+            <li><p>S.peek() is undefined</p></li>
+            <li><p>S.size() = 0</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">top
+ v
+(empty)</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Example: push("mosquito")</h2>
+          <ul>
+            <li><p>Operation: S.push("mosquito")</p></li>
+            <li><p>Now: S.isEmpty() = false</p></li>
+            <li><p>S.peek() = "mosquito"</p></li>
+            <li><p>S.size() = 1</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">top
+ |
+ v
++----------+
+| mosquito |
++----------+</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Example: push("fish")</h2>
+          <ul>
+            <li><p>Operation: S.push("fish")</p></li>
+            <li><p>Top changes to the newest item</p></li>
+            <li><p>S.peek() = "fish", S.size() = 2</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">top
+ |
+ v
++------+
+| fish |
++------+
+| mosquito |
++----------+</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Example: push("raccoon")</h2>
+          <ul>
+            <li><p>Operation: S.push("raccoon")</p></li>
+            <li><p>S.peek() = "raccoon", S.size() = 3</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">top
+ |
+ v
++---------+
+| raccoon |
++---------+
+| fish    |
++---------+
+| mosquito|
++---------+</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Example: pop()</h2>
+          <ul>
+            <li><p>Operation: S.pop()</p></li>
+            <li><p>Removed: "raccoon"</p></li>
+            <li><p>New top: "fish", S.size() = 2</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">top
+ |
+ v
++------+
+| fish |
++------+
+| mosquito |
++----------+</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Example: pop() again</h2>
+          <ul>
+            <li><p>Removed: "fish"</p></li>
+            <li><p>New top: "mosquito", S.size() = 1</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">top
+ |
+ v
++----------+
+| mosquito |
++----------+</code></pre>
+        </section>
+
+        <!-- ===== Linked-list stack ===== -->
+        <section class="frame">
+          <h2>Stacks (linked lists): interface &amp; invariants</h2>
+          <ul>
+            <li><p><code class="inline">top</code> points to the current top node (or <code class="inline">nullptr</code> if empty)</p></li>
+            <li><p><code class="inline">size_</code> is updated on every push/pop</p></li>
+            <li><p>Push/pop are O(1) because they work at the head</p></li>
+          </ul>
+
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+class Stack {
+public:
+  Stack() = default;
+  ~Stack();                   // frees nodes
+
+  void push(const T&amp; x);
+  void pop();                 // pre: !isEmpty()
+  T&amp; peek();                  // pre: !isEmpty()
+  const T&amp; peek() const;
+
+  bool isEmpty() const { return top == nullptr; }
+  std::size_t size() const { return size_; }
+
+private:
+  struct Node { T val; Node* next; };
+  Node* top = nullptr;
+  std::size_t size_ = 0;
+};</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Linked-list stack: push/pop/peek (core idea)</h2>
+          <p>Push is just “prepend to a singly linked list.” Pop removes the head node.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+void Stack&lt;T&gt;::push(const T&amp; x) {
+  Node* newNode = new Node{x, top};
+  top = newNode;
+  ++size_;
+}
+
+template &lt;typename T&gt;
+void Stack&lt;T&gt;::pop() {
+  if (isEmpty()) throw std::runtime_error("pop on empty stack");
+  Node* old = top;
+  top = top-&gt;next;
+  delete old;
+  --size_;
+}
+
+template &lt;typename T&gt;
+T&amp; Stack&lt;T&gt;::peek() {
+  if (isEmpty()) throw std::runtime_error("peek on empty stack");
+  return top-&gt;val;
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Linked-list stack: pointer picture (push)</h2>
+          <p>Key update: <code class="inline">newNode-&gt;next = top</code>, then <code class="inline">top = newNode</code>.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">Before push(71):                After push(71):
+
+top                              top
+ |                                |
+ v                                v
++----+    +----+                  +----+    +----+
+| 99 |--&gt; |null|                  | 71 |--&gt; | 99 |--&gt; null
++----+    +----+                  +----+    +----+</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Linked-list stack: pointer picture (pop)</h2>
+          <p>Key update: save old top, move top forward, delete old.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">Before pop():                   After pop():
+
+top                              top
+ |                                |
+ v                                v
++----+    +----+                  +----+
+| 71 |--&gt; | 99 |--&gt; null          | 99 |--&gt; null
++----+    +----+                  +----+
+
+(old = 71, top = top-&gt;next, delete old)</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Linked-list stack: destructor</h2>
+          <p>Destructor repeatedly pops until empty.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+Stack&lt;T&gt;::~Stack() {
+  while (!isEmpty()) pop();
+}</code></pre>
+        </section>
+
+        <!-- ===== Array-based stack ===== -->
+        <section class="frame">
+          <h2>Stack (array-based): what we track</h2>
+          <ul>
+            <li><p><strong>capacity</strong>: allocated array size</p></li>
+            <li><p><strong>size</strong>: number of items currently stored</p></li>
+            <li><p><strong>top index</strong>: <code class="inline">top = size - 1</code> (or -1 if empty)</p></li>
+          </ul>
+          <p class="small-note">Bottom is at index 0; top item is at index <code class="inline">size-1</code>.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Array stack: step demo (fixed capacity)</h2>
+          <p>Assume <strong>capacity = 2</strong>.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">#1 init:
+capacity=2, size=0, top=-1
+[  _  |  _  ]
+
+#2 push(12):
+capacity=2, size=1, top=0
+[ 12  |  _  ]
+
+#3 push(3):
+capacity=2, size=2, top=1
+[ 12  |  3  ]
+
+#4 push(13): FAIL (full) if bounded
+capacity=2, size=2, top=1
+
+#5 pop():
+capacity=2, size=1, top=0
+[ 12  |  _  ]</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Unbounded stack (resizing idea)</h2>
+          <ul>
+            <li><p>Unbounded = no fixed maximum length</p></li>
+            <li><p>When full, allocate a bigger array (typical: double capacity)</p></li>
+            <li><p>Copy old elements, then continue the push</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">capacity=1: [12]
+push(33) needs space -&gt; resize to 2: [12, _] then store 33: [12, 33]
+push(21) needs space -&gt; resize to 4: [12, 33, _, _] then store 21</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Bounded stack (max capacity)</h2>
+          <ul>
+            <li><p>Bounded = cannot exceed a maximum length</p></li>
+            <li><p>If <code class="inline">size == maxCapacity</code>, disallow pushes (return false or throw)</p></li>
+            <li><p>May still resize up to maxCapacity, then stop growing</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">Example maxCapacity = 3
+- can grow up to 3
+- push when size==3 is disallowed</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>One design: bounded or unbounded with maxCapacity</h2>
+          <ul>
+            <li><p><code class="inline">maxCapacity &lt; 0</code>  → unbounded (no max)</p></li>
+            <li><p><code class="inline">maxCapacity &gt;= 0</code> → bounded (respect max)</p></li>
+            <li><p>Push rule: disallow when <code class="inline">size == maxCapacity</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Pseudocode: ArrayStackPush + resize</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">ArrayStackPush(stack, item):
+  if stack.length == stack.maxLength:
+    return false
+
+  if stack.length == stack.allocationSize:
+    ArrayStackResize(stack)
+
+  stack.array[stack.length] = item
+  stack.length = stack.length + 1
+  return true
+
+ArrayStackResize(stack):
+  newSize = stack.allocationSize * 2
+  if stack.maxLength &gt; 0:
+    newSize = min(newSize, stack.maxLength)
+  newArray = allocate(newSize)
+  copy old array into newArray
+  stack.array = newArray
+  stack.allocationSize = newSize</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Array stack vs linked-list stack (trade-offs)</h2>
+          <ul>
+            <li><p><strong>Array</strong>: great cache locality, low per-item overhead; resizing costs O(n) occasionally</p></li>
+            <li><p><strong>Linked list</strong>: grows one node at a time, no resizing copy; extra pointer overhead</p></li>
+          </ul>
+
+          <table>
+            <thead>
+              <tr><th>Aspect</th><th>Array stack</th><th>Linked-list stack</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>push/pop</td><td>O(1) amortized</td><td>O(1)</td></tr>
+              <tr><td>memory</td><td>may have unused slots</td><td>pointer per node</td></tr>
+              <tr><td>locality</td><td>excellent</td><td>weaker</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Participation Activity</h2>
+          <ul>
+            <li><p>ZyBook: 8.2.3, 8.3.5, 8.3.10</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           QUEUES
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Queues</h1>
+        </section>
+
+        <section class="frame">
+          <h2>What is a Queue?</h2>
+          <ul>
+            <li><p><strong>Queue</strong> stores items in FIFO order: First-In, First-Out.</p></li>
+            <li><p>Insert at the <strong>rear</strong>, remove from the <strong>front</strong>.</p></li>
+          </ul>
+
+          <h3>Core operations</h3>
+          <ul>
+            <li><p><strong>enqueue(x)</strong>: insert x at rear</p></li>
+            <li><p><strong>dequeue()</strong>: remove &amp; return the front item</p></li>
+            <li><p><strong>peek()</strong>: read front without removing</p></li>
+            <li><p><strong>isEmpty()</strong>, <strong>size()</strong></p></li>
+        </section>
+
+        <section class="frame">
+          <h2>Queue example (step-by-step)</h2>
+          <p>Starting queue: <code class="inline">1, 2, 3, 4</code></p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">front                      rear
+  |                         |
+  v                         v
+[ 1 ] -&gt; [ 2 ] -&gt; [ 3 ] -&gt; [ 4 ]</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Queue example: enqueue(5), enqueue(6)</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">enqueue(5):
+front                                rear
+  |                                   |
+  v                                   v
+[ 1 ] -&gt; [ 2 ] -&gt; [ 3 ] -&gt; [ 4 ] -&gt; [ 5 ]
+
+enqueue(6):
+front                                         rear
+  |                                            |
+  v                                            v
+[ 1 ] -&gt; [ 2 ] -&gt; [ 3 ] -&gt; [ 4 ] -&gt; [ 5 ] -&gt; [ 6 ]</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Queue example: dequeue()</h2>
+          <ul>
+            <li><p>dequeue removes the <strong>front</strong> item (1)</p></li>
+            <li><p>New front becomes 2</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">
+front                               rear
+  |                                   |
+  v                                   v
+[ 2 ] -&gt; [ 3 ] -&gt; [ 4 ] -&gt; [ 5 ] -&gt; [ 6 ]</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Queue using a linked list</h2>
+          <ul>
+            <li><p>Node holds <code class="inline">data</code> and <code class="inline">next</code></p></li>
+            <li><p>Maintain two pointers:</p>
+              <ul>
+                <li><p><code class="inline">front</code> (head): first node</p></li>
+                <li><p><code class="inline">end</code> (tail): last node</p></li>
+              </ul>
+            </li>
+            <li><p>Invariant: empty queue → <code class="inline">front == nullptr</code> and <code class="inline">end == nullptr</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Enqueue (linked list)</h2>
+          <p>Two cases: empty vs non-empty.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void enqueue(int new_data) {
+  Node* node = new Node(new_data);
+
+  if (isEmpty()) {
+    front = end = node;
+  } else {
+    end-&gt;next = node;
+    end = node;
+  }
+}</code></pre>
+          <p class="small-note">Only pointer updates at the tail → O(1).</p>
+        </section>
+
+        <section class="frame">
+          <h2>Dequeue (linked list)</h2>
+          <p>Remove from the front; if the queue becomes empty, fix <code class="inline">end</code>.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int dequeue() {
+  if (isEmpty()) {
+    std::cout &lt;&lt; "Queue Underflow\n";
+    return -1;
+  }
+
+  Node* temp = front;
+  int removedData = temp-&gt;data;
+
+  front = front-&gt;next;
+  if (front == nullptr) end = nullptr; // now empty
+
+  delete temp;
+  return removedData;
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Queue class (compact implementation)</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">class Node {
+public:
+  int value;
+  Node* next;
+  Node(int value = 0) : value(value), next(nullptr) {}
+};
+
+class Queue {
+  int size;
+  Node* head;  // front
+  Node* tail;  // end
+public:
+  Queue() : size(0), head(nullptr), tail(nullptr) {}
+  ~Queue() { while (head != nullptr) dequeue(); }
+
+  int peek() { return head ? head-&gt;value : -1; }
+  int length() { return size; }
+
+  void enqueue(int value) {
+    Node* node = new Node(value);
+    if (head == nullptr) head = node;
+    else tail-&gt;next = node;
+    tail = node;
+    ++size;
+  }
+
+  int dequeue() {
+    if (head == nullptr) return -1;
+    int value = head-&gt;value;
+    Node* node = head;
+    head = head-&gt;next;
+    --size;
+    if (head == nullptr) tail = nullptr;
+    delete node;
+    return value;
+  }
+};</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Queue (array-based): basic idea</h2>
+          <ul>
+            <li><p>Keep an array <code class="inline">arr</code> and a <code class="inline">size</code></p></li>
+            <li><p>In a <em>basic</em> approach, dequeue shifts elements left (costly)</p></li>
+            <li><p>Better real-world approach: <strong>circular buffer</strong> (no shifting)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Unbounded queue (resizing)</h2>
+          <ul>
+            <li><p>If array is full, allocate bigger array (double capacity)</p></li>
+            <li><p>Copy existing elements to new array</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">capacity=1, size=0
+enqueue(12) -&gt; capacity=1, size=1
+enqueue(33) -&gt; resize to 2, size=2
+enqueue(21) -&gt; resize to 4, size=3</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Bounded queue (max capacity)</h2>
+          <ul>
+            <li><p>Bounded = cannot exceed <code class="inline">maxCapacity</code></p></li>
+            <li><p>When <code class="inline">size == maxCapacity</code>, disallow enqueue</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>One design: bounded or unbounded with maxCapacity</h2>
+          <ul>
+            <li><p><code class="inline">maxCapacity &lt; 0</code> → unbounded</p></li>
+            <li><p><code class="inline">maxCapacity &gt;= 0</code> → bounded</p></li>
+            <li><p>Enqueue rule: disallow when <code class="inline">size == maxCapacity</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Array enqueue (resize when needed)</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void enqueue(int x) {
+  if (size == capacity) {
+    int newCapacity = capacity * 2;
+    int* newArr = new int[newCapacity];
+
+    for (int i = 0; i &lt; size; i++) newArr[i] = arr[i];
+
+    delete[] arr;
+    arr = newArr;
+    capacity = newCapacity;
+  }
+
+  arr[size] = x;
+  size++;
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Basic array dequeue (shifting) — why it’s slow</h2>
+          <p>This version is correct but costs O(n) per dequeue because it shifts.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void dequeue() {
+  if (size == 0) {
+    std::cout &lt;&lt; "Queue Underflow\n";
+    return;
+  }
+  for (int i = 1; i &lt; size; i++) {
+    arr[i - 1] = arr[i];
+  }
+  size--;
+}</code></pre>
+          <p class="small-note">Better: circular array keeps front index and avoids shifting.</p>
+        </section>
+
+        <section class="frame">
+  <h2>Array queue without shifting (front index + circular buffer)</h2>
+
+  <ul>
+    <li><p>Keep <code class="inline">front</code> (index of the current front item) and <code class="inline">size</code></p></li>
+    <li><p>The <strong>rear index</strong> is computed: <code class="inline">rear = (front + size) % capacity</code></p></li>
+    <li><p>Dequeue just moves <code class="inline">front</code> forward (wraps around) — no shifting</p></li>
+  </ul>
+
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+       data-fontsize="\small" data-tabsize="1"><code class="language-text">capacity = 6
+indices:   0   1   2   3   4   5
+arr:     [ _ | _ | A | B | C | _ ]
+                   ^
+               front=2, size=3
+
+dequeue() removes A, then:
+front = (front + 1) % 6 = 3
+(no elements moved)</code></pre>
+
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+       data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int peek() const {
+  if (size == 0) return -1;
+  return arr[front];
+}
+
+void enqueue(int x) {
+  if (size == capacity) resize();                 // optional (unbounded)
+  int rear = (front + size) % capacity;
+  arr[rear] = x;
+  ++size;
+}
+
+int dequeue() {
+  if (size == 0) {
+    std::cout &lt;&lt; "Queue Underflow\n";
+    return -1;
+  }
+  int value = arr[front];
+  front = (front + 1) % capacity;                 // the key line
+  --size;
+  return value;
+}</code></pre>
+
+  <p class="small-note">
+    With a circular buffer, enqueue and dequeue are O(1) (amortized if you resize).
+  </p>
+</section>
+        <section class="frame">
+          <h2>Array queue vs linked-list queue (trade-offs)</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Aspect</th>
+                <th>Array Queue (basic)</th>
+                <th>Linked-List Queue</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Growth</td><td>Resize in chunks (e.g., double)</td><td>One node at a time</td></tr>
+              <tr><td>Time (enqueue/dequeue)</td><td>O(1) amortized / O(n) (shift)</td><td>O(1) / O(1)</td></tr>
+              <tr><td>Memory</td><td>Low overhead but may have slack</td><td>Extra pointer per node, no slack</td></tr>
+              <tr><td>Cache locality</td><td>Excellent (contiguous)</td><td>Weaker (scattered)</td></tr>
+              <tr><td>Typical fix</td><td>Circular buffer to avoid shifting</td><td>Already O(1) with head/tail</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Participation Activity</h2>
+          <ul>
+            <li><p>ZyBook: 8.5.2, 8.6.4, 8.6.8 (Q1, 3, 4, 5)</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           DEQUE
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Deque</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Deque (double-ended queue)</h2>
+          <ul>
+            <li><p>A <strong>deque</strong> supports insert/remove at <strong>both</strong> ends.</p></li>
+          </ul>
+
+          <h3>Operations</h3>
+          <ul>
+            <li><p><strong>push_front(x)</strong>: insert at the front</p></li>
+            <li><p><strong>push_back(x)</strong>: insert at the back</p></li>
+            <li><p><strong>pop_front()</strong>: remove &amp; return the front item</p></li>
+            <li><p><strong>pop_back()</strong>: remove &amp; return the back item</p></li>
+          </ul>
+
+          <p class="small-note">Common implementations: doubly linked list or circular buffer.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Deque: quick mental model</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">front  &lt;-- operations happen here too --&gt;  back
+
+push_front(x)  puts x at front
+push_back(x)   puts x at back
+pop_front()    removes from front
+pop_back()     removes from back</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>When is a deque useful?</h2>
+          <ul>
+            <li><p>Sliding window problems (keep candidates at both ends)</p></li>
+            <li><p>Undo/redo structures (two-ended adjustments)</p></li>
+            <li><p>Palindrome checks (compare front/back)</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Complexity + Pitfalls
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Complexity &amp; Pitfalls</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Typical time complexity</h2>
+          <ul>
+            <li><p><strong>Stack</strong> (LL): push/pop/peek → O(1)</p></li>
+            <li><p><strong>Stack</strong> (array): push/pop → O(1) amortized (resize occasionally O(n))</p></li>
+            <li><p><strong>Queue</strong> (LL): enqueue/dequeue/peek → O(1)</p></li>
+            <li><p><strong>Queue</strong> (basic array + shift): dequeue → O(n)</p></li>
+            <li><p><strong>Deque</strong>: push/pop at either end → O(1) in typical implementations</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Bug checklist</h2>
+          <ul>
+            <li><p>Calling pop/peek/dequeue on an empty structure (missing precondition checks)</p></li>
+            <li><p>For linked lists: forgetting to update both pointers when removing last node</p></li>
+            <li><p>Memory leaks: removed nodes not deleted</p></li>
+            <li><p>Dangling pointers: using a node after deletion</p></li>
+            <li><p>For arrays: forgetting to update <code class="inline">size</code> or copying wrong range on resize</p></li>
+          </ul>
+          <p class="small-note">If your invariant is always true, most operations become straightforward.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Wrap-up</h2>
+          <ul>
+            <li><p>Stacks: LIFO, work at the top</p></li>
+            <li><p>Queues: FIFO, insert rear / remove front</p></li>
+            <li><p>Deque: both ends</p></li>
+            <li><p>Implementation choices change performance and memory behavior</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <!-- Plugins -->
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
