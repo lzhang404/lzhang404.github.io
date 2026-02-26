@@ -21,6 +21,15 @@ button[disabled]{opacity:.45;cursor:not-allowed}
 button:not([disabled]):hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(37,99,235,.18)}
 .message{min-height:1.25rem;font-size:.95rem}
 .message.error{color:var(--key)}
+.step-info{
+  min-height:3.2rem;
+  background:rgba(37,99,235,.08);
+  border:1px solid rgba(37,99,235,.15);
+  border-radius:8px;
+  padding:.75rem .9rem;
+  font-size:.98rem;
+  line-height:1.5;
+}
 .key-status{font-size:1.05rem;font-weight:600;color:#dc2626;margin-top:-.4rem}
 .array-container{display:flex;justify-content:center;flex-wrap:wrap;gap:.75rem;padding-top:1.5rem}
 .array-item{position:relative;width:72px;min-height:84px;border-radius:12px;border:2px solid var(--border);background:#fdfdff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:600;transition:border-color .25s, transform .25s, background .25s;padding-top:.75rem}

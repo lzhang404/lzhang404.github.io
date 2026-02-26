@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Sorting Algorithms</title>
+
+  <!-- Same styling pattern as your other Reveal exports -->
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+<section>
+  <section data-background-color="white"
+           data-background-image="../_static/logo.png"
+           data-background-size="50%"
+           data-background-position="top center"
+           data-background-repeat="no-repeat">
+    <h1>Sorting Algorithms</h1>
+    <div class="subtitle docutils container">
+      <p>Liting Zhang</p>
+      <p>University of West Florida</p>
+    </div>
+  </section>
+</section>
+
+<section>
+<section class="frame">
+  <h2>Outline</h2>
+  <ul>
+  <li><p>Sorting overview: definition, categories, and array vs linked-list implications</p>
+  </li>
+  <li><p>Complexity: time vs space, in-place vs out-of-place</p>
+  </li>
+  <li><p>Fast comparison sorts: Insertion Sort, Quicksort, Merge Sort</p>
+  </li>
+  <li><p>Non-comparison sort: Radix Sort (LSD)</p>
+  </li>
+  <li><p>Common pitfalls: stability, worst-case quicksort, and edge cases</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Learning goals</h2>
+  <p>After this lecture, you should be able to</p>
+  <ul>
+  <li><p>Explain what “sorting” means and why we do it</p>
+  </li>
+  <li><p>Classify sorting algorithms (comparison vs non-comparison; stable vs not)</p>
+  </li>
+  <li><p>Choose a reasonable algorithm for arrays vs linked lists</p>
+  </li>
+  <li><p>Analyze time/space complexity at a high level</p>
+  </li>
+  <li><p>Trace one full example of insertion sort, quicksort partition, and LSD radix passes</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Big idea</h2>
+  <ul>
+  <li><p>Same ADT idea as before: behavior first, implementation details second</p>
+  </li>
+  <li><p>Sorting is about comparisons + movement (or digits + buckets)</p>
+  </li>
+  <li><p>Most performance differences come from how much data you move</p>
+  </li>
+  <li><p>Draw the state (subarray boundaries, pivot, buckets) before coding</p>
+  </li>
+</ul>
+  <p class="small-note">Tip: when tracing, write the array after each “meaningful” step (swap, insert, merge, bucket copy-back).</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+  <h1>Sorting Overview</h1>
+</section>
+
+<section class="frame">
+  <h2>What is Sorting</h2>
+  <ul>
+  <li><p>Definition: Reordering a collection (list/array) so items appear in a chosen order</p>
+  </li>
+  <li><p>Why it matters:</p>
+    <ul>
+      <li><p>Makes searching faster (binary search needs sorted data)</p>
+      </li>
+      <li><p>Helps with data cleaning and reporting</p>
+      </li>
+      <li><p>Used inside many other algorithms</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Everyday examples:</p>
+    <ul>
+      <li><p>Sorting your photo by date</p>
+      </li>
+      <li><p>Contacts A-&gt;Z</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Categories</h2>
+  <ul>
+  <li><p>Comparison-based sorting algorithms (general-purpose sorting algorithms)</p>
+    <ul>
+      <li><p>Bubble sort</p>
+      </li>
+      <li><p>Selection sort</p>
+      </li>
+      <li><p>Insertion sort</p>
+      </li>
+      <li><p>Merge sort</p>
+      </li>
+      <li><p>Quick sort</p>
+      </li>
+      <li><p>Heap sort</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Non-comparison-based sorting algorithms</p>
+    <ul>
+      <li><p>Counting sort</p>
+      </li>
+      <li><p>Radix sort</p>
+      </li>
+      <li><p>Bucket sort</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Other Method to Categorize</h2>
+  <ul>
+  <li><p>Stable sorting algorithms (preserve the relative order of equal elements)</p>
+    <ul>
+      <li><p>Bubble sort</p>
+      </li>
+      <li><p>Insertion sort</p>
+      </li>
+      <li><p>Merge sort</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Divide and conquer sorting algorithms</p>
+    <ul>
+      <li><p>Merge sort</p>
+      </li>
+      <li><p>Quick sort</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Simple/Naive sorting algorithms</p>
+    <ul>
+      <li><p>Bubble sort</p>
+      </li>
+      <li><p>Selection sort</p>
+      </li>
+      <li><p>Insertion sort</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Array Vs Linked List</h2>
+  <table>
+  <thead>
+    <tr><th>Aspect</th><th>Array</th><th>Linked List</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Access</td><td>Fast access by index (direct indexing)</td><td>Slow access by index (must traverse)</td></tr>
+    <tr><td>Insertion / Deletion</td><td>Slow, especially in the middle (requires shifting elements)</td><td>Fast reconstruction of new list, efficient insertion/deletion (only pointer changes)</td></tr>
+    <tr><td>Neighbor Access</td><td>No inherent concept of neighbors</td><td>Fast access to neighboring nodes via pointers</td></tr>
+    <tr><td>Data Movement</td><td>May require shifting large sections during insert/delete</td><td>Lower data movement overhead due to pointer updates</td></tr>
+    <tr><td>Preferred Sorting Algorithms</td><td>Quick sort; Merge sort; Heap sort</td><td>Merge sort
+Insertion sort</td></tr>
+    <tr><td>General Notes</td><td>Good for static or index-heavy operations</td><td>Good for dynamic size or frequent insert/delete operations</td></tr>
+  </tbody>
+</table>
+</section>
+
+<section class="frame">
+  <h2>Real-World Sorting Choices</h2>
+  <table>
+  <thead>
+    <tr><th>Case</th><th>Array (Real-World Choices)</th><th>Linked List (Real-World Choices)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Small Size</td><td>Insertion Sort</td><td>Insertion Sort (small lists)</td></tr>
+    <tr><td>Large Size</td><td>Quick Sort &gt; Merge Sort &gt; Heap Sort</td><td>Merge Sort (can be parallelized)</td></tr>
+    <tr><td>Parallel Environment</td><td>Merge Sort 
+Quick Sort</td><td>Merge Sort (naturally parallel-friendly)</td></tr>
+    <tr><td>Hybrid Methods</td><td>Quick Sort + Insertion Sort 
+Merge Sort + Insertion Sort</td><td>(Not common — linked lists already handle insertion well)</td></tr>
+    <tr><td>Alternative Strategy</td><td>— (arrays sort directly)</td><td>Sort as Array of Pointers:  
+1) Convert list nodes into an array of pointers 
+2)Sort the array 
+3) Rebuild linked list in sorted order</td></tr>
+    <tr><td>Overall Best (General Use)</td><td>Hybrid Sort (QS/MS + Insertion)</td><td>Merge Sort (preferred for lists)</td></tr>
+  </tbody>
+</table>
+</section>
+
+<section class="frame">
+  <h2>Time Complexity</h2>
+  <ul>
+  <li><p>Comparison-based sorting algorithms (Array)</p>
+    <ul>
+      <li><p>Bubble sort Θ(n²)</p>
+      </li>
+      <li><p>Selection sort Θ(n²)</p>
+      </li>
+      <li><p>Insertion sort Θ(n²)</p>
+      </li>
+      <li><p>Merge sort Θ(n log n)</p>
+      </li>
+      <li><p>Quick sort Θ(n log n) (average), Θ(n²) (worst)</p>
+      </li>
+      <li><p>Heap sort Θ(n log n)</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Non-comparison-based sorting algorithms (Array)</p>
+    <ul>
+      <li><p>k is a constant value depending on algorithms</p>
+      </li>
+      <li><p>Radix sort Θ(nk)</p>
+      </li>
+      <li><p>Counting sort Θ(n + k)</p>
+      </li>
+      <li><p>Bucket sort Θ(n + k)</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Linked list</p>
+    <ul>
+      <li><p>Merge sort Θ(n log n)</p>
+      </li>
+      <li><p>Insertion sort Θ(n²)</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Space Complexity (Array)</h2>
+  <ul>
+  <li><p>In-place sorting algorithms (swap based) Θ(1)</p>
+    <ul>
+      <li><p>Θ(1) for swapping</p>
+      </li>
+      <li><p>Θ(log n) to Θ(n) for recursion stack</p>
+      </li>
+      <li><p>Iterative: swapping only</p>
+      </li>
+      <li><p>Recursive: swapping + recursion stack</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Out-of-place sorting algorithms Θ(n)</p>
+    <ul>
+      <li><p>Θ(n) for a new array</p>
+      </li>
+      <li><p>Θ(log n) to Θ(n) for recursion stack</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+  <h1>Insertion Sort</h1>
+</section>
+
+<section class="frame">
+  <h2>Insertion Sort</h2>
+  <ul>
+  <li><p>Big idea:</p>
+    <ul>
+      <li><p>Build the final sorted list one item at a time.</p>
+      </li>
+      <li><p>For each new item, insert it into the right spot among the items already sorted to its left.</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Analogy</p>
+    <ul>
+      <li><p>Sorting playing cards in your hand</p>
+      </li>
+      <li><p>Pick the next card and insert it into the proper position</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Good for</p>
+    <ul>
+      <li><p>Small lists</p>
+      </li>
+      <li><p>Lists that are already almost sorted</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Visualization: https://lzhang404.github.io/sorting/insertionsort/</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Key Characteristics</h2>
+  <ul>
+  <li><p>Comparison-based sorting</p>
+  </li>
+  <li><p>Iterative (not recursive)</p>
+  </li>
+  <li><p>In-place (no extra memory required)</p>
+  </li>
+  <li><p>Stable (preserves order of equal elements)</p>
+  </li>
+  <li><p>Adaptive (very fast on nearly sorted data)</p>
+  </li>
+  <li><p>Simple implementation</p>
+  </li>
+  <li><p>Poor performance on large, random data (O(n²))</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Complexity &amp; Properties</h2>
+  <ul>
+  <li><p>Best case (already sorted): O(n)  just one check per item</p>
+  </li>
+  <li><p>Average: O(n²)</p>
+  </li>
+  <li><p>Worst case: O(n²) when the array is reverse sorted</p>
+  </li>
+  <li><p>Space: O(1) extra (in-place)</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Pros &amp; Cons</h2>
+  <ul>
+  <li><p>Pros</p>
+    <ul>
+      <li><p>Very simple to implement</p>
+      </li>
+      <li><p>Great when the input is almost sorted</p>
+      </li>
+      <li><p>Works in-place; stable</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Cons</p>
+    <ul>
+      <li><p>Gets slow as n grows large (quadratic time)</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>When to use</p>
+    <ul>
+      <li><p>Sorting small number of items &lt; 30 ~ 50</p>
+      </li>
+      <li><p>As a cleanup step after a bigger algorithm mostly sorted the list</p>
+      </li>
+      <li><p>In practice: often used inside faster sorts (e.g., switch to insertion sort for tiny subarrays)</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Implementation (Insertion Sort)</h2>
+  <ul>
+  <li><p>Before each iteration:</p>
+    <ul>
+      <li><p>arr[0..i-1] is sorted</p>
+      </li>
+      <li><p>arr[i..n] is unsorted</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Inserting the current element (key) requires finding the correct spot within that sorted region</p>
+  </li>
+  <li><p>Therefore, we move leftward to find where it fits</p>
+  </li>
+  <li><p>Core idea:</p>
+    <ul>
+      <li><p>Take the key element at index i</p>
+      </li>
+      <li><p>Compare with elements to its left</p>
+      </li>
+      <li><p>Shift all larger elements right to make space</p>
+      </li>
+      <li><p>Insert key in the correct position</p>
+      </li>
+    </ul>
+  </li>
+
+</ul>
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void insertionSort(int arr[], int n) {
+    for (int i = 1; i &lt; n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j &gt;= 0 &amp;&amp; arr[j] &gt; key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}</code></pre>
+  
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+  <h1>Quicksort</h1>
+</section>
+
+<section class="frame">
+  <h2>Key Characteristics</h2>
+  <ul>
+  <li><p>Comparison-based sorting</p>
+  </li>
+  <li><p>Recursive (divide and conquer)</p>
+  </li>
+  <li><p>In-place (needs only stack space Θ(log n))</p>
+  </li>
+  <li><p>Not stable (standard implementation does not preserve equal order)</p>
+  </li>
+  <li><p>Fast average performance (Θ(n log n))</p>
+  </li>
+  <li><p>Worst case Θ(n²) if partitions are unbalanced</p>
+  </li>
+  <li><p>Performance depends on pivot selection (random/median-of-three improves)</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Quick Partition Algorithm</h2>
+  <ul>
+  <li><p>The core of quick sort</p>
+  </li>
+  <li><p>Steps:</p>
+    <ul>
+      <li><p>Pick an element, called pivot, from the list</p>
+      </li>
+      <li><p>Use the pivot to partition the list into two sublists</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Maintain indices i and j:</p>
+    <ul>
+      <li><p>All elements ≤ pivot are left of i</p>
+      </li>
+      <li><p>All elements ≥ pivot are right of j</p>
+      </li>
+      <li><p>Elements between i and j are unknown</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>The loop shrinks the unknown retion until pointers cross</p>
+  </li>
+  <li><p>Return the location of the partition</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Quick Partition Algorithm (Hoare&#x27;s scheme)</h2>
+  <ul>
+  <li><p>Select the pivot:</p>
+    <ul>
+      <li><p>use the middle element as the pivot</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Initialize cursors:</p>
+    <ul>
+      <li><p>set i = low and j = high</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Move the left cursor i:</p>
+    <ul>
+      <li><p>move i to the right while arr[i] &lt; pivot</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Move the right cursor j:</p>
+    <ul>
+      <li><p>move j to the left while arr[j] &gt; pivot</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Check for completion:</p>
+    <ul>
+      <li><p>if i &gt;= j, the partition is complete. Return j as the split index</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Swap misplaced elements</p>
+    <ul>
+      <li><p>If the cursors have no crossed, swap arr[i] and arr[j]</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Advance both cursors</p>
+    <ul>
+      <li><p>Increment i and decrement j</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Repeat from step 3 until the loop ends</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Implementation (Quicksort partition)</h2>
+  <ul>
+  <li><p>Low = 0, high = 4, pivot = 8</p>
+  </li>
+  <li><p>i</p>
+  </li>
+  <li><p>j</p>
+  </li>
+</ul>
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int partition(int arr[], int low, int high) {
+    int midpoint = low + (high - low) / 2;
+    int pivot = arr[midpoint];
+    int i = low, j = high;
+    while (i &lt;= j) {
+        while (arr[i] &lt; pivot)
+            i += 1;
+        while (arr[j] &gt; pivot)
+            j -= 1;
+        if (i &gt;= j) break;
+        std::swap(arr[i], arr[j]);
+        i += 1;
+        j -= 1;
+    }
+    return j;
+}</code></pre>
+
+</section>
+
+<section class="frame">
+  <h2>Time Complexity</h2>
+  <ul>
+  <li><p>Time Complexity</p>
+  </li>
+  <li><p>Depends on whether the pivot splits the list into two roughly equal parts</p>
+  </li>
+  <li><p>Average case: Θ(n log n)</p>
+  </li>
+  <li><p>Worst case: Θ(n²), when partitioning is extremely unbalanced</p>
+  </li>
+  <li><p>Space Complexity</p>
+  </li>
+  <li><p>Θ(log n) to Θ(n), depending on recursion depth and partition behavior</p>
+  </li>
+  <li><p>Improvement Attempts</p>
+    <ul>
+      <li><p>Pivot selection</p>
+      </li>
+      <li><p>Randomized quicksort</p>
+      </li>
+      <li><p>Median of three</p>
+      </li>
+      <li><p>Shuffling the list before sorting</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Visualization: https://lzhang404.github.io/sorting/quicksort/</p>
+  </li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+  <h1>Merge Sort</h1>
+</section>
+
+<section class="frame">
+  <h2>Key Characteristics</h2>
+  <ul>
+  <li><p>Comparison-based sorting</p>
+  </li>
+  <li><p>Recursive</p>
+  </li>
+  <li><p>Out-of-place (requires extra memory)</p>
+  </li>
+  <li><p>Stable (preserves order of equal elements)</p>
+  </li>
+  <li><p>Parallelable (easy to split work)</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Algorithm Overview (Top-Down)</h2>
+  <ul>
+  <li><p>Divide the array into two halves</p>
+  </li>
+  <li><p>Conquer recursively by sorting each half</p>
+  </li>
+  <li><p>Combine by merging the two sorted halves</p>
+  </li>
+  <li><p>Zybook 9.4</p>
+  </li>
+  <li><p>Visualization: https://lzhang404.github.io/sorting/mergesort/</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>Time &amp; Space Complexity (Merge Sort)</h2>
+  <ul><li><p><strong>Time</strong>: Θ(n log n) in best/average/worst (always splits in half, always merges n items)</p></li><li><p><strong>Space</strong>: Θ(n) extra array for merging (array-based); recursion depth Θ(log n)</p></li><li><p><strong>Stability</strong>: stable if merge step keeps equal keys in original order</p></li></ul>
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-text">Recurrence (top-down):
+T(n) = 2T(n/2) + Θ(n)
+→ Θ(n log n)</code></pre>
+</section>
+
+<section class="frame">
+  <h2>Variations</h2>
+  <ul>
+  <li><p>Top-down merge sort (recursive)</p>
+  </li>
+  <li><p>Bottom-up merge sort (iterative)</p>
+  </li>
+  <li><p>Natural merge sort (uses pre-existing order)</p>
+  </li>
+  <li><p>Visualization: https://lzhang404.github.io/sorting/mergesort/</p>
+  </li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+  <h1>Radix Sort (LSD)</h1>
+</section>
+
+<section class="frame">
+  <h2>Radix Sort</h2>
+  <ul>
+  <li><p>Radix sort is for integers/strings with fixed length</p>
+  </li>
+  <li><p>It&#x27;s a form of bucket sort</p>
+  </li>
+  <li><p>Bucket: a group of numbers sharing the same digit value for a chosen place</p>
+  </li>
+  <li><p>Example:</p>
+  </li>
+</ul>
+  <table>
+  <thead>
+    <tr><th></th><th>1s</th><th>10s</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0</td><td>10</td><td>1</td></tr>
+    <tr><td>1</td><td>1, 11</td><td>10, 11</td></tr>
+    <tr><td>2</td><td></td><td>24</td></tr>
+    <tr><td>3</td><td></td><td></td></tr>
+    <tr><td>4</td><td>4</td><td></td></tr>
+    <tr><td>5</td><td></td><td></td></tr>
+    <tr><td>6</td><td>6</td><td></td></tr>
+    <tr><td>7</td><td></td><td></td></tr>
+    <tr><td>8</td><td></td><td></td></tr>
+    <tr><td>9</td><td></td><td></td></tr>
+  </tbody>
+</table>
+</section>
+
+<section class="frame">
+  <h2>Base K (Radix)</h2>
+  <ul>
+  <li><p>What is base (k)?</p>
+  </li>
+  <li><p>Number of buckets (symbols) processed per pass.</p>
+  </li>
+  <li><p>Examples:</p>
+    <ul>
+      <li><p>base 10: digits 0–9;</p>
+      </li>
+      <li><p>base 2: bits 0–1;</p>
+      </li>
+      <li><p>base 256: bytes 0–255.</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Why it matters</p>
+    <ul>
+      <li><p>Higher k: fewer passes, more memory per pass.</p>
+      </li>
+      <li><p>Lower k: more passes, less memory per pass.</p>
+      </li>
+    </ul>
+  </li>
+  <li><p>Total time ≈ d · (n + k) where d is number of digit-positions in base k.</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>LSD Radix Sort</h2>
+  <ul>
+  <li><p>For each digit from least to most significant:</p>
+  </li>
+  <li><p>Scatter: place each value into a bucket based on the current digit</p>
+  </li>
+  <li><p>Gatter: copy buckets back to the array from bucket 0 → 9 (stable order) After the last digit, the array is sorted</p>
+  </li>
+</ul>
+</section>
+
+<section class="frame">
+  <h2>LSD Walkthrough (Radix Sort)</h2>
+  <p><strong>Start array</strong></p>
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-text">92 | 66 | 95 | 61 | 4 | 84 | 73 | 46 | 52 | 67</code></pre>
+  <p><strong>Buckets after 1s digit (stable order)</strong></p>
+<table>
+  <thead>
+    <tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+  </thead>
+  <tbody>
+    <tr><td></td><td>61</td><td>92, 52</td><td>73</td><td>4, 84</td><td>95</td><td>66, 46</td><td>67</td><td></td><td></td></tr>
+  </tbody>
+</table>
+  <p><strong>Array after copying buckets back</strong></p>
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-text">61 | 92 | 52 | 73 | 4 | 84 | 95 | 66 | 46 | 67</code></pre>
+  <p><strong>Buckets after 10s digit</strong></p>
+<table>
+  <thead>
+    <tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>4</td><td></td><td></td><td></td><td>46</td><td>52</td><td>61, 66, 67</td><td>73</td><td>84</td><td>92, 95</td></tr>
+  </tbody>
+</table>
+  <p><strong>Final sorted array</strong></p>
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-text">4 | 46 | 52 | 61 | 66 | 67 | 73 | 84 | 92 | 95</code></pre>
+</section>
+
+<section class="frame">
+  <h2>Characteristic</h2>
+  <ul>
+  <li><p>Non-comparison-based sorting algorithm</p>
+  </li>
+  <li><p>Only works with integers, and strings whose length is finite</p>
+  </li>
+  <li><p>Digit/character-based</p>
+  </li>
+  <li><p>Stable</p>
+  </li>
+  <li><p>Out-of-place</p>
+  </li>
+  <li><p>Time: O(d·(n + k)), with base k (e.g., 10) and d = digits</p>
+  </li>
+  <li><p>Space: O(n + k) for buckets and auxiliary arrays</p>
+  </li>
+  <li><p>Stable: if per-digit gather is stable</p>
+  </li>
+  <li><p>Works best when keys have bounded length (e.g., up to 3 digits → d = 3)</p>
+  </li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="frame">
+  <h2>Wrap-up</h2>
+  <ul>
+  <li><p>Comparison-based sorts: rely on comparisons (insertion/quick/merge)</p>
+  </li>
+  <li><p>Radix sort: uses digits/characters + stable passes (no comparisons)</p>
+  </li>
+  <li><p>Pick based on data structure and constraints (arrays vs lists, memory, stability)</p>
+  </li>
+  <li><p>Always consider edge cases: empty, one element, duplicates, already sorted</p>
+  </li>
+</ul>
+</section>
+</section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <!-- Plugins -->
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
