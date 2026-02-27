@@ -77,8 +77,7 @@
         <li><p>Module 7: subprogram calls (frames, parameters, environments, contracts).</p></li>
         <li><p>Module 8: package <strong>state + subprograms</strong> into objects, then add <strong>subtyping</strong>.</p></li>
       </ul>
-      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-plaintext">Method call idea:
-obj.m(a, b)  ≈  m(obj, a, b)     // implicit receiver: this/self</code></pre>
+
       <ul>
         <li><p>Encapsulation = controlling which operations can touch state (protect invariants).</p></li>
       </ul>
@@ -101,12 +100,6 @@ obj.m(a, b)  ≈  m(obj, a, b)     // implicit receiver: this/self</code></pre>
         <li><p>Stable interfaces: depend on contracts, not implementations</p></li>
         <li><p>Separation of concerns: split features into modules/packages</p></li>
         <li><p>Evolution: add features without rewriting everything</p></li>
-      </ul>
-      <p>A useful mental model:</p>
-      <ul>
-        <li><p>Classes define capabilities and state</p></li>
-        <li><p>Interfaces define contracts</p></li>
-        <li><p>Modules/packages define boundaries and visibility</p></li>
       </ul>
     </section>
 
@@ -155,6 +148,11 @@ int main() {
   std::cout &lt;&lt; greet("Ada") &lt;&lt; "\n";
 }</code></pre>
       <p>Java often uses overloads instead of default arguments.</p>
+            <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">class Util {
+  // Overloads often simulate defaults:
+  static String greet(String name) { return greet(name, "!"); }
+  static String greet(String name, String punct) { return "Hello, " + name + punct; }
+}</code></pre>
     </section>
 
     <section class="frame">
@@ -202,17 +200,13 @@ console.log(sum(1, 2, 3));</code></pre>
     </section>
 
     <section class="frame">
-      <h2>Java varargs and overloads</h2>
+      <h2>Java varargs</h2>
       <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">class Util {
   static int sum(int... xs) {
     int acc = 0;
     for (int x : xs) acc += x;
     return acc;
   }
-
-  // Overloads often simulate defaults:
-  static String greet(String name) { return greet(name, "!"); }
-  static String greet(String name, String punct) { return "Hello, " + name + punct; }
 }</code></pre>
     </section>
 
@@ -453,292 +447,229 @@ data-tabsize="1"><code class="language-java">class Account {
 
   </section>
 
-  <!-- ========================= -->
-  <!-- Inheritance and Composition -->
-  <!-- ========================= -->
-  <section>
-    <section id="inheritance-and-composition" class="title-slide slide level1">
-      <h1>Inheritance and Composition</h1>
-    </section>
+<!-- ========================= -->
+<!-- Inheritance + Composition + Dynamic Dispatch (ONE smooth section, ONE domain) -->
+<!-- ========================= -->
+<section>
+  <section id="inheritance-composition-and-dispatch" class="title-slide slide level1">
+    <h1>Inheritance, Composition, and Dynamic Dispatch</h1>
+  </section>
 
-    <section class="frame">
-      <h2>Inheritance</h2>
-      <p>Inheritance models an <strong>is-a</strong> relationship:</p>
-      <ul>
-        <li><p>A subclass reuses/extends a superclass interface</p></li>
-        <li><p>Supports subtype polymorphism (dynamic dispatch) — details next section</p></li>
-      </ul>
-      <p>Risks:</p>
-      <ul>
-        <li><p>Tight coupling to base class internals</p></li>
-        <li><p>Fragile base class problem when base changes</p></li>
-        <li><p>Inheriting for “code reuse” can encode the wrong relationship</p></li>
-      </ul>
-    </section>
+  <section class="frame">
+    <h2>Inheritance (is-a)</h2>
+    <p>Inheritance models an <strong>is-a</strong> relationship:</p>
+    <ul>
+      <li><p><code>FileSource</code> is a <code>DataSource</code></p></li>
+      <li><p><code>ApiSource</code> is a <code>DataSource</code></p></li>
+      <li><p>We can write code that accepts <code>DataSource</code> and works for all subclasses</p></li>
+    </ul>
+    <p><em>Next: how does <code>ds.read()</code> choose which body runs?</em></p>
+  </section>
 
-    <section class="frame">
-      <h2>Composition</h2>
-      <p>Composition models a <strong>has-a</strong> relationship:</p>
-      <ul>
-        <li><p>Build objects from other objects</p></li>
-        <li><p>Delegate work to a contained component</p></li>
-        <li><p>Often easier to test and evolve than deep inheritance hierarchies</p></li>
-      </ul>
-      <p>Guideline:</p>
-      <ul>
-        <li><p>Prefer composition for add-on features (logging, caching, retry)</p></li>
-        <li><p>Use inheritance when is-a is stable and polymorphism is central</p></li>
-      </ul>
-    </section>
-
-    <section class="frame">
-      <h2>Liskov Substitution Principle </h2>
-      <ul>
-        <li><p>If <code>B</code> is a subtype of <code>A</code>, code written for <code>A</code> should still behave correctly with a <code>B</code>.</p></li>
-        <li><p>Subclasses should not break assumptions callers rely on (invariants + method contracts).</p></li>
-      </ul>
-      <p>This is why inheritance is more than “reuse”: it commits you to a behavioral promise.</p>
-    </section>
-
-    <section class="frame">
-      <h2>Java: inheritance example</h2>
-      <pre data-xleftmargin="3pt" data-linenos=""
+  <section class="frame">
+    <h2>Java: Inheritance</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-java">class Shape {
-  double area() { return 0.0; }
+data-tabsize="1"><code class="language-java">abstract class DataSource {
+  abstract String read();
 }
-class Circle extends Shape {
-  private final double r;
-  Circle(double r) { this.r = r; }
-  @Override double area() { return Math.PI * r * r; }
+
+class FileSource extends DataSource {
+  @Override String read() { return "file data"; }
 }
-class Rect extends Shape {
-  private final double w, h;
-  Rect(double w, double h) { this.w = w; this.h = h; }
-  @Override double area() { return w * h; }
+
+class ApiSource extends DataSource {
+  @Override String read() { return "api data"; }
 }</code></pre>
-      <p>Subtyping enables polymorphic code over <code>Shape</code>.</p>
-    </section>
+    <p>We have one base class (<code>DataSource</code>) and many concrete subclasses.</p>
+  </section>
 
-    <section class="frame">
-      <h2>C++: inheritance with virtual dispatch</h2>
-      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp">#include &lt;iostream&gt;
-#include &lt;memory&gt;
-#include &lt;vector&gt;
+  <section class="frame">
+    <h2>Dynamic dispatch</h2>
+    <p>Dynamic dispatch means the method body is chosen at runtime based on the receiver object’s class.</p>
+    <ul>
+      <li><p>Call site chooses the method name: <code>read</code></p></li>
+      <li><p>Runtime chooses which override runs: File vs API</p></li>
+      <li><p>Enables polymorphism: one call works for many types</p></li>
+    </ul>
+  </section>
 
-struct Shape {
-  virtual ~Shape() = default;
-  virtual double area() const = 0;   // abstract base class
+  <section class="frame">
+    <h2>Static type vs dynamic type</h2>
+    <ul>
+      <li><p><strong>Static type</strong>: what the compiler uses for type checking (e.g., <code>DataSource</code>)</p></li>
+      <li><p><strong>Dynamic type</strong>: what the object really is at runtime (e.g., <code>FileSource</code>)</p></li>
+    </ul>
+    <ul>
+      <li><p>Compile time: “is <code>read()</code> allowed?”</p></li>
+      <li><p>Runtime: “which <code>read()</code> body runs?”</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Java: dispatch happens at the call site</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">class Demo {
+  static void load(DataSource ds) {
+    System.out.println(ds.read()); // dynamic dispatch happens here
+  }
+
+  public static void main(String[] args) {
+    DataSource a = new FileSource(); // static: DataSource, dynamic: FileSource
+    DataSource b = new ApiSource();  // static: DataSource, dynamic: ApiSource
+    load(a); // prints "file data"
+    load(b); // prints "api data"
+  }
+}</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>C++: dynamic dispatch requires <code>virtual</code></h2>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+struct DataSource {
+  virtual ~DataSource() = default;
+  virtual std::string read() const = 0;
 };
 
-struct Circle : Shape {
-  double r;
-  explicit Circle(double r) : r(r) {}
-  double area() const override { return 3.14159 * r * r; }
+struct FileSource : DataSource {
+  std::string read() const override { return "file data"; }
 };
 
-struct Rect : Shape {
-  double w, h;
-  Rect(double w, double h) : w(w), h(h) {}
-  double area() const override { return w * h; }
+struct ApiSource : DataSource {
+  std::string read() const override { return "api data"; }
 };
+
+void load(const DataSource& ds) {
+  std::cout &lt;&lt; ds.read() &lt;&lt; "\n"; // virtual dispatch happens here
+}</code></pre>
+    <ul>
+      <li><p><code>virtual</code> enables runtime dispatch; <code>override</code> checks intent.</p></li>
+      <li><p><code>virtual ~DataSource()</code> matters for safe deletion via base pointers.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>C++ pitfall: no <code>virtual</code> means no dynamic dispatch</h2>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+struct DataSource {
+  std::string read() const { return "base data"; } // NOT virtual
+};
+
+struct FileSource : DataSource {
+  std::string read() const { return "file data"; } // looks like override, but isn't virtual dispatch
+};
+
+void load(const DataSource& ds) {
+  std::cout &lt;&lt; ds.read() &lt;&lt; "\n"; // static binding
+}
 
 int main() {
-  std::vector&lt;std::unique_ptr&lt;Shape&gt;&gt; xs;
-  xs.push_back(std::make_unique&lt;Circle&gt;(2.0));
-  xs.push_back(std::make_unique&lt;Rect&gt;(3.0, 4.0));
-  for (auto&amp; s : xs) std::cout &lt;&lt; s-&gt;area() &lt;&lt; "\n";
+  FileSource f;
+  load(f); // prints "base data"
 }</code></pre>
-      <ul>
-        <li><p><code>virtual</code> enables runtime dispatch; <code>override</code> checks intent.</p></li>
-        <li><p><code>virtual ~Shape()</code> is important for safe deletion via base pointers.</p></li>
-      </ul>
-    </section>
+  </section>
 
-    <section class="frame">
-      <h2>TypeScript: composition by delegation</h2>
-      <p>Instead of inheriting, delegate to a component object.</p>
-      <pre data-xleftmargin="3pt" data-linenos=""
+  <section class="frame">
+    <h2>Method lookup intuition</h2>
+    <ul>
+      <li><p>Runtime starts at the receiver’s <strong>dynamic type</strong> (actual class).</p></li>
+      <li><p>Find the most specific override; if not found, walk up the base-type chain.</p></li>
+      <li><p>Runtimes optimize this (e.g., vtables), but the mental model is the same.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Composition (has-a)</h2>
+    <p>Composition models a <strong>has-a</strong> relationship:</p>
+    <ul>
+      <li><p>Build objects from other objects (components)</p></li>
+      <li><p>Delegate work to a contained component</p></li>
+      <li><p>Great for add-on features (logging, caching, retry)</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>TypeScript: composition by delegation</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-typescript">type Logger = { log: (msg: string) => void };
+data-tabsize="1"><code class="language-typescript">type Logger = { log(msg: string): void };
 
 class Service {
-  private logger: Logger;
-  constructor(logger: Logger) { this.logger = logger; }
-  handle(requestId: string): void {
-    this.logger.log("handling " + requestId);
+  constructor(private logger: Logger) {}
+
+  handle(id: string) {
+    // delegate the logging work to the logger object
+    this.logger.log("handling " + id);
   }
 }
 
-const consoleLogger: Logger = { log: (m) => console.log(m) };
-new Service(consoleLogger).handle("r1");</code></pre>
-    </section>
+const consoleLogger: Logger = {
+  log(msg) { console.log(msg); }
+};
 
-    <section class="frame">
-      <h2>Practice 2: inheritance vs composition</h2>
-      <p>You want to add caching to many different data sources.</p>
-      <ul>
-        <li><p>Option A: inherit from <code>DataSource</code> and override <code>read()</code></p></li>
-        <li><p>Option B: store a <code>DataSource</code> inside <code>CacheDataSource</code> and delegate</p></li>
-      </ul>
-      <p>Which option scales better and why?</p>
-    </section>
-
-    <section class="frame">
-      <h2>Practice 2 Answer</h2>
-      <ul>
-        <li><p><strong>Composition</strong> typically scales better for add-on features.</p></li>
-        <li><p>Inheritance tends to explode into subclasses (CachedFile, CachedDb, CachedApi, ...).</p></li>
-        <li><p>Composition supports stacking features (caching + retry + logging) using wrappers.</p></li>
-      </ul>
-    </section>
-
+const s = new Service(consoleLogger);
+s.handle("r1");</code></pre>
   </section>
 
-  <!-- ========================= -->
-  <!-- Dynamic Dispatch and Method Lookup -->
-  <!-- ========================= -->
-  <section>
-    <section id="dynamic-dispatch-and-method-lookup" class="title-slide slide level1">
-      <h1>Dynamic Dispatch and Method Lookup</h1>
-    </section>
-
-    <section class="frame">
-      <h2>Dynamic dispatch</h2>
-      <p>Dynamic dispatch means the method implementation is chosen at runtime based on the receiver object’s class.</p>
-      <ul>
-        <li><p>Call site chooses the method name</p></li>
-        <li><p>Runtime chooses which override body runs</p></li>
-        <li><p>Enables polymorphism: one call works for many concrete types</p></li>
-      </ul>
-    </section>
-
-    <section class="frame">
-      <h2>Static type vs dynamic type</h2>
-      <ul>
-        <li><p><strong>Static type</strong>: what the compiler uses for type checking.</p></li>
-        <li><p><strong>Dynamic type</strong>: the actual runtime class of the object.</p></li>
-      </ul>
-      <ul>
-        <li><p>Compile time checks: “is this method name allowed?”</p></li>
-        <li><p>Runtime dispatch decides: “which override runs?”</p></li>
-      </ul>
-    </section>
-
-    <section class="frame">
-      <h2>Java: dynamic dispatch example</h2>
-      <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-java">interface PaymentMethod {
-  void charge(int cents);
-}
-class CreditCard implements PaymentMethod {
-  public void charge(int cents) { System.out.println("cc $" + cents/100.0); }
-}
-class GiftCard implements PaymentMethod {
-  public void charge(int cents) { System.out.println("gift $" + cents/100.0); }
-}
-class Checkout {
-  static void pay(PaymentMethod m, int cents) { m.charge(cents); }
-}
-class Demo {
-  public static void main(String[] args) {
-    PaymentMethod a = new CreditCard();
-    PaymentMethod b = new GiftCard();
-    Checkout.pay(a, 2599);
-    Checkout.pay(b, 2599);
-  }
-}</code></pre>
-      <p><code>m.charge</code> is type-checked via the interface; the body is chosen by the object.</p>
-    </section>
-
-    <section class="frame">
-      <h2>C++: dynamic dispatch requires <code>virtual</code></h2>
-      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp">#include &lt;iostream&gt;
-
-struct PaymentMethod {
-  virtual ~PaymentMethod() = default;
-  virtual void charge(int cents) const = 0;
-};
-
-struct CreditCard : PaymentMethod {
-  void charge(int cents) const override {
-    std::cout &lt;&lt; "cc $" &lt;&lt; cents/100.0 &lt;&lt; "\n";
-  }
-};
-
-struct GiftCard : PaymentMethod {
-  void charge(int cents) const override {
-    std::cout &lt;&lt; "gift $" &lt;&lt; cents/100.0 &lt;&lt; "\n";
-  }
-};
-
-void pay(const PaymentMethod&amp; m, int cents) {
-  m.charge(cents); // virtual dispatch happens here
-}
-
-int main() {
-  CreditCard cc;
-  GiftCard gc;
-  pay(cc, 2599);
-  pay(gc, 2599);
-}</code></pre>
-      <p>Same PL story as Java: call is type-checked via base type; runtime chooses override based on object.</p>
-    </section>
-
-    <section class="frame">
-      <h2>C++ pitfall: no <code>virtual</code> means no dynamic dispatch</h2>
-      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp">#include &lt;iostream&gt;
-
-struct A { void f() const { std::cout &lt;&lt; "A\n"; } };
-struct B : A { void f() const { std::cout &lt;&lt; "B\n"; } };
-
-void run(const A&amp; x) { x.f(); }  // static binding (not virtual)
-
-int main() {
-  B b;
-  run(b); // prints A, not B
-}</code></pre>
-      <p>In C++, overriding participates in dynamic dispatch only if the base method is <code>virtual</code>.</p>
-    </section>
-
-    <section class="frame">
-      <h2>Method lookup intuition</h2>
-      <ul>
-        <li><p>Runtime starts at the receiver’s class.</p></li>
-        <li><p>Find the most specific override; if not found, walk up the superclass chain.</p></li>
-        <li><p>Runtimes optimize this (e.g., vtables), but the model is the same.</p></li>
-      </ul>
-      <p>PL takeaway: dispatch is runtime call-target selection driven by subtype relationships.</p>
-    </section>
-
-    <section class="frame">
-      <h2>Practice 3: predict dispatch output (Java)</h2>
-      <p>Predict the output.</p>
-      <pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-java">class A { String f() { return "A.f"; } }
-class B extends A { @Override String f() { return "B.f"; } }
-
-class Demo {
-  static void run(A x) { System.out.println(x.f()); }
-  public static void main(String[] args) {
-    A x = new B();
-    run(x);
-  }
-}</code></pre>
-    </section>
-
-    <section class="frame">
-      <h2>Practice 3 Answer</h2>
-      <ul>
-        <li><p>Output: <code>B.f</code></p></li>
-        <li><p>Static type controls which method names are allowed (<code>f</code> exists on <code>A</code>).</p></li>
-        <li><p>Dynamic type controls which body runs (object is a <code>B</code>).</p></li>
-      </ul>
-    </section>
-
+  <section class="frame">
+    <h2>Practice: caching with inheritance vs composition</h2>
+    <p>You have many sources: File, DB, API… You want caching.</p>
+    <ul>
+      <li><p><b>Option A (Inheritance):</b> <code>CachedFile</code>, <code>CachedDb</code>, <code>CachedApi</code>, ...</p></li>
+      <li><p><b>Option B (Composition):</b> one <code>CachedDataSource</code> that wraps any <code>DataSource</code></p></li>
+    </ul>
+    <p><b>Question:</b> Which option scales better and why?</p>
   </section>
+
+  <section class="frame">
+    <h2>Practice answer</h2>
+    <ul>
+      <li><p><strong>Composition</strong> typically scales better for add-on features.</p></li>
+      <li><p>Inheritance tends to explode into subclasses (<code>CachedFile</code>, <code>CachedDb</code>, <code>CachedApi</code>, ...).</p></li>
+      <li><p>Composition supports stacking features (caching + logging + retry) using wrappers.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Liskov Substitution Principle</h2>
+    <ul>
+      <li><p>If <code>B</code> is a subtype of <code>A</code>, code written for <code>A</code> should still behave correctly with a <code>B</code>.</p></li>
+      <li><p>Subclasses should not break assumptions callers rely on (invariants + method contracts).</p></li>
+    </ul>
+    <p>This is why inheritance is more than “reuse”: it commits you to a behavioral promise.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Practice3</h2>
+    <p>Predict the output.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+data-tabsize="1"><code class="language-java">abstract class DataSource { abstract String read(); }
+class ApiSource extends DataSource { @Override String read() { return "api"; } }
+
+class Demo {
+  static void load(DataSource ds) { System.out.println(ds.read()); }
+  public static void main(String[] args) {
+    DataSource ds = new ApiSource();
+    load(ds);
+  }
+}</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>practice 3 answer</h2>
+    <ul>
+      <li><p>Output: <code>api</code></p></li>
+      <li><p>Static type controls allowed method names (<code>read</code> exists on <code>DataSource</code>).</p></li>
+      <li><p>Dynamic type controls which body runs (object is an <code>ApiSource</code>).</p></li>
+    </ul>
+  </section>
+</section>
 
   <!-- ========================= -->
   <!-- Polymorphism in APIs: overriding vs overloading vs generics -->
@@ -759,21 +690,26 @@ class Demo {
     </section>
 
     <section class="frame">
-      <h2>Overriding vs overloading (don’t confuse them)</h2>
-      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">// Overriding: chosen by runtime dispatch
-class A { String f() { return "A"; } }
-class B extends A { @Override String f() { return "B"; } }
+  <h2>Overriding vs overloading (don’t confuse them)</h2>
+  <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">// Overriding: chosen at runtime (dynamic dispatch)
+abstract class DataSource { abstract String read(); }
+class FileSource extends DataSource { @Override String read() { return "file"; } }
+class ApiSource  extends DataSource { @Override String read() { return "api"; } }
 
-// Overloading: chosen at compile time by parameter types
+class Demo {
+  static void load(DataSource ds) { System.out.println(ds.read()); } // runtime picks body
+}
+
+// Overloading: chosen at compile time (parameter types)
 class Util {
   static int max(int a, int b) { return a > b ? a : b; }
   static double max(double a, double b) { return a > b ? a : b; }
 }</code></pre>
-      <ul>
-        <li><p>Overriding changes behavior across subtypes.</p></li>
-        <li><p>Overloading changes which function is selected based on argument types.</p></li>
-      </ul>
-    </section>
+  <ul>
+    <li><p>Overriding changes behavior across subtypes (runtime choice).</p></li>
+    <li><p>Overloading changes which function is selected based on argument types (compile-time choice).</p></li>
+  </ul>
+</section>
 
     <section class="frame">
       <h2>C++: templates (parametric polymorphism)</h2>

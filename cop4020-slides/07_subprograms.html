@@ -686,17 +686,6 @@ async function fetchUser(id: string): Promise&lt;User&gt; {
     <p>We study how “later” is scheduled (event loop, tasks, etc.) in Module 11.</p>
   </section>
 
-  <section class="frame">
-    <h2>Callback contract checklist </h2>
-    <ul>
-      <li><p>When can it run (now vs later)?</p></li>
-      <li><p>How many times (once vs many)?</p></li>
-      <li><p>What errors can cross the boundary and how?</p></li>
-      <li><p>How do we cancel/unregister?</p></li>
-      <li><p>Does the library retain the callback (memory/retention)?</p></li>
-    </ul>
-  </section>
-
   <!-- ========================= -->
   <!-- Coroutines: general preview slides (as requested) -->
   <!-- ========================= -->
@@ -757,16 +746,13 @@ print(next(c))  # 1</code></pre>
           <h2>Stale state: snapshot vs read-latest</h2>
           <p>Callbacks often run later. What state do they observe?</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-typescript">let state = 0;
-
 function register(handler: () =&gt; void): void {
   setTimeout(handler, 0);
 }
-
 function render() {
   const snapshot = state;
   register(() =&gt; console.log("snapshot", snapshot, "state", state));
 }
-
 render();
 state = 10;</code></pre>
           <p>Think: which variables are captured as a snapshot vs read at callback time?</p>
