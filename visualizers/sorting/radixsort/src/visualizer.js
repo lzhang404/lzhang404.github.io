@@ -9,6 +9,7 @@ export default class RadixSortVisualizer {
     this.messageEl      = qs("#message");
     this.inputEl        = qs("#array-input");
     this.startBtn       = qs("#start-btn");
+    this.stepBtn        = qs("#step-btn");
     this.toggleBtn      = qs("#toggle-btn");
     this.resetBtn       = qs("#reset-btn");
     this.passEl         = qs("#radix-pass");
@@ -36,6 +37,7 @@ export default class RadixSortVisualizer {
 
   bind() {
     this.startBtn.addEventListener("click", () => this.start());
+    this.stepBtn.addEventListener("click", () => this.stepOnce());
     this.toggleBtn.addEventListener("click", () => this.togglePause());
     this.resetBtn.addEventListener("click", () => this.reset());
   }
@@ -58,20 +60,24 @@ export default class RadixSortVisualizer {
   // ---------- lifecycle ----------
   start() {
     if (this.isRunning) return;
-    const parsed = this.parseInput(this.inputEl.value);
-    if (!parsed.success) return this.showMessage(parsed.message, true);
-
-    this.showMessage("");
-    this.initial = parsed.values.slice();
-    this.renderArrayTable(this.initial);
-    this.renderBucketTable(Array.from({length:10},()=>[]));
-    this.setArrayCaption("unsorted");
-
-    this.steps = generateRadixSteps(this.initial);
-    this.stepIndex = 0;
+    if (!this.prepareSteps(true)) return;
     this.isRunning = true; this.isPaused = false;
     this.updateControls();
     this.playNext();
+  }
+
+  stepOnce() {
+    if (this.isRunning) return;
+    if (!this.steps.length && !this.prepareSteps(false)) return;
+    if (!this.steps.length) return;
+    if (this.stepIndex >= this.steps.length) return this.finish();
+
+    const step = this.steps[this.stepIndex];
+    this.applyStep(step);
+    this.stepIndex++;
+
+    if (this.stepIndex >= this.steps.length) this.finish();
+    this.updateControls();
   }
 
   reset() {
@@ -93,6 +99,31 @@ export default class RadixSortVisualizer {
     this.updateControls();
     this.showMessage("");
     this.collectedIndices.clear();
+  }
+
+  prepareSteps(force = false) {
+    if (!force && this.steps.length) return true;
+
+    const parsed = this.parseInput(this.inputEl.value);
+    if (!parsed.success) {
+      this.showMessage(parsed.message, true);
+      this.steps = [];
+      this.stepIndex = 0;
+      return false;
+    }
+
+    this.showMessage("");
+    this.initial = parsed.values.slice();
+    this.renderArrayTable(this.initial);
+    this.renderBucketTable(Array.from({ length: 10 }, () => []));
+    this.setArrayCaption("unsorted");
+    this.setPass(1, 1);
+    this.collectedIndices.clear();
+    this.highlightCode([]);
+
+    this.steps = generateRadixSteps(this.initial);
+    this.stepIndex = 0;
+    return true;
   }
 
   togglePause(){ this.isPaused ? this.resume() : this.pause(); }
@@ -259,11 +290,13 @@ export default class RadixSortVisualizer {
     if (this.isRunning) {
       this.startBtn.disabled = true;
       this.startBtn.classList.add("disabled");
+      this.stepBtn.disabled = true;
       this.toggleBtn.disabled = false;
       this.toggleBtn.textContent = this.isPaused ? "Resume" : "Pause";
     } else {
       this.startBtn.disabled = false;
       this.startBtn.classList.remove("disabled");
+      this.stepBtn.disabled = false;
       this.toggleBtn.disabled = true;
       this.toggleBtn.textContent = "Pause";
     }

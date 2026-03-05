@@ -10,9 +10,11 @@ export class QuickSortVisualizer {
     this.messageEl = qs("#message");
     this.inputEl = qs("#array-input");
     this.startBtn = qs("#start-btn");
+    this.stepBtn = qs("#step-btn");
     this.toggleBtn = qs("#toggle-btn");
     this.resetBtn = qs("#reset-btn");
     this.pivotStatusEl = qs("#pivot-status");
+    this.stepInfoEl = qs("#step-info");
 
     this.steps = [];
     this.stepIndex = 0;
@@ -32,6 +34,7 @@ export class QuickSortVisualizer {
 
   bindEvents() {
     this.startBtn.addEventListener("click", () => this.start());
+    this.stepBtn.addEventListener("click", () => this.stepOnce());
     this.toggleBtn.addEventListener("click", () => this.togglePause());
     this.resetBtn.addEventListener("click", () => this.reset());
   }
@@ -39,6 +42,11 @@ export class QuickSortVisualizer {
   showMessage(text, isError=false) {
     this.messageEl.textContent = text || "";
     this.messageEl.classList.toggle("error", !!isError);
+  }
+
+  setStepInfo(text) {
+    if (!this.stepInfoEl) return;
+    this.stepInfoEl.textContent = text || "";
   }
 
   parseInput(text) {
@@ -55,20 +63,26 @@ export class QuickSortVisualizer {
 
   start() {
     if (this.isRunning) return;
-    const parsed = this.parseInput(this.inputEl.value);
-    if (!parsed.success) { this.showMessage(parsed.message, true); return; }
-
-    this.showMessage("");
-    this.initialArray = parsed.values.slice();
-    this.renderArray(this.initialArray);
-    this.steps = generateQuickSortSteps(this.initialArray);
-    this.stepIndex = 0;
-    this.sortedIndices.clear();
+    if (!this.prepareSteps(true)) return;
     this.isRunning = true;
     this.isPaused = false;
 
     this.updateControls();
     this.playNextStep();
+  }
+
+  stepOnce() {
+    if (this.isRunning) return;
+    if (!this.steps.length && !this.prepareSteps(false)) return;
+    if (!this.steps.length) return;
+    if (this.stepIndex >= this.steps.length) return this.finish();
+
+    const step = this.steps[this.stepIndex];
+    this.applyStep(step);
+    this.stepIndex += 1;
+
+    if (this.stepIndex >= this.steps.length) this.finish();
+    this.updateControls();
   }
 
   togglePause() { if (!this.isRunning) return; this.isPaused ? this.resume() : this.pause(); }
@@ -86,7 +100,37 @@ export class QuickSortVisualizer {
 
     this.highlightCode([]); this.clearPointers();
     this.setPivotStatus(undefined, undefined, undefined);
+    this.setStepInfo("Press Start for autoplay or Step to advance manually.");
     this.updateControls(); this.showMessage("");
+  }
+
+  prepareSteps(force = false) {
+    if (!force && this.steps.length) return true;
+
+    const parsed = this.parseInput(this.inputEl.value);
+    if (!parsed.success) {
+      this.showMessage(parsed.message, true);
+      this.steps = [];
+      this.stepIndex = 0;
+      this.setStepInfo(parsed.message);
+      return false;
+    }
+
+    this.showMessage("");
+    this.initialArray = parsed.values.slice();
+    this.renderArray(this.initialArray);
+    this.steps = generateQuickSortSteps(this.initialArray);
+    this.stepIndex = 0;
+    this.sortedIndices.clear();
+
+    this.highlightCode([]);
+    this.clearPointers();
+    this.clearHighlights();
+    this.updateSortedHighlights();
+    this.setPivotStatus(undefined, undefined, undefined);
+    if (this.steps.length) this.setStepInfo("Ready. Click Step to follow quick sort or Start to autoplay.");
+    else this.setStepInfo("Array is empty.");
+    return true;
   }
 
   renderArray(values) {
@@ -130,6 +174,7 @@ export class QuickSortVisualizer {
     this.applyHighlights(step);
     this.updateSortedHighlights();
     this.updatePivotStatus(step);
+    this.setStepInfo(step.info || "");
   }
 
   updateArrayValues(values) {
@@ -168,7 +213,7 @@ export class QuickSortVisualizer {
     const line2 = (typeof value === "number")
       ? `pivot value = ${value} (mid = ${Number.isInteger(midIndex) ? midIndex : "—"})`
       : "pivot value = ";
-    this.pivotStatusEl.innerHTML = `${line1}<br>${line2}`;
+    this.pivotStatusEl.innerHTML = `${line1}, ${line2}`;
   }
 
   updatePivotStatus(step) {
@@ -235,10 +280,12 @@ export class QuickSortVisualizer {
   updateControls() {
     if (this.isRunning) {
       this.startBtn.disabled = true;
+      this.stepBtn.disabled = true;
       this.toggleBtn.disabled = false;
       this.toggleBtn.textContent = this.isPaused ? "Resume" : "Pause";
     } else {
       this.startBtn.disabled = false;
+      this.stepBtn.disabled = false;
       this.toggleBtn.disabled = true;
       this.toggleBtn.textContent = "Pause";
     }

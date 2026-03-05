@@ -7,11 +7,11 @@ export class MergeSortVisualizer {
   constructor() {
     this.levelsContainer = qs("#levels-container");
     this.infoEl = qs("#merge-info");
-    this.mergeVarsEl = qs("#merge-vars");
     this.codeBlock = qs("#code-block");
     this.messageEl = qs("#message");
     this.inputEl = qs("#array-input");
     this.startBtn = qs("#start-btn");
+    this.stepBtn = qs("#step-btn");
     this.toggleBtn = qs("#toggle-btn");
     this.resetBtn = qs("#reset-btn");
 
@@ -33,6 +33,7 @@ export class MergeSortVisualizer {
 
   bindEvents() {
     this.startBtn.addEventListener("click", () => this.start());
+    this.stepBtn.addEventListener("click", () => this.stepOnce());
     this.toggleBtn.addEventListener("click", () => this.togglePause());
     this.resetBtn.addEventListener("click", () => this.reset());
   }
@@ -40,6 +41,24 @@ export class MergeSortVisualizer {
   showMessage(text, isError = false) {
     this.messageEl.textContent = text || "";
     this.messageEl.classList.toggle("error", !!isError);
+  }
+
+  escapeHtml(text) {
+    return String(text)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+
+  setCaption(varsText = "", infoText = "") {
+    if (!this.infoEl) return;
+    const info = infoText || "";
+    const vars = varsText || "";
+    if (!vars) {
+      this.infoEl.textContent = info;
+      return;
+    }
+    this.infoEl.innerHTML = `<div class="caption-vars">${this.escapeHtml(vars)}</div><div class="caption-info">${this.escapeHtml(info)}</div>`;
   }
 
   parseInput(text) {
@@ -56,17 +75,25 @@ export class MergeSortVisualizer {
 
   start() {
     if (this.isRunning) return;
-    const parsed = this.parseInput(this.inputEl.value);
-    if (!parsed.success) return this.showMessage(parsed.message, true);
-    this.showMessage("");
-
-    this.initialValues = parsed.values.slice();
-    this.steps = generateMergeSortSteps(parsed.values);
-    this.stepIndex = 0;
+    if (!this.prepareSteps(true)) return;
     this.isRunning = true;
     this.isPaused = false;
     this.updateControls();
     this.playNextStep();
+  }
+
+  stepOnce() {
+    if (this.isRunning) return;
+    if (!this.steps.length && !this.prepareSteps(false)) return;
+    if (!this.steps.length) return;
+    if (this.stepIndex >= this.steps.length) return this.finish();
+
+    const step = this.steps[this.stepIndex];
+    this.applyStep(step);
+    this.stepIndex += 1;
+
+    if (this.stepIndex >= this.steps.length) this.finish();
+    this.updateControls();
   }
 
   pause() {
@@ -100,15 +127,53 @@ export class MergeSortVisualizer {
         : [];
       this.renderLevels(initialLevels, { segments: [] },
         parsed.values.length ? "Ready to start merge sort." : "Array is empty.");
+      this.setCaption("", parsed.values.length ? "Ready to start merge sort." : "Array is empty.");
     } else {
       this.levelsContainer.innerHTML = "";
-      this.infoEl.textContent = parsed.message;
+      this.setCaption("", parsed.message);
     }
     this.highlightCode([]);
     this.updateControls();
     this.showMessage("");
-    if (this.mergeVarsEl) this.mergeVarsEl.textContent = "";
     this.mergedSnapshots.clear();
+  }
+
+  prepareSteps(force = false) {
+    if (!force && this.steps.length) return true;
+
+    const parsed = this.parseInput(this.inputEl.value);
+    if (!parsed.success) {
+      this.showMessage(parsed.message, true);
+      this.steps = [];
+      this.stepIndex = 0;
+      this.setCaption("", parsed.message);
+      return false;
+    }
+
+    this.showMessage("");
+    this.initialValues = parsed.values.slice();
+    this.steps = generateMergeSortSteps(parsed.values);
+    this.stepIndex = 0;
+    this.mergedSnapshots.clear();
+    this.highlightCode([]);
+
+    const initialLevels = parsed.values.length
+      ? [[{ left: 0, right: parsed.values.length - 1, values: parsed.values.slice() }]]
+      : [];
+    this.renderLevels(
+      initialLevels,
+      { segments: [] },
+      parsed.values.length
+        ? "Ready. Click Step to follow merge sort or Start to autoplay."
+        : "Array is empty."
+    );
+    this.setCaption(
+      "",
+      parsed.values.length
+        ? "Ready. Click Step to follow merge sort or Start to autoplay."
+        : "Array is empty."
+    );
+    return true;
   }
 
   playNextStep() {
@@ -145,8 +210,7 @@ export class MergeSortVisualizer {
       step.buffers || null,
       step.type || ""
     );
-
-    if (this.mergeVarsEl) this.mergeVarsEl.textContent = step.varsText || "";
+    this.setCaption(step.varsText || "", step.info || "");
   }
 
   renderLevels(levels, highlight, info, buffers, stepType) {
@@ -280,10 +344,12 @@ export class MergeSortVisualizer {
   updateControls() {
     if (this.isRunning) {
       this.startBtn.disabled = true;
+      this.stepBtn.disabled = true;
       this.toggleBtn.disabled = false;
       this.toggleBtn.textContent = this.isPaused ? "Resume" : "Pause";
     } else {
       this.startBtn.disabled = false;
+      this.stepBtn.disabled = false;
       this.toggleBtn.disabled = true;
       this.toggleBtn.textContent = "Pause";
     }

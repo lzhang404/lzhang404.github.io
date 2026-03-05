@@ -4,12 +4,27 @@ body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:v
 header{background:var(--panel);border-bottom:1px solid var(--border);padding:1.25rem;text-align:center;font-weight:600}
 main{max-width:1200px;margin:0 auto;padding:1.25rem;display:grid;gap:1.25rem;grid-template-columns:1fr 1fr}
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem}
+.controls{
+  position:sticky;
+  top:.6rem;
+  z-index:20;
+  background:var(--panel);
+  padding-bottom:.5rem;
+  border-bottom:1px solid var(--border);
+}
 .controls .button-row{display:flex;gap:.5rem;margin-top:.5rem}
 .button-row { display:flex; flex-wrap:wrap; gap:.75rem; }
 button { padding:.6rem 1.15rem; border-radius:999px; border:none; background:var(--accent); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; transition:transform .2s, box-shadow .2s, opacity .2s; }
 button[disabled]{opacity:.45; cursor:not-allowed;}
 button:not([disabled]):hover{transform:translateY(-1px); box-shadow:0 10px 22px rgba(37,99,235,.18);}
-.message{min-height:1.25rem; font-size:.95rem;} .message.error{color:var(--min);}
+.message{min-height:1.25rem; font-size:.95rem; margin-top:.3rem;}
+.message.error{color:#dc2626;}
+.radix-pass{
+  margin-top:.2rem;
+  font-size:.95rem;
+  font-weight:700;
+  color:var(--accent);
+}
 
 .legend-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:.5rem}
 .legend-swatch{display:inline-block;
@@ -61,6 +76,5 @@ pre{margin:0;border:1px solid var(--border);border-radius:12px;padding:1rem;over
   main{grid-template-columns:1fr}
   .vtables{grid-template-columns:1fr}
 }
-
 
 

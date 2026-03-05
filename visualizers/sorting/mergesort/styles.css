@@ -65,7 +65,7 @@
     .lesson-panel {
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 0.3rem;
     }
 
     .controls,
@@ -73,7 +73,16 @@
     .visualization {
       display: flex;
       flex-direction: column;
-      gap: 0.9rem;
+      gap: 0.35rem;
+    }
+
+    .controls {
+      position: sticky;
+      top: 0.6rem;
+      z-index: 20;
+      background: var(--panel);
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
     }
 
     .controls label {
@@ -194,6 +203,25 @@
     .merge-info {
       min-height: 1.2rem;
       font-weight: 600;
+      color: var(--accent);
+      line-height: 1.35;
+    }
+
+    #merge-info {
+      margin-top: 0.15rem;
+      padding-top: 0.35rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .caption-vars {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .caption-info {
+      font-size: 0.98rem;
+      font-weight: 700;
       color: var(--accent);
     }
 

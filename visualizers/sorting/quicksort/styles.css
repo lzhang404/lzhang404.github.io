@@ -12,7 +12,7 @@
     main { display:grid; gap:1.75rem; padding:1.75rem; grid-template-columns:minmax(320px,1fr) minmax(320px,1fr); align-items:start; max-width:1300px; margin:0 auto; width:100%; }
     .lesson-panel { display:flex; flex-direction:column; gap:1.25rem; }
     .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:1.25rem; box-shadow:0 8px 20px rgba(15,23,42,.08); }
-    .controls,.legend,.visualization { display:flex; flex-direction:column; gap:.9rem; }
+    .controls,.legend,.visualization { display:flex; flex-direction:column; gap:.5rem; }
     .controls label { font-weight:600; }
     .controls input { padding:.65rem .75rem; border-radius:8px; border:1px solid var(--border); font-size:1rem; outline:none; }
     .controls input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,.15); }
@@ -21,6 +21,15 @@
     button[disabled]{opacity:.45; cursor:not-allowed;}
     button:not([disabled]):hover{transform:translateY(-1px); box-shadow:0 10px 22px rgba(37,99,235,.18);}
     .message{min-height:1.25rem; font-size:.95rem;} .message.error{color:var(--min);}
+    .step-info{
+      min-height:3.2rem;
+      background:rgba(37,99,235,.08);
+      border:1px solid rgba(37,99,235,.15);
+      border-radius:8px;
+      padding:.75rem .9rem;
+      font-size:.98rem;
+      line-height:1.5;
+    }
     .array-container{display:flex; justify-content:center; flex-wrap:wrap; gap:.75rem; padding-top:1.5rem;}
     .array-item{position:relative; width:72px; min-height:84px; border-radius:12px; border:2px solid var(--border); background:#fdfdff; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:600; transition:border-color .25s, transform .25s, background .25s; padding-top:.75rem;}
     .array-item .value{font-size:1.35rem;} .array-item .index{font-size:.82rem; margin-top:.25rem; color:#6b7280;}
@@ -58,3 +67,6 @@
     .code-line span.kw{color:#2563eb; font-weight:600;} .code-line span.type{color:#0d9488; font-weight:600;} .code-line span.func{color:#7c3aed; font-weight:600;} .code-line span.standard{color:#db2777;}
     @media (max-width:1024px){ main{grid-template-columns:1fr;} }
  
+.visualization h2 {
+  margin: 0 0 0.2rem 0;
+}
