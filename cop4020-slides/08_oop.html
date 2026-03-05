@@ -907,12 +907,12 @@ checkout(new StripeProcessor());</code></pre>
     </section>
 
     <section class="frame">
-      <h2>TypeScript: simple mixin pattern</h2>
-      <pre data-xleftmargin="3pt" data-linenos=""
+  <h2>TypeScript: simple mixin pattern</h2>
+  <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type Ctor<T> = new (...args: any[]) => T;
+data-tabsize="1"><code class="language-typescript">type Ctor&lt;T&gt; = new (...args: any[]) =&gt; T;
 
-function Timestamped<TBase extends Ctor<{}>>(Base: TBase) {
+function Timestamped&lt;TBase extends Ctor&lt;{}&gt;&gt;(Base: TBase) {
   return class extends Base {
     createdAt = new Date();
     ageMs(): number { return Date.now() - this.createdAt.getTime(); }
@@ -927,7 +927,7 @@ const TimestampedUser = Timestamped(User);
 const u = new TimestampedUser("Ada");
 console.log(u.name);
 console.log(u.ageMs());</code></pre>
-    </section>
+</section>
 
     <section class="frame">
       <h2>Python: mixin-style multiple inheritance</h2>
