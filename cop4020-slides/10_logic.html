@@ -33,6 +33,7 @@
 <section id="overview" class="frame">
 <h2>Overview</h2>
 <ul>
+<li><p>Bridge from Module 9: reuse recursion/list ideas in a declarative setting</p></li>
 <li><p>Declarative vs imperative thinking</p></li>
 <li><p>Predicate logic overview (facts, rules, quantifiers)</p></li>
 <li><p>Horn clauses and why they matter</p></li>
@@ -67,6 +68,33 @@ negation-as-failure)</p></li>
 scheduling/puzzles</p></li>
 <li><p>Compare Prolog-style querying to SQL and rule/constraint
 DSLs</p></li>
+</ul>
+</section>
+<section id="module-boundary-and-placement" class="frame">
+<h2>Module boundary and placement</h2>
+<ul>
+<li><p><strong>From Module 9 (FP):</strong> recursion and lists are assumed; we will not re-teach them procedurally.</p></li>
+<li><p><strong>This module (10):</strong> focuses on unification, proof search, backtracking, and declarative rule modeling.</p></li>
+<li><p><strong>To Module 11 (Concurrency):</strong> we use this module’s “engine + search strategy” viewpoint to compare concurrent execution models.</p></li>
+</ul>
+</section>
+<section id="language-map-for-this-module" class="frame">
+<h2>Language map for this module</h2>
+<ul>
+<li><p><strong>Prolog:</strong> primary language for logic programming semantics and execution behavior.</p></li>
+<li><p><strong>SQL/Datalog:</strong> relational/declarative comparison points.</p></li>
+<li><p><strong>Constraint DSLs:</strong> conceptual transfer target (policy, scheduling, validation).</p></li>
+</ul>
+<p>When examples switch languages, the slide title will state why.</p>
+</section>
+<section id="module-flow-map" class="frame">
+<h2>Module flow map</h2>
+<ul>
+<li><p>Step 1: declarative mindset and predicate-logic vocabulary</p></li>
+<li><p>Step 2: Prolog syntax and unification</p></li>
+<li><p>Step 3: execution behavior (resolution, goal order, backtracking)</p></li>
+<li><p>Step 4: programming patterns (lists, recursion, constraints, control)</p></li>
+<li><p>Step 5: transfer to SQL/Datalog/rule engines and industry use cases</p></li>
 </ul>
 </section>
 <section id="core-idea-describe-relations-let-the-engine-search"
@@ -549,6 +577,18 @@ simultaneously</p></li>
 <p>Note for (4): <code>[X,Y]</code> = <code>[Y,X]</code> implies
 <code>X=Y</code>.</p>
 </section></section>
+<section class="slide level2">
+<section id="bridge-from-unification-to-search" class="frame">
+<h2>Bridge: from unification to search</h2>
+<p>Unification answers: “Can these terms match?”</p>
+<p>Next question: “How does Prolog explore multiple matching possibilities?”</p>
+<ul>
+<li><p>Resolution chooses which rule body to expand</p></li>
+<li><p>Backtracking revisits choice points after failure/success</p></li>
+<li><p>Goal and clause order directly affect termination and performance</p></li>
+</ul>
+</section>
+</section>
 <section>
 <section id="execution-model-and-search"
 class="title-slide slide level1">
@@ -875,7 +915,7 @@ immediately, making <code>can_fly(X)</code> fail for all X</p></li>
 <h2>Prolog programming patterns</h2>
 </section>
 <section id="lists-the-universal-data-structure" class="frame">
-<h2>Lists: the universal data structure</h2>
+<h2>Prolog lists as relations (bridge from Module 9)</h2>
 <p>In classic Prolog, lists are central:</p>
 <ul>
 <li><p>Recursion over lists is a core pattern</p></li>
@@ -920,7 +960,7 @@ data-fontsize="\small"><code class="language-prolog">?- append(Front, Back, [a,b
 without extra loops.</p>
 </section>
 <section id="recursion-patterns-structural-recursion" class="frame">
-<h2>Recursion patterns: structural recursion</h2>
+<h2>Recursion in Prolog relations (transfer from Module 9)</h2>
 <p>For lists:</p>
 <ul>
 <li><p>Base case: empty list <code>[]</code></p></li>

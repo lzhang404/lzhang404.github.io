@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Map ADT &amp; Hashing Technique</title>
+
+  <!-- Same styling pattern as your other Reveal exports -->
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- =========================================================
+           Title
+           ========================================================= -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Map ADT &amp; Hashing Technique</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Overview
+           ========================================================= -->
+      <section>
+        <section class="frame">
+          <h2>Outline</h2>
+          <ul>
+            <li><p><strong>Map ADT</strong>: keys, values, and common operations</p></li>
+            <li><p><strong>Hashing basics</strong>: key, hash code, compression, and table index</p></li>
+            <li><p><strong>Collision handling</strong>: chaining, linear probing, quadratic probing, double hashing</p></li>
+            <li><p><strong>Deletion and resizing</strong>: tombstones, load factor, and rehashing</p></li>
+            <li><p><strong>Hash function design</strong>: simple strategies and exercises</p></li>
+            <li><p><strong>Cryptographic hashing</strong>: security-focused hashing vs table hashing</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Learning goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li><p>Explain what a map stores and how map operations behave</p></li>
+            <li><p>Explain how hashing work</p></li>
+            <li><p>Explain why collisions happen and compare common solutions</p></li>
+            <li><p>Explain why deletion is tricky in open addressing</p></li>
+            <li><p>Use load factor to explain when resizing is needed</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Big idea</h2>
+          <ul>
+            <li><p>A <strong>map</strong> stores key-value pairs.</p></li>
+            <li><p>A <strong>hash table</strong> uses an array to make search, insert, and delete fast on average.</p></li>
+          
+          </ul>
+          </section>
+      </section>
+
+      <!-- =========================================================
+           Map ADT
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Map ADT</h1>
+        </section>
+
+        <section class="frame">
+          <h2>What is a map?</h2>
+          <ul>
+            <li><p>A <strong>map</strong> associates each <strong>key</strong> with a <strong>value</strong>.</p></li>
+            <li><p>Keys are unique.</p></li>
+            <li><p>Values do not need to be unique.</p></li>
+            <li><p>The main purpose is fast retrieval by key.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Core map operations</h2>
+          <ul>
+            <li><p><strong>insert(key, value)</strong>: add a pair or update an existing key</p></li>
+            <li><p><strong>get(key)</strong>: return the value for a key</p></li>
+            <li><p><strong>remove(key)</strong>: delete a key-value pair</p></li>
+            <li><p><strong>contains(key)</strong>: test whether a key is present</p></li>
+            <li><p><strong>size()</strong>: number of key-value pairs</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Example of a map</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">studentID  ->  student name
+
+48         ->  "Vera"
+23         ->  "Maria"
+86         ->  "Paola"</code></pre>
+          <ul>
+            <li><p>The key is the student ID.</p></li>
+            <li><p>The value is the student name.</p></li>
+            <li><p>Search is based on the key, not the value.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Why maps are useful</h2>
+          <ul>
+            <li><p>Fast lookup of information</p></li>
+            <li><p>Dictionaries and glossaries</p></li>
+            <li><p>User accounts and authentication systems</p></li>
+            <li><p>Caches and symbol tables</p></li>
+            <li><p>Frequency counting and indexing</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Implementation challenge</h2>
+          <ul>
+            <li><p>Keys may be large integers, strings, or other types of data.</p></li>
+            <li><p>Direct indexing is often impossible or wasteful.</p></li>
+            <li><p>We need a way to convert many possible keys into a small set of array positions.</p></li>
+            <li><p>That is where hashing comes in.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Hashing Basics
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Hashing Basics</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Key vs hash code vs table index</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">key  --hash function-->  hash code  --compression-->  table index</code></pre>
+          <ul>
+            <li><p>The <strong>key</strong> is the original data.</p></li>
+            <li><p>The <strong>hash code</strong> is a numeric result produced from the key.</p></li>
+            <li><p>The <strong>table index</strong> is the final bucket location in the array.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Hash function</h2>
+          <ul>
+            <li><p>A <strong>hash function</strong> takes a key and computes a numeric value.</p></li>
+            <li><p>That numeric value is called the <strong>hash code</strong>.</p></li>
+            <li><p>The hash code may be much larger than the table size.</p></li>
+            <li><p>So the hash code is usually not the final array position.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">hashCode = hash(key)</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Compression step</h2>
+          <ul>
+            <li><p>The table has only a limited number of buckets.</p></li>
+            <li><p>So we convert the hash code into a valid index.</p></li>
+            <li><p>A common rule is modulo by the table size.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">index = hashCode % tableSize</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Integer example</h2>
+          <ul>
+            <li><p>Suppose the key is <code class="inline">42</code>.</p></li>
+            <li><p>Suppose the hash function for integers is <code class="inline">hash(x) = x</code>.</p></li>
+            <li><p>Suppose the table size is <code class="inline">10</code>.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">key = 42
+hashCode = hash(42) = 42
+index = 42 % 10 = 2</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Another integer example</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">key = 86
+hashCode = hash(86) = 86
+index = 86 % 10 = 6</code></pre>
+          <ul>
+            <li><p>The key is <code class="inline">86</code>.</p></li>
+            <li><p>The hash code is <code class="inline">86</code>.</p></li>
+            <li><p>The final bucket is index <code class="inline">6</code>.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">index :   0   1   2              3                4   5   6                7   8   9
+entry :  [ ] [ ] [(42, "Jan")] [(23, "Maria")] [ ] [ ] [(86, "Paola")] [ ] [ ] [ ]</code></pre>
+        </section>
+
+
+
+        <section class="frame">
+          <h2>Collision</h2>
+          <ul>
+            <li><p>A <strong>collision</strong> happens when two different keys produce the same table index.</p></li>
+            <li><p>Two keys can even have different meanings but still land in the same bucket.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">key = 86
+hashCode = 86
+index = 86 % 10 = 6
+
+key = 6
+hashCode = 6
+index = 6 % 10 = 6
+
+different keys -> same index -> collision</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Terminology note</h2>
+          <ul>
+            <li><p>Some books use “hash function” to mean the whole process from key to final index.</p></li>
+            <li><p>For this course, we separate the ideas.</p></li>
+            <li><p><strong>Hash function</strong> produces the hash code.</p></li>
+            <li><p><strong>Compression step</strong> produces the table index.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Hash Table Applications
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Hash Table Applications</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Hash map</h2>
+          <ul>
+            <li><p>A <strong>hash map</strong> implements the Map ADT using a hash table.</p></li>
+            <li><p>It stores unique keys with associated values.</p></li>
+            <li><p>Common behaviors are insert, get, update, and remove.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Hash set</h2>
+          <ul>
+            <li><p>A <strong>hash set</strong> implements the Set ADT using a hash table.</p></li>
+            <li><p>It stores only unique keys.</p></li>
+            <li><p>Common behaviors are add, remove, and membership testing.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Why hash tables are popular</h2>
+          <ul>
+            <li><p>Average-case operations are often O(1).</p></li>
+            <li><p>They are a natural choice for caches and dictionaries.</p></li>
+            <li><p>They are widely used in programming languages and systems software.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Collision Handling
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Collision Handling</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Two main strategies</h2>
+          <ul>
+            <li><p><strong>Chaining</strong>: each table slot stores a bucket or linked list</p></li>
+            <li><p><strong>Open addressing</strong>: all entries stay inside the table itself</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Chaining</h2>
+          <ul>
+            <li><p>Each array position points to a linked list or bucket.</p></li>
+            <li><p>If multiple keys hash to the same index, they are stored in that bucket.</p></li>
+            <li><p>This makes collisions easy to represent.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Chaining example</h2>
+          <p>Suppose <code class="inline">h(x) = x</code> and table size is 10.</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">table[0] -> (10, "item1") -> (20, "item2")
+table[6] -> (16, "item3") -> (86, "item4")
+table[9] -> ( 9, "item5")</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Chaining trade-offs</h2>
+          <ul>
+            <li><p>Easy to implement</p></li>
+            <li><p>Works even when the table gets fairly full</p></li>
+            <li><p>Uses extra pointer or bucket memory</p></li>
+            <li><p>If one bucket gets long, search time grows in that bucket</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Open addressing</h2>
+          <ul>
+            <li><p>All keys stay in the array itself.</p></li>
+            <li><p>When a collision occurs, the table probes for another slot.</p></li>
+            <li><p>No external linked lists are used.</p></li>
+            <li><p>This saves pointer memory but makes deletion more delicate.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Linear probing</h2>
+          <ul>
+            <li><p>After a collision, check the next slot, then the next, and so on.</p></li>
+            <li><p>The probe rule is</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">index(i) = (h(k) + i) % m
+i = 0, 1, 2, 3, ...</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Linear probing example</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">
+bucket size m = 7
+h(k) = k 
+index(k) = (h(k) + i) % 7
+
+insert 3, h(k) = 3
+  i = 0, index(k) = (3 + 0) % 7 = 3
+
+insert 24, h(k) = 24
+  i = 0, index(k) = (24 + 0) % 7 = 3, occupied
+  i = 1, index(k) = (24 + 1) % 7 = 4
+
+insert 52, h(k) = 52
+  i = 0, index(k) = (52 + 0) % 7 = 3, occupied
+  i = 1, index(k) = (52 + 1) % 7 = 4, occupied
+  i = 2, index(k) = (52 + 2) % 7 = 5</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Primary clustering</h2>
+          <ul>
+            <li><p>Linear probing tends to create long consecutive blocks of occupied slots.</p></li>
+            <li><p>New keys near that region often join the same block.</p></li>
+            <li><p>This is called <strong>primary clustering</strong>.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">
+Before more insertions
+[  ][  ][A ][B ][C ][  ][  ][  ]
+
+After several nearby collisions
+[  ][  ][A ][B ][C ][D ][E ][F ]</code></pre>
+
+        </section>
+
+        <section class="frame">
+          <h2>Quadratic probing</h2>
+          <ul>
+            <li><p>Use square offsets instead of moving one slot at a time.</p></li>
+            <li><p>The probe rule is</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">index(i) = (h(k) + i^2) % m</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Quadratic probing example</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">
+bucket size m = 7
+h(k) = k 
+index(k) = (h(k) + i^2) % 7
+
+insert 3, h(k) = 3
+  i = 0, index(k) = (3 + 0) % 7 = 3
+
+insert 24, h(k) = 24
+  i = 0, index(k) = (24 + 0) % 7 = 3, occupied
+  i = 1, index(k) = (24 + 1) % 7 = 4
+
+insert 52, h(k) = 52
+  i = 0, index(k) = (52 + 0) % 7 = 3, occupied
+  i = 1, index(k) = (52 + 1) % 7 = 4, occupied
+  i = 2, index(k) = (52 + 2^2) % 7 = 0</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Quadratic probing trade-offs</h2>
+          <ul>
+            <li><p>Reduces primary clustering</p></li>
+            <li><p>Can still suffer from secondary clustering</p></li>
+            <li><p>May fail to reach every slot if the table size is chosen poorly</p></li>
+            <li><p>Often works best with prime-sized tables</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Double hashing</h2>
+          <ul>
+            <li><p>Use one hash for the starting position.</p></li>
+            <li><p>Use a second hash for the step size.</p></li>
+            <li><p>This usually spreads probes out better than linear or quadratic probing.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">index(i) = (h1(k) + i * h2(k)) % m</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Double hashing example</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">
+bucket size: m = 11
+h1(k) = k
+h2(k) = 7 - (k % 7)
+index(k) = (h1(k) + i * h2(k)) % 11
+
+insert 22
+  h1(k) = 22, h2(k) = 7 - (22 % 7) = 7 - 1 = 6
+  i = 0, index(k) = (22 + 0 * 6) % 11 = 22 % 11 = 0
+
+insert 33
+  h1(k) = 33, h2(k) = 7 - (33 % 7) = 7 - 5 = 2
+  i = 0, index(k) = (33 + 0 * 2) % 11 = 33 % 11 = 0
+  collision at bucket 0
+
+  i = 1, index(k) = (33 + 1 * 2) % 11 = 35 % 11 = 2
+  bucket 2 is empty, place 33 at bucket 2
+
+insert 44
+  h1(k) = 44, h2(k) = 7 - (44 % 7) = 7 - 2 = 5
+  i = 0
+  index(k) = (44 + 0 * 5) % 11 = 44 % 11 = 0
+  collision at bucket 0
+
+  i = 1
+  index(k) = (44 + 1 * 5) % 11 = 49 % 11 = 5
+  bucket 5 is empty
+  place 44 at bucket 5
+
+insert 55
+  h1(k) = 55
+  h2(k) = 7 - (55 % 7) = 7 - 6 = 1
+  i = 0
+  index(k) = (55 + 0 * 1) % 11 = 55 % 11 = 0
+  collision at bucket 0
+
+  i = 1
+  index(k) = (55 + 1 * 1) % 11 = 56 % 11 = 1
+  bucket 1 is empty
+  place 55 at bucket 1</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Comparison of methods</h2>
+          <table>
+            <thead>
+              <tr><th>Method</th><th>Main issue</th><th>Memory</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Chaining</td><td>Long buckets</td><td>Higher</td><td>Simple and flexible</td></tr>
+              <tr><td>Linear probing</td><td>Primary clustering</td><td>Low</td><td>Very simple</td></tr>
+              <tr><td>Quadratic probing</td><td>Secondary clustering</td><td>Low</td><td>Better spread</td></tr>
+              <tr><td>Double hashing</td><td>More complex hashing</td><td>Low</td><td>Often best spread</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Deletion and Resizing
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Deletion &amp; Resizing</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Why deletion is hard in open addressing</h2>
+          <ul>
+            <li><p>Search depends on following a probe sequence.</p></li>
+            <li><p>If a removed slot becomes completely empty too soon, a later search may stop early.</p></li>
+            <li><p>That can make an existing key appear missing.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Deletion problem example</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">
+Suppose:
+- table size m = 10
+- hash function h(k) = k
+- index = h(k) % 10
+- collision rule: linear probing
+  next index = (start index + i) % 10, for i = 0, 1, 2, ...
+
+After inserting 15, 25, 35 in order, the hash table looks like this:
+
+index :   0   1   2   3   4   5    6    7    8   9
+entry :  [ ] [ ] [ ] [ ] [ ] [15] [25] [35] [ ] [ ]
+
+Suppose we remove 15 from table[5].
+
+If we simply mark table[5] as Empty, the table becomes:
+
+index :   0   1   2   3   4   5   6    7    8   9
+entry :  [ ] [ ] [ ] [ ] [ ] [ ] [25] [35] [ ] [ ]
+
+Search for 35
+  h(35) = 35
+  start index = 35 % 10 = 5
+  i = 0 -> index = (5 + 0) % 10 = 5
+  table[5] is Empty, search stop
+               </code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Deleted marker</h2>
+          <ul>
+            <li><p>Instead of marking a removed slot as <strong>Empty</strong>, mark it as <strong>Deleted</strong>.</p></li>
+            <li><p>Search continues past deleted slots.</p></li>
+            <li><p>Insertion may reuse a deleted slot later.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Slot states</h2>
+          <table>
+            <thead>
+              <tr><th>State</th><th>Meaning</th><th>Search behavior</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Empty</td><td>Never used</td><td>Stop</td></tr>
+              <tr><td>Occupied</td><td>Contains a key</td><td>Check key</td></tr>
+              <tr><td>Deleted</td><td>Previously used</td><td>Keep probing</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Backward shift deletion</h2>
+          <ul>
+            <li><p>This technique is mainly used with linear probing.</p></li>
+            <li><p>Instead of leaving tombstones, shift later entries backward when safe.</p></li>
+            <li><p>This reduces buildup of deleted markers.</p></li>
+            <li><p>Deletion is more expensive, but future searches can be faster.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Load factor</h2>
+          <ul>
+            <li><p>Performance depends strongly on how full the table is.</p></li>
+            <li><p>The <strong>load factor</strong> measures that fullness.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">load factor α = number of stored keys / table size</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Why resize?</h2>
+          <ul>
+            <li><p>As the load factor grows, collisions become more common.</p></li>
+            <li><p>Probe chains and bucket lengths get longer.</p></li>
+            <li><p>Operations become slower.</p></li>
+            <li><p>Resizing restores performance by giving keys more room.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Typical resize rule</h2>
+          <ul>
+            <li><p>When the load factor passes a threshold, allocate a larger table.</p></li>
+            <li><p>For open addressing, the threshold is often around 0.5 to 0.75.</p></li>
+            <li><p>Then reinsert all stored keys into the new table.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Why rehashing is necessary</h2>
+          <ul>
+            <li><p>The final index depends on the table size.</p></li>
+            <li><p>If the table size changes, the old indices are no longer valid.</p></li>
+            <li><p>Every key must be hashed again and compressed using the new size.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Resize cost</h2>
+          <ul>
+            <li><p>A resize takes O(n) time because all existing keys are reinserted.</p></li>
+            <li><p>But resizing happens only occasionally.</p></li>
+            <li><p>So insertion is still O(1) amortized in a typical design.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Hash Function Design
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Hash Function Design</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Goals of a good hash function</h2>
+          <ul>
+            <li><p>Deterministic</p></li>
+            <li><p>Fast to compute</p></li>
+            <li><p>Spreads keys uniformly</p></li>
+            <li><p>Produces few collisions for typical inputs</p></li>
+            <li><p>Avoids obvious input patterns</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Modulo hashing</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">hashCode = key
+index = hashCode % N</code></pre>
+          <ul>
+            <li><p>Very simple and fast</p></li>
+            <li><p>Works well when keys are well distributed</p></li>
+            <li><p>Can behave poorly when keys have patterns related to <code class="inline">N</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Mid-square hashing</h2>
+          <ul>
+            <li><p>Square the key.</p></li>
+            <li><p>Take middle digits or bits from the result.</p></li>
+            <li><p>This can reduce some simple patterns in the input.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Multiplicative hashing</h2>
+          <ul>
+            <li><p>Repeatedly multiply by a constant and add the next value or character.</p></li>
+            <li><p>This is common for strings and sequences.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">hashCode = ((hashCode * A) + nextValue)</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Exercise: linear probing</h2>
+          <ul>
+            <li><p>Table size: 7</p></li>
+            <li><p>Hash function: <code class="inline">hashCode = key</code></p></li>
+            <li><p>Compression: <code class="inline">index = hashCode % 7</code></p></li>
+            <li><p>Insert: 10, 20, 15</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Exercise result</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">10 -> hashCode 10 -> index 3
+20 -> hashCode 20 -> index 6
+15 -> hashCode 15 -> index 1
+
+index : 0  1   2  3   4  5  6
+entry : [ ][15][ ][10][ ][ ][20]</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Exercise: quadratic probing</h2>
+          <ul>
+            <li><p>Table size: 11</p></li>
+            <li><p>Hash function: <code class="inline">hashCode = key</code></p></li>
+            <li><p>Base index: <code class="inline">hashCode % 11</code></p></li>
+            <li><p>Insert: 27, 18, 29, 28, 30</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Quadratic probing result</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">27 -> base index 5
+18 -> base index 7
+29 -> base index 7 occupied, then 8
+28 -> base index 6
+30 -> base index 8 occupied, then 9
+
+index : 0 1 2 3 4 5  6  7  8  9 10
+entry : [ ][ ][ ][ ][ ][27][28][18][29][30][ ]</code></pre>
+        </section>
+
+      
+      <!-- =========================================================
+           Cryptographic Hashing
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Cryptographic Hashing</h1>
+        </section>
+
+        <section class="frame">
+          <h2>What is cryptographic hashing?</h2>
+          <ul>
+            <li><p>A cryptographic hash function maps data of any size to a fixed-size digest.</p></li>
+            <li><p>It is designed for security, not just fast indexing.</p></li>
+            <li><p>Small changes in input should create very different outputs.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Important properties</h2>
+          <ul>
+            <li><p>Deterministic</p></li>
+            <li><p>Fast to compute</p></li>
+            <li><p>Hard to reverse</p></li>
+            <li><p>Hard to find two inputs with the same digest</p></li>
+            <li><p>Small input changes should dramatically change the output</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common uses</h2>
+          <ul>
+            <li><p>Password storage</p></li>
+            <li><p>File integrity checks</p></li>
+            <li><p>Digital signatures</p></li>
+            <li><p>Blockchain and security systems</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Hash table hashing vs cryptographic hashing</h2>
+          <table>
+            <thead>
+              <tr><th>Purpose</th><th>Hash table hashing</th><th>Cryptographic hashing</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Main goal</td><td>Fast indexing</td><td>Security</td></tr>
+              <tr><td>Speed</td><td>Very fast</td><td>Fast but more complex</td></tr>
+              <tr><td>Collision resistance</td><td>Helpful</td><td>Essential</td></tr>
+              <tr><td>Reversibility</td><td>Not central</td><td>Should be infeasible</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Wrap-up
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Wrap-up</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Summary</h2>
+          <ul>
+            <li><p>Maps store key-value pairs with unique keys.</p></li>
+            <li><p>Hashing is best explained as <strong>key -> hash code -> table index</strong>.</p></li>
+            <li><p>Collisions are unavoidable and must be handled carefully.</p></li>
+            <li><p>Open addressing needs careful deletion and resizing rules.</p></li>
+            <li><p>Hash function quality strongly affects performance.</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+
+  <!-- Plugins -->
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>

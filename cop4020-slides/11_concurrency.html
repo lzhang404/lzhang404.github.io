@@ -33,6 +33,7 @@
 <section id="overview" class="frame">
 <h2>Overview</h2>
 <ul>
+<li><p>Bridge from Module 10: execution strategy now moves from proof search to concurrent scheduling</p></li>
 <li><p>Why concurrency: performance vs responsiveness</p></li>
 <li><p>Shared-memory threads: races and coordination</p></li>
 <li><p>Synchronization: locks, semaphores, monitors, condition
@@ -65,6 +66,33 @@ level</p></li>
 concurrency</p></li>
 <li><p>Read small examples in Java/C#, Go, TypeScript, Python async, and
 Rust</p></li>
+</ul>
+</section>
+<section id="module-boundary-and-placement" class="frame">
+<h2>Module boundary and placement</h2>
+<ul>
+<li><p><strong>From Module 10:</strong> both modules separate specification from execution strategy; here the strategy is scheduling/interleaving.</p></li>
+<li><p><strong>This module (11):</strong> focuses on correctness hazards and coordination models for concurrent execution.</p></li>
+<li><p><strong>To Module 12:</strong> runtime behavior (stack, exceptions, memory reclamation) explains many concurrency failure modes in production.</p></li>
+</ul>
+</section>
+<section id="language-map-for-this-module" class="frame">
+<h2>Language map for this module</h2>
+<ul>
+<li><p><strong>Java/C#:</strong> shared-memory threads and locking primitives.</p></li>
+<li><p><strong>Go:</strong> message passing with goroutines and channels.</p></li>
+<li><p><strong>TypeScript/Python:</strong> async/await and event-loop concurrency.</p></li>
+<li><p><strong>Rust (cameo):</strong> compile-time safety constraints for concurrency.</p></li>
+</ul>
+</section>
+<section id="module-flow-map" class="frame">
+<h2>Module flow map</h2>
+<ul>
+<li><p>Step 1: motivations and hazard vocabulary (race, deadlock, latency/throughput)</p></li>
+<li><p>Step 2: shared-memory model and synchronization primitives</p></li>
+<li><p>Step 3: liveness pitfalls and deadlock prevention</p></li>
+<li><p>Step 4: alternative models (message passing and async event loops)</p></li>
+<li><p>Step 5: model selection under production constraints</p></li>
 </ul>
 </section>
 </section>
@@ -437,6 +465,17 @@ other</p></li>
 <li><p>consistent lock ordering (both threads acquire a then b)</p></li>
 </ul>
 </section></section>
+<section class="slide level2">
+<section id="bridge-shared-memory-to-message-passing" class="frame">
+<h2>Bridge: shared memory to message passing</h2>
+<p>Shared-memory threads emphasize protecting mutable state.</p>
+<p>Next model shift: avoid sharing by default and communicate via channels/messages.</p>
+<ul>
+<li><p>Trade lock coordination for protocol/queue design</p></li>
+<li><p>Many race bugs disappear, but backpressure and message ordering become central</p></li>
+</ul>
+</section>
+</section>
 <section>
 <section id="message-passing-and-go" class="title-slide slide level1">
 <h1>Message passing and Go</h1>
@@ -564,6 +603,16 @@ func main() {
 <li><p>there is no receiver</p></li>
 </ul>
 </section></section>
+<section class="slide level2">
+<section id="bridge-message-passing-to-async" class="frame">
+<h2>Bridge: message passing to async/await</h2>
+<p>Both models handle many in-flight tasks, but with different defaults:</p>
+<ul>
+<li><p>Go model: explicit goroutines/channels, often multi-threaded runtime</p></li>
+<li><p>Async/await model: event-loop scheduling, often single-threaded user code</p></li>
+</ul>
+</section>
+</section>
 <section>
 <section id="asyncawait-and-event-loops"
 class="title-slide slide level1">

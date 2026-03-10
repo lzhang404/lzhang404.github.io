@@ -39,6 +39,7 @@
 <h2>Overview</h2>
 <p>Topics today:</p>
 <ul>
+<li><p>Bridge from Module 11: understand runtime behavior underneath concurrent code</p></li>
 <li><p>Exception handling models: error codes, exceptions, typed
 results</p></li>
 <li><p>Stack unwinding, finally blocks, resource cleanup</p></li>
@@ -67,6 +68,34 @@ GC</p></li>
 <li><p>Connect runtime choices to reliability and performance</p></li>
 </ul>
 </section>
+<section id="module-boundary-and-placement" class="frame">
+<h2>Module boundary and placement</h2>
+<ul>
+<li><p><strong>From Module 11:</strong> concurrency hazards were model-level; now we study runtime mechanisms that shape failure and recovery.</p></li>
+<li><p><strong>This module (12):</strong> focuses on exceptions, unwinding/cleanup, and memory management strategies.</p></li>
+<li><p><strong>To Module 13:</strong> these runtime tradeoffs become language-selection and DSL design constraints.</p></li>
+</ul>
+<p>Scope note: synchronization algorithms stay in Module 11; today is runtime behavior and reliability.</p>
+</section>
+<section id="language-map-for-this-module" class="frame">
+<h2>Language map for this module</h2>
+<ul>
+<li><p><strong>Java:</strong> checked/unchecked exceptions and unwinding behavior.</p></li>
+<li><p><strong>C++:</strong> RAII and explicit ownership control.</p></li>
+<li><p><strong>TypeScript/Python:</strong> practical exception and retention pitfalls.</p></li>
+<li><p><strong>Rust:</strong> ownership + Result as a runtime-strategy alternative.</p></li>
+</ul>
+</section>
+<section id="module-flow-map" class="frame">
+<h2>Module flow map</h2>
+<ul>
+<li><p>Step 1: runtime responsibilities and failure classification</p></li>
+<li><p>Step 2: error signaling models and propagation</p></li>
+<li><p>Step 3: unwinding and cleanup guarantees</p></li>
+<li><p>Step 4: memory management strategies and tradeoffs</p></li>
+<li><p>Step 5: ownership-as-strategy (Rust) and production selection criteria</p></li>
+</ul>
+</section>
 <section id="what-a-runtime-system-is-responsible-for" class="frame">
 <h2>What a runtime system is responsible for</h2>
 <p>A runtime system provides the machinery and rules for:</p>
@@ -83,6 +112,15 @@ hooks</p></li>
 <li><p>language features often depend on runtime support and
 conventions</p></li>
 </ul>
+</section>
+<section id="runtime-anatomy-stack-heap-handlers" class="frame">
+<h2>Runtime anatomy: stack, heap, handlers</h2>
+<ul>
+<li><p><strong>Stack:</strong> call frames, return addresses, local control context</p></li>
+<li><p><strong>Heap:</strong> dynamically allocated objects and shared structures</p></li>
+<li><p><strong>Exception handler chain:</strong> where control transfers during failures</p></li>
+</ul>
+<p>This anatomy explains both correctness bugs (wrong cleanup) and performance issues (allocation/GC pressure).</p>
 </section>
 <section id="two-kinds-of-failures-in-real-systems" class="frame">
 <h2>Two kinds of failures in real systems</h2>
@@ -446,6 +484,17 @@ alive</p></li>
 death</p></li>
 </ul>
 </section></section>
+<section class="slide level2">
+<section id="bridge-errors-to-memory" class="frame">
+<h2>Bridge: from error paths to memory strategy</h2>
+<p>Error handling and memory management are connected design decisions:</p>
+<ul>
+<li><p>Cleanup guarantees determine whether failures leak resources</p></li>
+<li><p>Ownership model determines how hard cleanup is to reason about</p></li>
+<li><p>Runtime policy (manual, RC, tracing GC, ownership types) shapes failure modes</p></li>
+</ul>
+</section>
+</section>
 <section>
 <section id="memory-management-strategies"
 class="title-slide slide level1">
@@ -651,13 +700,13 @@ increases</p></li>
 </section></section>
 <section>
 <section id="rust-ownership" class="title-slide slide level1">
-<h1>Rust : ownership</h1>
+<h1>Ownership model (Rust case study)</h1>
 <div class="frame">
 
 </div>
 </section>
 <section id="rust-ownership-as-alternative-to-tracing-gc" class="frame">
-<h2>Rust : ownership as alternative to tracing GC</h2>
+<h2>Rust ownership as alternative to tracing GC</h2>
 <p>Rust enforces lifetime and aliasing rules:</p>
 <ul>
 <li><p>each value has an owner</p></li>

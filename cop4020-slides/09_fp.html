@@ -1,1249 +1,1478 @@
 <!DOCTYPE html>
 <html lang="en" data-content_root="../">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-<title>Functional Programming</title>
-    <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
-    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Functional Programming</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
+
 <body>
   <div class="reveal">
     <div class="slides" role="main">
 
-<section>
-<section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
-<h1>Functional Programming</h1>
-<div class="subtitle docutils container">
-<p><strong>Module 9</strong></p>
-<p>Liting Zhang</p>
-</div>
-</section>
-</section>
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Functional Programming</h1>
+          <div class="subtitle docutils container">
+            <p>Module 9</p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
 
-<section class="slide level2">
+      <section>
+        <section id="overview" class="title-slide slide level1">
+          <h1>Module roadmap</h1>
+        </section>
 
-<section id="overview" class="frame">
-<h2>Overview</h2>
-<ul>
-<li><p>FP basics: expressions, immutability, no side effects</p></li>
-<li><p>Lambda expressions and higher-order functions</p></li>
-<li><p>Recursion as a core control mechanism</p></li>
-<li><p>Lists and pattern matching</p></li>
-<li><p>map, filter, reduce (fold)</p></li>
-<li><p>Strict vs lazy evaluation (conceptual)</p></li>
-<li><p>FP in the wild: functional style in TypeScript and
-Python</p></li>
-<li><p>Pure FP in Haskell: types, purity, IO boundary</p></li>
-<li><p>Industry angle: data pipelines, front-end state,
-concurrency</p></li>
-</ul>
-</section>
-<section id="learning-goals" class="frame">
-<h2>Learning goals</h2>
-<p>After this lecture, you should be able to</p>
-<ul>
-<li><p>Explain referential transparency, purity, and
-immutability</p></li>
-<li><p>Identify side effects and refactor toward pure functions</p></li>
-<li><p>Use lambdas and higher-order functions to build
-pipelines</p></li>
-<li><p>Write and reason about recursive definitions and base
-cases</p></li>
-<li><p>Use pattern matching to decompose data safely</p></li>
-<li><p>Compare strict and lazy evaluation and predict basic
-behavior</p></li>
-<li><p>Apply functional style in TypeScript and Python</p></li>
-<li><p>Explain how Haskell isolates effects with IO types</p></li>
-<li><p>Describe why FP helps with data flow, state management, and
-concurrency</p></li>
-</ul>
-</section>
-<section id="core-idea-program-by-transforming-values" class="frame">
-<h2>Core idea: program by transforming values</h2>
-<p>A useful FP mental model:</p>
-<ul>
-<li><p>Data flows through a sequence of transformations</p></li>
-<li><p>Each step is ideally a pure function: input values to output
-values</p></li>
-<li><p>Effects exist, but are pushed to the edges: reading input,
-writing output, network calls</p></li>
-</ul>
-<p>Typical benefits:</p>
-<ul>
-<li><p>Easier reasoning: fewer hidden dependencies</p></li>
-<li><p>Easier testing: pure functions are simple to test</p></li>
-<li><p>Easier parallelism: immutable data reduces data races</p></li>
-</ul>
-</section>
-</section>
-<section>
-<section id="fp-basics" class="title-slide slide level1">
-<h1>FP basics</h1>
+        <section id="overview-agenda" class="frame">
+          <h2>What this module covers</h2>
+          <ul>
+            <li>
+              <p>Foundations of functional programming: expressions, effects, purity, referential transparency, immutability</p>
+            </li>
+            <li>
+              <p>Functions as values: lambdas, higher-order functions, map, filter, composition, currying, partial application</p>
+            </li>
+            <li>
+              <p>Data and control: lists, algebraic data types, pattern matching, recursion, folds</p>
+            </li>
+            <li>
+              <p>Evaluation strategy: strict evaluation and lazy evaluation</p>
+            </li>
+            <li>
+              <p>Functional style in mainstream languages such as TypeScript and Python</p>
+            </li>
+            <li>
+              <p>Haskell as a language built around pure functional programming</p>
+            </li>
+            <li>
+              <p>Preview: why immutability helps concurrency</p>
+            </li>
+          </ul>
+        </section>
 
-</section>
-<section id="fp-basics-1" class="frame">
-<h2>FP basics</h2>
-</section>
-<section id="expressions-and-values" class="frame">
-<h2>Expressions and values</h2>
-<p>FP emphasizes expressions.</p>
-<ul>
-<li><p>Expression: evaluates to a value</p></li>
-<li><p>Statement: performs an action (often for effects)</p></li>
-</ul>
-<p>FP style tends to:</p>
-<ul>
-<li><p>Prefer expression-oriented design</p></li>
-<li><p>Use function return values rather than updating shared
-variables</p></li>
-<li><p>Build programs by composing expressions</p></li>
-</ul>
-</section>
-<section id="purity-and-side-effects" class="frame">
-<h2>Purity and side effects</h2>
-<p>Pure function</p>
-<ul>
-<li><p>Same inputs always produce the same output</p></li>
-<li><p>No observable side effects</p></li>
-</ul>
-<p>Side effects include:</p>
-<ul>
-<li><p>Mutating objects or global variables</p></li>
-<li><p>Printing, logging</p></li>
-<li><p>Reading time, randomness</p></li>
-<li><p>I/O: files, network, database</p></li>
-</ul>
-<p>Pure functions are not always possible, but they are often the best
-default for core logic.</p>
-</section>
-<section id="referential-transparency" class="frame">
-<h2>Referential transparency</h2>
-<p>Referential transparency means an expression can be replaced by its
-value without changing program behavior.</p>
-<p>If f is pure, then:</p>
-<ul>
-<li><p>Let y = f(10)</p></li>
-<li><p>You can replace every f(10) with y safely</p></li>
-</ul>
-<p>Why it matters:</p>
-<ul>
-<li><p>Supports equational reasoning</p></li>
-<li><p>Makes refactoring and optimization safer</p></li>
-<li><p>Makes memoization correct</p></li>
-</ul>
-</section>
-<section id="immutability" class="frame">
-<h2>Immutability</h2>
-<p>Immutability means data does not change after creation.</p>
-<ul>
-<li><p>Updates produce new values rather than modifying old
-ones</p></li>
-<li><p>Old values remain valid and can be safely shared</p></li>
-</ul>
-<p>Practical consequences:</p>
-<ul>
-<li><p>Fewer bugs from unexpected mutation</p></li>
-<li><p>Easier undo/redo and time-travel debugging in UI state</p></li>
-<li><p>Easier concurrency since shared reads are safe</p></li>
-</ul>
-</section>
-<section id="typescript-mutation-vs-immutable-update" class="frame">
-<h2>TypeScript: mutation vs immutable update</h2>
-<p>Arrays and objects are mutable by default, but FP style prefers
-copying on update.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type User = { id: string; name: string; points: number };
+        <section id="learning-goals" class="frame">
+          <h2>Learning goals</h2>
+          <ul>
+            <li>
+              <p>Define purity, immutability, and referential transparency as general FP ideas</p>
+            </li>
+            <li>
+              <p>Explain how higher-order functions separate control structure from behavior</p>
+            </li>
+            <li>
+              <p>Use composition, currying, partial application, and common list transformations to build reusable functions</p>
+            </li>
+            <li>
+              <p>Explain how recursion and folds process recursive data</p>
+            </li>
+            <li>
+              <p>Understand why algebraic data types and pattern matching improve clarity</p>
+            </li>
+            <li>
+              <p>Predict how strict and lazy evaluation affect behavior and performance</p>
+            </li>
+            <li>
+              <p>Explain why Haskell is useful for studying pure functional programming</p>
+            </li>
+          </ul>
+        </section>
 
-const u: User = { id: &quot;u1&quot;, name: &quot;Ada&quot;, points: 10 };
+        <section id="module-flow-map" class="frame">
+          <h2>How the module is organized</h2>
+          <ol>
+            <li>
+              <p>Foundations of functional programming</p>
+            </li>
+            <li>
+              <p>Functions as values and common list transformations</p>
+            </li>
+            <li>
+              <p>Recursive data and control patterns</p>
+            </li>
+            <li>
+              <p>Evaluation strategy</p>
+            </li>
+            <li>
+              <p>Functional style in mainstream languages</p>
+            </li>
+            <li>
+              <p>Haskell as a pure functional language</p>
+            </li>
+          </ol>
+        </section>
 
-// mutation
-u.points = u.points + 5;
+        <section id="background" class="frame">
+          <h2>What we build on from earlier modules</h2>
+          <ul>
+            <li>
+              <p>Expressions and parsing from Module 6</p>
+            </li>
+            <li>
+              <p>Mutation and evaluation order from earlier modules</p>
+            </li>
+            <li>
+              <p>Closures and lambda syntax from Module 7</p>
+            </li>
+          </ul>
+          <p>In this module, we use that background to study a value-centered style of programming.</p>
+        </section>
+      </section>
 
-// immutable update (copy)
-const u2: User = { ...u, points: u.points + 5 };
+      <section>
+        <section id="fp-foundations" class="title-slide slide level1">
+          <h1>Foundations of functional programming</h1>
+        </section>
 
-console.log(u.points);
-console.log(u2.points);</code></pre>
-<p>In FP style, core logic prefers producing u2 rather than mutating
-u.</p>
-</section>
-<section id="typescript-readonly-helps-communicate-intent"
-class="frame">
-<h2>TypeScript: readonly helps communicate intent</h2>
-<p>readonly reduces accidental mutation in larger codebases.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type User = { readonly id: string; readonly name: string; readonly points: number };
+        <section id="big-idea" class="frame">
+          <h2>The main viewpoint</h2>
+          <ul>
+            <li>
+              <p>Imperative programming often focuses on commands that change program state</p>
+            </li>
+            <li>
+              <p>Functional programming focuses on computing values from other values</p>
+            </li>
+            <li>
+              <p>Instead of asking what state changes next, we ask what result should be produced from the inputs</p>
+            </li>
+            <li>
+              <p>This often makes programs easier to test, explain, and reorganize</p>
+            </li>
+          </ul>
+        </section>
 
-function awardPoints(u: User, delta: number): User {
-  return { ...u, points: u.points + delta };
-}
+        <section id="expressions-effects" class="frame">
+          <h2>Expressions and effects</h2>
+          <ul>
+            <li>
+              <p>An expression computes a value</p>
+            </li>
+            <li>
+              <p>An effect changes something outside the local computation, such as output, input, time, randomness, or mutable state</p>
+            </li>
+            <li>
+              <p>Functional programming tries to keep most computation expression-centered and to control where effects occur</p>
+            </li>
+          </ul>
+        </section>
 
-const u1: User = { id: &quot;u1&quot;, name: &quot;Ada&quot;, points: 10 };
-const u2 = awardPoints(u1, 5);
+        <section id="referential-transparency" class="frame">
+          <h2>Referential transparency</h2>
+          <ul>
+            <li>
+              <p>An expression is referentially transparent if it can be replaced by its value without changing program behavior</p>
+            </li>
+            <li>
+              <p>This matters because it allows local reasoning about code</p>
+            </li>
+            <li>
+              <p>Effects such as printing, mutation, reading time, or randomness break referential transparency</p>
+            </li>
+          </ul>
+        </section>
 
-console.log(u1.points);
-console.log(u2.points);</code></pre>
-<p>readonly is a compile-time constraint; it supports discipline in
-functional style.</p>
-</section>
-<section id="python-mutation-vs-immutable-update" class="frame">
-<h2>Python: mutation vs immutable update</h2>
-<p>Python lists and dicts are mutable, tuples are immutable.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-python">u = {&quot;id&quot;: &quot;u1&quot;, &quot;name&quot;: &quot;Ada&quot;, &quot;points&quot;: 10}
+        <section id="pure-function" class="frame">
+          <h2>Pure function</h2>
+          <ul>
+            <li>
+              <p>A pure function returns the same result for the same inputs</p>
+            </li>
+            <li>
+              <p>A pure function does not mutate shared state or perform observable effects</p>
+            </li>
+            <li>
+              <p>Its behavior is determined only by its arguments</p>
+            </li>
+          </ul>
+        </section>
 
-# mutation
-u[&quot;points&quot;] = u[&quot;points&quot;] + 5
+        <section id="immutability" class="frame">
+          <h2>Immutability</h2>
+          <ul>
+            <li>
+              <p>Immutability means values are not updated in place after they are created</p>
+            </li>
+            <li>
+              <p>Instead of changing an existing value, a program computes a new value</p>
+            </li>
+            <li>
+              <p>This reduces hidden interactions caused by shared mutable state</p>
+            </li>
+          </ul>
+        </section>
 
-# immutable-style update (copy)
-u2 = {**u, &quot;points&quot;: u[&quot;points&quot;] + 5}
+        <section id="structural-sharing" class="frame">
+          <h2>Immutable update does not mean copying everything</h2>
+          <ul>
+            <li>
+              <p>Many immutable data structures are persistent</p>
+            </li>
+            <li>
+              <p>A persistent structure allows new versions to share most of the old structure</p>
+            </li>
+            <li>
+              <p>This is called structural sharing</p>
+            </li>
+            <li>
+              <p>So new value does not automatically mean full deep copy</p>
+            </li>
+          </ul>
+        </section>
 
-print(u[&quot;points&quot;])
-print(u2[&quot;points&quot;])</code></pre>
-<p>Copy-on-update is common for FP-style code in Python.</p>
-</section>
-<section id="effects-at-the-edges" class="frame">
-<h2>Effects at the edges</h2>
-<p>A common FP architecture idea:</p>
-<ul>
-<li><p>Keep business logic pure</p></li>
-<li><p>Put I/O and mutation in a small boundary layer</p></li>
-</ul>
-<p>Typical layering:</p>
-<ul>
-<li><p>Pure domain functions: compute results from inputs</p></li>
-<li><p>Adapter layer: read files, call network, parse inputs</p></li>
-<li><p>Presentation layer: print or render outputs</p></li>
-</ul>
-<p>This is not limited to Haskell; it is widely used in TypeScript and
-Python services.</p>
-</section>
-<section id="practice-1-identify-side-effects-and-refactor-typescript"
-class="frame">
-<h2>Practice 1: identify side effects and refactor (TypeScript)</h2>
-<p>Identify which lines cause effects, then refactor so the core
-computation is pure.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type Cart = { items: number[]; total: number };
+        <section id="effects-boundary" class="frame">
+          <h2>Effects at the boundary</h2>
+          <ul>
+            <li>
+              <p>Functional programming does not eliminate effects</p>
+            </li>
+            <li>
+              <p>It tries to keep the core logic pure and place I/O or mutation in a smaller outer layer</p>
+            </li>
+            <li>
+              <p>A common design is a pure core surrounded by an effectful shell</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="practice-effects" class="frame">
+          <h2>Practice: identify the effects</h2>
+          <p>Which lines cause effects, and how would you separate pure computation from logging and mutation?</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type Cart = { items: number[]; total: number };
 
 function addItem(cart: Cart, price: number): void {
   cart.items.push(price);
   cart.total = cart.total + price;
-  console.log(&quot;added&quot;, price);
+  console.log("added", price);
 }
 
 const c: Cart = { items: [], total: 0 };
 addItem(c, 10);
 addItem(c, 5);
 console.log(c.total);</code></pre>
-<ul>
-<li><p>Which lines are side effects</p></li>
-<li><p>Refactor to a pure function that returns a new cart</p></li>
-<li><p>Keep logging separate from the pure update</p></li>
-</ul>
-</section>
-<section id="practice-1-identify-side-effects-and-refactor-typescript-1"
-class="frame">
-<h2>Practice 1: identify side effects and refactor (TypeScript)</h2>
-<p>Side effects in the original code</p>
-<ul>
-<li><p>cart.items.push(price) mutates the items array</p></li>
-<li><p>cart.total = ... mutates cart state</p></li>
-<li><p>console.log is an I/O effect</p></li>
-</ul>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type Cart = { items: number[]; total: number };
+        </section>
+
+        <section id="practice-effects-answer" class="frame">
+          <h2>One refactoring</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type Cart = { items: number[]; total: number };
+
 function addItemPure(cart: Cart, price: number): Cart {
-  const items2 = [...cart.items, price];
-  const total2 = cart.total + price;
-  return { items: items2, total: total2 };
+  return { items: [...cart.items, price], total: cart.total + price };
 }
+
 function logAdded(price: number): void {
-  console.log(&quot;added&quot;, price);
+  console.log("added", price);
 }
+
 let c: Cart = { items: [], total: 0 };
-c = addItemPure(c, 10);
-logAdded(10);
-c = addItemPure(c, 5);
-logAdded(5);
+c = addItemPure(c, 10); logAdded(10);
+c = addItemPure(c, 5);  logAdded(5);
 console.log(c.total);</code></pre>
-</section></section>
-<section>
-<section id="lambdas-and-higher-order-functions"
-class="title-slide slide level1">
-<h1>Lambdas and higher-order functions</h1>
+          <ul>
+            <li>
+              <p>The update logic is now pure</p>
+            </li>
+            <li>
+              <p>Logging remains effectful, but it is outside the core update</p>
+            </li>
+          </ul>
+        </section>
+      </section>
 
-</section>
-<section id="lambdas-and-higher-order-functions-1" class="frame">
-<h2>Lambdas and higher-order functions</h2>
-</section>
-<section id="key-term-lambda" class="frame">
-<h2>Key term: lambda</h2>
-<p>Lambda</p>
-<ul>
-<li><p>An anonymous function written inline without a name</p></li>
-<li><p>Used when a function is needed as a value</p></li>
-<li><p>Often used as an argument to higher-order functions</p></li>
-</ul>
-<p>Same idea in three languages:</p>
-<ul>
-<li><p>TypeScript: <span class="math inline">\((x) \Rightarrow x *
-2\)</span></p></li>
-<li><p>Python: lambda x: x * 2</p></li>
-<li><p>Haskell: <span class="math inline">\(\backslash x \rightarrow x *
-2\)</span></p></li>
-</ul>
-</section>
-<section id="higher-order-functions" class="frame">
-<h2>Higher-order functions</h2>
-<p>Higher-order function</p>
-<ul>
-<li><p>Takes a function as an argument, or</p></li>
-<li><p>Returns a function as a result</p></li>
-</ul>
-<p>Why they are important in FP:</p>
-<ul>
-<li><p>Separate mechanism from policy</p></li>
-<li><p>Reuse control patterns (map, filter, fold)</p></li>
-<li><p>Enable composition of small functions into pipelines</p></li>
-</ul>
-</section>
-<section id="typescript-functions-as-values" class="frame">
-<h2>TypeScript: functions as values</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type Pred&lt;T&gt; = (x: T) =&gt; boolean;
+      <section>
+        <section id="functions-values" class="title-slide slide level1">
+          <h1>Functions as values</h1>
+        </section>
 
-function keep&lt;T&gt;(xs: T[], p: Pred&lt;T&gt;): T[] {
-  return xs.filter(p);
-}
+        <section id="first-class-functions" class="frame">
+          <h2>First-class functions</h2>
+          <ul>
+            <li>
+              <p>A value is first-class if it can be stored in variables, passed as an argument, and returned from a function</p>
+            </li>
+            <li>
+              <p>In functional programming, functions are treated as first-class values</p>
+            </li>
+            <li>
+              <p>This allows programs to abstract over behavior as well as over data</p>
+            </li>
+          </ul>
+        </section>
 
-const nums = [1, 2, 3, 4, 5];
-const evens = keep(nums, x =&gt; x % 2 === 0);
+        <section id="lambda-syntax" class="frame">
+          <h2>Anonymous functions</h2>
+          <ul>
+            <li>
+              <p>TypeScript: <code>(x) =&gt; x + 1</code></p>
+            </li>
+            <li>
+              <p>Python: <code>lambda x: x + 1</code></p>
+            </li>
+            <li>
+              <p>Haskell: <code>\x -&gt; x + 1</code></p>
+            </li>
+          </ul>
+          <p>The syntax differs, but the idea is the same: create behavior inline and pass it where needed.</p>
+        </section>
 
-console.log(evens);</code></pre>
-<p>keep is higher-order because it takes p as an argument.</p>
-</section>
-<section id="python-functions-as-values" class="frame">
-<h2>Python: functions as values</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-python">def keep(xs, p):
-    return [x for x in xs if p(x)]
+        <section id="higher-order-functions" class="frame">
+          <h2>Higher-order functions</h2>
+          <ul>
+            <li>
+              <p>A higher-order function takes a function as input, returns a function, or both</p>
+            </li>
+            <li>
+              <p>This lets us separate control structure from the specific operation performed at each step</p>
+            </li>
+            <li>
+              <p>A library can handle traversal while the programmer supplies the transformation rule</p>
+            </li>
+          </ul>
+        </section>
 
-nums = [1, 2, 3, 4, 5]
-evens = keep(nums, lambda x: x % 2 == 0)
+        <section id="policy-mechanism" class="frame">
+          <h2>Why higher-order functions matter</h2>
+          <ul>
+            <li>
+              <p>The mechanism tells us how to traverse or repeat</p>
+            </li>
+            <li>
+              <p>The policy tells us what to do at each step</p>
+            </li>
+            <li>
+              <p>Higher-order functions separate these two concerns cleanly</p>
+            </li>
+          </ul>
+        </section>
 
-print(evens)</code></pre>
-</section>
-<section id="haskell-higher-order-functions-are-normal" class="frame">
-<h2>Haskell: higher-order functions are normal</h2>
-<p>Haskell uses functions everywhere, and types make the contracts
-explicit.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">keep :: (a -&gt; Bool) -&gt; [a] -&gt; [a] -- signature
--- takes a predicate from a to Bool, then a list of a, and returns a list of a.
-keep p xs = filter p xs -- definition
+        <section id="list-processing-toolkit" class="frame">
+          <h2>Common FP toolkit for lists</h2>
+          <ul>
+            <li>
+              <p>Functional programming often processes collections by applying small functions to each element, keeping some elements, or combining all elements into one result</p>
+            </li>
+            <li>
+              <p>Three especially common operations are <code>map</code>, <code>filter</code>, and <code>fold</code></p>
+            </li>
+            <li>
+              <p>These are higher-order functions because they take behavior as input</p>
+            </li>
+            <li>
+              <p>They let us describe what transformation we want without writing low-level traversal each time</p>
+            </li>
+          </ul>
+        </section>
 
-evens :: [Int]
-evens = keep even [1,2,3,4,5]</code></pre>
-<p>even is a function from Int to Bool.</p>
-</section>
-<section id="map-filter-reduce" class="frame">
-<h2>map, filter, reduce</h2>
-<p>Common list pipeline primitives:</p>
-<ul>
-<li><p>map: transform each element independently</p></li>
-<li><p>filter: keep elements that satisfy a predicate</p></li>
-<li><p>reduce/fold: combine elements into one result</p></li>
-</ul>
-<p>These patterns occur in:</p>
-<ul>
-<li><p>data pipelines (ETL, analytics)</p></li>
-<li><p>UI list rendering and filtering</p></li>
-<li><p>stream processing and log processing</p></li>
-</ul>
-</section>
-<section id="typescript-map-filter-reduce" class="frame">
-<h2>TypeScript: map, filter, reduce</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-typescript">const nums = [1, 2, 3, 4, 5];
+        <section id="map-idea" class="frame">
+          <h2><code>map</code>: transform every element</h2>
+          <ul>
+            <li>
+              <p><code>map</code> applies a function to each element of a collection</p>
+            </li>
+            <li>
+              <p>The shape of the collection stays the same, but each value is transformed</p>
+            </li>
+            <li>
+              <p>This is useful when we want to describe a value-by-value computation cleanly</p>
+            </li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const xs = [1, 2, 3, 4];
+const ys = xs.map(x =&gt; x * 2);
 
-const squares = nums.map(x =&gt; x * x);
-const evens = nums.filter(x =&gt; x % 2 === 0);
-const sum = nums.reduce((acc, x) =&gt; acc + x, 0);
+// ys is [2, 4, 6, 8]</code></pre>
+        </section>
 
-console.log(squares);
-console.log(evens);
-console.log(sum);</code></pre>
-<p>The callback defines custom behavior; the iteration mechanism is
-reused.</p>
-</section>
-<section id="python-mapfilter-and-comprehensions" class="frame">
-<h2>Python: map/filter and comprehensions</h2>
-<p>Python supports map/filter, but comprehensions are often clearer.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-python">nums = [1, 2, 3, 4, 5]
+        <section id="filter-idea" class="frame">
+          <h2><code>filter</code>: keep the elements that match a rule</h2>
+          <ul>
+            <li>
+              <p><code>filter</code> keeps only the elements that satisfy a predicate</p>
+            </li>
+            <li>
+              <p>A predicate is a function that returns true or false</p>
+            </li>
+            <li>
+              <p>This is useful when we want to separate the selection rule from the traversal itself</p>
+            </li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const xs = [1, 2, 3, 4, 5, 6];
+const evens = xs.filter(x =&gt; x % 2 === 0);
 
-squares = [x * x for x in nums]
-evens = [x for x in nums if x % 2 == 0]
-total = sum(nums)
+// evens is [2, 4, 6]</code></pre>
+        </section>
 
-print(squares)
-print(evens)
-print(total)</code></pre>
-</section>
-<section id="haskell-map-filter-fold" class="frame">
-<h2>Haskell: map, filter, fold</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">nums :: [Int]
-nums = [1,2,3,4,5]
+        <section id="fold-idea-preview" class="frame">
+          <h2><code>fold</code>: combine many values into one</h2>
+          <ul>
+            <li>
+              <p>A fold reduces a collection to a single result</p>
+            </li>
+            <li>
+              <p>We provide a starting value and a rule for combining one element with the accumulated result</p>
+            </li>
+            <li>
+              <p>Sums, products, counts, and many aggregations follow this pattern</p>
+            </li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const xs = [1, 2, 3, 4];
+const total = xs.reduce((acc, x) =&gt; acc + x, 0);
 
-squares :: [Int]
-squares = map (\x -&gt; x*x) nums
+// total is 10</code></pre>
+        </section>
 
-evens :: [Int]
-evens = filter even nums
+        <section id="pipeline-example-ts" class="frame">
+          <h2>Pipeline example: transform, select, combine</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const xs = [1, 2, 3, 4, 5, 6];
 
-total :: Int
-total = foldl (\acc x -&gt; acc + x) 0 nums</code></pre>
-<p>foldl is a reduce; foldr is another common fold with different
-evaluation behavior.</p>
-</section></section>
-<section>
-<section id="recursion" class="title-slide slide level1">
-<h1>Recursion</h1>
+const result =
+  xs
+    .map(x =&gt; x * 2)
+    .filter(x =&gt; x &gt; 5)
+    .reduce((acc, x) =&gt; acc + x, 0);
 
-</section>
-<section id="recursion-1" class="frame">
-<h2>Recursion</h2>
-</section>
-<section id="recursion-as-control-flow" class="frame">
-<h2>Recursion as control flow</h2>
-<p>FP commonly uses recursion where imperative languages use loops.</p>
-<p>Key ingredients:</p>
-<ul>
-<li><p>Base case: simplest input</p></li>
-<li><p>Recursive case: reduce the problem toward the base case</p></li>
-</ul>
-<p>Why recursion fits FP:</p>
-<ul>
-<li><p>Works naturally with immutable lists</p></li>
-<li><p>Connects to inductive data definitions</p></li>
-<li><p>Enables structural decomposition via pattern matching</p></li>
-</ul>
-</section>
-<section id="tail-recursion-and-performance" class="frame">
-<h2>Tail recursion and performance</h2>
-<p>Tail recursion</p>
-<ul>
-<li><p>The recursive call is the last action in the function</p></li>
-<li><p>Some languages optimize it (turn it into a loop
-internally)</p></li>
-</ul>
-<p>Practical reality:</p>
-<ul>
-<li><p>Haskell compilers often optimize tail recursion well</p></li>
-<li><p>Python does not optimize tail calls</p></li>
-<li><p>JavaScript engines vary; recursion depth can still be a
-concern</p></li>
-</ul>
-<p>In non-optimizing runtimes, folds and loops may be preferred for
-large inputs.</p>
-</section>
-<section id="haskell-recursion-on-lists" class="frame">
-<h2>Haskell: recursion on lists</h2>
-<p>A classic pattern: sum of a list.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">sumList :: [Int] -&gt; Int
-sumList [] = 0
-sumList (x:xs) = x + sumList xs</code></pre>
-<p>[] is the empty list. (x:xs) matches a non-empty list with head x and
-tail xs.</p>
-</section>
-<section id="typescript-recursion-small-inputs" class="frame">
-<h2>TypeScript: recursion (small inputs)</h2>
-<p>TypeScript can use recursion, but large recursion can overflow the
-call stack.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-typescript">function sumList(xs: number[]): number {
-  if (xs.length === 0) return 0;
-  const [x, ...rest] = xs;
-  return x + sumList(rest);
-}
+// doubled: [2, 4, 6, 8, 10, 12]
+// kept:    [6, 8, 10, 12]
+// result:  36</code></pre>
+          <ul>
+            <li>
+              <p>This style emphasizes a flow of values through transformations</p>
+            </li>
+            <li>
+              <p>Each step has one clear job</p>
+            </li>
+          </ul>
+        </section>
 
-console.log(sumList([1, 2, 3]));</code></pre>
-<p>In TypeScript, reduce is usually preferred for large arrays.</p>
-</section>
-<section id="python-recursion-small-inputs" class="frame">
-<h2>Python: recursion (small inputs)</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-python">def sum_list(xs):
-    if xs == []:
-        return 0
-    x, *rest = xs
-    return x + sum_list(rest)
+        <section id="function-composition" class="frame">
+          <h2>Function composition</h2>
+          <ul>
+            <li>
+              <p>Composition combines small functions into a larger transformation</p>
+            </li>
+            <li>
+              <p>If one function produces the kind of value that the next function expects, they can be chained together</p>
+            </li>
+            <li>
+              <p>This is especially useful when functions are pure and focused</p>
+            </li>
+          </ul>
+        </section>
 
-print(sum_list([1, 2, 3]))</code></pre>
-<p>Python recursion has a depth limit; iterative or fold-style code is
-often used in production.</p>
-</section>
-<section id="practice-3-recursion-vs-fold" class="frame">
-<h2>Practice 3: recursion vs fold</h2>
-<p>Task A: write factorial recursively in Haskell.</p>
-<p>Task B: write sum of squares using a fold (reduce) in Haskell.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">-- factorial n = 1 * 2 * ... * n
--- sumSquares [a,b,c] = a*a + b*b + c*c</code></pre>
-</section>
-<section id="practice-3-answer-recursion-vs-fold" class="frame">
-<h2>Practice 3 Answer: recursion vs fold</h2>
-<p>Recursive factorial:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">factorial :: Int -&gt; Int
-factorial 0 = 1
-factorial n = n * factorial (n - 1)</code></pre>
-<p>Sum of squares using foldl:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">sumSquares :: [Int] -&gt; Int
-sumSquares xs = foldl (\acc x -&gt; acc + x*x) 0 xs</code></pre>
-<p>foldl accumulates a running total; the lambda updates acc using
-x*x.</p>
-</section></section>
-<section>
-<section id="lists-and-pattern-matching"
-class="title-slide slide level1">
-<h1>Lists and pattern matching</h1>
+        <section id="composition-example" class="frame">
+          <h2>Composition example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const trim = (s: string) => s.trim();
+const lower = (s: string) => s.toLowerCase();
+const normalize = (s: string) => lower(trim(s));
 
-</section>
-<section id="lists-and-pattern-matching-1" class="frame">
-<h2>Lists and pattern matching</h2>
-</section>
-<section id="pattern-matching" class="frame">
-<h2>Pattern matching</h2>
-<p>Pattern matching means selecting behavior based on the shape of
-data.</p>
-<p>Common uses:</p>
-<ul>
-<li><p>Decompose lists into empty vs non-empty</p></li>
-<li><p>Decompose variants (Option/Maybe, Result/Either)</p></li>
-<li><p>Make impossible states unrepresentable via types (in strongly
-typed FP)</p></li>
-</ul>
-<p>Haskell uses pattern matching heavily; modern Python has match;
-TypeScript uses discriminated unions.</p>
-</section>
-<section id="haskell-list-patterns" class="frame">
-<h2>Haskell: list patterns</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">describe :: [a] -&gt; String
-describe [] = &quot;empty&quot;
-describe [x] = &quot;one element&quot;
-describe (x:y:_) = &quot;two or more&quot;</code></pre>
-<p>Patterns are checked top to bottom. Underscore means the value is
-ignored.</p>
-</section>
-<section id="haskell-maybe-for-safe-results" class="frame">
-<h2>Haskell: Maybe for safe results</h2>
-<p>Maybe a represents an optional value.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">safeHead :: [a] -&gt; Maybe a
-safeHead [] = Nothing
-safeHead (x:_) = Just x</code></pre>
-<p>safeHead avoids runtime errors on empty lists by returning
-Nothing.</p>
-</section>
-<section id="typescript-discriminated-union-for-safe-results"
-class="frame">
-<h2>TypeScript: discriminated union for safe results</h2>
-<p>TypeScript can model Maybe with a tagged union.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type Option&lt;T&gt; =
-  | { tag: &quot;none&quot; }
-  | { tag: &quot;some&quot;; value: T };
+normalize("  Hello  ");</code></pre>
+          <ul>
+            <li>
+              <p>Each function has one clear job</p>
+            </li>
+            <li>
+              <p>The larger behavior is built by chaining them together</p>
+            </li>
+          </ul>
+        </section>
 
-function safeHead&lt;T&gt;(xs: T[]): Option&lt;T&gt; {
-  if (xs.length === 0) return { tag: &quot;none&quot; };
-  return { tag: &quot;some&quot;, value: xs[0] };
-}
+        <section id="currying-partial" class="frame">
+          <h2>Currying and partial application</h2>
+          <ul>
+            <li>
+              <p>Currying represents a multi-argument function as a sequence of one-argument functions</p>
+            </li>
+            <li>
+              <p>Partial application means supplying some arguments now and receiving a more specialized function back</p>
+            </li>
+            <li>
+              <p>These ideas support reuse because one general function can generate many specialized ones</p>
+            </li>
+          </ul>
+        </section>
 
-const r = safeHead([10, 20]);
-if (r.tag === &quot;some&quot;) console.log(r.value);</code></pre>
-<p>The tag field lets the program narrow types safely.</p>
-</section>
-<section id="python-match-conceptual-pattern-matching" class="frame">
-<h2>Python: match (conceptual pattern matching)</h2>
-<p>Python match can destructure shapes and check cases.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-python">def describe(xs):
+        <section id="currying-example" class="frame">
+          <h2>Currying example in TypeScript</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">const add = (x: number) => (y: number) => x + y;
+const add10 = add(10);
+
+add10(5);</code></pre>
+          <ul>
+            <li>
+              <p><code>add</code> takes one argument and returns another function</p>
+            </li>
+            <li>
+              <p><code>add10</code> is a specialized function created by partial application</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section id="data-control" class="title-slide slide level1">
+          <h1>Data and control in FP</h1>
+        </section>
+
+        <section id="recursive-data" class="frame">
+          <h2>Recursive data</h2>
+          <ul>
+            <li>
+              <p>Functional programming often works with recursive data such as lists and trees</p>
+            </li>
+            <li>
+              <p>A recursive data structure is defined in terms of smaller instances of itself</p>
+            </li>
+            <li>
+              <p>This is why recursion becomes a natural control pattern in FP</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="recursion-structural" class="frame">
+          <h2>Recursion as a control pattern</h2>
+          <ul>
+            <li>
+              <p>In FP, recursion often replaces loops</p>
+            </li>
+            <li>
+              <p>For recursive data, recursive programs naturally follow the structure of the data</p>
+            </li>
+            <li>
+              <p>This is called structural recursion</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="recursion-example" class="frame">
+          <h2>Structural recursion example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function product(xs: number[]): number {
+  if (xs.length === 0) return 1;
+  const [h, ...t] = xs;
+  return h * product(t);
+}</code></pre>
+          <ul>
+            <li>
+              <p>The base case handles the empty list</p>
+            </li>
+            <li>
+              <p>The recursive case combines the head with the result on the tail</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="recursion-to-map-filter" class="frame">
+          <h2>Reusable recursion patterns</h2>
+          <ul>
+            <li>
+              <p>Many list programs follow recurring patterns</p>
+            </li>
+            <li>
+              <p>Some programs transform every element</p>
+            </li>
+            <li>
+              <p>Some select only the elements that pass a test</p>
+            </li>
+            <li>
+              <p>Some combine the whole list into one answer</p>
+            </li>
+            <li>
+              <p>Instead of rewriting the recursion each time, FP libraries package these patterns as reusable functions</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="why-map-filter-fold" class="frame">
+          <h2>Why <code>map</code>, <code>filter</code>, and <code>fold</code> matter</h2>
+          <ul>
+            <li>
+              <p>They capture very common recursion patterns over lists</p>
+            </li>
+            <li>
+              <p>They reduce boilerplate and make intent easier to see</p>
+            </li>
+            <li>
+              <p>They separate traversal from the operation performed at each step</p>
+            </li>
+            <li>
+              <p>They are central to functional style in Haskell and also common in TypeScript, Python, and many other languages</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="folds-definition" class="frame">
+          <h2>Folds</h2>
+          <ul>
+            <li>
+              <p>A fold captures a common recursion pattern over a recursive structure</p>
+            </li>
+            <li>
+              <p>Instead of writing the recursion by hand each time, we provide a base case and a combining rule</p>
+            </li>
+            <li>
+              <p>This makes programs more abstract and reusable</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="fold-example" class="frame">
+          <h2>From recursion to reduce</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function product(xs: number[]): number {
+  return xs.reduce((acc, x) => acc * x, 1);
+}</code></pre>
+          <ul>
+            <li>
+              <p>The base value is <code>1</code></p>
+            </li>
+            <li>
+              <p>The combining rule is multiplication</p>
+            </li>
+            <li>
+              <p>The traversal is handled by the library</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="adts" class="frame">
+          <h2>Algebraic data types</h2>
+          <ul>
+            <li>
+              <p>An algebraic data type builds a type out of simpler pieces</p>
+            </li>
+            <li>
+              <p>A product type combines data together</p>
+            </li>
+            <li>
+              <p>A sum type represents a choice among different cases</p>
+            </li>
+            <li>
+              <p>ADTs help make valid program cases explicit</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="pattern-matching" class="frame">
+          <h2>Pattern matching</h2>
+          <ul>
+            <li>
+              <p>Pattern matching is a structured way to inspect which case of a value we have</p>
+            </li>
+            <li>
+              <p>It lets a program branch on data shape and extract the parts needed in each case</p>
+            </li>
+            <li>
+              <p>This is clearer than manually inspecting tags with nested conditionals</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="maybe-result" class="frame">
+          <h2>Maybe and Result style types</h2>
+          <ul>
+            <li>
+              <p>A Maybe or Option value represents either a present value or no value</p>
+            </li>
+            <li>
+              <p>A Result or Either value represents either success or failure with information</p>
+            </li>
+            <li>
+              <p>These types make missing values and errors explicit in the program design</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="ts-discriminated-union" class="frame">
+          <h2>TypeScript: a Result type</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type Result&lt;T&gt; =
+  | { tag: "ok"; value: T }
+  | { tag: "err"; message: string };
+
+function safeDiv(x: number, y: number): Result&lt;number&gt; {
+  return y === 0
+    ? { tag: "err", message: "divide by zero" }
+    : { tag: "ok", value: x / y };
+}</code></pre>
+          <p>The <code>tag</code> field tells us which case we are handling.</p>
+        </section>
+
+        <section id="python-match" class="frame">
+          <h2>Python: matching on structure</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-python">def head_or(defval, xs):
     match xs:
         case []:
-            return &quot;empty&quot;
-        case [x]:
-            return &quot;one element&quot;
-        case [x, y, *rest]:
-            return &quot;two or more&quot;</code></pre>
-<p>Python pattern matching is runtime-based; Haskell is type-driven and
-exhaustive checking is stronger.</p>
-</section>
-<section id="practice-4-safe-decomposition-with-pattern-matching"
-class="frame">
-<h2>Practice 4: safe decomposition with pattern matching</h2>
-<p>Task A: implement safeTail in Haskell:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">-- safeTail [] = Nothing
--- safeTail (x:xs) = Just xs</code></pre>
-<p>Task B: implement safeTail in TypeScript using Option<span
-class="math inline">\(&lt;T&gt;\)</span>.</p>
-<ul>
-<li><p>Use pattern matching in Haskell</p></li>
-<li><p>Use tag narrowing in TypeScript</p></li>
-</ul>
-</section>
-<section id="practice-4-answer-safe-decomposition-with-pattern-matching"
-class="frame">
-<h2>Practice 4 Answer: safe decomposition with pattern matching</h2>
-<p>Haskell solution:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">safeTail :: [a] -&gt; Maybe [a]
-safeTail [] = Nothing
-safeTail (_:xs) = Just xs</code></pre>
-<p>TypeScript solution:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type Option&lt;T&gt; =
-  | { tag: &quot;none&quot; }
-  | { tag: &quot;some&quot;; value: T };
+            return defval
+        case [y, *rest]:
+            return y</code></pre>
+          <p>This expresses the same general idea of branching on data shape.</p>
+        </section>
+      </section>
 
-function safeTail&lt;T&gt;(xs: T[]): Option&lt;T[]&gt; {
-  if (xs.length === 0) return { tag: &quot;none&quot; };
-  return { tag: &quot;some&quot;, value: xs.slice(1) };
-}</code></pre>
-<p>Both versions avoid errors by making the empty case explicit.</p>
-</section></section>
-<section>
-<section id="strict-vs-lazy-evaluation"
-class="title-slide slide level1">
-<h1>Strict vs lazy evaluation</h1>
+      <section>
+        <section id="evaluation-strategy" class="title-slide slide level1">
+          <h1>Evaluation strategy</h1>
+        </section>
 
-</section>
-<section id="strict-vs-lazy-evaluation-1" class="frame">
-<h2>Strict vs lazy evaluation</h2>
-</section>
-<section id="strict-evaluation-eager" class="frame">
-<h2>Strict evaluation (eager)</h2>
-<p>Strict evaluation means:</p>
-<ul>
-<li><p>Function arguments are evaluated before the function
-runs</p></li>
-<li><p>Intermediate collections are often fully computed</p></li>
-</ul>
-<p>Typical strict languages:</p>
-<ul>
-<li><p>TypeScript/JavaScript</p></li>
-<li><p>Python (mostly strict, with generators as a lazy
-feature)</p></li>
-<li><p>Java</p></li>
-</ul>
-<p>Strict evaluation is often easier to predict, but can do unnecessary
-work if results are only partially needed.</p>
-</section>
-<section id="lazy-evaluation-conceptual" class="frame">
-<h2>Lazy evaluation (conceptual)</h2>
-<p>Lazy evaluation means:</p>
-<ul>
-<li><p>Expressions are evaluated only when their values are
-needed</p></li>
-<li><p>Infinite data structures can be represented (infinite
-lists)</p></li>
-<li><p>Computation can stop early when enough results are
-produced</p></li>
-</ul>
-<p>Haskell is the major mainstream lazy language.</p>
-<p>Laziness can improve composability and performance, but can also make
-space usage harder to predict.</p>
-</section>
-<section id="haskell-infinite-list-and-take" class="frame">
-<h2>Haskell: infinite list and take</h2>
-<p>Haskell can define an infinite list and still produce a finite
-result.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">nums :: [Int]
-nums = [1..]          -- infinite list
+        <section id="strict-evaluation" class="frame">
+          <h2>Strict evaluation</h2>
+          <ul>
+            <li>
+              <p>Strict evaluation computes function arguments before the function body uses them</p>
+            </li>
+            <li>
+              <p>Most mainstream languages are strict, including JavaScript, TypeScript, Python, Java, and C</p>
+            </li>
+            <li>
+              <p>This often makes cost easier to predict because work happens immediately</p>
+            </li>
+          </ul>
+        </section>
 
-first5 :: [Int]
-first5 = take 5 nums  -- [1,2,3,4,5]</code></pre>
-<p>take only evaluates as much of nums as needed to produce 5
-elements.</p>
-</section>
-<section id="python-generators-as-lazy-sequences" class="frame">
-<h2>Python: generators as lazy sequences</h2>
-<p>Generators are lazy: values are produced on demand.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-python">def naturals():
+        <section id="lazy-evaluation" class="frame">
+          <h2>Lazy evaluation</h2>
+          <ul>
+            <li>
+              <p>Lazy evaluation delays computation until the value is needed</p>
+            </li>
+            <li>
+              <p>This can avoid unnecessary work and allow demand-driven data structures</p>
+            </li>
+            <li>
+              <p>It also changes the way we reason about performance and termination</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="demand-driven-sequences" class="frame">
+          <h2>Demand-driven sequences in mainstream languages</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-python">def squares():
     n = 1
     while True:
-        yield n
-        n += 1
-
-g = naturals()
-print(next(g))
-print(next(g))
-print(next(g))</code></pre>
-<p>next pulls one value; the generator does not produce an infinite list
-all at once.</p>
-</section>
-<section id="typescript-iterators-as-lazy-sequences" class="frame">
-<h2>TypeScript: iterators as lazy sequences</h2>
-<p>Iterators and generators can model laziness.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">function* naturals(): Generator&lt;number&gt; {
+        yield n * n
+        n += 1</code></pre>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function* squares(): Generator &ltnumber&gt {
   let n = 1;
   while (true) {
-    yield n;
-    n = n + 1;
+    yield n * n;
+    n++;
   }
-}
+}</code></pre>
+          <p>These are not fully lazy languages, but generators show the idea of producing values only when asked.</p>
+        </section>
 
-const g = naturals();
-console.log(g.next().value);
-console.log(g.next().value);
-console.log(g.next().value);</code></pre>
-</section>
-<section id="practice-5-predict-lazy-behavior" class="frame">
-<h2>Practice 5: predict lazy behavior</h2>
-<p>Predict the output order in Python.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-python">def gen():
-    print(&quot;start&quot;)
-    yield 1
-    print(&quot;after 1&quot;)
-    yield 2
-    print(&quot;after 2&quot;)
+        <section id="practice-lazy" class="frame">
+          <h2>Practice: think about what must be evaluated</h2>
+          <ul>
+            <li>
+              <p>If a computation needs only the first few results, does the rest need to be computed?</p>
+            </li>
+            <li>
+              <p>What kinds of programs benefit from delaying work?</p>
+            </li>
+            <li>
+              <p>What kinds of programs become harder to reason about when work is delayed?</p>
+            </li>
+          </ul>
+        </section>
+      </section>
 
-g = gen()
-print(&quot;A&quot;)
-print(next(g))
-print(&quot;B&quot;)
-print(next(g))
-print(&quot;C&quot;)</code></pre>
-<ul>
-<li><p>Which prints happen at generator creation time</p></li>
-<li><p>Which prints happen at each next call</p></li>
-</ul>
-</section>
-<section id="practice-5-answer-predict-lazy-behavior" class="frame">
-<h2>Practice 5 Answer: predict lazy behavior</h2>
-<p>Output order:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-plaintext">A
-start
-1
-B
-after 1
-2
-C</code></pre>
-<p>Explanation</p>
-<ul>
-<li><p>Creating g = gen() does not execute the body, it creates a
-generator object.</p></li>
-<li><p>The body runs when next(g) is called.</p></li>
-<li><p>The generator resumes from the last yield on each next
-call.</p></li>
-<li><p>after 2 is not printed because the generator is not advanced past
-the second yield.</p></li>
-</ul>
-</section></section>
-<section>
-<section id="fp-in-the-wild" class="title-slide slide level1">
-<h1>FP in the wild</h1>
+      <section>
+        <section id="fp-practice" class="title-slide slide level1">
+          <h1>Functional style in mainstream languages</h1>
+        </section>
 
-</section>
-<section id="fp-in-the-wild-1" class="frame">
-<h2>FP in the wild</h2>
-</section>
-<section id="functional-style-in-typescript-and-python" class="frame">
-<h2>Functional style in TypeScript and Python</h2>
-<p>You can use FP principles in non-FP languages by focusing on:</p>
-<ul>
-<li><p>Pure functions for core logic</p></li>
-<li><p>Immutable update patterns for state</p></li>
-<li><p>Small functions composed into pipelines</p></li>
-<li><p>Explicit error modeling (Option/Result style) instead of throwing
-everywhere</p></li>
-</ul>
-<p>This style is common in front-end state management and data
-transformation code.</p>
-</section>
-<section id="typescript-reducer-pattern-for-state-updates"
-class="frame">
-<h2>TypeScript: reducer pattern for state updates</h2>
-<p>Reducer: (state, action)<span
-class="math inline">\(\rightarrow\)</span> newState</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type State = { count: number };
+        <section id="fp-ts-python" class="frame">
+          <h2>Functional style in TypeScript and Python</h2>
+          <ul>
+            <li>
+              <p>Write core logic as pure transformations when possible</p>
+            </li>
+            <li>
+              <p>Represent state changes as new values instead of in-place mutation</p>
+            </li>
+            <li>
+              <p>Use map, filter, reduce, comprehensions, and pipelines to express data flow clearly</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="reducer-pattern" class="frame">
+          <h2>Reducer pattern</h2>
+          <p>A reducer is a pure function that takes the current state and an action, then returns the next state.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">type State = { count: number };
 type Action =
-  | { type: &quot;inc&quot; }
-  | { type: &quot;add&quot;; n: number };
+  | { tag: "inc"; by: number }
+  | { tag: "reset" };
+
 function reducer(s: State, a: Action): State {
-  switch (a.type) {
-    case &quot;inc&quot;:
-      return { ...s, count: s.count + 1 };
-    case &quot;add&quot;:
-      return { ...s, count: s.count + a.n };
+  switch (a.tag) {
+    case "inc":   return { count: s.count + a.by };
+    case "reset": return { count: 0 };
   }
 }
-let s: State = { count: 0 };
-s = reducer(s, { type: &quot;inc&quot; });
-s = reducer(s, { type: &quot;add&quot;, n: 5 });
-console.log(s.count);</code></pre>
-<p>No mutation of s in place; each step returns a new state object.</p>
-</section>
-<section id="python-pure-transform-pipeline" class="frame">
-<h2>Python: pure transform pipeline</h2>
-<p>A small data pipeline written as pure functions.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-python">def normalize(xs):
-    return [x.strip().lower() for x in xs]
 
-def keep_nonempty(xs):
-    return [x for x in xs if x != &quot;&quot;]
+const actions: Action[] = [{ tag: "inc", by: 2 }, { tag: "inc", by: 3 }];
+const final = actions.reduce(reducer, { count: 0 });</code></pre>
+        </section>
 
-def to_lengths(xs):
-    return [len(x) for x in xs]
+        <section id="python-pipeline" class="frame">
+          <h2>Python pipeline example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-python">def normalize(s):
+    return s.strip().lower()
 
-data = [&quot;  Ada  &quot;, &quot;&quot;, &quot;Lambda&quot;, &quot; FP &quot;]
-result = to_lengths(keep_nonempty(normalize(data)))
-print(result)</code></pre>
-<p>Each function is easy to test and has no side effects.</p>
-</section>
-<section id="industry-data-pipelines" class="frame">
-<h2>Industry: data pipelines</h2>
-<p>FP patterns are common in data processing:</p>
-<ul>
-<li><p>Extract: read input sources</p></li>
-<li><p>Transform: map/filter/group/fold style logic</p></li>
-<li><p>Load: write outputs</p></li>
-</ul>
-<p>Why FP fits:</p>
-<ul>
-<li><p>Transform stages are naturally pure</p></li>
-<li><p>Pipelines are composable and testable</p></li>
-<li><p>Parallel execution is easier when transforms are pure</p></li>
-</ul>
-</section>
-<section id="practice-6-reducer-reasoning-typescript" class="frame">
-<h2>Practice 6: reducer reasoning (TypeScript)</h2>
-<p>Predict the final count.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type State = { count: number };
-type Action =
-  | { type: &quot;inc&quot; }
-  | { type: &quot;add&quot;; n: number }
-  | { type: &quot;reset&quot; };
-function reducer(s: State, a: Action): State {
-  switch (a.type) {
-    case &quot;inc&quot;: return { ...s, count: s.count + 1 };
-    case &quot;add&quot;: return { ...s, count: s.count + a.n };
-    case &quot;reset&quot;: return { count: 0 };
-  }
-}
-let s: State = { count: 1 };
-s = reducer(s, { type: &quot;inc&quot; });
-s = reducer(s, { type: &quot;add&quot;, n: 10 });
-s = reducer(s, { type: &quot;reset&quot; });
-s = reducer(s, { type: &quot;add&quot;, n: 3 });
-console.log(s.count);</code></pre>
-</section>
-<section id="practice-6-answer-reducer-reasoning-typescript"
-class="frame">
-<h2>Practice 6 Answer: reducer reasoning (TypeScript)</h2>
-<p>Step-by-step:</p>
-<ul>
-<li><p>start count = 1</p></li>
-<li><p>inc <span class="math inline">\(\rightarrow\)</span> 2</p></li>
-<li><p>add 10 <span class="math inline">\(\rightarrow\)</span>
-12</p></li>
-<li><p>reset <span class="math inline">\(\rightarrow\)</span> 0</p></li>
-<li><p>add 3 <span class="math inline">\(\rightarrow\)</span> 3</p></li>
-</ul>
-<p>Final output:</p>
-<ul>
-<li><p>3</p></li>
-</ul>
-</section></section>
-<section>
-<section id="pure-fp-in-haskell" class="title-slide slide level1">
-<h1>Pure FP in Haskell</h1>
+def keep_alpha(s):
+    return "".join(ch for ch in s if ch.isalpha())
 
-</section>
-<section id="pure-fp-in-haskell-1" class="frame">
-<h2>Pure FP in Haskell</h2>
-</section>
-<section id="haskell-viewpoint-purity-by-default" class="frame">
-<h2>Haskell viewpoint: purity by default</h2>
-<p>Haskell enforces purity:</p>
-<ul>
-<li><p>Most functions cannot perform I/O</p></li>
-<li><p>Effects are modeled in types (IO a)</p></li>
-<li><p>Pure code stays pure; effectful code is explicit</p></li>
-</ul>
-<p>This creates a strong separation:</p>
-<ul>
-<li><p>Pure transformations are deterministic and testable</p></li>
-<li><p>I/O is structured and localized</p></li>
-</ul>
-</section>
-<section id="haskell-types-communicate-intent" class="frame">
-<h2>Haskell: types communicate intent</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">-- pure
-inc :: Int -&gt; Int
+raw = ["  Hello! ", " CS 4020 ", "  FP  "]
+clean = [keep_alpha(normalize(s)) for s in raw]</code></pre>
+          <p>Each function has one purpose, and the pipeline shows the order of transformations clearly.</p>
+        </section>
+
+        <section id="industry-pipelines" class="frame">
+          <h2>Where this style appears in real systems</h2>
+          <ul>
+            <li>
+              <p>Data processing often uses transform, filter, group, and reduce patterns</p>
+            </li>
+            <li>
+              <p>State management libraries often use reducer-style updates</p>
+            </li>
+            <li>
+              <p>Log processing and streaming systems often look like pipelines of transformations</p>
+            </li>
+            <li>
+              <p>Pure logic in these systems is easier to test than code mixed with I/O and mutation</p>
+            </li>
+          </ul>
+        </section>
+
+      
+      <section>
+        <section id="haskell-capstone" class="title-slide slide level1">
+          <h1>Haskell as a pure functional language</h1>
+        </section>
+
+        <section id="why-haskell-after-fp" class="frame">
+          <h2>Why study Haskell after learning general FP?</h2>
+          <ul>
+            <li>
+              <p>We first learn the general ideas of functional programming so they do not appear tied to one language</p>
+            </li>
+            <li>
+              <p>Then we study Haskell because it makes those ideas central rather than optional</p>
+            </li>
+            <li>
+              <p>Haskell gives a clearer view of purity, types, algebraic data types, higher-order functions, and lazy evaluation</p>
+            </li>
+            <li>
+              <p>That makes it a strong language for seeing what pure functional programming looks like in a more complete form</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="haskell-characteristics" class="frame">
+          <h2>Characteristics of Haskell</h2>
+          <ul>
+            <li>
+              <p>Pure functions are the default</p>
+            </li>
+            <li>
+              <p>Immutable values are the normal model</p>
+            </li>
+            <li>
+              <p>Functions are first-class and higher-order functions are common</p>
+            </li>
+            <li>
+              <p>Algebraic data types and pattern matching are built into the language</p>
+            </li>
+            <li>
+              <p>Evaluation is lazy by default</p>
+            </li>
+            <li>
+              <p>Types communicate what functions can do and where effects appear</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="why-learn-haskell" class="frame">
+          <h2>Why learn Haskell?</h2>
+          <ul>
+            <li>
+              <p>It makes FP ideas easier to see because the language is organized around them</p>
+            </li>
+            <li>
+              <p>It helps us reason more carefully about purity, types, and effects</p>
+            </li>
+            <li>
+              <p>It strengthens our understanding of abstraction, recursion, and program design</p>
+            </li>
+            <li>
+              <p>Even if we do not use Haskell in industry, the ideas transfer to many other languages</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="hello-world-haskell" class="frame">
+          <h2>Haskell: hello world</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">main :: IO ()
+main = putStrLn "Hello, world!"</code></pre>
+          <ul>
+            <li>
+              <p><code>main</code> is the entry point</p>
+            </li>
+            <li>
+              <p><code>IO ()</code> tells us this action may perform effects</p>
+            </li>
+            <li>
+              <p><code>putStrLn</code> prints a string to the screen</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="reading-haskell-types" class="frame">
+          <h2>How to read Haskell type signatures</h2>
+          <ul>
+            <li>
+              <p><code>Int -&gt; Int</code> means a function from <code>Int</code> to <code>Int</code></p>
+            </li>
+            <li>
+              <p><code>[Int]</code> means a list of integers</p>
+            </li>
+            <li>
+              <p><code>(a -&gt; b) -&gt; [a] -&gt; [b]</code> means: first a function from <code>a</code> to <code>b</code>, then a list of <code>a</code>, then a list of <code>b</code></p>
+            </li>
+            <li>
+              <p>Lowercase type variables such as <code>a</code> and <code>b</code> mean the function is generic</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="pure-function-haskell" class="frame">
+          <h2>Haskell: pure function example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">square :: Int -> Int
+square x = x * x</code></pre>
+          <ul>
+            <li>
+              <p>This function depends only on its input</p>
+            </li>
+            <li>
+              <p>It has no printing, mutation, input, or randomness</p>
+            </li>
+            <li>
+              <p>So <code>square 5</code> can always be replaced with <code>25</code></p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="higher-order-haskell" class="frame">
+          <h2>Haskell: higher-order function example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">applyTwice :: (a -> a) -> a -> a
+applyTwice f x = f (f x)
+
+inc :: Int -> Int
 inc x = x + 1
 
--- pure
-sumSquares :: [Int] -&gt; Int
-sumSquares xs = foldl (\acc x -&gt; acc + x*x) 0 xs
+result = applyTwice inc 5</code></pre>
+          <ul>
+            <li>
+              <p><code>applyTwice</code> takes a function as an argument</p>
+            </li>
+            <li>
+              <p>That makes it a higher-order function</p>
+            </li>
+            <li>
+              <p><code>result</code> becomes <code>7</code></p>
+            </li>
+          </ul>
+        </section>
 
--- effectful
-printInc :: Int -&gt; IO ()
-printInc x = print (inc x)</code></pre>
-<p>IO () indicates an effectful computation that returns no meaningful
-value.</p>
-</section>
-<section id="haskell-io-boundary-example" class="frame">
-<h2>Haskell: IO boundary example</h2>
-<p>One common structure: read input, pure transform, print output.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-haskell">parseInt :: String -&gt; Int
-parseInt s = read s
+        <section id="partial-application-haskell" class="frame">
+          <h2>Haskell: partial application is ordinary</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">add :: Int -&gt; Int -&gt; Int
+add x y = x + y
 
-compute :: Int -&gt; Int
-compute n = n * n
+add10 :: Int -&gt; Int
+add10 = add 10
 
-main :: IO ()
-main = do
-  line &lt;- getLine
-  let n = parseInt line
-  let r = compute n
-  print r</code></pre>
-<p>parseInt and compute are pure; main handles I/O.</p>
-</section>
-<section id="why-types-help-in-pure-fp" class="frame">
-<h2>Why types help in pure FP</h2>
-<p>In a pure FP language, types provide strong guarantees:</p>
-<ul>
-<li><p>If a function has type Int <span
-class="math inline">\(\rightarrow\)</span> Int, it cannot print or
-mutate global state</p></li>
-<li><p>If a function returns IO a, it may do effects</p></li>
-<li><p>Algebraic data types help represent structured domain
-states</p></li>
-</ul>
-<p>This reduces accidental coupling between business logic and I/O
-logic.</p>
-</section>
-<section id="practice-7-classify-pure-vs-effectful-haskell"
-class="frame">
-<h2>Practice 7: classify pure vs effectful (Haskell)</h2>
-<p>For each signature, decide whether it can perform I/O effects.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\normalsize"
-data-tabsize="1"><code class="language-haskell">a :: String -&gt; Int
-b :: String -&gt; IO Int
-c :: IO String
-d :: [Int] -&gt; Int
-e :: Int -&gt; IO ()</code></pre>
-<ul>
-<li><p>Which are pure transformations</p></li>
-<li><p>Which are effectful computations</p></li>
-</ul>
-</section>
-<section id="practice-7-answer-classify-pure-vs-effectful-haskell"
-class="frame">
-<h2>Practice 7 Answer: classify pure vs effectful (Haskell)</h2>
-<p>Pure transformations:</p>
-<ul>
-<li><p>a :: String <span class="math inline">\(\rightarrow\)</span>
-Int</p></li>
-<li><p>d :: [Int] <span class="math inline">\(\rightarrow\)</span>
-Int</p></li>
-</ul>
-<p>Effectful computations:</p>
-<ul>
-<li><p>b :: String <span class="math inline">\(\rightarrow\)</span> IO
-Int</p></li>
-<li><p>c :: IO String</p></li>
-<li><p>e :: Int <span class="math inline">\(\rightarrow\)</span> IO
-()</p></li>
-</ul>
-<p>Rule: presence of IO in the type indicates effects are allowed.</p>
-</section></section>
-<section>
-<section id="fp-for-concurrency-and-parallelism"
-class="title-slide slide level1">
-<h1>FP for concurrency and parallelism</h1>
+nums :: [Int]
+nums = [1, 2, 3]
 
-</section>
-<section id="fp-for-concurrency-and-parallelism-1" class="frame">
-<h2>FP for concurrency and parallelism</h2>
-</section>
-<section id="why-immutability-helps-concurrency" class="frame">
-<h2>Why immutability helps concurrency</h2>
-<p>Concurrency bugs often come from shared mutable state:</p>
-<ul>
-<li><p>Two threads update the same data without coordination</p></li>
-<li><p>Interleavings cause inconsistent results</p></li>
-<li><p>Debugging is hard because schedules vary</p></li>
-</ul>
-<p>Immutability helps:</p>
-<ul>
-<li><p>Shared reads are safe</p></li>
-<li><p>Data races are reduced</p></li>
-<li><p>Parallel map/reduce becomes easier to reason about</p></li>
-</ul>
-</section>
-<section id="typescript-parallel-map-with-promise.all" class="frame">
-<h2>TypeScript: parallel map with Promise.all</h2>
-<p>If work is pure and independent, it composes well.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">function work(x: number): Promise&lt;number&gt; {
-  return new Promise(resolve =&gt; setTimeout(() =&gt; resolve(x * x), 10));
-}
+result :: [Int]
+result = map add10 nums</code></pre>
+          <ul>
+            <li>
+              <p>Giving <code>add</code> only one argument produces a new function</p>
+            </li>
+            <li>
+              <p>This makes partial application feel natural in Haskell</p>
+            </li>
+          </ul>
+        </section>
 
-async function run(): Promise&lt;void&gt; {
-  const xs = [1, 2, 3, 4];
-  const ys = await Promise.all(xs.map(work));
-  console.log(ys);
-}
+        <section id="composition-haskell" class="frame">
+          <h2>Haskell: function composition</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">double :: Int -> Int
+double x = x * 2
 
-run();</code></pre>
-<p>work has no shared state, so running many instances is safe.</p>
-</section>
-<section id="python-parallel-map-style-idea" class="frame">
-<h2>Python: parallel map style idea</h2>
-<p>In Python, similar patterns exist with executors.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-python">import concurrent.futures as cf
+inc :: Int -> Int
+inc x = x + 1
 
-def work(x):
-    return x * x
+doubleThenInc :: Int -> Int
+doubleThenInc = inc . double</code></pre>
+          <ul>
+            <li>
+              <p><code>.</code> is the composition operator</p>
+            </li>
+            <li>
+              <p><code>doubleThenInc 5</code> means <code>inc (double 5)</code></p>
+            </li>
+            <li>
+              <p>This builds larger behavior from small functions</p>
+            </li>
+          </ul>
+        </section>
 
-xs = [1, 2, 3, 4]
-with cf.ThreadPoolExecutor() as ex:
-    ys = list(ex.map(work, xs))
-print(ys)</code></pre>
-<p>Pure functions reduce the risk of race conditions and make results
-deterministic.</p>
-</section>
-<section id="practice-8-make-concurrency-safer" class="frame">
-<h2>Practice 8: make concurrency safer</h2>
-<p>You want to parallelize a computation.</p>
-<p>Starting point has shared mutation:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">let total = 0;
-function addWork(x: number): void {
-  total = total + x * x;
-}</code></pre>
-<p>Task:</p>
-<ul>
-<li><p>Explain why this is risky under concurrency</p></li>
-<li><p>Refactor into a pure function and a separate reduce step</p></li>
-</ul>
-</section>
-<section id="practice-8-answer-make-concurrency-safer" class="frame">
-<h2>Practice 8 Answer: make concurrency safer</h2>
-<p>Why it is risky:</p>
-<ul>
-<li><p>total is shared mutable state</p></li>
-<li><p>concurrent updates can interleave and lose increments</p></li>
-</ul>
-<p>Refactor:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">function work(x: number): number {
-  return x * x;
-}
+        <section id="map-haskell" class="frame">
+          <h2>Haskell: <code>map</code></h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">map :: (a -&gt; b) -&gt; [a] -&gt; [b]
 
-const xs = [1, 2, 3, 4];
-const squares = xs.map(work);
-const total = squares.reduce((acc, v) =&gt; acc + v, 0);
+double :: Int -&gt; Int
+double x = x * 2
 
-console.log(total);</code></pre>
-<p>If work becomes async, use Promise.all to compute squares, then
-reduce.</p>
-</section></section>
-<section>
-<section id="industry-angle" class="title-slide slide level1">
-<h1>Industry angle</h1>
+nums :: [Int]
+nums = [1, 2, 3, 4]
 
-</section>
-<section id="industry-angle-1" class="frame">
-<h2>Industry angle</h2>
-</section>
-<section id="fp-for-front-end-state-management" class="frame">
-<h2>FP for front-end state management</h2>
-<p>Front-end apps manage evolving state:</p>
-<ul>
-<li><p>user actions produce events</p></li>
-<li><p>events transform state</p></li>
-<li><p>UI is a pure function of state in many frameworks</p></li>
-</ul>
-<p>Functional approach:</p>
-<ul>
-<li><p>represent updates as pure reducers</p></li>
-<li><p>avoid in-place mutation</p></li>
-<li><p>use time-travel debugging and replay of actions</p></li>
-</ul>
-<p>This style appears in Redux-like patterns and in general React state
-update thinking.</p>
-</section>
-<section id="fp-for-data-processing-and-observability" class="frame">
-<h2>FP for data processing and observability</h2>
-<p>Logs and telemetry often use functional pipelines:</p>
-<ul>
-<li><p>parse input lines</p></li>
-<li><p>filter relevant events</p></li>
-<li><p>map to structured records</p></li>
-<li><p>reduce to metrics (counts, percentiles, histograms)</p></li>
-</ul>
-<p>FP helps because:</p>
-<ul>
-<li><p>transformations are simple and reusable</p></li>
-<li><p>functions are easy to test</p></li>
-<li><p>parallelization is natural when transforms are pure</p></li>
-</ul>
-</section>
-<section id="common-fp-tradeoffs-in-practice" class="frame">
-<h2>Common FP tradeoffs in practice</h2>
-<p>Tradeoffs:</p>
-<ul>
-<li><p>Performance: copying data can cost time and memory if done
-naively</p></li>
-<li><p>Learning curve: recursion, higher-order functions, and types can
-be new</p></li>
-<li><p>Debugging: stacks and indirection can be confusing at
-first</p></li>
-</ul>
-<p>Practical middle ground in industry:</p>
-<ul>
-<li><p>Use functional style for core logic and transformations</p></li>
-<li><p>Use mutation internally in performance-critical code, with clear
-boundaries</p></li>
-<li><p>Keep APIs pure where possible</p></li>
-</ul>
-</section></section>
-<section>
-<section id="review" class="title-slide slide level1">
-<h1>Review</h1>
+doubled :: [Int]
+doubled = map double nums</code></pre>
+          <ul>
+            <li>
+              <p><code>map</code> applies the given function to every element of the list</p>
+            </li>
+            <li>
+              <p>The traversal is handled by the library; we provide only the transformation rule</p>
+            </li>
+          </ul>
+        </section>
 
-</section>
-<section id="review-1" class="frame">
-<h2>Review</h2>
-</section>
-<section id="summary-what-to-remember" class="frame">
-<h2>Summary: what to remember</h2>
-<ul>
-<li><p>FP emphasizes expressions, pure functions, and immutable
-data</p></li>
-<li><p>Referential transparency supports safe reasoning and
-refactoring</p></li>
-<li><p>Higher-order functions enable reusable control patterns like
-map/filter/fold</p></li>
-<li><p>Recursion and pattern matching align with inductive data
-structures</p></li>
-<li><p>Haskell enforces purity and makes effects explicit with IO
-types</p></li>
-<li><p>Laziness can avoid unnecessary work and support infinite
-structures</p></li>
-<li><p>Functional style is widely used in TypeScript/Python for
-pipelines and state reducers</p></li>
-<li><p>Immutability simplifies reasoning about concurrency and
-parallelism</p></li>
-</ul>
-</section>
-<section id="review-questions" class="frame">
-<h2>Review questions</h2>
-<ul>
-<li><p>What is a pure function, and what counts as a side
-effect</p></li>
-<li><p>Why does immutability help testing and concurrency</p></li>
-<li><p>When should you prefer map/filter/reduce over a manual
-loop</p></li>
-<li><p>What is the base case in a recursive function and why is it
-required</p></li>
-<li><p>What does pattern matching give you that nested if statements do
-not</p></li>
-<li><p>In Haskell, what does IO in a type mean</p></li>
-<li><p>What is one advantage and one risk of laziness</p></li>
-</ul>
-</section></section>
+        <section id="filter-haskell" class="frame">
+          <h2>Haskell: <code>filter</code></h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">filter :: (a -&gt; Bool) -&gt; [a] -&gt; [a]
+
+nums :: [Int]
+nums = [1, 2, 3, 4, 5, 6]
+
+evens :: [Int]
+evens = filter even nums</code></pre>
+          <ul>
+            <li>
+              <p><code>filter</code> keeps only the values that satisfy the predicate</p>
+            </li>
+            <li>
+              <p>Here the predicate is <code>even</code></p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="map-filter-pipeline-haskell" class="frame">
+          <h2>Haskell: building a list-processing pipeline</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">nums :: [Int]
+nums = [1, 2, 3, 4, 5, 6]
+
+result :: [Int]
+result = filter (&gt; 5) (map (*2) nums)</code></pre>
+          <ul>
+            <li>
+              <p><code>map (*2)</code> doubles every element</p>
+            </li>
+            <li>
+              <p><code>filter (&gt; 5)</code> keeps only values greater than 5</p>
+            </li>
+            <li>
+              <p>This shows how small pure functions can be combined into a processing pipeline</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="recursion-haskell" class="frame">
+          <h2>Haskell: structural recursion on lists</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">sumList :: [Int] -> Int
+sumList xs =
+  case xs of
+    []     -> 0
+    (y:ys) -> y + sumList ys</code></pre>
+          <ul>
+            <li>
+              <p>The base case handles the empty list</p>
+            </li>
+            <li>
+              <p>The recursive case processes the head and tail</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="fold-haskell" class="frame">
+          <h2>Haskell: fold example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">sumList :: [Int] -&gt; Int
+sumList xs = foldr (+) 0 xs</code></pre>
+          <ul>
+            <li>
+              <p><code>foldr</code> captures a common recursion pattern over lists</p>
+            </li>
+            <li>
+              <p>The base value is <code>0</code></p>
+            </li>
+            <li>
+              <p>The combining rule is <code>(+)</code></p>
+            </li>
+            <li>
+              <p>So this means: combine all list elements using addition, starting from 0</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="fold-haskell-practical" class="frame">
+          <h2>Haskell: practical view of <code>foldr</code></h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">foldr :: (a -&gt; b -&gt; b) -&gt; b -&gt; [a] -&gt; b
+
+sumList :: [Int] -&gt; Int
+sumList = foldr (+) 0
+
+countEvens :: [Int] -&gt; Int
+countEvens = foldr step 0
+  where
+    step x acc =
+      if even x then acc + 1 else acc</code></pre>
+          <ul>
+            <li>
+              <p><code>foldr</code> replaces explicit recursion with a reusable combining pattern</p>
+            </li>
+            <li>
+              <p>For a sum, the base value is <code>0</code> and the combining rule is <code>(+)</code></p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="tail-recursion-haskell" class="frame">
+          <h2>Haskell: tail recursion example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">sumTail :: [Int] -> Int
+sumTail xs = go xs 0
+  where
+    go [] acc = acc
+    go (y:ys) acc = go ys (acc + y)</code></pre>
+          <ul>
+            <li>
+              <p>The helper function carries an accumulator</p>
+            </li>
+            <li>
+              <p>The recursive call is the last thing the function does</p>
+            </li>
+            <li>
+              <p>This is the basic tail-recursive pattern</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="adt-haskell" class="frame">
+          <h2>Haskell: algebraic data type example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">data Shape
+  = Circle Double
+  | Rect Double Double
+
+area :: Shape -> Double
+area sh =
+  case sh of
+    Circle r -> pi * r * r
+    Rect w h -> w * h</code></pre>
+          <ul>
+            <li>
+              <p><code>Shape</code> is a sum type with two cases</p>
+            </li>
+            <li>
+              <p><code>area</code> uses pattern matching to handle each case clearly</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="maybe-haskell" class="frame">
+          <h2>Haskell: Maybe example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">safeDiv :: Int -> Int -> Maybe Int
+safeDiv x y =
+  if y == 0 then Nothing else Just (x `div` y)</code></pre>
+          <ul>
+            <li>
+              <p><code>Maybe Int</code> means the result may be missing</p>
+            </li>
+            <li>
+              <p>This avoids using null for ordinary failure cases</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="either-haskell" class="frame">
+          <h2>Haskell: Either example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">parseInt :: String -> Either String Int
+parseInt s =
+  if all (`elem` "0123456789") s
+    then Right (read s)
+    else Left "not a number"</code></pre>
+          <ul>
+            <li>
+              <p><code>Either String Int</code> means failure carries an error message</p>
+            </li>
+            <li>
+              <p>This is useful when the caller should know why an operation failed</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="lazy-evaluation-haskell" class="frame">
+          <h2>Haskell: lazy evaluation example</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">nums :: [Int]
+nums = [1..]
+
+firstFive :: [Int]
+firstFive = take 5 nums</code></pre>
+          <ul>
+            <li>
+              <p><code>nums</code> is an infinite list</p>
+            </li>
+            <li>
+              <p><code>take 5</code> only asks for five elements</p>
+            </li>
+            <li>
+              <p>This works because Haskell evaluates values only when needed</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="lazy-list-processing-haskell" class="frame">
+          <h2>Haskell: laziness and list processing</h2>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small" data-tabsize="1"><code class="language-haskell">nums :: [Int]
+nums = [1..]
+
+firstThreeEvenSquares :: [Int]
+firstThreeEvenSquares =
+  take 3 (map (^2) (filter even nums))</code></pre>
+          <ul>
+            <li>
+              <p>The list <code>nums</code> is infinite</p>
+            </li>
+            <li>
+              <p>Because Haskell is lazy, only the part needed by <code>take 3</code> is computed</p>
+            </li>
+            <li>
+              <p>This is one place where higher-order functions and lazy evaluation work together naturally</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="what-to-notice-haskell" class="frame">
+          <h2>What to notice in the Haskell examples</h2>
+          <ul>
+            <li>
+              <p>Pure functions and effectful actions are clearly separated</p>
+            </li>
+            <li>
+              <p>Functions are passed around as values naturally</p>
+            </li>
+            <li>
+              <p>Composition and recursion are ordinary programming tools</p>
+            </li>
+            <li>
+              <p>Types make program structure and effect boundaries easier to see</p>
+            </li>
+            <li>
+              <p>Lazy evaluation changes how we think about data and control</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section id="concurrency-preview" class="title-slide slide level1">
+          <h1>Preview: FP and concurrency</h1>
+        </section>
+
+        <section id="immutability-concurrency" class="frame">
+          <h2>Why immutability helps concurrency</h2>
+          <ul>
+            <li>
+              <p>If values are not changed in place, many shared-state bugs disappear</p>
+            </li>
+            <li>
+              <p>Pure functions are easier to run in parallel because they depend only on their inputs</p>
+            </li>
+            <li>
+              <p>This is one reason FP ideas matter beyond Haskell itself</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="save-details-later" class="frame">
+          <h2>What we save for the concurrency module</h2>
+          <ul>
+            <li>
+              <p>Parallel execution patterns</p>
+            </li>
+            <li>
+              <p>Race conditions and synchronization</p>
+            </li>
+            <li>
+              <p>Performance tradeoffs in concurrent systems</p>
+            </li>
+          </ul>
+          <p>For now, the main point is that FP improves reasoning before it improves parallel execution.</p>
+        </section>
+      </section>
+
+      <section>
+        <section id="review" class="title-slide slide level1">
+          <h1>Review</h1>
+        </section>
+
+        <section id="tradeoffs" class="frame">
+          <h2>Tradeoffs in practice</h2>
+          <ul>
+            <li>
+              <p>There is a learning curve because FP introduces new vocabulary and new design patterns</p>
+            </li>
+            <li>
+              <p>Performance can be excellent, but evaluation strategy and data structures matter</p>
+            </li>
+            <li>
+              <p>Functional code often interacts with effectful libraries, so boundaries must be designed carefully</p>
+            </li>
+            <li>
+              <p>Functional programming is a set of tools that improves some problems more than others</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="summary" class="frame">
+          <h2>Key ideas to remember</h2>
+          <ul>
+            <li>
+              <p>Functional programming starts with a value-centered way of thinking about programs</p>
+            </li>
+            <li>
+              <p>Purity, immutability, and referential transparency improve reasoning and testing</p>
+            </li>
+            <li>
+              <p>Higher-order functions, composition, currying, partial application, and list transformations support reuse and abstraction</p>
+            </li>
+            <li>
+              <p>ADTs, pattern matching, recursion, and folds make data processing more explicit</p>
+            </li>
+            <li>
+              <p>Evaluation strategy affects termination and performance</p>
+            </li>
+            <li>
+              <p>Haskell is useful because it gathers these ideas into one clear language model</p>
+            </li>
+          </ul>
+        </section>
+
+        <section id="review-questions" class="frame">
+          <h2>Questions for review</h2>
+          <ul>
+            <li>
+              <p>What makes a function pure?</p>
+            </li>
+            <li>
+              <p>Why is referential transparency useful?</p>
+            </li>
+            <li>
+              <p>How do higher-order functions separate control from behavior?</p>
+            </li>
+            <li>
+              <p>Why are algebraic data types useful in FP?</p>
+            </li>
+            <li>
+              <p>How does a fold relate to recursion?</p>
+            </li>
+            <li>
+              <p>Why is Haskell a strong language for learning pure functional programming?</p>
+            </li>
+            <li>
+              <p>How does lazy evaluation change the way we reason about some programs?</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
     </div>
   </div>
 
   <script src="../_static/revealjs/dist/reveal.js"></script>
-    
-    
-      <script src="../_static/revealjs/plugin/notes/notes.js"></script>
-      <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
-      <script src="../_static/revealjs/plugin/math/math.js"></script>
-      
-    
-    <script>
-        var revealjsConfig = new Object();
-        Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
-        
-        
-        
-          revealjsConfig.plugins = [
-            RevealNotes,RevealHighlight,RevealMath,
-          ];
-        
-        // More info https://github.com/hakimel/reveal.js#configuration
-        Reveal.initialize(revealjsConfig);
-    </script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
 
-  </body>
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": null,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
 </html>

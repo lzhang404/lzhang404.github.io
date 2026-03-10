@@ -34,16 +34,13 @@ Studies</h1>
 <section id="overview" class="frame">
 <h2>Overview</h2>
 <ul>
+<li><p>Bridge from Module 12: convert runtime/concurrency tradeoffs into language and DSL design decisions</p></li>
 <li><p>Language design trade-offs in the real world (constraints,
 stakeholders, risk)</p></li>
 <li><p>DSLs in industry: why they exist and why they fail</p></li>
 <li><p>DSL product thinking: scope, non-goals, safety, and
 versioning</p></li>
-<li><p>Using what we already covered (lexing/parsing/AST) as a black
-box</p>
-<ul>
-<li><p>focus today: semantics, usability, tooling, governance</p></li>
-</ul></li>
+<li><p>Using earlier compiler content (lexing/parsing/AST) as a black box; focus here is semantics, usability, tooling, and governance</p></li>
 <li><p>Case studies: Go vs Java vs Rust vs TypeScript (decision
 framing)</p></li>
 <li><p>Why JS <span class="math inline">\(\rightarrow\)</span> TS worked
@@ -75,6 +72,41 @@ class="math inline">\(\rightarrow\)</span> TypeScript migration</p></li>
 <li><p>Describe how ecosystem and runtime affect long-term
 maintainability</p></li>
 </ul>
+</section>
+<section id="module-boundary-and-placement" class="frame">
+<h2>Module boundary and placement</h2>
+<ul>
+<li><p><strong>From Modules 11 and 12:</strong> concurrency and runtime mechanisms are prerequisites, not re-taught topics.</p></li>
+<li><p><strong>This module (13):</strong> focuses on decision frameworks, DSL boundaries, semantics, and adoption strategy.</p></li>
+<li><p><strong>Course wrap-up role:</strong> integrates prior modules into practical architecture and tooling choices.</p></li>
+</ul>
+</section>
+<section id="language-map-for-this-module" class="frame">
+<h2>Language map for this module</h2>
+<ul>
+<li><p><strong>General design framework:</strong> language-agnostic constraints and tradeoffs.</p></li>
+<li><p><strong>Case-study languages:</strong> Go, Java, Rust, TypeScript as comparative examples.</p></li>
+<li><p><strong>DSL focus:</strong> external and embedded DSL design, semantics, and productization.</p></li>
+</ul>
+</section>
+<section id="module-flow-map" class="frame">
+<h2>Module flow map</h2>
+<ul>
+<li><p>Step 1: define constraints and tradeoff criteria</p></li>
+<li><p>Step 2: decide config vs DSL vs general-purpose code</p></li>
+<li><p>Step 3: specify DSL semantics, safety boundaries, and tooling</p></li>
+<li><p>Step 4: map design to implementation architecture and static checks</p></li>
+<li><p>Step 5: evaluate language choices and capstone scope using one rubric</p></li>
+</ul>
+</section>
+<section id="course-synthesis-map" class="frame">
+<h2>Course synthesis map</h2>
+<ul>
+<li><p>Modules 2-3: syntax pipeline (lexing/parsing/AST)</p></li>
+<li><p>Modules 4-8: names, types, expressions, subprograms, OOP/module boundaries</p></li>
+<li><p>Modules 9-12: FP, logic, concurrency, and runtime tradeoffs</p></li>
+</ul>
+<p>This module integrates those pieces into practical language and DSL design decisions.</p>
 </section>
 </section>
 <section>
@@ -498,6 +530,17 @@ meaning</p></li>
 phases</p></li>
 </ul>
 </section></section>
+<section class="slide level2">
+<section id="bridge-dsl-product-to-implementation" class="frame">
+<h2>Bridge: DSL product decisions to implementation</h2>
+<p>Product decisions are implementation constraints:</p>
+<ul>
+<li><p>Chosen semantics determine evaluator architecture</p></li>
+<li><p>Safety boundaries determine what the runtime must forbid</p></li>
+<li><p>Error UX requirements determine parser/type-checker diagnostics</p></li>
+</ul>
+</section>
+</section>
 <section>
 <section id="implementing-a-dsl" class="title-slide slide level1">
 <h1>Implementing a DSL</h1>
@@ -658,7 +701,7 @@ needs</p></li>
 </section>
 <section id="go-vs-java-vs-rust-vs-typescript-one-slide-summary"
 class="frame">
-<h2>Go vs Java vs Rust vs TypeScript (one slide summary)</h2>
+<h2>Synthesis from Modules 11-12: Go vs Java vs Rust vs TypeScript</h2>
 <p>Typical strengths:</p>
 <ul>
 <li><p>Go: simplicity, tooling, deployment, concurrency
@@ -701,7 +744,7 @@ elegance</p></li>
 </ul>
 </section>
 <section id="jvmclr-ecosystems-design-lesson" class="frame">
-<h2>JVM/CLR ecosystems (design lesson)</h2>
+<h2>Synthesis: JVM/CLR ecosystems (design lesson)</h2>
 <p>VM ecosystems change the calculus:</p>
 <ul>
 <li><p>shared runtime services: GC, JIT, profiling hooks</p></li>
@@ -758,6 +801,17 @@ maturity</p></li>
 preferences</p></li>
 </ul>
 </section></section>
+<section class="slide level2">
+<section id="bridge-industry-cases-to-capstone" class="frame">
+<h2>Bridge: industry case logic to capstone scope</h2>
+<p>The same rubric used for language choice should drive project scope:</p>
+<ul>
+<li><p>state constraints first</p></li>
+<li><p>choose explicit non-goals to control complexity</p></li>
+<li><p>define safety/runtime boundaries before implementation</p></li>
+</ul>
+</section>
+</section>
 <section>
 <section id="capstone-tie-in" class="title-slide slide level1">
 <h1>Capstone tie-in</h1>
