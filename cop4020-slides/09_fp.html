@@ -773,7 +773,7 @@ function safeDiv(x: number, y: number): Result&lt;number&gt; {
         yield n * n
         n += 1</code></pre>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function* squares(): Generator &ltnumber&gt {
+            data-fontsize="\small" data-tabsize="1"><code class="language-typescript">function* squares(): Generator&lt;number&gt; {
   let n = 1;
   while (true) {
     yield n * n;
@@ -870,30 +870,13 @@ clean = [keep_alpha(normalize(s)) for s in raw]</code></pre>
             </li>
           </ul>
         </section>
+      </section>
 
-      
       <section>
         <section id="haskell-capstone" class="title-slide slide level1">
           <h1>Haskell as a pure functional language</h1>
         </section>
 
-        <section id="why-haskell-after-fp" class="frame">
-          <h2>Why study Haskell after learning general FP?</h2>
-          <ul>
-            <li>
-              <p>We first learn the general ideas of functional programming so they do not appear tied to one language</p>
-            </li>
-            <li>
-              <p>Then we study Haskell because it makes those ideas central rather than optional</p>
-            </li>
-            <li>
-              <p>Haskell gives a clearer view of purity, types, algebraic data types, higher-order functions, and lazy evaluation</p>
-            </li>
-            <li>
-              <p>That makes it a strong language for seeing what pure functional programming looks like in a more complete form</p>
-            </li>
-          </ul>
-        </section>
 
         <section id="haskell-characteristics" class="frame">
           <h2>Characteristics of Haskell</h2>
