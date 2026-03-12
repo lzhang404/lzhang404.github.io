@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Review: Modules 1–5</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- Title -->
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Review: Modules 6–9</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Midterm2 Review</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Overview and Roadmap
+           ========================================================= -->
+      <section>
+
+        <section id="review-midterm-overview" class="frame">
+          <h2>Midterm Overview</h2>
+          <ul>
+            <li><p>Covers module 6–9 and project 2</p></li>
+            <li><p>75 mins, requires lock down browser</p></li>
+            <li><p>Exam format: multiple choice, fill in blanks, and short answer questions</p></li>
+            <li><p>One letter-size front and back cheatsheet</p></li>
+            <li><p>In person section should take the exam in the classroom 438</p></li>
+            <li><p>No phones or smart devices are allowed during the exam. If a device is seen at any time, it will be treated as cheating.</p></li>
+            
+          </ul>
+        </section>
+
+        <section id="review-overview" class="frame">
+          <h2>What to focus on</h2>
+          <ul>
+            <li><p>Module 6: expressions, assignment, scope, control flow</p></li>
+            <li><p>Module 7: subprograms, parameter passing, environments, closures</p></li>
+            <li><p>Module 8: OOP, dynamic dispatch, composition, modules</p></li>
+            <li><p>Module 9: functional programming, purity, higher-order functions, folds</p></li>
+            <li><p>Main exam skill: compare language designs and predict program behavior</p></li>
+          </ul>
+        </section>
+
+        <section id="review-big-ideas" class="frame">
+          <h2>Big ideas across all four modules</h2>
+          <ul>
+            <li><p>Know what the language guarantees and what it does not</p></li>
+            <li><p>Reason about names, values, state, and effects separately</p></li>
+            <li><p>Compare compile-time structure with runtime behavior</p></li>
+            <li><p>Use precise vocabulary: scope, aliasing, dispatch, purity, laziness</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+
+<section>
+        <section>
+          <h2>Module 6: Expressions, Assignment, and Control Flow</h2>
+        </section>
+
+        <section id="m6-precedence-eval" class="frame">
+          <h2>Precedence vs evaluation order</h2>
+          <ul>
+            <li><p><strong>Precedence</strong> decides grouping in the parse tree</p></li>
+            <li><p><strong>Evaluation order</strong> decides what runs first at runtime</p></li>
+            <li><p>These are different ideas</p></li>
+            <li><p>Evaluation order matters when expressions have side effects</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-text">1 + 2 * 3
+groups as:
+1 + (2 * 3)</code></pre>
+        </section>
+
+        <section id="m6-eval-order-ts-c" class="frame">
+          <h2>Evaluation order across languages</h2>
+          <ul>
+            <li><p>TypeScript and Python usually specify evaluation order clearly</p></li>
+            <li><p>C often leaves subexpression order unspecified</p></li>
+            <li><p>Do not rely on side-effect order unless the spec guarantees it</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-c">int y = first() + second();</code></pre>
+        </section>
+
+        <section id="m6-short-circuit" class="frame">
+          <h2>Short-circuit evaluation</h2>
+          <ul>
+            <li><p><code>A &amp;&amp; B</code>: if A is false, B is not evaluated</p></li>
+            <li><p><code>A || B</code>: if A is true, B is not evaluated</p></li>
+            <ul>
+              <li>In many languages, these operators do not always return a boolean (JS/TS, Python)</li>
+              <li>In others, they return boolean-only results (Java, C#, Go, Rust)</li>
+            </ul>
+            <li><p>This is control flow inside expressions</p></li>
+            <li>Usage:</li>
+            <ul>
+              <li><p>Guarding null checks before field access</p></li>
+              <li><p>Default values in JS/TS and Python</p></li>
+              <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+data-fontsize="\small" data-tabsize="1"><code class="language-typescript">
+u !== null &amp;&amp; u.name.length &gt; 0
+</code></pre>
+              <li><p>But avoid hiding important side effects in boolean-looking expressions</p></li>
+          </ul>
+          </ul>
+        </section>
+
+        <section id="m6-defaults" class="frame">
+          <h2>Defaults: <code>||</code> vs <code>??</code></h2>
+          <ul>
+            <li><p><code>||</code> uses the default for falsey values</p></li>
+            <li><p><code>??</code> uses the default only for <code>null</code> or <code>undefined</code></p></li>
+            <li>Falsy values: values that behave like false in boolean context</li>
+            <li>Nullish values: only null and undefined</li>
+          </ul>
+        </section>
+
+        <section id="m6-assignment-models" class="frame">
+          <h2>Assignment models</h2>
+          <ul>
+            <li><p>Ask: is assignment a statement, an expression, or both?</p></li>
+            <li><p>C and JavaScript/TypeScript: assignment can produce a value</p></li>
+            <li><p>Python: assignment is normally a statement</p></li>
+            <li><p>This affects what code is allowed inside larger expressions</p></li>
+            <li>Classic assignment bug</li>
+            <ul>
+            <li><p>In C, <code>if (x = 0)</code> assigns 0, then tests false</p></li>
+            <li><p>Often the programmer meant <code>x == 0</code></p></li>
+            <li><p>Python avoids this specific bug by not allowing normal assignment there</p></li>
+          </ul>
+          </ul>
+        </section>
+
+
+        <section id="m6-aliasing" class="frame">
+          <h2>Chained assignment and aliasing</h2>
+          <ul>
+            <li><p>Chained assignment is usually fine for immutable values</p></li>
+            <li><p>It is risky for mutable objects</p></li>
+            <li><p>Example in Python: <code>a = b = []</code></p></li>
+            <li><p>Then mutating one name affects the same shared object</p></li>
+          </ul>
+        </section>
+
+        <section id="m6-selection" class="frame">
+          <h2>Selection constructs</h2>
+          <ul>
+            <li><p><code>if / else</code>: general branching</p></li>
+            <li><p><code>switch</code>: branch by discrete cases</p></li>
+            <li><p><code>match</code> / pattern matching: branch by value structure</p></li>
+            <li><p>Know that C <code>switch</code> fall-through is the default</p></li>
+          </ul>
+        </section>
+
+        <section id="m6-iteration" class="frame">
+          <h2>Iteration, iterators, generators</h2>
+          <ul>
+            <li><p><code>while</code>, counter-style <code>for</code>, and foreach-style loops are different surface forms</p></li>
+            <li><p>Python <code>for</code> is iteration over an iterator</p></li>
+            <li><p>TypeScript <code>for...of</code> iterates values</p></li>
+            <li><p>Generators use <code>yield</code> to produce one value at a time</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           MODULE 7
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Module 7: Subprograms, Parameters, and Closures</h2>
+        </section>
+
+        <section id="m7-contract" class="frame">
+          <h2>Subprograms as contracts</h2>
+          <ul>
+            <li><p>A caller needs more than just a signature</p></li>
+            <li><p>A contract includes inputs, outputs, effects, errors, and timing</p></li>
+            <li><p>Especially important for async code and mutation</p></li>
+            <li>Signature vs Contract</li>
+            <ul>
+              <li><p><strong>Signature</strong>: parameter profile and return type</p></li>
+              <li><p><strong>Contract</strong>: signature plus behavior the caller can rely on</p></li>
+              <li><p>Effects, failure rules, and timing are part of the real contract</p></li>
+            </ul>
+          </ul>
+        </section>
+
+
+        <section id="m7-referencing-env" class="frame">
+          <h2>Referencing environment</h2>
+          <ul>
+            <li><p>The referencing environment is all bindings a subprogram can use while running</p></li>
+            <li><p>This includes parameters, locals, and captured nonlocals</p></li>
+            <li><p>It answers: what names have meaning here?</p></li>
+          </ul>
+        </section>
+
+        <section id="m7-activation-record" class="frame">
+          <h2>Activation records and call stack</h2>
+          <ul>
+            <li><p>An activation record (stack frame) represents one active call</p></li>
+            <li><p>Typical contents: parameters, locals, temporaries, return info</p></li>
+            <li><p>Recursion works because each call gets fresh bindings</p></li>
+          </ul>
+        </section>
+
+        <section id="m7-association-vs-passing" class="frame">
+          <h2>Parameter Association Vs Passing</h2>
+          <ul>
+            <li><p><strong>Parameter association</strong>: how arguments match parameters</p></li>
+            <li><p><strong>Passing method</strong>: what gets transmitted</p></li>
+            <li>Parameter association</li>
+              <ul>
+                <li><p>Positional association</p></li>
+                <li><p>Keyword association</p></li>
+                <li><p>Defaults</p></li>
+                <li><p>Varargs / rest parameters</p></li>
+              </ul>
+            <li>Passing Modes</li>
+            <ul>
+              <li><p><strong>in</strong>: data flows into the subprogram</p></li>
+              <li><p><strong>out</strong>: data flows back to the caller</p></li>
+              <li><p><strong>in out</strong>: bidirectional</p></li>
+              <li><p>These describe intent, not always exact implementation</p></li>
+            </ul>
+        </section>
+
+        <section id="m7-sharing" class="frame">
+          <h2>Call-by-sharing</h2>
+          <ul>
+            <li><p>Common in Java, Python, JS/TS objects</p></li>
+            <li><p>The callee receives a copy of a reference value</p></li>
+            <li><p>Mutating the shared object is visible to the caller</p></li>
+            <li><p>Reassigning the parameter does not change the caller variable</p></li>
+          </ul>
+        </section>
+
+        <section id="m7-aliasing-kinds" class="frame">
+          <h2>Two kinds of aliasing</h2>
+          <ul>
+            <li><p><strong>Variable aliasing</strong>: two names refer to the same variable slot</p></li>
+            <li><p><strong>Object aliasing</strong>: two names refer to the same heap object</p></li>
+            <li><p>Pass-by-reference creates variable aliasing</p></li>
+            <li><p>Call-by-sharing creates object aliasing only</p></li>
+          </ul>
+        </section>
+
+        <section id="m7-dynamic-invocation" class="frame">
+          <h2>Dynamic invocation</h2>
+          <ul>
+            <li><p>Dynamic invocation = which subprogram runs is chosen at runtime./p></li>
+            <li><p>Common mechanisms: </p></li>
+            <ul>
+              <li>First-class functions: functions can be stored/passed/returned</li>
+              <li>Callback: function passed to run later</li>
+            </ul>
+          </ul>
+        </section>
+
+
+
+        <section id="m7-binding" class="frame">
+          <h2>Deep vs shallow binding</h2>
+          <ul>
+            <li><p><strong>Deep binding</strong>: use the environment from function creation time</p></li>
+            <li><p><strong>Shallow binding</strong>: use the environment from call time</p></li>
+            <li><p>Closures normally use deep binding</p></li>
+            <ul>
+              <li>A closure captures variables from surrounding lexical scope</li>
+              <li>This lets returned functions keep access to old bindings </li>
+            </ul>
+          </ul>
+        </section>
+
+        <section id="m7-closures" class="frame">
+          <h2>Closures in practice</h2>
+          <ul>
+            <li>Stale state: A callback may observe an old snapshot rather than the latest intended state </li>
+            <li>Retention: If a closure captures a large object and the closure stays reachable, that object stays alive too</li>
+            <li>Common use patterns: memoization, debounce, dependency injection</li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- =========================================================
+           MODULE 8
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Module 8: Object-Oriented Programming and Modules</h2>
+        </section>
+
+        <section id="m8-objects-classes" class="frame">
+          <h2>Objects, classes, invariants, and encapsulation</h2>
+          <ul>
+            <li><p>Objest: state behavior at runtime</p></li>
+            <li><p>Class: blueprint defining fields and methods</p></li>
+            <li><p>Invariant: a condition that should always hold for an object</p></li>
+            <li><p>Encapsulation: hide representation details, protect invariants, expose controlled operations</p></li>
+          </ul>
+        </section>
+
+        
+
+        <section id="m8-inheritance" class="frame">
+          <h2>Inheritance vs composition</h2>
+          <ul>
+            <li><p>Inheritance: </p></li>
+            <ul>
+              <li>models <strong>is-a</strong> relationship</li>
+              <li>subtype relationship</li>
+              <li>supports polymorphism</li>
+            </ul>
+            <li>Composition: </li>
+            <ul>
+              <li>models <strong>has-a</strong> relationship</li>
+              <li>object contains or delegates to another object</li>
+              <li>often better for combining features like logging/caching/retry</li>
+            </ul>
+          </ul>
+        </section>
+
+
+        <section id="m8-dispatch" class="frame">
+          <h2>Dynamic dispatch</h2>
+          <ul>
+            <li>Dynamic dispatch</li>
+            <ul>
+              <li>Dynamic dispatch chooses a method body at runtime based on the receiver's actual class</li>
+              <li><p>This is the core of subtype polymorphism</p></li>
+              <li><p>One method call can work across many subclasses</p></li>
+            </ul>
+            <li>Statics vs dynamic type</li>
+            <ul>
+              <li>Static type: what compiler sees</li>
+              <li>Dynamic type: what object really is at runtime</li>
+              <li><p>Compile time decides whether a method call is allowed</p></li>
+              <li><p>Runtime decides which override runs</p></li>
+            </ul>
+            <li>C++: runtime dispatch requires virtual keyword</li>
+          </ul>
+        </section>
+
+        <section id="m8-poly-mechanisms" class="frame">
+          <h2>Overridding vs Overloading vs Generics</h2>
+          <ul>
+            <li><p><strong>Overriding</strong>: </p></li>
+            <ul>
+              <li>subclass replaces inherited method body</li>
+              <li>chosen at runtime</li>
+            </ul>
+            <li><p><strong>Overloading</strong>:</p></li>
+            <ul>
+              <li>same method name, different parameter lists</li>
+              <li>chosen at compile time</li>
+            </ul>
+            <li><p><strong>Generics / templates</strong>: </p></li>
+            <ul>
+              <li>one implementation works across many types</li>
+              <li>compile-time abstraction over type</li>
+            </ul>
+          </ul>
+        </section>
+
+        <section id="m8-interface-abstract" class="frame">
+          <h2>Interfaces vs abstract classes</h2>
+          <ul>
+            <li><p><strong>Interface</strong>:</p></li>
+            <ul>
+              <li>contract only</li>
+              <li>minimal coupling</li>
+              <li>multiple implementations</li>
+              <li>good for extension points and testing</li>
+            </ul>
+            <li><strong>Abstract class</strong></li>
+            <ul>
+              <li>partial implementation + contract</li>
+              <li>can include shared fields, constructors, helper methods</li>
+              <li>good for closely related family of types</li>
+            </ul>
+          </ul>
+        </section>
+
+        <section id="m8-visibility" class="frame">
+          <h2>Visibility across languages</h2>
+          <ul>
+            <li><p>Java: public, protected, package-private, private</p></li>
+            <li><p>TypeScript: access modifiers and exports</p></li>
+            <li><p>Python: mostly conventions such as underscore names</p></li>
+            <li><p>C++: class access control plus headers/source files and namespaces</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           MODULE 9
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Module 9: Functional Programming</h2>
+        </section>
+
+        <section id="m9-viewpoint" class="frame">
+          <h2>Main viewpoint of functional programming</h2>
+          <ul>
+            <li><p>Imperative programming emphasizes state changes</p></li>
+            <li><p>Functional programming emphasizes</p></li>
+            <ul>
+              <li>computing values from values</li>
+              <li>controlling effects</li>
+              <li>organizing code around transformations</li>
+            </ul>
+            <li><p>The goal is easier reasoning, reuse, and testability</p></li>
+          </ul>
+        </section>
+
+
+
+        <section id="m9-ref-transparency" class="frame">
+          <h2>Referential transparency</h2>
+          <ul>
+            <li><p>An expression is referentially transparent if it can be replaced by its value without changing behavior</p></li>
+            <li><p>This enables local reasoning about code</p></li>
+            <li><p>Effects break referential transparency</p></li>
+          </ul>
+        </section>
+
+        <section id="m9-pure" class="frame">
+          <h2>Pure functions and immutability</h2>
+          <ul>
+            <li>Pure functions</li>
+            <ul>
+              <li><p>A pure function returns the same result for the same inputs</p></li>
+              <li><p>It does not perform observable side effects</p></li>
+              <li><p>Its behavior depends only on arguments</p></li>
+            </ul>
+            <li>Immutability</li>
+              <ul>
+                <li><p>Immutable values are not updated in place</p></li>
+                <li><p>Programs compute new values instead of changing old ones</p></li>
+                <li><p>This reduces hidden interaction through shared mutable state</p></li>
+              </ul>
+          </ul>
+        </section>
+
+
+        <section id="m9-map-filter-fold" class="frame">
+          <h2>Core toolkit: map, filter, fold</h2>
+          <ul>
+            <li><p><code>map</code>: transform each element</p></li>
+            <li><p><code>filter</code>: keep elements that satisfy a predicate</p></li>
+            <li><p><code>fold</code> / <code>reduce</code>: combine many values into one</p></li>
+            <li><p>These package common recursion patterns</p></li>
+          </ul>
+        </section>
+
+        <section id="m9-composition" class="frame">
+          <h2>Composition, currying, partial application</h2>
+          <ul>
+            <li><p>Composition builds larger behavior from small functions</p></li>
+            <li><p>Currying turns a multi-argument function into chained one-argument functions</p></li>
+            <li><p>Partial application produces specialized functions from general ones</p></li>
+          </ul>
+        </section>
+
+        <section id="m9-recursion" class="frame">
+          <h2>Recursive data and recursion</h2>
+          <ul>
+            <li><p>FP often uses recursive data such as lists and trees</p></li>
+            <li><p>Structural recursion follows the shape of the data</p></li>
+            <li><p>Base case plus recursive case is the standard pattern</p></li>
+            <li>fold</li>
+            <ul>
+              <li><p>A fold abstracts a common recursive pattern</p></li>
+              <li><p>You provide a base value and a combining rule</p></li>
+              <li><p>The library handles the traversal</p></li>
+            </ul>
+          </ul>
+
+        </section>
+
+        <section id="m9-adt" class="frame">
+          <h2>Algebraic data types and pattern matching</h2>
+          <ul>
+            <li><p>ADTs represent structured cases explicitly</p></li>
+            <ul>
+              <li><p>Product types combine data</p></li>
+              <li><p>Sum types represent a choice among cases</p></li>
+              <li>Examples:</li>
+              <ul>
+                  <li>Maybe/Option: value present or absent</li>
+                  <li>Result/Either: sucess or failure. failure may carry information</li>
+              </ul>
+            </ul>
+            <li><p>Pattern matching branches clearly on structure</p></li>
+            <ul>
+              <li>inspect which case of a value you have</li>
+              <li>clearer than manual tag checks with nested conditionals</li>
+              <li>pairs naturally with ADTs</li>
+            </ul>
+          </ul>
+        </section>
+
+
+
+        <section id="m9-strict-lazy" class="frame">
+          <h2>Strict vs lazy evaluation</h2>
+          <ul>
+            <li><p><strong>Strict</strong>: </p></li>
+            <ul>
+              <li>arguments computed before function body uses them</li>
+              <li>common in JS, TS, Python, Java, C</li>
+            </ul>
+            <li><p><strong>Lazy</strong>: </p></li>
+            <ul>
+              <li>computation delayed until needed</li>
+              <li>Laziness can avoid unnecessary work and support infinite structures</li>
+              <li>but can make performance and reasoning less obvious</li>
+            </ul>
+          </ul>
+        </section>
+
+        <section id="m9-generators" class="frame">
+          <h2>Generators as a demand-driven idea</h2>
+          <ul>
+            <li>Even strict languages can simulate laziness with generators/iterators.</li>
+            <li><p>Python and TypeScript generators produce values only when asked</p></li>
+            <li><p>They are not full lazy languages, but they illustrate demand-driven computation</p></li>
+          </ul>
+        </section>
+
+        <section id="m9-mainstream-fp" class="frame">
+          <h2>Functional style in mainstream languages</h2>
+          <ul>
+            <li><p>Use pure transformations where possible</p></li>
+            <li><p>Represent state changes as new values</p></li>
+            <li><p>Use map/filter/reduce and reducer-style state transitions</p></li>
+          </ul>
+        </section>
+
+        <section id="m9-haskell" class="frame">
+          <h2>Why Haskell matters</h2>
+          <ul>
+            <li><p>It makes FP ideas very visible</p></li>
+            <li><p>Purity is the default</p></li>
+            <li><p>Immutability, higher-order functions, ADTs, and laziness are central</p></li>
+            <li><p>Types make effect boundaries easier to see</p></li>
+            <li>Haskell participation lab</li>
+          </ul>
+        </section>
+
+        <section id="m9-concurrency" class="frame">
+          <h2>FP and concurrency preview</h2>
+          <ul>
+            <li><p>Immutability reduces shared-state bugs</p></li>
+            <li><p>Pure functions are easier to reason about independently</p></li>
+            <li><p>This is one reason FP ideas matter beyond Haskell itself</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Compare / Contrast
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>High-Value Comparisons</h2>
+        </section>
+
+        <section id="compare-m6" class="frame">
+          <h2>Module 6 comparisons</h2>
+          <ul>
+            <li><p>Precedence vs evaluation order</p></li>
+            <li><p>Short-circuit vs explicit <code>if</code></p></li>
+            <li><p>Assignment expression vs assignment statement</p></li>
+            <li><p>TypeScript block scope vs Python block behavior</p></li>
+            <li><p><code>switch</code> fall-through vs safer branching forms</p></li>
+          </ul>
+        </section>
+
+        <section id="compare-m7" class="frame">
+          <h2>Module 7 comparisons</h2>
+          <ul>
+            <li><p>Signature vs contract</p></li>
+            <li><p>Association vs passing method</p></li>
+            <li><p>Pass-by-value vs pass-by-reference vs call-by-sharing</p></li>
+            <li><p>Variable aliasing vs object aliasing</p></li>
+            <li><p>Deep binding vs shallow binding</p></li>
+          </ul>
+        </section>
+
+        <section id="compare-m8" class="frame">
+          <h2>Module 8 comparisons</h2>
+          <ul>
+            <li><p>Inheritance vs composition</p></li>
+            <li><p>Static type vs dynamic type</p></li>
+            <li><p>Overriding vs overloading vs generics</p></li>
+            <li><p>Interface vs abstract class</p></li>
+            <li><p>Public API vs internal helper</p></li>
+          </ul>
+        </section>
+
+        <section id="compare-m9" class="frame">
+          <h2>Module 9 comparisons</h2>
+          <ul>
+            <li><p>Imperative vs functional viewpoint</p></li>
+            <li><p>Pure vs effectful</p></li>
+            <li><p>Mutable vs immutable</p></li>
+            <li><p>Explicit recursion vs library folds</p></li>
+            <li><p>Strict vs lazy evaluation</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Wrap Up
+           ========================================================= -->
+      <section>
+        <section>
+          <h2>Wrap Up</h2>
+        </section>
+
+        <section id="review-checklist" class="frame">
+          <h2>Fast exam checklist</h2>
+          <ul>
+            <li><p>Can you explain why side effects make evaluation order matter?</p></li>
+            <li><p>Can you identify aliasing and predict mutation visibility?</p></li>
+            <li><p>Can you explain stack frames and referencing environments?</p></li>
+            <li><p>Can you distinguish overriding, overloading, and generics?</p></li>
+            <li><p>Can you explain purity, referential transparency, and folds?</p></li>
+          </ul>
+        </section>
+
+        <section id="review-summary" class="frame">
+          <h2>One-line summary per module</h2>
+          <ul>
+            <li><p><strong>Module 6:</strong> runtime behavior depends on evaluation rules, assignment models, scope, and control flow design</p></li>
+            <li><p><strong>Module 7:</strong> subprogram behavior depends on contracts, environments, parameter passing, and timing boundaries</p></li>
+            <li><p><strong>Module 8:</strong> OOP manages complexity with encapsulation, subtype behavior, composition, and module boundaries</p></li>
+            <li><p><strong>Module 9:</strong> FP emphasizes pure value transformations, reusable abstractions, and controlled effects</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig,
+      {
+        "disableLayout": true,
+        "controls": true,
+        "progress": true,
+        "hash": true,
+        "center": true,
+        "transition": "slide",
+        "slideNumber": true,
+        "scrollActivationWidth": null,
+        "mouseWheel": false,
+        "width": 800, "height": 540
+      });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>
