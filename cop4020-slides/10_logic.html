@@ -1,383 +1,333 @@
 <!DOCTYPE html>
 <html lang="en" data-content_root="../">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-
-<title>Logic Programming &amp; Declarative Paradigms</title>
-    <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
-    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Logic Programming &amp; Declarative Paradigms</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
   <div class="reveal">
     <div class="slides" role="main">
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Logic Programming &amp; Declarative Paradigms</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Module 10</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
 
-<section>
-<section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
-<h1>Logic Programming &amp; Declarative Paradigms</h1>
-<div class="subtitle docutils container">
-<p><strong>Module 10</strong></p>
-<p>Liting Zhang</p>
-</div>
-</section>
-</section>
+      <section>
+        <section id="overview" class="title-slide slide level1">
+          <h1>Overview</h1>
+        </section>
 
-<section class="slide level2">
-
-<section id="overview" class="frame">
-<h2>Overview</h2>
-<ul>
-<li><p>Bridge from Module 9: reuse recursion/list ideas in a declarative setting</p></li>
-<li><p>Declarative vs imperative thinking</p></li>
-<li><p>Predicate logic overview (facts, rules, quantifiers)</p></li>
-<li><p>Horn clauses and why they matter</p></li>
-<li><p>Prolog basics: facts, rules, queries</p></li>
-<li><p>Unification (the matching engine)</p></li>
-<li><p>Resolution and SLD: how Prolog “runs”</p></li>
-<li><p>Backtracking search: success, failure, choice points</p></li>
-<li><p>Expressing relations and constraints in Prolog</p></li>
-<li><p>Comparing Prolog to SQL, Datalog, and constraint DSLs</p></li>
-<li><p>Industry angle: rule engines, queries, constraint
-solvers</p></li>
-</ul>
-</section>
-<section id="learning-goals" class="frame">
-<h2>Learning goals</h2>
-<p>After this lecture, you should be able to</p>
-<ul>
-<li><p>Explain what “declarative” means and how it differs from
-imperative control flow</p></li>
-<li><p>Read basic predicate logic statements and map them to Horn
-clauses</p></li>
-<li><p>Write simple Prolog knowledge bases (facts + rules) and query
-them</p></li>
-<li><p>Explain unification and predict whether two terms unify</p></li>
-<li><p>Describe resolution and why backtracking search appears in
-Prolog</p></li>
-<li><p>Use recursion and lists to express relations (member, append,
-path)</p></li>
-<li><p>Control search (order of clauses/goals, cut,
-negation-as-failure)</p></li>
-<li><p>Use constraint logic programming (conceptual) for
-scheduling/puzzles</p></li>
-<li><p>Compare Prolog-style querying to SQL and rule/constraint
-DSLs</p></li>
-</ul>
-</section>
-<section id="module-boundary-and-placement" class="frame">
-<h2>Module boundary and placement</h2>
-<ul>
-<li><p><strong>From Module 9 (FP):</strong> recursion and lists are assumed; we will not re-teach them procedurally.</p></li>
-<li><p><strong>This module (10):</strong> focuses on unification, proof search, backtracking, and declarative rule modeling.</p></li>
-<li><p><strong>To Module 11 (Concurrency):</strong> we use this module’s “engine + search strategy” viewpoint to compare concurrent execution models.</p></li>
-</ul>
-</section>
-<section id="language-map-for-this-module" class="frame">
-<h2>Language map for this module</h2>
-<ul>
-<li><p><strong>Prolog:</strong> primary language for logic programming semantics and execution behavior.</p></li>
-<li><p><strong>SQL/Datalog:</strong> relational/declarative comparison points.</p></li>
-<li><p><strong>Constraint DSLs:</strong> conceptual transfer target (policy, scheduling, validation).</p></li>
-</ul>
-<p>When examples switch languages, the slide title will state why.</p>
-</section>
-<section id="module-flow-map" class="frame">
-<h2>Module flow map</h2>
-<ul>
-<li><p>Step 1: declarative mindset and predicate-logic vocabulary</p></li>
-<li><p>Step 2: Prolog syntax and unification</p></li>
-<li><p>Step 3: execution behavior (resolution, goal order, backtracking)</p></li>
-<li><p>Step 4: programming patterns (lists, recursion, constraints, control)</p></li>
-<li><p>Step 5: transfer to SQL/Datalog/rule engines and industry use cases</p></li>
-</ul>
-</section>
-<section id="core-idea-describe-relations-let-the-engine-search"
+        <section id="overview1" class="frame">
+          <h2>Overview</h2>
+          <ul>
+            <li><p>Bridge from Module 9: reuse recursion/list ideas in a declarative setting</p></li>
+            <li><p>Declarative vs imperative thinking</p></li>
+            <li><p>Predicate logic overview (facts, rules, quantifiers)</p></li>
+            <li><p>Horn clauses and why they matter</p></li>
+            <li><p>Prolog basics: facts, rules, queries</p></li>
+            <li><p>Unification (the matching engine)</p></li>
+            <li><p>Resolution and SLD: how Prolog "runs"</p></li>
+            <li><p>Backtracking search: success, failure, choice points</p></li>
+            <li><p>Expressing relations and constraints in Prolog</p></li>
+            <li><p>Comparing Prolog to SQL, Datalog, and constraint DSLs</p></li>
+            <li><p>Industry angle: rule engines, queries, constraint solvers</p></li>
+          </ul>
+        </section>
+        <section id="learning-goals" class="frame">
+          <h2>Learning goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li><p>Explain what "declarative" means and how it differs from imperative control flow</p></li>
+            <li><p>Read basic predicate logic statements and map them to Horn clauses</p></li>
+            <li><p>Write simple Prolog knowledge bases (facts + rules) and query them</p></li>
+            <li><p>Explain unification and predict whether two terms unify</p></li>
+            <li><p>Describe resolution and why backtracking search appears in Prolog</p></li>
+            <li><p>Use recursion and lists to express relations (member, append, path)</p></li>
+            <li><p>Control search (order of clauses/goals, cut, negation-as-failure)</p></li>
+            <li><p>Use constraint logic programming (conceptual) for scheduling/puzzles</p></li>
+            <li><p>Compare Prolog-style querying to SQL and rule/constraint DSLs</p></li>
+          </ul>
+        </section>
+        <section id="module-boundary-and-placement" class="frame">
+          <h2>Module boundary and placement</h2>
+          <ul>
+            <li><p><strong>From Module 9 (FP):</strong> recursion and lists are assumed; we will not re-teach them procedurally.</p></li>
+            <li><p><strong>This module (10):</strong> focuses on unification, proof search, backtracking, and declarative rule modeling.</p></li>
+            <li><p><strong>To Module 11 (Concurrency):</strong> we use this module's "engine + search strategy" viewpoint to compare concurrent execution models.</p></li>
+          </ul>
+        </section>
+        <section id="language-map-for-this-module" class="frame">
+          <h2>Language map for this module</h2>
+          <ul>
+            <li><p><strong>Prolog:</strong> primary language for logic programming semantics and execution behavior.</p></li>
+            <li><p><strong>SQL/Datalog:</strong> relational/declarative comparison points.</p></li>
+            <li><p><strong>Constraint DSLs:</strong> conceptual transfer target (policy, scheduling, validation).</p></li>
+          </ul>
+          <p>When examples switch languages, the slide title will state why.</p>
+        </section>
+        <section id="module-flow-map" class="frame">
+          <h2>Module flow map</h2>
+          <ul>
+            <li><p>Step 1: declarative mindset and predicate-logic vocabulary</p></li>
+            <li><p>Step 2: Prolog syntax and unification</p></li>
+            <li><p>Step 3: execution behavior (resolution, goal order, backtracking)</p></li>
+            <li><p>Step 4: programming patterns (lists, recursion, constraints, control)</p></li>
+            <li><p>Step 5: transfer to SQL/Datalog/rule engines and industry use cases</p></li>
+          </ul>
+        </section>
+        <section id="core-idea-describe-relations-let-the-engine-search"
 class="frame">
-<h2>Core idea: describe relations, let the engine search</h2>
-<p>Logic programming mental model:</p>
-<ul>
-<li><p>You write relations (facts + rules)</p></li>
-<li><p>A query asks: “Is there a way to make this true?”</p></li>
-<li><p>The runtime finds values for variables (via unification) and
-explores possibilities (via backtracking)</p></li>
-</ul>
-<p>Why it is different:</p>
-<ul>
-<li><p>You specify what is true, not how to compute it
-step-by-step</p></li>
-<li><p>Control flow emerges from search + rule application</p></li>
-<li><p>Debugging often means reasoning about search order</p></li>
-</ul>
-</section>
-<section id="where-logicdeclarative-ideas-show-up" class="frame">
-<h2>Where logic/declarative ideas show up</h2>
-<p>Even if you never ship Prolog, the ideas are everywhere:</p>
-<ul>
-<li><p>SQL: declare a set of rows you want</p></li>
-<li><p>Regular expressions: declare patterns, engine searches for
-matches</p></li>
-<li><p>Build systems: declare dependencies, tool figures out build
-order</p></li>
-<li><p>Policy engines: declare rules, engine decides allow/deny</p></li>
-<li><p>Constraint solvers: declare constraints, solver finds satisfying
-assignments</p></li>
-</ul>
-</section>
-</section>
-<section>
-<section id="declarative-foundations" class="title-slide slide level1">
-<h1>Declarative foundations</h1>
+          <h2>Core idea: describe relations, let the engine search</h2>
+          <p>Logic programming mental model:</p>
+          <ul>
+            <li><p>You write relations (facts + rules)</p></li>
+            <li><p>A query asks: "Is there a way to make this true?"</p></li>
+            <li><p>The runtime finds values for variables (via unification) and explores possibilities (via backtracking)</p></li>
+          </ul>
+          <p>Why it is different:</p>
+          <ul>
+            <li><p>You specify what is true, not how to compute it step-by-step</p></li>
+            <li><p>Control flow emerges from search + rule application</p></li>
+            <li><p>Debugging often means reasoning about search order</p></li>
+          </ul>
+        </section>
+        <section id="where-logicdeclarative-ideas-show-up" class="frame">
+          <h2>Where logic/declarative ideas show up</h2>
+          <p>Even if you never ship Prolog, the ideas are everywhere:</p>
+          <ul>
+            <li><p>SQL: declare a set of rows you want</p></li>
+            <li><p>Regular expressions: declare patterns, engine searches for matches</p></li>
+            <li><p>Build systems: declare dependencies, tool figures out build order</p></li>
+            <li><p>Policy engines: declare rules, engine decides allow/deny</p></li>
+            <li><p>Constraint solvers: declare constraints, solver finds satisfying assignments</p></li>
+          </ul>
+        </section>
+      </section>
 
-</section>
-<section id="declarative-paradigms" class="frame">
-<h2>Declarative paradigms</h2>
-</section>
-<section id="imperative-vs-declarative" class="frame">
-<h2>Imperative vs declarative</h2>
-<p>Imperative (typical C/Java/Python loops):</p>
-<ul>
-<li><p>Describe steps: update variables, iterate, branch</p></li>
-<li><p>Order matters: evaluation order is the program</p></li>
-</ul>
-<p>Declarative (logic/SQL/constraints):</p>
-<ul>
-<li><p>Describe a property of the solution</p></li>
-<li><p>A solver/search engine chooses an execution strategy</p></li>
-</ul>
-<p>Key question shift:</p>
-<ul>
-<li><p>Imperative: “How do I compute this?”</p></li>
-<li><p>Declarative: “What must be true of the answer?”</p></li>
-</ul>
-</section>
-<section id="declarative-does-not-mean-no-control" class="frame">
-<h2>Declarative does not mean “no control”</h2>
-<p>Reality check:</p>
-<ul>
-<li><p>Declarative code often has an underlying engine (optimizer,
-solver, search)</p></li>
-<li><p>Performance can still depend on structure: indexes, rule order,
-constraints</p></li>
-<li><p>In Prolog, clause order and goal order affect search</p></li>
-</ul>
-<p>Practical skill:</p>
-<ul>
-<li><p>Keep the program meaning declarative</p></li>
-<li><p>Learn engine behavior to avoid accidental slow search</p></li>
-</ul>
-</section>
-<section id="logic-programming-in-one-slide" class="frame">
-<h2>Logic programming in one slide</h2>
-<p>A Prolog program is a set of Horn clauses:</p>
-<ul>
-<li><p>Facts: <code>parent(alice, bob).</code></p></li>
-<li><p>Rules:
-<code>grandparent(X,Z) :- parent(X,Y), parent(Y,Z).</code></p></li>
-</ul>
-<p>You ask queries:</p>
-<ul>
-<li><p><code>?- grandparent(alice, Z).</code></p></li>
-</ul>
-<p>The engine:</p>
-<ul>
-<li><p>Unifies terms to make goals match rule heads</p></li>
-<li><p>Uses backtracking to explore alternatives</p></li>
-</ul>
-</section>
-<section id="practice-0-declarative-vs-imperative" class="frame">
-<h2>Practice 0: declarative vs imperative</h2>
-<p>For each task, identify whether it is more naturally imperative,
-declarative, or both:</p>
-<ul>
-<li><p>Find all students with GPA <span class="math inline">\(&gt;
-3.5\)</span></p></li>
-<li><p>Compute Fibonacci(40) quickly</p></li>
-<li><p>Assign exam times so no student has two exams at once</p></li>
-<li><p>Parse a log file and extract error lines</p></li>
-</ul>
-</section>
-<section id="practice-0-answer-declarative-vs-imperative" class="frame">
-<h2>Practice 0 Answer: declarative vs imperative</h2>
-<ul>
-<li><p>Find students with GPA <span class="math inline">\(&gt;
-3.5\)</span>: declarative (SQL/filtering)</p></li>
-<li><p>Fibonacci(40) quickly: imperative (DP), or declarative with
-memoization</p></li>
-<li><p>Exam times without conflicts: declarative constraints
-(CSP/CLP)</p></li>
-<li><p>Parse log and extract error lines: both (regex/filters are
-declarative; scanning is imperative)</p></li>
-</ul>
-</section>
-<section id="predicate-logic-overview" class="frame">
-<h2>Predicate logic overview</h2>
-</section>
-<section id="predicates-terms-and-variables" class="frame">
-<h2>Predicates, terms, and variables</h2>
-<p>Building blocks:</p>
-<ul>
-<li><p>Constant: <code>alice</code>, <code>uwf</code>,
-<code>3</code></p></li>
-<li><p>Variable: <code>X</code>, <code>Y</code> (capitalized in
-Prolog)</p></li>
-<li><p>Function symbol (term constructor): <code>pair(X,Y)</code>,
-<code>node(Left,Right)</code></p></li>
-<li><p>Predicate: <code>parent(X,Y)</code>,
-<code>edge(U,V)</code></p></li>
-</ul>
-<p>Read:</p>
-<ul>
-<li><p><code>parent(alice, bob)</code> is a proposition: either true or
-false in a model</p></li>
-<li><p><code>parent(alice, X)</code> is a formula with a free variable
-(a query pattern)</p></li>
-</ul>
-</section>
-<section id="quantifiers-conceptual" class="frame">
-<h2>Quantifiers (conceptual)</h2>
-<p>Predicate logic often uses:</p>
-<ul>
-<li><p><span class="math inline">\(\forall x\)</span> (for all)</p></li>
-<li><p><span class="math inline">\(\exists x\)</span> (there
-exists)</p></li>
-</ul>
-<p>Example idea:</p>
-<ul>
-<li><p>“Everyone has a parent”: <span class="math inline">\(\forall x
-\exists y \; parent(y, x)\)</span></p></li>
-</ul>
-<p>Prolog viewpoint (informal):</p>
-<ul>
-<li><p>Variables in rules behave like “for all” in the head and
-body</p></li>
-<li><p>Queries ask “does there exist values that satisfy this?”</p></li>
-</ul>
-</section>
-<section id="implication-and-reading-rules" class="frame">
-<h2>Implication and reading rules</h2>
-<p>Implication:</p>
-<ul>
-<li><p><span class="math inline">\(A \leftarrow B\)</span> reads “A is
-true if B is true”</p></li>
-<li><p>In Prolog: <code>A :- B.</code></p></li>
-</ul>
-<p>Example:</p>
-<ul>
-<li><p><span class="math inline">\(grandparent(X,Z) \leftarrow
-parent(X,Y) \wedge parent(Y,Z)\)</span></p></li>
-<li><p>Read: X is grandparent of Z if X is parent of Y and Y is parent
-of Z</p></li>
-</ul>
-<p>Note:</p>
-<ul>
-<li><p>Rules define sufficient conditions, not necessarily necessary
-conditions</p></li>
-</ul>
-</section>
-<section id="from-english-to-logic-tiny-examples" class="frame">
-<h2>From English to logic (tiny examples)</h2>
-<p>English:</p>
-<ul>
-<li><p>If someone is a parent, they are an ancestor.</p></li>
-<li><p>If someone is an ancestor of Y, and Y is an ancestor of Z, then
-they are an ancestor of Z.</p></li>
-</ul>
-<p>Logic-style:</p>
-<ul>
-<li><p><span class="math inline">\(ancestor(X,Y) \leftarrow
-parent(X,Y)\)</span></p></li>
-<li><p><span class="math inline">\(ancestor(X,Z) \leftarrow
-ancestor(X,Y) \wedge ancestor(Y,Z)\)</span></p></li>
-</ul>
-<p>This is a recursive definition (a transitive closure).</p>
-</section>
-<section id="practice-1-translate-to-logic-style-rules" class="frame">
-<h2>Practice 1: translate to logic-style rules</h2>
-<p>Translate into rule form:</p>
-<ul>
-<li><p>“If X is a sibling of Y, then Y is a sibling of X.”
-(symmetry)</p></li>
-<li><p>“If X is a parent of Y, and Y is a parent of Z, then X is a
-grandparent of Z.”</p></li>
-<li><p>“If X is a professor and teaches course C, then X is an
-instructor of C.”</p></li>
-</ul>
-<p>Use predicate names you like (e.g., <code>sibling</code>,
-<code>parent</code>, <code>teaches</code>).</p>
-</section>
-<section id="practice-1-answer-translate-to-logic-style-rules"
+      <section>
+        <section id="declarative-foundations" class="title-slide slide level1">
+          <h1>Declarative foundations</h1>
+        </section>
+
+        <section id="imperative-vs-declarative" class="frame">
+          <h2>Imperative vs declarative</h2>
+          <p>Imperative (typical C/Java/Python loops):</p>
+          <ul>
+            <li><p>Describe steps: update variables, iterate, branch</p></li>
+            <li><p>Order matters: evaluation order is the program</p></li>
+          </ul>
+          <p>Declarative (logic/SQL/constraints):</p>
+          <ul>
+            <li><p>Describe a property of the solution</p></li>
+            <li><p>A solver/search engine chooses an execution strategy</p></li>
+          </ul>
+          <p>Key question shift:</p>
+          <ul>
+            <li><p>Imperative: "How do I compute this?"</p></li>
+            <li><p>Declarative: "What must be true of the answer?"</p></li>
+          </ul>
+        </section>
+        <section id="declarative-does-not-mean-no-control" class="frame">
+          <h2>Declarative does not mean "no control"</h2>
+          <p>Reality check:</p>
+          <ul>
+            <li><p>Declarative code often has an underlying engine (optimizer, solver, search)</p></li>
+            <li><p>Performance can still depend on structure: indexes, rule order, constraints</p></li>
+            <li><p>In Prolog, clause order and goal order affect search</p></li>
+          </ul>
+          <p>Practical skill:</p>
+          <ul>
+            <li><p>Keep the program meaning declarative</p></li>
+            <li><p>Learn engine behavior to avoid accidental slow search</p></li>
+          </ul>
+        </section>
+        <section id="logic-programming-in-one-slide" class="frame">
+          <h2>Logic programming in one slide</h2>
+          <p>A Prolog program is a set of Horn clauses:</p>
+          <ul>
+            <li><p>Facts: <code>parent(alice, bob).</code></p></li>
+            <li><p>Rules: <code>grandparent(X,Z) :- parent(X,Y), parent(Y,Z).</code></p></li>
+          </ul>
+          <p>You ask queries:</p>
+          <ul>
+            <li><p><code>?- grandparent(alice, Z).</code></p></li>
+          </ul>
+          <p>The engine:</p>
+          <ul>
+            <li><p>Unifies terms to make goals match rule heads</p></li>
+            <li><p>Uses backtracking to explore alternatives</p></li>
+          </ul>
+        </section>
+        <section id="practice-0-declarative-vs-imperative" class="frame">
+          <h2>Practice 0: declarative vs imperative</h2>
+          <p>For each task, identify whether it is more naturally imperative, declarative, or both:</p>
+          <ul>
+            <li><p>Find all students with GPA<span class="math inline">\(&gt; 3.5\)</span></p></li>
+            <li><p>Compute Fibonacci(40) quickly</p></li>
+            <li><p>Assign exam times so no student has two exams at once</p></li>
+            <li><p>Parse a log file and extract error lines</p></li>
+          </ul>
+        </section>
+        <section id="practice-0-answer-declarative-vs-imperative" class="frame">
+          <h2>Practice 0 Answer: declarative vs imperative</h2>
+          <ul>
+            <li><p>Find students with GPA<span class="math inline">\(&gt; 3.5\)</span>: declarative (SQL/filtering)</p></li>
+            <li><p>Fibonacci(40) quickly: imperative (DP), or declarative with memoization</p></li>
+            <li><p>Exam times without conflicts: declarative constraints (CSP/CLP)</p></li>
+            <li><p>Parse log and extract error lines: both (regex/filters are declarative; scanning is imperative)</p></li>
+          </ul>
+        </section>
+
+        <section id="predicates-terms-and-variables" class="frame">
+          <h2>Predicates, terms, and variables</h2>
+          <p>Building blocks of predicate logic:</p>
+          <ul>
+            <li><p><strong>Constant:</strong><code>alice</code> , <code>uwf</code> , <code>3</code> — a specific named object in the domain</p></li>
+            <li><p><strong>Variable:</strong><code>X</code> , <code>Y</code> (capitalized in Prolog) — an unknown term, bound by unification</p></li>
+            <li><p><strong>Function symbol (term constructor):</strong><code>pair(X,Y)</code> , <code>node(Left,Right)</code> — builds compound structured terms</p></li>
+            <li><p><strong>Predicate:</strong><code>parent(X,Y)</code> , <code>edge(U,V)</code> — a named relation that is true or false</p></li>
+          </ul>
+          <p>Read:</p>
+          <ul>
+            <li><p><code>parent(alice, bob)</code> is a ground proposition: either true or false in a model</p></li>
+            <li><p><code>parent(alice, X)</code> is a formula with a free variable (a query pattern: "who are Alice's children?")</p></li>
+          </ul>
+        </section>
+        <section id="quantifiers-conceptual" class="frame">
+          <h2>Quantifiers (conceptual)</h2>
+          <p>Predicate logic often uses:</p>
+          <ul>
+            <li><p><span class="math inline">\(\forall x\)</span>(for all): the property holds for every element</p></li>
+            <li><p><span class="math inline">\(\exists x\)</span>(there exists): there is at least one element satisfying the property</p></li>
+          </ul>
+          <p>Example:</p>
+          <ul>
+            <li><p>"Everyone has a parent":<span class="math inline">\(\forall x \exists y \; parent(y, x)\)</span></p></li>
+          </ul>
+          <p>Prolog viewpoint (informal):</p>
+          <ul>
+            <li><p>Variables in rules behave like<span class="math inline">\(\forall\)</span>— the rule holds for all substitutions</p></li>
+            <li><p>Queries behave like<span class="math inline">\(\exists\)</span>— ask "does there exist values that satisfy this?"</p></li>
+          </ul>
+        </section>
+        <section id="implication-and-reading-rules" class="frame">
+          <h2>Implication and reading rules</h2>
+          <p>Implication:</p>
+          <ul>
+            <li><p><span class="math inline">\(A \leftarrow B\)</span>reads "A is true if B is true"</p></li>
+            <li><p>In Prolog: <code>A :- B.</code> (the <code>:-</code> is read as "if")</p></li>
+          </ul>
+          <p>Example:</p>
+          <ul>
+            <li><p><span class="math inline">\(grandparent(X,Z) \leftarrow parent(X,Y) \wedge parent(Y,Z)\)</span></p></li>
+            <li><p>Read: X is grandparent of Z if X is parent of Y and Y is parent of Z</p></li>
+          </ul>
+          <p>Note:</p>
+          <ul>
+            <li><p>Rules define sufficient conditions, not necessarily necessary conditions</p></li>
+            <li><p>Multiple rules for the same predicate act as alternatives (logical OR)</p></li>
+          </ul>
+        </section>
+        <section id="from-english-to-logic-tiny-examples" class="frame">
+          <h2>From English to logic (tiny examples)</h2>
+          <p>English:</p>
+          <ul>
+            <li><p>If someone is a parent, they are an ancestor.</p></li>
+            <li><p>If someone is an ancestor of Y, and Y is an ancestor of Z, then they are an ancestor of Z.</p></li>
+          </ul>
+          <p>Logic-style:</p>
+          <ul>
+            <li><p><span class="math inline">\(ancestor(X,Y) \leftarrow parent(X,Y)\)</span></p></li>
+            <li><p><span class="math inline">\(ancestor(X,Z) \leftarrow ancestor(X,Y) \wedge ancestor(Y,Z)\)</span></p></li>
+          </ul>
+          <p>This is a recursive definition expressing <strong>transitive closure</strong> — a fundamental pattern in logic programming.</p>
+        </section>
+        <section id="practice-1-translate-to-logic-style-rules" class="frame">
+          <h2>Practice 1: translate to logic-style rules</h2>
+          <p>Translate into rule form:</p>
+          <ul>
+            <li><p>"If X is a sibling of Y, then Y is a sibling of X." (symmetry)</p></li>
+            <li><p>"If X is a parent of Y, and Y is a parent of Z, then X is a grandparent of Z."</p></li>
+            <li><p>"If X is a professor and teaches course C, then X is an instructor of C."</p></li>
+          </ul>
+          <p>Use predicate names you like (e.g., <code>sibling</code> , <code>parent</code> , <code>teaches</code> ).</p>
+        </section>
+        <section id="practice-1-answer-translate-to-logic-style-rules"
 class="frame">
-<h2>Practice 1 Answer: translate to logic-style rules</h2>
-<p>One possible set:</p>
-<ul>
-<li><p><span class="math inline">\(sibling(X,Y) \leftarrow
-sibling(Y,X)\)</span> is not a good definition (it loops)</p></li>
-<li><p>Better: treat <code>sibling</code> as given by facts, then add a
-derived predicate:</p>
-<ul>
-<li><p><span class="math inline">\(sibling2(X,Y) \leftarrow
-sibling(X,Y)\)</span></p></li>
-<li><p><span class="math inline">\(sibling2(X,Y) \leftarrow
-sibling(Y,X)\)</span></p></li>
-</ul></li>
-<li><p><span class="math inline">\(grandparent(X,Z) \leftarrow
-parent(X,Y) \wedge parent(Y,Z)\)</span></p></li>
-<li><p><span class="math inline">\(instructor(X,C) \leftarrow
-professor(X) \wedge teaches(X,C)\)</span></p></li>
-</ul>
-<p>Key lesson: logic rules can accidentally create non-terminating
-recursion if used naively.</p>
-</section></section>
-<section>
-<section id="prolog-basics-and-unification"
+          <h2>Practice 1 Answer: translate to logic-style rules</h2>
+          <p>One possible set:</p>
+          <ul>
+            <li><p><span class="math inline">\(sibling(X,Y) \leftarrow sibling(Y,X)\)</span>is not a good definition (it loops)</p></li>
+            <li><p>Better: treat <code>sibling</code> as given by facts, then add a derived predicate:</p><ul><li><p><span class="math inline">\(sibling2(X,Y) \leftarrow sibling(X,Y)\)</span></p></li><li><p><span class="math inline">\(sibling2(X,Y) \leftarrow sibling(Y,X)\)</span></p></li></ul></li>
+            <li><p><span class="math inline">\(grandparent(X,Z) \leftarrow parent(X,Y) \wedge parent(Y,Z)\)</span></p></li>
+            <li><p><span class="math inline">\(instructor(X,C) \leftarrow professor(X) \wedge teaches(X,C)\)</span></p></li>
+          </ul>
+          <p>Key lesson: logic rules can accidentally create non-terminating recursion if used naively.</p>
+        </section>
+      </section>
+
+      <section>
+        <section id="prolog-basics-and-unification"
 class="title-slide slide level1">
-<h1>Prolog basics and unification</h1>
+          <h1>Prolog basics and unification</h1>
+        </section>
 
-</section>
-<section id="horn-clauses-and-prolog" class="frame">
-<h2>Horn clauses and Prolog</h2>
-</section>
-<section id="horn-clauses-why-prolog-works" class="frame">
-<h2>Horn clauses (why Prolog works)</h2>
-<p>A Horn clause (informal):</p>
-<ul>
-<li><p>A clause with at most one “positive” head atom</p></li>
-<li><p>Shape: <span class="math inline">\(Head \leftarrow Body_1 \wedge
-\cdots \wedge Body_n\)</span></p></li>
-</ul>
-<p>Prolog programs:</p>
-<ul>
-<li><p>Facts: <span class="math inline">\(Head \leftarrow
-true\)</span></p></li>
-<li><p>Rules: <span class="math inline">\(Head \leftarrow
-Body\)</span></p></li>
-</ul>
-<p>Why this restriction matters:</p>
-<ul>
-<li><p>Enables efficient proof search strategies (SLD
-resolution)</p></li>
-<li><p>Gives Prolog a clear operational semantics (goal
-reduction)</p></li>
-</ul>
-</section>
-<section id="prolog-syntax-cheat-sheet" class="frame">
-<h2>Prolog syntax cheat sheet</h2>
-<ul>
-<li><p>Fact ends with a period <code>.</code></p></li>
-<li><p>Rule uses <code>:-</code> and ends with <code>.</code></p></li>
-<li><p>Variables start with capital letters or underscore</p></li>
-<li><p>Atoms start with lowercase (or are quoted)</p></li>
-<li><p>Query starts with <code>?-</code></p></li>
-</ul>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">parent(alice, bob).
+        <section id="horn-clauses-why-prolog-works" class="frame">
+          <h2>Horn clauses (why Prolog works)</h2>
+          <p>A <strong>Horn clause</strong> is a logical clause with at most one positive (non-negated) head atom:</p>
+          <ul>
+            <li><p>Shape: <span class="math inline">\(Head \leftarrow Body_1 \wedge \cdots \wedge Body_n\)</span></p></li>
+            <li><p>The head is what we conclude; the body is what must be proven first</p></li>
+          </ul>
+          <p>Prolog programs are built entirely from Horn clauses:</p>
+          <ul>
+            <li><p>Facts: <span class="math inline">\(Head \leftarrow true\)</span></p></li>
+            <ul>
+              <li>written as <code>head.</code></li> 
+            </ul>
+            <li><p>Rules: <span class="math inline">\(Head \leftarrow Body\)</span></p></li>
+            <ul>
+              <li>written as <code>head :- body.</code></li>
+            </ul>
+            <li><p>Queries: a goal with no head </p></li>
+            <ul>
+              <li>written as <code>?- goal.</code></li>
+            </ul>
+          </ul>
+          <p>Why this restriction matters:</p>
+          <ul>
+            <li><p>Enables efficient proof search (SLD resolution)</p></li>
+            <li><p>Gives Prolog a clear, predictable operational semantics</p></li>
+          </ul>
+        </section>
+
+        <section id="prolog-syntax-cheat-sheet" class="frame">
+          <h2>Prolog syntax cheat sheet</h2>
+          <ul>
+            <li><p>Fact ends with a period <code>.</code></p></li>
+            <li><p>Rule uses <code>:-</code> and ends with <code>.</code></p></li>
+            <li><p>Variables start with capital letters or underscore</p></li>
+            <li><p>Atoms start with lowercase (or are quoted)</p></li>
+            <li><p>Query starts with <code>?-</code></p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+parent(alice, bob).
 parent(bob, carol).
 
 grandparent(X, Z) :-
@@ -385,12 +335,14 @@ grandparent(X, Z) :-
   parent(Y, Z).
 
 ?- grandparent(alice, Who).</code></pre>
-</section>
-<section id="example-knowledge-base-family" class="frame">
-<h2>Example knowledge base: family</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">% facts
+        </section>
+
+        <section id="example-knowledge-base-family" class="frame">
+          <h2>Example knowledge base: family</h2>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+% facts
 parent(alice, bob).
 parent(bob, carol).
 parent(alice, dana).
@@ -406,841 +358,753 @@ female(carol).
 grandparent(X, Z) :- parent(X, Y), parent(Y, Z).
 mother(X, Y)      :- parent(X, Y), female(X).
 father(X, Y)      :- parent(X, Y), male(X).</code></pre>
-<p>Reading:</p>
-<ul>
-<li><p><code>mother(X,Y)</code> is true if <code>X</code> is a parent of
-<code>Y</code> and <code>X</code> is female</p></li>
-</ul>
-</section>
-<section id="queries-return-substitutions" class="frame">
-<h2>Queries return substitutions</h2>
-<p>Query patterns:</p>
-<ul>
-<li><p><code>?- mother(X, bob).</code> “who is Bob’s mother?”</p></li>
-<li><p><code>?- mother(alice, Y).</code> “who are Alice’s
-children?”</p></li>
-</ul>
-<p>Conceptually, Prolog answers by finding a substitution:</p>
-<ul>
-<li><p><code>X = alice</code></p></li>
-<li><p><code>Y = bob</code> or <code>Y = dana</code> (depending on
-query)</p></li>
-</ul>
-<p>Multiple answers arise via backtracking.</p>
-</section>
-<section id="relational-thinking-functions-vs-relations" class="frame">
-<h2>Relational thinking: functions vs relations</h2>
-<p>In most languages, you write functions:</p>
-<ul>
-<li><p>input <span class="math inline">\(\rightarrow\)</span>
-output</p></li>
-</ul>
-<p>In Prolog, you often write relations:</p>
-<ul>
-<li><p>multiple arguments can be “unknown”</p></li>
-<li><p>the same rule can be used in different directions</p></li>
-</ul>
-<p>Example:</p>
-<ul>
-<li><p><code>parent(alice, bob)</code> can answer both:</p>
-<ul>
-<li><p>“Who are Alice’s children?”</p></li>
-<li><p>“Who are Bob’s parents?”</p></li>
-</ul></li>
-</ul>
-</section>
-<section id="practice-2-write-facts-and-basic-queries" class="frame">
-<h2>Practice 2: write facts and basic queries</h2>
-<p>Write a tiny course database in Prolog:</p>
-<ul>
-<li><p><code>teaches(prof, course).</code></p></li>
-<li><p><code>takes(student, course).</code></p></li>
-</ul>
-<p>Tasks:</p>
-<ul>
-<li><p>Add at least 3 <code>teaches</code> facts and 5
-<code>takes</code> facts</p></li>
-<li><p>Query: which courses does a student take?</p></li>
-<li><p>Query: which students are in a given course?</p></li>
-</ul>
-<p>Hint: start with atoms like <code>alice</code>,
-<code>cop4020</code>.</p>
-</section>
-<section id="practice-2-answer-one-possible-solution" class="frame">
-<h2>Practice 2 Answer: one possible solution</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">teaches(zhang, cop4020).
-teaches(zhang, cop3530).
-teaches(smith, cda3100).
+          <p>Reading:</p>
+          <ul>
+            <li><p><code>mother(X,Y)</code> is true if <code>X</code> is a parent of <code>Y</code> and <code>X</code> is female</p></li>
+          </ul>
+        </section>
 
-takes(alice, cop4020).
-takes(alice, cda3100).
-takes(bob, cop4020).
-takes(carol, cop3530).
-takes(dana, cop4020).
+        <section id="queries-return-substitutions" class="frame">
+          <h2>Queries return substitutions</h2>
+          <p>Query patterns:</p>
+          <ul>
+            <li><p><code>?- mother(X, bob).</code> "who is Bob's mother?"</p></li>
+            <li><p><code>?- mother(alice, Y).</code> "who are Alice's children?"</p></li>
+          </ul>
+          <p>Conceptually, Prolog answers by finding a <strong>substitution</strong>, a mapping from variables to terms that makes the query true:</p>
+          <ul>
+            <li><p><code>X = alice</code></p></li>
+            <li><p><code>Y = bob</code> or <code>Y = dana</code> (depending on query)</p></li>
+          </ul>
+          <p>Multiple answers arise via backtracking.</p>
+        </section>
 
-% queries:
-% ?- takes(alice, C).
-% ?- takes(S, cop4020).</code></pre>
-</section>
-<section id="unification" class="frame">
-<h2>Unification</h2>
-</section>
-<section id="unification-the-matching-engine" class="frame">
-<h2>Unification: the matching engine</h2>
-<p>Unification answers:</p>
-<ul>
-<li><p>Can two terms be made equal by substituting variables?</p></li>
-<li><p>If yes, what is the most general substitution (MGU)?</p></li>
-</ul>
-<p>Examples:</p>
-<ul>
-<li><p><code>parent(alice, X)</code> unifies with
-<code>parent(alice, bob)</code> with <code>X=bob</code></p></li>
-<li><p><code>f(X, a)</code> unifies with <code>f(b, Y)</code> with
-<code>X=b, Y=a</code></p></li>
-</ul>
-<p>If unification fails, that search branch fails.</p>
-</section>
-<section id="term-structure-matters" class="frame">
-<h2>Term structure matters</h2>
-<p>Unification compares structure:</p>
-<ul>
-<li><p>Constants unify only if identical: <code>alice</code> with
-<code>alice</code></p></li>
-<li><p>Compound terms unify if same functor + arity:</p>
-<ul>
-<li><p><code>edge(a,b)</code> can unify with
-<code>edge(X,Y)</code></p></li>
-<li><p><code>edge(a,b)</code> cannot unify with
-<code>edge(a,b,c)</code></p></li>
-</ul></li>
-<li><p>Variables unify with anything (subject to constraints)</p></li>
-</ul>
-</section>
-<section id="occurs-check-conceptual" class="frame">
-<h2>Occurs check (conceptual)</h2>
-<p>The “occurs check” prevents infinite terms:</p>
-<ul>
-<li><p><code>X = f(X)</code> should not be allowed in strict
-unification</p></li>
-<li><p>Some Prolog systems omit full occurs-check for
-performance</p></li>
-</ul>
-<p>What to remember for this course:</p>
-<ul>
-<li><p>Unification is usually “structural matching with
-variables”</p></li>
-<li><p>Be aware that some pathological cases exist</p></li>
-</ul>
-</section>
-<section id="unification-examples-with-lists" class="frame">
-<h2>Unification examples with lists</h2>
-<p>Prolog list syntax:</p>
-<ul>
-<li><p><code>[]</code> empty list</p></li>
-<li><p><code>[a,b,c]</code> shorthand</p></li>
-<li><p><code>[H|T]</code> head/tail form</p></li>
-</ul>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">% Unify [H|T] with [1,2,3]
+        <section id="relational-thinking-functions-vs-relations" class="frame">
+          <h2>Relational thinking: functions vs relations</h2>
+          <p>In most languages, you write functions:</p>
+          <ul>
+            <li><p>input<span class="math inline">\(\rightarrow\)</span>output, one direction only</p></li>
+          </ul>
+          <p>In Prolog, you write relations:</p>
+          <ul>
+            <li><p>multiple arguments can be "unknown"</p></li>
+            <li><p>the same rule can be used in different directions</p></li>
+          </ul>
+          <p>Example:</p>
+          <ul>
+            <li><p><code>parent(alice, bob)</code> can answer both:</p></li>
+            <ul>
+              <li><p>"Who are Alice's children?": <code>?- parent(alice, Y).</code></p></li>
+              <li><p>"Who are Bob's parents?": <code>?- parent(X, bob).</code></p></li>
+            </ul>
+          </ul>
+        </section>
+
+
+        <section id="unification-the-matching-engine" class="frame">
+          <h2>Unification: the matching engine</h2>
+          <p>Unification is the core mechanism behind all Prolog execution. It answers:</p>
+          <ul>
+            <li><p>Can two terms be made equal by substituting variables?</p></li>
+            <li><p>If yes, what is the <strong>most general unifier</strong> (MGU), the substitution with fewest commitments?</p></li>
+          </ul>
+          <p>Examples:</p>
+          <ul>
+            <li><p><code>parent(alice, X)</code> unifies with <code>parent(alice, bob)</code> giving <code>X=bob</code></p></li>
+            <li><p><code>f(X, a)</code> unifies with <code>f(b, Y)</code> giving <code>X=b, Y=a</code></p></li>
+          </ul>
+          <p>If unification fails, that search branch fails and Prolog backtracks.</p>
+        </section>
+
+        <section id="term-structure-matters" class="frame">
+          <h2>Term structure matters</h2>
+          <p>Unification compares structure recursively:</p>
+          <ul>
+            <li><p><strong>Constants</strong> unify only if identical: <code>alice</code> with <code>alice</code> , but not <code>alice</code> with <code>bob</code></p></li>
+            <li><p><strong>Compound terms</strong> unify if same functor and same arity, then arguments are unified pairwise:</p></li>
+              <ul>
+                <li><p><code>edge(a,b)</code> unifies with <code>edge(X,Y)</code> giving <code>X=a, Y=b</code></p></li>
+                <li><p><code>edge(a,b)</code> does not unify with <code>edge(a,b,c)</code>, different arity</p></li>
+              </ul>
+            <li><p><strong>Variables</strong> unify with any term (subject to the occurs check)</p></li>
+          </ul>
+        </section>
+
+        <section id="occurs-check-conceptual" class="frame">
+          <h2>Occurs check (conceptual)</h2>
+          <p>The <strong>occurs check</strong> prevents a variable from unifying with a term that contains itself:</p>
+          <ul>
+            <li><p><code>X = f(X)</code> would create an infinite term which is not allowed in strict unification</p></li>
+            <li><p>Without the check, this could silently create circular structures</p></li>
+            <li><p>Many Prolog systems omit the full occurs check for performance; be aware this is a theoretical gap</p></li>
+          </ul>
+          <p>What to remember for this course:</p>
+          <ul>
+            <li><p>Unification is "structural matching with variable binding"</p></li>
+            <li><p>The occurs check is a correctness detail you may encounter in practice</p></li>
+          </ul>
+        </section>
+
+        <section id="unification-examples-with-lists" class="frame">
+          <h2>Unification examples with lists</h2>
+          <p>Prolog list syntax:</p>
+          <ul>
+            <li><p><code>[]</code> empty list</p></li>
+            <li><p><code>[a,b,c]</code> list of three atoms (shorthand)</p></li>
+            <li><p><code>[H|T]</code> head/tail form — head is first element, tail is the rest</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+% Unify [H|T] with [1,2,3]
 % H = 1, T = [2,3]
 
 % Unify [A,B|Rest] with [x,y,z]
 % A = x, B = y, Rest = [z]</code></pre>
-</section>
-<section id="practice-3-does-it-unify-and-with-what" class="frame">
-<h2>Practice 3: does it unify? (and with what?)</h2>
-<p>For each pair, decide unify or fail, and give bindings if unify:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-plaintext">1) f(X, a)      with   f(b, Y)
+        </section>
+
+        <section id="practice-3-does-it-unify-and-with-what" class="frame">
+          <h2>Practice 3: does it unify? (and with what?)</h2>
+          <p>For each pair, decide unify or fail, and give bindings if unify:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-plaintext">
+1) f(X, a)      with   f(b, Y)
 2) edge(X, X)   with   edge(a, b)
 3) [H|T]        with   [1,2,3]
 4) [X, Y]       with   [Y, X]
 5) g(X)         with   f(X)</code></pre>
-</section>
-<section id="practice-3-answer-does-it-unify" class="frame">
-<h2>Practice 3 Answer: does it unify?</h2>
-<ul>
-<li><p>1) unifies: <code>X=b, Y=a</code></p></li>
-<li><p>2) fails: would require <code>X=a</code> and <code>X=b</code>
-simultaneously</p></li>
-<li><p>3) unifies: <code>H=1, T=[2,3]</code></p></li>
-<li><p>4) unifies with constraint <code>X=Y</code>; one MGU is
-<code>X=Y</code> (they become same variable)</p></li>
-<li><p>5) fails: different functors <code>g</code> vs
-<code>f</code></p></li>
-</ul>
-<p>Note for (4): <code>[X,Y]</code> = <code>[Y,X]</code> implies
-<code>X=Y</code>.</p>
-</section></section>
-<section class="slide level2">
-<section id="bridge-from-unification-to-search" class="frame">
-<h2>Bridge: from unification to search</h2>
-<p>Unification answers: “Can these terms match?”</p>
-<p>Next question: “How does Prolog explore multiple matching possibilities?”</p>
-<ul>
-<li><p>Resolution chooses which rule body to expand</p></li>
-<li><p>Backtracking revisits choice points after failure/success</p></li>
-<li><p>Goal and clause order directly affect termination and performance</p></li>
-</ul>
-</section>
-</section>
-<section>
-<section id="execution-model-and-search"
-class="title-slide slide level1">
-<h1>Execution model and search</h1>
+        </section>
 
-</section>
-<section id="resolution-and-execution-model" class="frame">
-<h2>Resolution and execution model</h2>
-</section>
-<section id="resolution-high-level" class="frame">
-<h2>Resolution (high-level)</h2>
-<p>Resolution is a proof rule for logic.</p>
-<p>In Prolog terms (operational intuition):</p>
-<ul>
-<li><p>You have a goal list (a conjunction):
-<code>G1, G2, ...</code></p></li>
-<li><p>Pick the leftmost goal <code>G1</code></p></li>
-<li><p>Find a clause whose head unifies with <code>G1</code></p></li>
-<li><p>Replace <code>G1</code> with that clause’s body (new
-subgoals)</p></li>
-</ul>
-<p>This is called SLD resolution (Selective Linear Definite clause
-resolution).</p>
-</section>
-<section id="prolog-execution-mantra" class="frame">
-<h2>Prolog execution mantra</h2>
-<p>Prolog is often summarized as:</p>
-<ul>
-<li><p>unification + search</p></li>
-</ul>
-<p>More operational detail:</p>
-<ul>
-<li><p>Depth-first search</p></li>
-<li><p>Left-to-right goals in a rule body</p></li>
-<li><p>Top-to-bottom clause order in the program</p></li>
-</ul>
-<p>Consequence:</p>
-<ul>
-<li><p>Program meaning is logical, but performance/termination depends
-on order</p></li>
-</ul>
-</section>
-<section id="a-tiny-proof-trace-conceptual" class="frame">
-<h2>A tiny proof trace (conceptual)</h2>
-<p>Program:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">parent(alice, bob).
+        <section id="practice-3-answer-does-it-unify" class="frame">
+          <h2>Practice 3 Answer: does it unify?</h2>
+          <ul>
+            <li><p>1) unifies: <code>X=b, Y=a</code></p></li>
+            <li><p>2) fails: would require <code>X=a</code> and <code>X=b</code> simultaneously</p></li>
+            <li><p>3) unifies: <code>H=1, T=[2,3]</code></p></li>
+            <li><p>4) unifies with constraint <code>X=Y</code> ; one MGU is <code>X=Y</code> (they become same variable)</p></li>
+            <li><p>5) fails: different functors <code>g</code> vs <code>f</code></p></li>
+          </ul>
+          <p>Note for (4): <code>[X,Y]</code> = <code>[Y,X]</code> implies <code>X=Y</code> .</p>
+        </section>
+                <section id="bridge-from-unification-to-search" class="frame">
+          <h2>Bridge: from unification to search</h2>
+          <p>Unification answers: "Can these terms match?"</p>
+          <p>Next question: "How does Prolog explore multiple matching possibilities?"</p>
+          <ul>
+            <li><p>Resolution chooses which rule body to expand</p></li>
+            <li><p>Backtracking revisits choice points after failure/success</p></li>
+            <li><p>Goal and clause order directly affect termination and performance</p></li>
+          </ul>
+        </section>
+      </section>
+
+
+      <section>
+        <section id="execution-model-and-search"
+class="title-slide slide level1">
+          <h1>Execution model and search</h1>
+        </section>
+
+        <section id="resolution-high-level" class="frame">
+          <h2>Resolution (high-level)</h2>
+          <p>Resolution is a proof rule for logic. In Prolog, it drives execution.</p>
+          <p>In Prolog terms (operational intuition):</p>
+          <ul>
+            <li><p>You have a <strong>goal list</strong> (a conjunction to be proven): <code>G1, G2, ...</code></p></li>
+            <li><p>Pick the <strong>leftmost goal</strong><code>G1</code></p></li>
+            <li><p>Find a clause whose <strong>head unifies</strong> with <code>G1</code></p></li>
+            <li><p>Replace <code>G1</code> with that clause's body (new subgoals) and continue</p></li>
+          </ul>
+          <p>This is called <strong>SLD resolution</strong> (Selective Linear Definite clause resolution), the theoretical foundation of Prolog execution.</p>
+        </section>
+
+        <section id="prolog-execution-mantra" class="frame">
+          <h2>Prolog execution mantra</h2>
+          <p>Prolog is often summarized as:</p>
+          <ul>
+            <li><p><strong>unification + search</strong></p></li>
+          </ul>
+          <p>More operational detail:</p>
+          <ul>
+            <li><p><strong>Depth-first</strong> search, which follows one branch fully before trying alternatives</p></li>
+            <li><p><strong>Left-to-right</strong> goals in a rule body</p></li>
+            <li><p><strong>Top-to-bottom</strong> clause order in the program</p></li>
+          </ul>
+          <p>Consequence:</p>
+          <ul>
+            <li><p>Program meaning is logical, but performance/termination depends on clause and goal order</p></li>
+          </ul>
+        </section>
+        <section id="a-tiny-proof-trace-conceptual" class="frame">
+          <h2>A tiny proof trace (conceptual)</h2>
+          <p>Program:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+parent(alice, bob).
 parent(bob, carol).
 grandparent(X, Z) :- parent(X, Y), parent(Y, Z).</code></pre>
-<p>Query:</p>
-<pre data-xleftmargin="3pt" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">?- grandparent(alice, Z).</code></pre>
-<p>Goal reduction idea:</p>
-<ul>
-<li><p>Match <code>grandparent(alice,Z)</code> with rule head
-<code>grandparent(X,Z)</code></p></li>
-<li><p>Bind <code>X=alice</code>; new goals:
-<code>parent(alice,Y), parent(Y,Z)</code></p></li>
-<li><p>Solve <code>parent(alice,Y)</code>: gives
-<code>Y=bob</code></p></li>
-<li><p>Then solve <code>parent(bob,Z)</code>: gives
-<code>Z=carol</code></p></li>
-</ul>
-</section>
-<section id="choice-points" class="frame">
-<h2>Choice points</h2>
-<p>If multiple clauses can satisfy a goal:</p>
-<ul>
-<li><p>Prolog tries them in order</p></li>
-<li><p>Remembers alternatives as choice points</p></li>
-<li><p>If later goals fail, it backtracks to the most recent choice
-point</p></li>
-</ul>
-<p>This is why one query can produce multiple answers.</p>
-</section>
-<section id="practice-4-predict-a-trace-outcome" class="frame">
-<h2>Practice 4: predict a trace outcome</h2>
-<p>Consider:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">p(a).
+          <p>Query:</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline"
+          data-fontsize="\small"><code class="language-prolog">?- grandparent(alice, Z).</code></pre>
+          <p>Goal reduction steps:</p>
+          <ul>
+            <li><p>Match <code>grandparent(alice,Z)</code> with rule head <code>grandparent(X,Z)</code> → bind <code>X=alice</code></p></li>
+            <li><p>New goal list: <code>parent(alice,Y), parent(Y,Z)</code></p></li>
+            <li><p>Solve <code>parent(alice,Y)</code> : matches fact → <code>Y=bob</code></p></li>
+            <li><p>Solve <code>parent(bob,Z)</code> : matches fact → <code>Z=carol</code></p></li>
+            <li><p>Goal list is empty: <strong>success</strong> , answer is <code>Z=carol</code></p></li>
+          </ul>
+        </section>
+
+        <section id="choice-points" class="frame">
+          <h2>Choice points</h2>
+          <p>A <strong>choice point</strong> is created whenever multiple clauses could satisfy a goal:</p>
+          <ul>
+            <li><p>Prolog tries the first matching clause and records the others as alternatives</p></li>
+            <li><p>If later goals fail, it backtracks to the most recent choice point and tries the next alternative</p></li>
+            <li><p>If the user asks for more answers (e.g., <code>;</code> in the REPL), backtracking is triggered from the last choice point</p></li>
+          </ul>
+          <p>This is why one query can produce multiple answers.</p>
+        </section>
+        <section id="practice-4-predict-a-trace-outcome" class="frame">
+          <h2>Practice 4: predict a trace outcome</h2>
+          <p>Consider:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+p(a).
 p(b).
 q(b).
 r(X) :- p(X), q(X).</code></pre>
-<p>Questions:</p>
-<ul>
-<li><p>What does <code>?- r(X).</code> return?</p></li>
-<li><p>In what order are candidates tried?</p></li>
-</ul>
-</section>
-<section id="practice-4-answer-predict-a-trace-outcome" class="frame">
-<h2>Practice 4 Answer: predict a trace outcome</h2>
-<p>Evaluate <code>r(X) :- p(X), q(X).</code></p>
-<ul>
-<li><p>Try <code>p(X)</code>:</p>
-<ul>
-<li><p>First fact <code>p(a)</code> gives <code>X=a</code></p></li>
-<li><p>Then <code>q(a)</code> fails (only <code>q(b)</code>
-exists)</p></li>
-</ul></li>
-<li><p>Backtrack to <code>p(X)</code>:</p>
-<ul>
-<li><p>Next fact <code>p(b)</code> gives <code>X=b</code></p></li>
-<li><p><code>q(b)</code> succeeds</p></li>
-</ul></li>
-</ul>
-<p>Result: one answer <code>X=b</code>.</p>
-</section>
-<section id="backtracking-search" class="frame">
-<h2>Backtracking search</h2>
-</section>
-<section id="depth-first-search-the-good-and-the-risky" class="frame">
-<h2>Depth-first search: the good and the risky</h2>
-<p>Good:</p>
-<ul>
-<li><p>Simple mental model</p></li>
-<li><p>Produces answers incrementally</p></li>
-<li><p>Often efficient for “find one solution” tasks</p></li>
-</ul>
-<p>Risky:</p>
-<ul>
-<li><p>Can get stuck exploring an infinite branch</p></li>
-<li><p>May be exponential without pruning/constraints</p></li>
-</ul>
-<p>Practical message:</p>
-<ul>
-<li><p>Clause order and recursion structure matter for
-termination</p></li>
-</ul>
-</section>
-<section id="search-tree-intuition" class="frame">
-<h2>Search tree intuition</h2>
-<p>Think of evaluation as exploring a tree:</p>
-<ul>
-<li><p>Each goal can match multiple clauses <span
-class="math inline">\(\rightarrow\)</span> branching</p></li>
-<li><p>Each branch accumulates substitutions</p></li>
-<li><p>Failure prunes a branch</p></li>
-</ul>
-<p>Depth-first:</p>
-<ul>
-<li><p>Explore one branch to completion, then backtrack</p></li>
-</ul>
-</section>
-<section id="backtracking-diagram-conceptual" class="frame">
-<h2>Backtracking diagram (conceptual)</h2>
-<div class="center">
-<div class="forest">
-<p>for tree=<span>draw, rounded corners, align=center, s sep=8pt, l
-sep=10pt</span> [Goal: <code>p(X), q(X)</code> [<code>p(X)</code> via
-clause 1<br />
-(bind X=a) [<code>q(a)</code> fails] ] [<code>p(X)</code> via clause
-2<br />
-(bind X=b) [<code>q(b)</code> succeeds<br />
-Answer: X=b] ] ]</p>
-</div>
-</div>
-</section>
-<section id="negation-as-failure" class="frame">
-<h2>Negation as failure</h2>
-<p>Prolog commonly uses <code>\+ Goal</code>:</p>
-<ul>
-<li><p>Succeeds if <code>Goal</code> cannot be proven</p></li>
-<li><p>Fails if <code>Goal</code> can be proven</p></li>
-</ul>
-<p>Example:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">bird(tweety).
+          <p>Questions:</p>
+          <ul>
+            <li><p>What does <code>?- r(X).</code> return?</p></li>
+            <li><p>In what order are candidates tried?</p></li>
+          </ul>
+        </section>
+        <section id="practice-4-answer-predict-a-trace-outcome" class="frame">
+          <h2>Practice 4 Answer: predict a trace outcome</h2>
+          <p>Evaluate <code>r(X) :- p(X), q(X).</code></p>
+          <ul>
+            <li><p>Try <code>p(X)</code> :</p><ul><li><p>First fact <code>p(a)</code> gives <code>X=a</code></p></li><li><p>Then <code>q(a)</code> fails (only <code>q(b)</code> exists)</p></li></ul></li>
+            <li><p>Backtrack to <code>p(X)</code> :</p><ul><li><p>Next fact <code>p(b)</code> gives <code>X=b</code></p></li><li><p><code>q(b)</code> succeeds</p></li></ul></li>
+          </ul>
+          <p>Result: one answer <code>X=b</code> .</p>
+        </section>
+
+        <section id="depth-first-search-the-good-and-the-risky" class="frame">
+          <h2>Depth-first search: the good and the risky</h2>
+          <p>Good:</p>
+          <ul>
+            <li><p>Simple mental model</p></li>
+            <li><p>Produces answers incrementally</p></li>
+            <li><p>Often efficient for "find one solution" tasks</p></li>
+          </ul>
+          <p>Risky:</p>
+          <ul>
+            <li><p>Can get stuck exploring an infinite branch</p></li>
+            <li><p>May be exponential without pruning/constraints</p></li>
+          </ul>
+          <p>Practical message:</p>
+          <ul>
+            <li><p>Clause order and recursion structure matter for termination</p></li>
+          </ul>
+        </section>
+        <section id="search-tree-intuition" class="frame">
+          <h2>Search tree intuition</h2>
+          <p>Think of evaluation as exploring a tree:</p>
+          <ul>
+            <li><p>Each goal can match multiple clauses<span
+class="math inline">\(\rightarrow\)</span>branching</p></li>
+            <li><p>Each branch accumulates substitutions</p></li>
+            <li><p>Failure prunes a branch; success yields an answer</p></li>
+          </ul>
+          <p>Depth-first:</p>
+          <ul>
+            <li><p>Explore one branch to completion, then backtrack to the nearest choice point</p></li>
+          </ul>
+        </section>
+        <section id="backtracking-diagram-conceptual" class="frame">
+          <h2>Backtracking diagram (conceptual)</h2>
+          <p>For the query <code>?- r(X).</code> with <code>p(a). p(b). q(b). r(X) :- p(X), q(X).</code></p>
+          <table style="width:100%; border-collapse:collapse; font-family:monospace; font-size:0.85em;">
+            <thead>
+              <tr style="background:#f0f0f0;">
+                <th style="padding:6px 10px; border:1px solid #ccc; text-align:left;">Goal</th>
+                <th style="padding:6px 10px; border:1px solid #ccc; text-align:left;">Clause tried</th>
+                <th style="padding:6px 10px; border:1px solid #ccc; text-align:left;">Binding</th>
+                <th style="padding:6px 10px; border:1px solid #ccc; text-align:left;">Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>r(X)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>r(X):-p(X),q(X)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;">—</td>
+                <td style="padding:6px 10px; border:1px solid #ccc;">expand to <code>p(X), q(X)</code></td>
+              </tr>
+              <tr style="background:#fff8e1;">
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>p(X)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>p(a)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>X=a</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;">try <code>q(a)</code> next</td>
+              </tr>
+              <tr style="background:#fff8e1;">
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>q(a)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;">no match</td>
+                <td style="padding:6px 10px; border:1px solid #ccc;">—</td>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><strong>FAIL → backtrack</strong></td>
+              </tr>
+              <tr style="background:#e8f5e9;">
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>p(X)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>p(b)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>X=b</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;">try <code>q(b)</code> next</td>
+              </tr>
+              <tr style="background:#e8f5e9;">
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>q(b)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><code>q(b)</code></td>
+                <td style="padding:6px 10px; border:1px solid #ccc;">—</td>
+                <td style="padding:6px 10px; border:1px solid #ccc;"><strong>SUCCESS: X=b</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section id="negation-as-failure" class="frame">
+          <h2>Negation as failure</h2>
+          <p>Prolog commonly uses <code>\+ Goal</code> (read: "not provable"):</p>
+          <ul>
+            <li><p>Succeeds if <code>Goal</code> cannot be proven from the knowledge base</p></li>
+            <li><p>Fails if <code>Goal</code> can be proven</p></li>
+          </ul>
+          <p>Example:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+bird(tweety).
 penguin(pingu).
 
 bird(X) :- penguin(X).
 
 can_fly(X) :- bird(X), \+ penguin(X).</code></pre>
-<p>Caution:</p>
-<ul>
-<li><p>This is not classical logical negation; it depends on the
-closed-world assumption</p></li>
-</ul>
-</section>
-<section id="the-closed-world-assumption" class="frame">
-<h2>The closed-world assumption</h2>
-<p>Many Prolog programs assume:</p>
-<ul>
-<li><p>Anything not provable from the knowledge base is considered
-false</p></li>
-</ul>
-<p>This is often practical for databases and rule systems:</p>
-<ul>
-<li><p>If you didn’t list it, we assume it doesn’t exist</p></li>
-</ul>
-<p>But it differs from open-world logic (e.g., knowledge graphs):</p>
-<ul>
-<li><p>“unknown” is not the same as “false”</p></li>
-</ul>
-</section>
-<section id="practice-5-backtracking-with-multiple-answers"
+          <p>Caution:</p>
+          <ul>
+            <li><p>This is <em>not</em> classical logical negation</p></li>
+            <li><p>It depends on the closed-world assumption: "unprovable" is treated as "false"</p></li>
+          </ul>
+        </section>
+        <section id="the-closed-world-assumption" class="frame">
+          <h2>The closed-world assumption</h2>
+          <p>Many Prolog programs assume:</p>
+          <ul>
+            <li><p>Anything not provable from the knowledge base is considered false</p></li>
+          </ul>
+          <p>This is often practical for databases and rule systems:</p>
+          <ul>
+            <li><p>If you didn't list it, we assume it doesn't exist</p></li>
+          </ul>
+          <p>But it differs from open-world logic (e.g., knowledge graphs):</p>
+          <ul>
+            <li><p>"unknown" is not the same as "false"</p></li>
+            <li><p>Example: not knowing Alice's age doesn't mean Alice has no age</p></li>
+          </ul>
+        </section>
+
+        <section id="groundness-and-negation" class="frame">
+          <h2>Groundness and negation</h2>
+          <p>This can be dangerous:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+% "X is not a bird"
+not_bird(X) :- \+ bird(X).</code></pre>
+          <p>If you ask:</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline"
+          data-fontsize="\small"><code class="language-prolog">?- not_bird(X).</code></pre>
+          <ul>
+            <li><p>You are asking for all things that are not birds. It not well-defined in a finite KB.</p></li>
+            <li><p>Prolog will check "can I prove <code>bird(X)</code> for <em>some</em> X?" and, finding that it can, will make <code>\+ bird(X)</code> fail globally.</p></li>
+          </ul>
+
+          <p>Safer pattern:</p>
+          <ul>
+            <li><p>Use negation <em>after</em> variables are already bound (ground) by earlier goals</p></li>
+          </ul>
+        </section>
+        <section id="practice-5-goal-ordering-for-safety" class="frame">
+          <h2>Practice 5: goal ordering for safety</h2>
+          <p>Suppose:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+bird(tweety).
+bird(woody).
+penguin(pingu).
+bird(X) :- penguin(X).</code></pre>
+          <p>Which is safer?</p>
+          <ul>
+            <li><p>A: <code>can_fly(X) :- \+ penguin(X), bird(X).</code></p></li>
+            <li><p>B: <code>can_fly(X) :- bird(X), \+ penguin(X).</code></p></li>
+          </ul>
+          <p>Explain in terms of variable binding and search.</p>
+        </section>
+        <section id="practice-5-answer-goal-ordering-for-safety" class="frame">
+          <h2>Practice 5 Answer: goal ordering for safety</h2>
+          <p>Safer is B:</p>
+          <ul>
+            <li><p><code>bird(X)</code> binds X to known birds/penguins first</p></li>
+            <li><p>Then <code>\+ penguin(X)</code> checks whether that bound X can be proven to be a penguin</p></li>
+          </ul>
+          <p>A is risky:</p>
+          <ul>
+            <li><p><code>\+ penguin(X)</code> runs with X unbound; it asks "can I prove penguin(X) for some X?"</p></li>
+            <li><p>Since <code>penguin(pingu)</code> exists, the negation fails immediately, making <code>can_fly(X)</code> fail for all X</p></li>
+          </ul>
+        </section>
+        <section id="practice-6-backtracking-with-multiple-answers"
 class="frame">
-<h2>Practice 5: backtracking with multiple answers</h2>
-<p>Consider:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">color(red).
+          <h2>Practice 6: backtracking with multiple answers</h2>
+          <p>Consider:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+color(red).
 color(green).
 color(blue).
 
 pair(X, Y) :- color(X), color(Y), X \= Y.</code></pre>
-<p>Questions:</p>
-<ul>
-<li><p>How many answers does <code>?- pair(X, Y).</code>
-generate?</p></li>
-<li><p>What is the first answer (given top-to-bottom,
-left-to-right)?</p></li>
-</ul>
-</section>
-<section id="practice-5-answer-backtracking-with-multiple-answers"
+          <p>Questions:</p>
+          <ul>
+            <li><p>How many answers does <code>?- pair(X, Y).</code> generate?</p></li>
+            <li><p>What is the first answer (given top-to-bottom, left-to-right)?</p></li>
+          </ul>
+        </section>
+        <section id="practice-6-answer-backtracking-with-multiple-answers"
 class="frame">
-<h2>Practice 5 Answer: backtracking with multiple answers</h2>
-<p>There are 3 colors, and <code>X Ȳ</code> removes equal pairs:</p>
-<ul>
-<li><p>Total ordered pairs: <span class="math inline">\(3 \times 3 =
-9\)</span></p></li>
-<li><p>Remove 3 equal pairs: <span class="math inline">\(9 - 3 =
-6\)</span></p></li>
-</ul>
-<p>First answer order:</p>
-<ul>
-<li><p><code>X=red</code> then <code>Y=red</code> rejected, next
-<code>Y=green</code></p></li>
-<li><p>First success: <code>X=red, Y=green</code></p></li>
-</ul>
-</section>
-<section id="debugging-and-reasoning-about-search" class="frame">
-<h2>Debugging and reasoning about search</h2>
-</section>
-<section id="why-prolog-can-feel-magical" class="frame">
-<h2>Why Prolog can feel “magical”</h2>
-<p>Beginners often experience:</p>
-<ul>
-<li><p>“I wrote the correct rules, but it loops”</p></li>
-<li><p>“I got an answer, but it took forever”</p></li>
-<li><p>“Changing order changes behavior”</p></li>
-</ul>
-<p>The missing concept:</p>
-<ul>
-<li><p>Prolog is logical and operational (search strategy
-matters)</p></li>
-</ul>
-<p>Two lenses:</p>
-<ul>
-<li><p>Declarative meaning: what is true</p></li>
-<li><p>Procedural meaning: how the engine searches</p></li>
-</ul>
-</section>
-<section id="common-performancetermination-tips" class="frame">
-<h2>Common performance/termination tips</h2>
-<ul>
-<li><p>Put base cases before recursive cases</p></li>
-<li><p>Avoid recursion patterns that never consume input</p></li>
-<li><p>Add visited checks on graphs</p></li>
-<li><p>Use constraints to prune early (when available)</p></li>
-<li><p>Be careful with <code>\+</code> when variables are not
-grounded</p></li>
-</ul>
-</section>
-<section id="groundness-and-negation" class="frame">
-<h2>Groundness and negation</h2>
-<p>This can be dangerous:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">% &quot;X is not a bird&quot;
-not_bird(X) :- \+ bird(X).</code></pre>
-<p>If you ask:</p>
-<pre data-xleftmargin="3pt" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">?- not_bird(X).</code></pre>
-<p>You are asking for all things that are not birds, which is not
-well-defined in a finite KB.</p>
-<p>Safer pattern:</p>
-<ul>
-<li><p>Use negation after variables are bound (ground) by earlier
-goals</p></li>
-</ul>
-</section>
-<section id="practice-11-goal-ordering-for-safety" class="frame">
-<h2>Practice 11: goal ordering for safety</h2>
-<p>Suppose:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">bird(tweety).
-bird(woody).
-penguin(pingu).
-bird(X) :- penguin(X).</code></pre>
-<p>Which is safer?</p>
-<ul>
-<li><p>A: <code>can_fly(X) :- \+ penguin(X), bird(X).</code></p></li>
-<li><p>B: <code>can_fly(X) :- bird(X), \+ penguin(X).</code></p></li>
-</ul>
-<p>Explain in terms of variable binding and search.</p>
-</section>
-<section id="practice-11-answer-goal-ordering-for-safety" class="frame">
-<h2>Practice 11 Answer: goal ordering for safety</h2>
-<p>Safer is B:</p>
-<ul>
-<li><p><code>bird(X)</code> binds X to known birds/penguins
-first</p></li>
-<li><p>Then <code>\+ penguin(X)</code> checks whether that bound X can
-be proven to be a penguin</p></li>
-</ul>
-<p>A is risky:</p>
-<ul>
-<li><p><code>\+ penguin(X)</code> runs with X unbound; it asks “can I
-prove penguin(X) for some X?”</p></li>
-<li><p>Since <code>penguin(pingu)</code> exists, the negation fails
-immediately, making <code>can_fly(X)</code> fail for all X</p></li>
-</ul>
-</section></section>
-<section>
-<section id="programming-with-prolog" class="title-slide slide level1">
-<h1>Programming with Prolog</h1>
+          <h2>Practice 6 Answer: backtracking with multiple answers</h2>
+          <p>There are 3 colors, and <code>X \= Y</code> removes equal pairs:</p>
+          <ul>
+            <li><p>Total ordered pairs: <span class="math inline">\(3 \times 3 = 9\)</span></p></li>
+            <li><p>Remove 3 equal pairs: <span class="math inline">\(9 - 3 = 6\)</span></p></li>
+          </ul>
+          <p>First answer order:</p>
+          <ul>
+            <li><p><code>X=red</code> then <code>Y=red</code> rejected, next <code>Y=green</code></p></li>
+            <li><p>First success: <code>X=red, Y=green</code></p></li>
+          </ul>
+        </section>
 
-</section>
-<section id="prolog-programming-patterns" class="frame">
-<h2>Prolog programming patterns</h2>
-</section>
-<section id="lists-the-universal-data-structure" class="frame">
-<h2>Prolog lists as relations (bridge from Module 9)</h2>
-<p>In classic Prolog, lists are central:</p>
-<ul>
-<li><p>Recursion over lists is a core pattern</p></li>
-<li><p>Many problems become “generate candidates” + “filter
-constraints”</p></li>
-</ul>
-<p>Two common tasks:</p>
-<ul>
-<li><p>Define relations over lists: membership, append, length</p></li>
-<li><p>Use lists as paths, schedules, parse results, etc.</p></li>
-</ul>
-</section>
-<section id="member2-and-append3-classic" class="frame">
-<h2>member/2 and append/3 (classic)</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">member(X, [X|_]).
+        <section id="why-prolog-can-feel-magical" class="frame">
+          <h2>Why Prolog can feel "magical"</h2>
+          <p>Beginners often experience:</p>
+          <ul>
+            <li><p>"I wrote the correct rules, but it loops"</p></li>
+            <li><p>"I got an answer, but it took forever"</p></li>
+            <li><p>"Changing order changes behavior"</p></li>
+          </ul>
+          <p>The missing concept:</p>
+          <ul>
+            <li><p>Prolog is both logical <em>and</em> operational (search strategy matters)</p></li>
+          </ul>
+          <p>Two lenses for reading a Prolog program:</p>
+          <ul>
+            <li><p><strong>Declarative meaning:</strong> what is true (the logical reading)</p></li>
+            <li><p><strong>Procedural meaning:</strong> how the engine searches (the operational reading)</p></li>
+          </ul>
+        </section>
+        <section id="common-performancetermination-tips" class="frame">
+          <h2>Common performance/termination tips</h2>
+          <ul>
+            <li><p>Put base cases before recursive cases</p></li>
+            <li><p>Avoid left-recursive rules — Prolog's depth-first search will loop</p></li>
+            <li><p>Avoid recursion patterns that never consume input</p></li>
+            <li><p>Add visited checks when traversing graphs</p></li>
+            <li><p>Use constraints to prune early (when available)</p></li>
+            <li><p>Be careful with <code>\+</code> when variables are not grounded</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section id="programming-with-prolog" class="title-slide slide level1">
+          <h1>Programming with Prolog</h1>
+        </section>
+
+        <section id="lists-the-universal-data-structure" class="frame">
+          <h2>Prolog lists as relations (bridge from Module 9)</h2>
+          <p>In classic Prolog, lists are central:</p>
+          <ul>
+            <li><p>Recursion over lists is a core pattern (same structural idea as Module 9, but now expressed as <em>relations</em> )</p></li>
+            <li><p>Many problems become "generate candidates" + "filter constraints"</p></li>
+          </ul>
+          <p>Two common tasks:</p>
+          <ul>
+            <li><p>Define relations over lists: membership, append, length</p></li>
+            <li><p>Use lists as paths, schedules, parse results, etc.</p></li>
+          </ul>
+        </section>
+        <section id="member2-and-append3-classic" class="frame">
+          <h2>member/2 and append/3 (classic)</h2>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+member(X, [X|_]).
 member(X, [_|T]) :- member(X, T).
 
 append([], Ys, Ys).
 append([H|T], Ys, [H|Zs]) :- append(T, Ys, Zs).</code></pre>
-<p>Notes:</p>
-<ul>
-<li><p><code>member</code> is relational: can ask “what is a member?” or
-“is this a member?”</p></li>
-<li><p><code>append</code> can be used to split lists too</p></li>
-</ul>
-</section>
-<section id="relational-power-splitting-with-append3" class="frame">
-<h2>Relational power: splitting with append/3</h2>
-<p>Query:</p>
-<pre data-xleftmargin="3pt" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">?- append(Front, Back, [a,b,c]).</code></pre>
-<p>Conceptual answers (via backtracking):</p>
-<ul>
-<li><p><code>Front=[], Back=[a,b,c]</code></p></li>
-<li><p><code>Front=[a], Back=[b,c]</code></p></li>
-<li><p><code>Front=[a,b], Back=[c]</code></p></li>
-<li><p><code>Front=[a,b,c], Back=[]</code></p></li>
-</ul>
-<p>This is hard to express as a single function in imperative style
-without extra loops.</p>
-</section>
-<section id="recursion-patterns-structural-recursion" class="frame">
-<h2>Recursion in Prolog relations (transfer from Module 9)</h2>
-<p>For lists:</p>
-<ul>
-<li><p>Base case: empty list <code>[]</code></p></li>
-<li><p>Recursive case: <code>[H|T]</code></p></li>
-</ul>
-<p>For trees:</p>
-<ul>
-<li><p>Base case: leaf</p></li>
-<li><p>Recursive case: node with subtrees</p></li>
-</ul>
-<p>This aligns with inductive data definitions (like FP pattern
-matching).</p>
-</section>
-<section id="graph-reachability-path2" class="frame">
-<h2>Graph reachability: path/2</h2>
-<p>Facts (direct edges):</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">edge(a, b).
+          <p>Notes:</p>
+          <ul>
+            <li><p><code>member</code> is relational: can ask "what is a member?" or "is this a member?"</p></li>
+            <li><p><code>append</code> can be used to split lists too</p></li>
+          </ul>
+        </section>
+        <section id="relational-power-splitting-with-append3" class="frame">
+          <h2>Relational power: splitting with append/3</h2>
+          <p>Query:</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline"
+          data-fontsize="\small"><code class="language-prolog">?- append(Front, Back, [a,b,c]).</code></pre>
+          <p>Conceptual answers (via backtracking):</p>
+          <ul>
+            <li><p><code>Front=[], Back=[a,b,c]</code></p></li>
+            <li><p><code>Front=[a], Back=[b,c]</code></p></li>
+            <li><p><code>Front=[a,b], Back=[c]</code></p></li>
+            <li><p><code>Front=[a,b,c], Back=[]</code></p></li>
+          </ul>
+          <p>This is hard to express as a single function in imperative style without extra loops.</p>
+        </section>
+        <section id="recursion-patterns-structural-recursion" class="frame">
+          <h2>Recursion in Prolog relations (transfer from Module 9)</h2>
+          <p>For lists:</p>
+          <ul>
+            <li><p>Base case: empty list <code>[]</code></p></li>
+            <li><p>Recursive case: <code>[H|T]</code></p></li>
+          </ul>
+          <p>For trees:</p>
+          <ul>
+            <li><p>Base case: leaf</p></li>
+            <li><p>Recursive case: node with subtrees</p></li>
+          </ul>
+          <p>This aligns with inductive data definitions from Module 9 (algebraic data types and pattern matching).</p>
+        </section>
+        <section id="graph-reachability-path2" class="frame">
+          <h2>Graph reachability: path/2</h2>
+          <p>Facts (direct edges):</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+edge(a, b).
 edge(b, c).
 edge(c, d).
 edge(a, d).</code></pre>
-<p>Rules (reachability):</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">path(X, Y) :- edge(X, Y).
-path(X, Y) :- edge(X, Z), path(Z, Y).</code></pre>
-<p>This expresses transitive closure, but may loop on cyclic graphs.</p>
-</section>
-<section id="cycles-and-termination" class="frame">
-<h2>Cycles and termination</h2>
-<p>If you add:</p>
-<ul>
-<li><p><code>edge(d, b).</code> (cycle)</p></li>
-</ul>
-<p>Then naive <code>path/2</code> can recurse forever.</p>
-<p>Typical fix:</p>
-<ul>
-<li><p>carry a visited list and refuse to revisit nodes</p></li>
-</ul>
-</section>
-<section id="graph-reachability-with-visited-set" class="frame">
-<h2>Graph reachability with visited set</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">path(X, Y) :- path(X, Y, [X]).
+          <p>Rules (reachability via transitive closure):</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">path(X, Y) :- edge(X, Y).
+          path(X, Y) :- edge(X, Z), path(Z, Y).</code></pre>
+          <p>This expresses transitive closure, but may loop on cyclic graphs.</p>
+        </section>
+        <section id="cycles-and-termination" class="frame">
+          <h2>Cycles and termination</h2>
+          <p>If you add:</p>
+          <ul>
+            <li><p><code>edge(d, b).</code> (a cycle)</p></li>
+          </ul>
+          <p>Then naive <code>path/2</code> can recurse forever — it will keep following the cycle.</p>
+          <p>Typical fix:</p>
+          <ul>
+            <li><p>Carry a <strong>visited list</strong> and refuse to revisit nodes</p></li>
+          </ul>
+        </section>
+        <section id="graph-reachability-with-visited-set" class="frame">
+          <h2>Graph reachability with visited set</h2>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+path(X, Y) :- path(X, Y, [X]).
 
 path(X, Y, _) :-
-  edge(X, Y).
+edge(X, Y).
 
 path(X, Y, Visited) :-
-  edge(X, Z),
-  \+ member(Z, Visited),
-  path(Z, Y, [Z|Visited]).</code></pre>
-<p>Now the recursion stops revisiting nodes.</p>
-</section>
-<section id="practice-6-list-relations" class="frame">
-<h2>Practice 6: list relations</h2>
-<p>Implement the following in Prolog:</p>
-<ul>
-<li><p><code>last(X, List)</code>: X is the last element of
-List</p></li>
-<li><p><code>prefix(P, L)</code>: P is a prefix of L</p></li>
-<li><p><code>suffix(S, L)</code>: S is a suffix of L</p></li>
-</ul>
-<p>Hint:</p>
-<ul>
-<li><p>Use recursion and/or <code>append/3</code></p></li>
-</ul>
-</section>
-<section id="practice-6-answer-list-relations" class="frame">
-<h2>Practice 6 Answer: list relations</h2>
-<p>One possible solution set:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">last(X, [X]).
+edge(X, Z),
+\+ member(Z, Visited),
+path(Z, Y, [Z|Visited]).</code></pre>
+          <p>Now the recursion stops revisiting nodes.</p>
+        </section>
+        <section id="practice-7-list-relations" class="frame">
+          <h2>Practice 7: list relations</h2>
+          <p>Implement the following in Prolog:</p>
+          <ul>
+            <li><p><code>last(X, List)</code> : X is the last element of List</p></li>
+            <li><p><code>prefix(P, L)</code> : P is a prefix of L</p></li>
+            <li><p><code>suffix(S, L)</code> : S is a suffix of L</p></li>
+          </ul>
+          <p>Hint:</p>
+          <ul>
+            <li><p>Use recursion and/or <code>append/3</code></p></li>
+          </ul>
+        </section>
+        <section id="practice-7-answer-list-relations" class="frame">
+          <h2>Practice 7 Answer: list relations</h2>
+          <p>One possible solution set:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+last(X, [X]).
 last(X, [_|T]) :- last(X, T).
 
 prefix(P, L) :- append(P, _, L).
 suffix(S, L) :- append(_, S, L).</code></pre>
-<p>Note:</p>
-<ul>
-<li><p><code>prefix/2</code> and <code>suffix/2</code> become “generate
-all prefixes/suffixes” via backtracking.</p></li>
-</ul>
-</section>
-<section id="control-ordering-goals-and-clauses" class="frame">
-<h2>Control: ordering goals and clauses</h2>
-<p>Two practical heuristics:</p>
-<ul>
-<li><p>Put more restrictive goals earlier (fail fast)</p></li>
-<li><p>Avoid generating huge candidate spaces before filtering</p></li>
-</ul>
-<p>Example pattern:</p>
-<ul>
-<li><p>Bad: generate all lists, then test property</p></li>
-<li><p>Better: generate only the needed structure, apply constraints
-early</p></li>
-</ul>
-</section>
-<section id="the-cut-control-feature" class="frame">
-<h2>The cut (!) (control feature)</h2>
-<p>Cut commits to decisions made so far:</p>
-<ul>
-<li><p>It prunes choice points created earlier in the current predicate
-call</p></li>
-</ul>
-<p>Example: deterministic max:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">max(X, Y, X) :- X &gt;= Y, !.
+          <p>Note:</p>
+          <ul>
+            <li><p><code>prefix/2</code> and <code>suffix/2</code> become "generate all prefixes/suffixes" via backtracking.</p></li>
+          </ul>
+        </section>
+        <section id="control-ordering-goals-and-clauses" class="frame">
+          <h2>Control: ordering goals and clauses</h2>
+          <p>Two practical heuristics:</p>
+          <ul>
+            <li><p>Put more restrictive goals earlier (fail fast — avoid exploring large spaces before a filter)</p></li>
+            <li><p>Avoid generating huge candidate spaces before filtering</p></li>
+          </ul>
+          <p>Example pattern:</p>
+          <ul>
+            <li><p>Bad: generate all lists, then test property</p></li>
+            <li><p>Better: generate only the needed structure, apply constraints early</p></li>
+          </ul>
+        </section>
+        <section id="the-cut-control-feature" class="frame">
+          <h2>The cut (!) (control feature)</h2>
+          <p>The cut <code>!</code> is a special goal that, when reached, <strong>commits to the choices made so far</strong> :</p>
+          <ul>
+            <li><p>It prunes all remaining choice points created since the current predicate was called</p></li>
+            <li><p>Once past the cut, Prolog cannot backtrack into the current clause</p></li>
+          </ul>
+          <p>Example: deterministic max:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+max(X, Y, X) :- X >= Y, !.
 max(_, Y, Y).</code></pre>
-<p>Intuition:</p>
-<ul>
-<li><p>If <code>X &gt;= Y</code> succeeds, cut prevents trying the
-second clause later</p></li>
-</ul>
-<p>Caution:</p>
-<ul>
-<li><p>Cut can make programs less purely declarative; use it to control
-search deliberately</p></li>
-</ul>
-</section>
-<section id="practice-7-where-does-cut-change-answers" class="frame">
-<h2>Practice 7: where does cut change answers?</h2>
-<p>Consider:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">p(1).
+          <p>Caution:</p>
+          <ul>
+            <li><p>Cut makes programs less purely declarative</p></li>
+            <li><p>Use it deliberately to control search, not as a patch for logic errors</p></li>
+          </ul>
+        </section>
+        <section id="practice-8-where-does-cut-change-answers" class="frame">
+          <h2>Practice 8: where does cut change answers?</h2>
+          <p>Consider:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+p(1).
 p(2).
 
 q(2).
 
 r(X) :- p(X), !, q(X).
 r(X) :- p(X).</code></pre>
-<p>Question:</p>
-<ul>
-<li><p>What are the answers to <code>?- r(X).</code></p></li>
-<li><p>Explain the effect of the cut</p></li>
-</ul>
-</section>
-<section id="practice-7-answer-where-does-cut-change-answers"
+          <p>Question:</p>
+          <ul>
+            <li><p>What are the answers to <code>?- r(X).</code></p></li>
+            <li><p>Explain the effect of the cut</p></li>
+          </ul>
+        </section>
+        <section id="practice-8-answer-where-does-cut-change-answers"
 class="frame">
-<h2>Practice 7 Answer: where does cut change answers?</h2>
-<p>Evaluate first clause: <code>r(X) :- p(X), !, q(X).</code></p>
-<ul>
-<li><p><code>p(X)</code> first gives <code>X=1</code></p></li>
-<li><p>Cut commits to this <code>p(X)</code> choice (no backtracking to
-<code>p(2)</code>)</p></li>
-<li><p>Then <code>q(1)</code> fails</p></li>
-<li><p>Because of the cut, Prolog will not retry <code>p(X)</code> with
-<code>X=2</code> in that clause</p></li>
-</ul>
-<p>Then Prolog tries the second clause: <code>r(X) :- p(X).</code></p>
-<ul>
-<li><p>This yields <code>X=1</code> then <code>X=2</code></p></li>
-</ul>
-<p>Final answers: <code>X=1 ; X=2</code>. The cut changed the search
-space of the first clause, not the second clause.</p>
-</section>
-<section id="using-prolog-to-express-constraints" class="frame">
-<h2>Using Prolog to express constraints</h2>
-</section>
-<section id="from-pure-relations-to-constraints" class="frame">
-<h2>From pure relations to constraints</h2>
-<p>“Pure” Prolog:</p>
-<ul>
-<li><p>Uses unification + backtracking search</p></li>
-<li><p>Often does generate-and-test</p></li>
-</ul>
-<p>Constraint Logic Programming (CLP) idea:</p>
-<ul>
-<li><p>Add constraint domains (integers, finite domains, reals)</p></li>
-<li><p>Propagate constraints to prune search early</p></li>
-</ul>
-<p>Typical payoff:</p>
-<ul>
-<li><p>Scheduling, timetabling, resource allocation become
-natural</p></li>
-</ul>
-</section>
-<section id="clpfd-flavor-conceptual-example" class="frame">
-<h2>CLP(FD) flavor (conceptual example)</h2>
-<p>Many Prolog systems support finite-domain constraints (often via a
-library).</p>
-<p>Example goal (read conceptually):</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">% X and Y are integers in 1..5
+          <h2>Practice 8 Answer: where does cut change answers?</h2>
+          <p>Evaluate first clause: <code>r(X) :- p(X), !, q(X).</code></p>
+          <ul>
+            <li><p><code>p(X)</code> first gives <code>X=1</code></p></li>
+            <li><p>Cut commits to this <code>p(X)</code> choice (no backtracking to <code>p(2)</code> )</p></li>
+            <li><p>Then <code>q(1)</code> fails</p></li>
+            <li><p>Because of the cut, Prolog will not retry <code>p(X)</code> with <code>X=2</code> in that clause</p></li>
+          </ul>
+          <p>Then Prolog tries the second clause: <code>r(X) :- p(X).</code></p>
+          <ul>
+            <li><p>This yields <code>X=1</code> then <code>X=2</code></p></li>
+          </ul>
+          <p>Final answers: <code>X=1 ; X=2</code> . The cut changed the search space of the first clause, not the second clause.</p>
+        </section>
+
+        <section id="from-pure-relations-to-constraints" class="frame">
+          <h2>From pure relations to constraints</h2>
+          <p>"Pure" Prolog:</p>
+          <ul>
+            <li><p>Uses unification + backtracking search</p></li>
+            <li><p>Often does generate-and-test: enumerate candidates, then filter</p></li>
+            <li><p>Can be slow if the candidate space is large</p></li>
+          </ul>
+          <p><strong>Constraint Logic Programming (CLP)</strong> idea:</p>
+          <ul>
+            <li><p>Add constraint domains (integers, finite domains, reals)</p></li>
+            <li><p>Propagate constraints to prune search early before generating candidates</p></li>
+          </ul>
+          <p>Typical payoff:</p>
+          <ul>
+            <li><p>Scheduling, timetabling, resource allocation become natural and efficient</p></li>
+          </ul>
+        </section>
+        <section id="clpfd-flavor-conceptual-example" class="frame">
+          <h2>CLP(FD) flavor (conceptual example)</h2>
+          <p>Many Prolog systems support finite-domain constraints (often via a library).</p>
+          <p>Example goal (read conceptually):</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+% X and Y are integers in 1..5
 % X #\= Y means X not equal Y (constraint)
 % X + Y #= 6 means X+Y equals 6
 
 solve(X, Y) :-
-  X in 1..5,
-  Y in 1..5,
-  X #\= Y,
-  X + Y #= 6.</code></pre>
-<p>The solver narrows possibilities before brute-force enumeration.</p>
-</section>
-<section id="constraint-mindset" class="frame">
-<h2>Constraint mindset</h2>
-<p>Instead of:</p>
-<ul>
-<li><p>“Try all schedules and check conflicts”</p></li>
-</ul>
-<p>You write:</p>
-<ul>
-<li><p>Variables represent unknown decisions</p></li>
-<li><p>Constraints express what must hold</p></li>
-<li><p>Labeling/search assigns values consistent with
-constraints</p></li>
-</ul>
-<p>This is a classic declarative paradigm.</p>
-</section>
-<section id="practice-8-express-constraints-no-code-needed"
-class="frame">
-<h2>Practice 8: express constraints (no code needed)</h2>
-<p>You are scheduling 3 exams: A, B, C into time slots 1, 2, 3.</p>
-<p>Constraints:</p>
-<ul>
-<li><p>A and B cannot be at the same time</p></li>
-<li><p>B and C cannot be at the same time</p></li>
-<li><p>A must be before C</p></li>
-</ul>
-<p>Task:</p>
-<ul>
-<li><p>Write these as constraints over variables
-<code>TA, TB, TC</code></p></li>
-<li><p>Find one valid schedule</p></li>
-</ul>
-</section>
-<section id="practice-8-answer-express-constraints" class="frame">
-<h2>Practice 8 Answer: express constraints</h2>
-<p>Constraints:</p>
-<ul>
-<li><p><code>TA </code><span
-class="math inline">\(\neq\)</span><code> TB</code></p></li>
-<li><p><code>TB </code><span
-class="math inline">\(\neq\)</span><code> TC</code></p></li>
-<li><p><code>TA </code><span
-class="math inline">\(&lt;\)</span><code> TC</code></p></li>
-<li><p>Each in {1,2,3}</p></li>
-</ul>
-<p>One valid schedule:</p>
-<ul>
-<li><p><code>TA=1, TB=2, TC=3</code></p></li>
-</ul>
-<p>Note:</p>
-<ul>
-<li><p>Constraints prune many impossible assignments automatically in
-CLP.</p></li>
-</ul>
-</section>
-<section id="using-prolog-to-express-relations" class="frame">
-<h2>Using Prolog to express relations</h2>
-</section>
-<section id="prolog-feels-like-querying-a-database" class="frame">
-<h2>Prolog feels like querying a database</h2>
-<p>Facts resemble rows; predicates resemble tables:</p>
-<ul>
-<li><p><code>parent(alice,bob).</code> is like a row in table
-Parent</p></li>
-</ul>
-<p>A query resembles a join:</p>
-<ul>
-<li><p><code>grandparent(X,Z) :- parent(X,Y), parent(Y,Z).</code></p></li>
-</ul>
-<p>Conceptually:</p>
-<ul>
-<li><p>Prolog search behaves like a nested-loop join (unless
-optimized)</p></li>
-<li><p>SQL optimizers can reorder joins and use indexes
-automatically</p></li>
-</ul>
-</section>
-<section id="prolog-join-example" class="frame">
-<h2>Prolog “join” example</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">enrolled(alice, cop4020).
+X in 1..5,
+Y in 1..5,
+X #\= Y,
+X + Y #= 6.</code></pre>
+          <p>The solver narrows possibilities before brute-force enumeration.</p>
+        </section>
+        <section id="constraint-mindset" class="frame">
+          <h2>Constraint mindset</h2>
+          <p>Instead of:</p>
+          <ul>
+            <li><p>"Try all schedules and check conflicts"</p></li>
+          </ul>
+          <p>You write:</p>
+          <ul>
+            <li><p>Variables represent unknown decisions</p></li>
+            <li><p>Constraints express what must hold</p></li>
+            <li><p>Labeling/search assigns values consistent with constraints</p></li>
+          </ul>
+          <p>This is a classic declarative paradigm: describe the problem, let the solver find a solution.</p>
+        </section>
+
+        <section id="prolog-feels-like-querying-a-database" class="frame">
+          <h2>Prolog feels like querying a database</h2>
+          <p>Facts resemble rows; predicates resemble tables:</p>
+          <ul>
+            <li><p><code>parent(alice,bob).</code> is like a row in a <code>Parent</code> table</p></li>
+          </ul>
+          <p>A rule resembles a join:</p>
+          <ul>
+            <li><p><code>grandparent(X,Z) :- parent(X,Y), parent(Y,Z).</code></p></li>
+            <li><p>This is equivalent to joining Parent with itself on the middle node</p></li>
+          </ul>
+          <p>Conceptually:</p>
+          <ul>
+            <li><p>Prolog search behaves like a nested-loop join (unless optimized)</p></li>
+            <li><p>SQL optimizers can reorder joins and use indexes automatically</p></li>
+          </ul>
+        </section>
+        <section id="prolog-join-example" class="frame">
+          <h2>Prolog "join" example</h2>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+enrolled(alice, cop4020).
 enrolled(alice, cda3100).
 enrolled(bob, cop4020).
 
@@ -1248,164 +1112,155 @@ teaches(zhang, cop4020).
 teaches(smith, cda3100).
 
 student_of(Student, Prof) :-
-  enrolled(Student, Course),
-  teaches(Prof, Course).</code></pre>
-<p>Query:</p>
-<pre data-xleftmargin="3pt" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">?- student_of(alice, P).</code></pre>
-</section>
-<section id="sql-comparison-same-idea" class="frame">
-<h2>SQL comparison (same idea)</h2>
-<p>SQL “student_of” query:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-sql">SELECT e.student, t.prof
+enrolled(Student, Course),
+teaches(Prof, Course).</code></pre>
+          <p>Query:</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline"
+          data-fontsize="\small"><code class="language-prolog">?- student_of(alice, P).</code></pre>
+        </section>
+        <section id="sql-comparison-same-idea" class="frame">
+          <h2>SQL comparison (same idea)</h2>
+          <p>SQL "student_of" query:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-sql">
+SELECT e.student, t.prof
 FROM enrolled e
 JOIN teaches t ON e.course = t.course
 WHERE e.student = &#39;alice&#39;;</code></pre>
-<p>Compare:</p>
-<ul>
-<li><p>Prolog rule looks like a logical join specification</p></li>
-<li><p>SQL optimizer decides join strategy; Prolog uses a fixed search
-order by default</p></li>
-</ul>
-</section>
-<section id="practice-9-translate-between-prolog-and-sql-conceptually"
+          <p>Compare:</p>
+          <ul>
+            <li><p>Prolog rule looks like a logical join specification</p></li>
+            <li><p>SQL optimizer decides join strategy; Prolog uses a fixed search order by default</p></li>
+            <li><p>Both share the declarative idea: describe the result, not the retrieval steps</p></li>
+          </ul>
+        </section>
+        <section id="practice-10-translate-between-prolog-and-sql-conceptually"
 class="frame">
-<h2>Practice 9: translate between Prolog and SQL (conceptually)</h2>
-<p>Given relation facts:</p>
-<ul>
-<li><p><code>orders(Customer, Item).</code></p></li>
-<li><p><code>price(Item, Dollars).</code></p></li>
-</ul>
-<p>Tasks:</p>
-<ul>
-<li><p>Write a Prolog rule <code>spent(Customer, Dollars)</code> meaning
-Customer ordered an item with that price</p></li>
-<li><p>Write the analogous SQL join (no need to be perfect SQL
-syntax)</p></li>
-</ul>
-</section>
-<section id="practice-9-answer-translate-between-prolog-and-sql"
+          <h2>Practice 10: translate between Prolog and SQL (conceptually)</h2>
+          <p>Given relation facts:</p>
+          <ul>
+            <li><p><code>orders(Customer, Item).</code></p></li>
+            <li><p><code>price(Item, Dollars).</code></p></li>
+          </ul>
+          <p>Tasks:</p>
+          <ul>
+            <li><p>Write a Prolog rule <code>spent(Customer, Dollars)</code> meaning Customer ordered an item with that price</p></li>
+            <li><p>Write the analogous SQL join (no need to be perfect SQL syntax)</p></li>
+          </ul>
+        </section>
+        <section id="practice-10-answer-translate-between-prolog-and-sql"
 class="frame">
-<h2>Practice 9 Answer: translate between Prolog and SQL</h2>
-<p>Prolog:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">spent(C, D) :-
-  orders(C, Item),
-  price(Item, D).</code></pre>
-<p>SQL idea:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-sql">SELECT o.customer, p.dollars
+          <h2>Practice 10 Answer: translate between Prolog and SQL</h2>
+          <p>Prolog:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">
+spent(C, D) :-
+orders(C, Item),
+price(Item, D).</code></pre>
+          <p>SQL idea:</p>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-sql">
+SELECT o.customer, p.dollars
 FROM orders o
 JOIN price p ON o.item = p.item;</code></pre>
-</section>
-<section id="horn-clauses-beyond-prolog" class="frame">
-<h2>Horn clauses beyond Prolog</h2>
-</section>
-<section id="datalog-conceptual-comparison" class="frame">
-<h2>Datalog (conceptual comparison)</h2>
-<p>Datalog is like a restricted Prolog:</p>
-<ul>
-<li><p>Often forbids complex function symbols (keeps it
-database-friendly)</p></li>
-<li><p>Typically uses set semantics (no duplicates) and guaranteed
-termination on finite DBs</p></li>
-<li><p>Common for program analysis, policy, graph queries</p></li>
-</ul>
-<p>Prolog is more general:</p>
-<ul>
-<li><p>Can build arbitrary terms, can do deeper recursion, can be
-Turing-complete</p></li>
-<li><p>Termination is not guaranteed</p></li>
-</ul>
-</section>
-<section id="why-query-languages-like-restrictions" class="frame">
-<h2>Why query languages like restrictions</h2>
-<p>Restrictions enable:</p>
-<ul>
-<li><p>Optimizations (indexes, join reordering)</p></li>
-<li><p>Guaranteed termination (on finite input)</p></li>
-<li><p>Clear complexity bounds</p></li>
-</ul>
-<p>Tradeoff:</p>
-<ul>
-<li><p>Less expressive for some computations</p></li>
-</ul>
-</section>
-<section id="logic-as-a-foundation-for-configurationpolicy"
+        </section>
+
+        <section id="datalog-conceptual-comparison" class="frame">
+          <h2>Datalog (conceptual comparison)</h2>
+          <p>Datalog is like a restricted Prolog designed for database-style reasoning:</p>
+          <ul>
+            <li><p>Forbids complex function symbols — all terms are flat, keeping the domain finite</p></li>
+            <li><p>Uses set semantics (no duplicates) and guarantees termination on finite databases</p></li>
+            <li><p>Common for program analysis, policy engines, and graph queries</p></li>
+          </ul>
+          <p>Prolog is more general:</p>
+          <ul>
+            <li><p>Can build arbitrary compound terms, supports deeper recursion</p></li>
+            <li><p>Turing-complete; termination is not guaranteed</p></li>
+          </ul>
+        </section>
+        <section id="why-query-languages-like-restrictions" class="frame">
+          <h2>Why query languages like restrictions</h2>
+          <p>Restrictions enable:</p>
+          <ul>
+            <li><p>Optimizations (indexes, join reordering)</p></li>
+            <li><p>Guaranteed termination (on finite input)</p></li>
+            <li><p>Clear complexity bounds</p></li>
+          </ul>
+          <p>Tradeoff:</p>
+          <ul>
+            <li><p>Less expressive for some computations</p></li>
+            <li><p>Prolog's generality comes at the cost of predictability</p></li>
+          </ul>
+        </section>
+        <section id="logic-as-a-foundation-for-configurationpolicy"
 class="frame">
-<h2>Logic as a foundation for configuration/policy</h2>
-<p>Many systems use a rule-based core:</p>
-<ul>
-<li><p>Policies: allow/deny decisions</p></li>
-<li><p>Compliance checks: must satisfy constraints</p></li>
-<li><p>Routing rules: choose target by conditions</p></li>
-</ul>
-<p>Pattern:</p>
-<ul>
-<li><p>Facts about the world (requests, attributes)</p></li>
-<li><p>Rules derive conclusions (allowed, violations, actions)</p></li>
-</ul>
-</section>
-<section id="practice-10-write-a-policy-as-horn-style-rules"
+          <h2>Logic as a foundation for configuration/policy</h2>
+          <p>Many systems use a rule-based core modeled on Horn-clause logic:</p>
+          <ul>
+            <li><p>Policies: allow/deny decisions based on user attributes</p></li>
+            <li><p>Compliance checks: must satisfy constraints (e.g., GDPR, access control)</p></li>
+            <li><p>Routing rules: choose target by conditions</p></li>
+          </ul>
+          <p>Pattern:</p>
+          <ul>
+            <li><p>Facts about the world (requests, attributes)</p></li>
+            <li><p>Rules derive conclusions (allowed, violations, actions)</p></li>
+          </ul>
+        </section>
+        <section id="practice-11-write-a-policy-as-horn-style-rules"
 class="frame">
-<h2>Practice 10: write a policy as Horn-style rules</h2>
-<p>Write rules for:</p>
-<ul>
-<li><p>“A request is allowed if the user is an admin.”</p></li>
-<li><p>“A request is allowed if the user owns the resource.”</p></li>
-<li><p>“Otherwise denied.”</p></li>
-</ul>
-<p>Use predicates like:</p>
-<ul>
-<li><p><code>admin(User)</code></p></li>
-<li><p><code>owns(User, Resource)</code></p></li>
-<li><p><code>allow(User, Resource)</code></p></li>
-</ul>
-<p>Discussion: how does “otherwise denied” relate to the closed-world
-assumption?</p>
-</section>
-<section id="practice-10-answer-policy-as-rules" class="frame">
-<h2>Practice 10 Answer: policy as rules</h2>
-<p>Rules:</p>
-<ul>
-<li><p><code>allow(U,R) :- admin(U).</code></p></li>
-<li><p><code>allow(U,R) :- owns(U,R).</code></p></li>
-</ul>
-<p>“Otherwise denied”:</p>
-<ul>
-<li><p>In Prolog-style closed world, if <code>allow(U,R)</code> cannot
-be proven, treat it as denied.</p></li>
-<li><p>This is a design choice; some systems want an explicit
-<code>deny</code> predicate.</p></li>
-</ul>
-</section>
-<section id="mini-case-study" class="frame">
-<h2>Mini case study</h2>
-</section>
-<section id="case-study-course-prerequisites" class="frame">
-<h2>Case study: course prerequisites</h2>
-<p>Model prerequisites as relations:</p>
-<ul>
-<li><p><code>prereq(Course, PrereqCourse)</code></p></li>
-<li><p><code>can_take(Student, Course)</code></p></li>
-</ul>
-<p>Questions we want to ask:</p>
-<ul>
-<li><p>Which prerequisites are required (directly or
-indirectly)?</p></li>
-<li><p>What courses can a student take next?</p></li>
-</ul>
-<p>This is graph reachability + set filtering.</p>
-</section>
-<section id="prerequisites-example-conceptual-prolog" class="frame">
-<h2>Prerequisites example (conceptual Prolog)</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small"><code class="language-prolog">prereq(cop3530, cop2510).
+          <h2>Practice 11: write a policy as Horn-style rules</h2>
+          <p>Write rules for:</p>
+          <ul>
+            <li><p>"A request is allowed if the user is an admin."</p></li>
+            <li><p>"A request is allowed if the user owns the resource."</p></li>
+            <li><p>"Otherwise denied."</p></li>
+          </ul>
+          <p>Use predicates like:</p>
+          <ul>
+            <li><p><code>admin(User)</code></p></li>
+            <li><p><code>owns(User, Resource)</code></p></li>
+            <li><p><code>allow(User, Resource)</code></p></li>
+          </ul>
+          <p>Discussion: how does "otherwise denied" relate to the closed-world assumption?</p>
+        </section>
+        <section id="practice-11-answer-policy-as-rules" class="frame">
+          <h2>Practice 11 Answer: policy as rules</h2>
+          <p>Rules:</p>
+          <ul>
+            <li><p><code>allow(U,R) :- admin(U).</code></p></li>
+            <li><p><code>allow(U,R) :- owns(U,R).</code></p></li>
+          </ul>
+          <p>"Otherwise denied":</p>
+          <ul>
+            <li><p>In Prolog-style closed world, if <code>allow(U,R)</code> cannot be proven, treat it as denied.</p></li>
+            <li><p>This is a design choice; some systems want an explicit <code>deny</code> predicate for auditability.</p></li>
+          </ul>
+        </section>
+
+        <section id="case-study-course-prerequisites" class="frame">
+          <h2>Case study: course prerequisites</h2>
+          <p>Model prerequisites as relations:</p>
+          <ul>
+            <li><p><code>prereq(Course, PrereqCourse)</code></p></li>
+            <li><p><code>can_take(Student, Course)</code></p></li>
+          </ul>
+          <p>Questions we want to ask:</p>
+          <ul>
+            <li><p>Which prerequisites are required (directly or indirectly)?</p></li>
+            <li><p>What courses can a student take next?</p></li>
+          </ul>
+          <p>This is graph reachability + set filtering by combining patterns we have already seen.</p>
+        </section>
+        <section id="prerequisites-example-conceptual-prolog" class="frame">
+          <h2>Prerequisites example (conceptual Prolog)</h2>
+          <pre data-xleftmargin="3pt" data-linenos=""
+            data-numbersep="0.5em" data-frame="leftline"
+            data-fontsize="\small"><code class="language-prolog">prereq(cop3530, cop2510).
 prereq(cop4020, cop3530).
 prereq(cda3100, cop2510).
 
@@ -1416,224 +1271,145 @@ needs(X, Y) :- prereq(X, Y).
 needs(X, Y) :- prereq(X, Z), needs(Z, Y).
 
 eligible(S, C) :-
-  + passed(S, C),
-  + (needs(C, P), + passed(S, P)).</code></pre>
-<p>Read <code>eligible</code>: student has not passed the course, and
-there is no prerequisite P that the student has not passed.</p>
-</section>
-<section id="discussion-what-is-declarative-here" class="frame">
-<h2>Discussion: what is declarative here?</h2>
-<ul>
-<li><p><code>needs/2</code> is a clean declarative transitive closure
-definition</p></li>
-<li><p><code>eligible/2</code> mixes declarative intent with operational
-negation patterns</p></li>
-</ul>
-<p>Reality in industry:</p>
-<ul>
-<li><p>Many real rule systems blend declarative rules with evaluation
-strategy constraints</p></li>
-</ul>
-</section>
-<section id="practice-12-extend-the-case-study" class="frame">
-<h2>Practice 12: extend the case study</h2>
-<p>Add a rule:</p>
-<ul>
-<li><p><code>recommended(S, C)</code> is true if
-<code>eligible(S, C)</code> and the course is a prerequisite (directly
-or indirectly) for <code>cop4020</code></p></li>
-</ul>
-<p>Discussion:</p>
-<ul>
-<li><p>What query would list recommended courses for Alice?</p></li>
-</ul>
-</section>
-<section id="practice-12-answer-extend-the-case-study" class="frame">
-<h2>Practice 12 Answer: extend the case study</h2>
-<p>One possible idea:</p>
-<ul>
-<li><p><code>recommended(S,C) :- eligible(S,C), needs(cop4020, C).</code></p></li>
-</ul>
-<p>Query:</p>
-<ul>
-<li><p><code>?- recommended(alice, C).</code></p></li>
-</ul>
-<p>Interpretation:</p>
-<ul>
-<li><p>“Eligible and helps progress toward COP4020”</p></li>
-</ul>
-</section></section>
-<section>
-<section id="industry-and-wrap-up" class="title-slide slide level1">
-<h1>Industry and wrap-up</h1>
+\+ passed(S, C),
+\+ (needs(C, P), \+ passed(S, P)).</code></pre>
+          <p>Read <code>eligible</code> : student has not passed the course, and there is no prerequisite P that the student has not passed.</p>
+        </section>
 
-</section>
-<section id="industry-angle" class="frame">
-<h2>Industry angle</h2>
-</section>
-<section id="rule-engines" class="frame">
-<h2>Rule engines</h2>
-<p>Rule engines in industry often look like:</p>
-<ul>
-<li><p>Facts: events, attributes, measurements</p></li>
-<li><p>Rules: if conditions then conclusions/actions</p></li>
-</ul>
-<p>Use cases:</p>
-<ul>
-<li><p>pricing/discount policies</p></li>
-<li><p>fraud detection heuristics</p></li>
-<li><p>access control decisions</p></li>
-<li><p>alerting logic in observability</p></li>
-</ul>
-<p>Why logic ideas help:</p>
-<ul>
-<li><p>business rules change frequently</p></li>
-<li><p>you want rules readable by domain experts</p></li>
-</ul>
-</section>
-<section id="query-languages-as-declarative-programming" class="frame">
-<h2>Query languages as declarative programming</h2>
-<p>SQL-like systems:</p>
-<ul>
-<li><p>relational databases</p></li>
-<li><p>distributed query engines</p></li>
-<li><p>graph queries (paths, reachability)</p></li>
-</ul>
-<p>Typical differences vs Prolog:</p>
-<ul>
-<li><p>SQL has an optimizer and set semantics</p></li>
-<li><p>Prolog has a fixed evaluation order and backtracking</p></li>
-</ul>
-<p>Both share the declarative idea: describe the result set.</p>
-</section>
-<section id="constraint-solvers" class="frame">
-<h2>Constraint solvers</h2>
-<p>Constraint solvers appear in:</p>
-<ul>
-<li><p>scheduling (airlines, exams, staff)</p></li>
-<li><p>routing and resource allocation</p></li>
-<li><p>verification (SAT/SMT solving)</p></li>
-<li><p>configuration solving (packages, dependencies)</p></li>
-</ul>
-<p>Declarative approach:</p>
-<ul>
-<li><p>represent unknowns as variables</p></li>
-<li><p>add constraints</p></li>
-<li><p>solver finds assignments</p></li>
-</ul>
-</section>
-<section id="when-prolog-style-thinking-is-a-good-fit" class="frame">
-<h2>When Prolog-style thinking is a good fit</h2>
-<p>Good fit:</p>
-<ul>
-<li><p>exploring combinations with constraints</p></li>
-<li><p>symbolic reasoning and relations (graphs, rules)</p></li>
-<li><p>quickly prototyping inference logic</p></li>
-</ul>
-<p>Less ideal fit:</p>
-<ul>
-<li><p>heavy numeric computing</p></li>
-<li><p>problems needing strict performance predictability without
-careful tuning</p></li>
-</ul>
-<p>Common compromise:</p>
-<ul>
-<li><p>write a small declarative core; integrate with imperative host
-code</p></li>
-</ul>
-</section>
-<section id="practice-13-pick-the-right-paradigm" class="frame">
-<h2>Practice 13: pick the right paradigm</h2>
-<p>For each scenario, choose: Prolog-style rules, SQL-style queries,
-constraint solver, or imperative code.</p>
-<ul>
-<li><p>Filter transactions and compute daily totals</p></li>
-<li><p>Decide if a request is allowed based on dozens of policy
-conditions</p></li>
-<li><p>Assign 200 flights to gates with resource constraints</p></li>
-<li><p>Simulate a physics engine at 120 FPS</p></li>
-</ul>
-</section>
-<section id="practice-13-answer-pick-the-right-paradigm" class="frame">
-<h2>Practice 13 Answer: pick the right paradigm</h2>
-<p>One reasonable mapping:</p>
-<ul>
-<li><p>Filter + totals: SQL-style queries (or data pipeline)</p></li>
-<li><p>Policy decisions: Prolog-style rules / rule engine</p></li>
-<li><p>Flight-to-gate assignment: constraint solver / CLP</p></li>
-<li><p>Physics engine: imperative numeric code</p></li>
-</ul>
-<p>Key point:</p>
-<ul>
-<li><p>Declarative tools are strongest when the problem is naturally a
-set of constraints/relations.</p></li>
-</ul>
-</section>
-<section id="review" class="frame">
-<h2>Review</h2>
-</section>
-<section id="summary-what-to-remember" class="frame">
-<h2>Summary: what to remember</h2>
-<ul>
-<li><p>Declarative programming describes what, not step-by-step
-how</p></li>
-<li><p>Prolog programs are Horn clauses: facts + rules</p></li>
-<li><p>Execution is unification + backtracking search (depth-first,
-left-to-right)</p></li>
-<li><p>Unification finds substitutions; failure triggers
-backtracking</p></li>
-<li><p>Search order matters: clause order and goal order can affect
-termination/performance</p></li>
-<li><p>Lists + recursion are core Prolog patterns (member, append,
-path)</p></li>
-<li><p>Negation-as-failure assumes a closed world; use it carefully with
-variables</p></li>
-<li><p>Constraints (CLP) prune search and shine in scheduling/allocation
-problems</p></li>
-<li><p>SQL, rule engines, and constraint solvers are all declarative
-relatives</p></li>
-</ul>
-</section>
-<section id="review-questions" class="frame">
-<h2>Review questions</h2>
-<ul>
-<li><p>What does it mean for Prolog to be “relational” rather than
-“functional”?</p></li>
-<li><p>What is unification, and how does it differ from simple pattern
-matching?</p></li>
-<li><p>Why can clause order change termination or performance?</p></li>
-<li><p>When is negation-as-failure a reasonable modeling
-choice?</p></li>
-<li><p>Give one example where constraints are a better fit than pure
-backtracking.</p></li>
-<li><p>Compare Prolog querying to SQL: what is similar and what is
-different?</p></li>
-</ul>
-</section></section>
+        <section id="discussion-what-is-declarative-here" class="frame">
+          <h2>Discussion: what is declarative here?</h2>
+          <ul>
+            <li><p><code>needs/2</code> is a clean declarative transitive closure definition</p></li>
+            <li><p><code>eligible/2</code> mixes declarative intent with operational negation patterns</p></li>
+          </ul>
+          <p>Reality in industry:</p>
+          <ul>
+            <li><p>Many real rule systems blend declarative rules with evaluation strategy constraints</p></li>
+          </ul>
+        </section>
+
+      </section>
+      <section>
+        <section id="industry-and-wrap-up" class="title-slide slide level1">
+          <h1>Industry and wrap-up</h1>
+        </section>
+
+        
+        <section id="rule-engines" class="frame">
+          <h2>Rule engines</h2>
+          <p>Rule engines in industry often look like:</p>
+          <ul>
+            <li><p>Facts: events, attributes, measurements</p></li>
+            <li><p>Rules: if conditions then conclusions/actions</p></li>
+          </ul>
+          <p>Use cases:</p>
+          <ul>
+            <li><p>pricing/discount policies</p></li>
+            <li><p>fraud detection heuristics</p></li>
+            <li><p>access control decisions</p></li>
+            <li><p>alerting logic in observability</p></li>
+          </ul>
+          <p>Why logic ideas help:</p>
+          <ul>
+            <li><p>business rules change frequently</p></li>
+            <li><p>you want rules readable by domain experts</p></li>
+          </ul>
+        </section>
+        <section id="query-languages-as-declarative-programming" class="frame">
+          <h2>Query languages as declarative programming</h2>
+          <p>SQL-like systems:</p>
+          <ul>
+            <li><p>relational databases</p></li>
+            <li><p>distributed query engines</p></li>
+            <li><p>graph queries (paths, reachability)</p></li>
+          </ul>
+          <p>Typical differences vs Prolog:</p>
+          <ul>
+            <li><p>SQL has an optimizer and set semantics</p></li>
+            <li><p>Prolog has a fixed evaluation order and backtracking</p></li>
+          </ul>
+          <p>Both share the declarative idea: describe the result set.</p>
+        </section>
+        <section id="constraint-solvers" class="frame">
+          <h2>Constraint solvers</h2>
+          <p>Constraint solvers appear in:</p>
+          <ul>
+            <li><p>scheduling (airlines, exams, staff)</p></li>
+            <li><p>routing and resource allocation</p></li>
+            <li><p>verification (SAT/SMT solving)</p></li>
+            <li><p>configuration solving (packages, dependencies)</p></li>
+          </ul>
+          <p>Declarative approach:</p>
+          <ul>
+            <li><p>represent unknowns as variables</p></li>
+            <li><p>add constraints</p></li>
+            <li><p>solver finds assignments</p></li>
+          </ul>
+        </section>
+        <section id="when-prolog-style-thinking-is-a-good-fit" class="frame">
+          <h2>When Prolog-style thinking is a good fit</h2>
+          <p>Good fit:</p>
+          <ul>
+            <li><p>exploring combinations with constraints</p></li>
+            <li><p>symbolic reasoning and relations (graphs, rules)</p></li>
+            <li><p>quickly prototyping inference logic</p></li>
+          </ul>
+          <p>Less ideal fit:</p>
+          <ul>
+            <li><p>heavy numeric computing</p></li>
+            <li><p>problems needing strict performance predictability without careful tuning</p></li>
+          </ul>
+          <p>Common compromise:</p>
+          <ul>
+            <li><p>write a small declarative core; integrate with imperative host code</p></li>
+          </ul>
+        </section>
+        
+
+        <section id="summary-what-to-remember" class="frame">
+          <h2>Summary: what to remember</h2>
+          <ul>
+            <li><p>Declarative programming describes what, not step-by-step how</p></li>
+            <li><p>Prolog programs are Horn clauses: facts + rules</p></li>
+            <li><p>Execution is unification + backtracking search (depth-first, left-to-right)</p></li>
+            <li><p>Unification finds substitutions; failure triggers backtracking</p></li>
+            <li><p>Search order matters: clause order and goal order can affect termination/performance</p></li>
+            <li><p>Lists + recursion are core Prolog patterns (member, append, path)</p></li>
+            <li><p>Negation-as-failure assumes a closed world; use it carefully with variables</p></li>
+            <li><p>Constraints (CLP) prune search and shine in scheduling/allocation problems</p></li>
+            <li><p>SQL, rule engines, and constraint solvers are all declarative relatives</p></li>
+          </ul>
+        </section>
+        <section id="review-questions" class="frame">
+          <h2>Review questions</h2>
+          <ul>
+            <li><p>What does it mean for Prolog to be "relational" rather than "functional"?</p></li>
+            <li><p>What is unification, and how does it differ from simple pattern matching?</p></li>
+            <li><p>Why can clause order change termination or performance?</p></li>
+            <li><p>When is negation-as-failure a reasonable modeling choice?</p></li>
+            <li><p>Give one example where constraints are a better fit than pure backtracking.</p></li>
+            <li><p>Compare Prolog querying to SQL: what is similar and what is different?</p></li>
+          </ul>
+        </section>
+      </section>
     </div>
   </div>
-
   <script src="../_static/revealjs/dist/reveal.js"></script>
-    
-    
-      <script src="../_static/revealjs/plugin/notes/notes.js"></script>
-      <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
-      <script src="../_static/revealjs/plugin/math/math.js"></script>
-      
-    
-    <script>
-        var revealjsConfig = new Object();
-        Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
-        
-        
-        
-          revealjsConfig.plugins = [
-            RevealNotes,RevealHighlight,RevealMath,
-          ];
-        
-        // More info https://github.com/hakimel/reveal.js#configuration
-        Reveal.initialize(revealjsConfig);
-    </script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
 
-  </body>
+
+
+    revealjsConfig.plugins = [
+    RevealNotes,RevealHighlight,RevealMath,
+    ];
+
+    // More info https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
 </html>
