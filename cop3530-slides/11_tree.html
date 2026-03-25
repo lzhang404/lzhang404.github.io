@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Tree</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- Title -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Tree</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- Applications & Terminology -->
+      <section>
+
+        <section class="frame">
+          <h2>Applications of Trees</h2>
+          <p>Trees are used widely in computer science</p>
+          <ul>
+            <li><p><strong>Hierarchical Data Representation</strong> — file systems, organizational charts</p></li>
+            <li><p><strong>Searching and Sorting Structures</strong> — Binary Search Trees (BSTs), Heaps</p></li>
+            <li><p><strong>Databases</strong> — B-Trees used in databases and file systems</p></li>
+            <li><p><strong>Compiler Design</strong> — Abstract Syntax Trees used to represent program structure and expressions</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Tree Terminology</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p><strong>Root</strong>: topmost node of the tree</p></li>
+              <li><p><strong>Internal node</strong>: a node with at least one child</p></li>
+              <li><p><strong>Parent</strong>: node that has child nodes</p></li>
+              <li><p><strong>Child</strong>: nodes derived from a parent</p></li>
+              <li><p><strong>Leaf</strong>: node with no children</p></li>
+              <li><p><strong>Sibling</strong>: nodes sharing the same parent</p></li>
+              <li><p><strong>Edge</strong>: the link from a node to a child</p></li>
+            </ul></div>
+            <div style="flex:0 0 40%;min-width:0;">
+            <img
+            src = "../_static/images/tree/tree_terminology.png"
+            alt = "A exmaple tree data structure"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >             </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Tree Terminology (cont.)</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p><strong>Degree of a vertex</strong>: number of edges connected to it</p></li>
+              <li><p><strong>Degree of a tree</strong>: maximum degree of any vertex</p></li>
+              <li><p><strong>Depth</strong>: distance from the root node</p></li>
+              <li><p><strong>Height</strong>: longest path from a node to a leaf</p></li>
+              <li><p><strong>Ancestors</strong>: include the node's parent, the parent's parent, etc., up to the tree's root</p></li>
+              <li><p><strong>Descendant</strong>: a node's descendants include the node's children, the children's children, etc.</p></li>
+              <li><p><strong>Subtree</strong>: any node X in the tree and all of X's descendants</p></li>
+            </ul></div>
+            <div style="flex:0 0 40%;min-width:0;">
+            <img
+            src = "../_static/images/tree/tree_terminology.png"
+            alt = "A exmaple tree data structure"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >             </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Binary Trees -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Binary Trees</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Binary Tree and Representation</h2>
+          <p>A Binary Tree is a tree where each node can have at most two children.</p>
+          <p>It is an ordered tree where the children of each node have a defined left-to-right order</p>
+          <p>Types</p>
+          <ul>
+            <li><p><strong>Full Binary Tree</strong>: every node has 0 or 2 children</p></li>
+            <li><p><strong>Complete Binary Tree</strong>: all levels are full except possibly the last and all nodes in the last level are as far left as possible</p></li>
+            <li><p><strong>Perfect Binary Tree</strong>: all internal nodes have two children and all leaves are at the same level</p></li>
+            <li><p><strong>Skewed Binary Tree</strong>: every node has only one child (left or right)</p></li>
+          </ul>
+          <p><em>Zybook 11.2.1, 11.2.5</em></p>
+        </section>
+
+        <section class="frame">
+          <h2>Binary Search Tree</h2>
+          <p>A binary search tree (BST) is a binary tree where</p>
+          <ul>
+            <li><p>The left subtree contains values smaller than the root</p></li>
+            <li><p>The right subtree contains values greater than the root</p></li>
+          </ul>
+          <p>Advantages</p>
+          <ul>
+            <li><p>Efficient searching and sorting</p></li>
+            <li><p>Average time complexity: O(log n)</p></li>
+            <li><p>If unbalanced, worse case can degrade to O(n)</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- BST Search -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>BST Search</h1>
+        </section>
+
+        <section class="frame">
+          <h2>BST Search Algorithm</h2>
+          <ul>
+            <li><p>If the key is smaller than the root's value, move left</p></li>
+            <li><p>If greater, move right</p></li>
+            <li><p>If equal, node found</p></li>
+            <li><p>If NULL, element not found</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">Node* search(Node* root, int key) {
+    if (root == NULL || root-&gt;data == key)
+        return root;
+    if (key &lt; root-&gt;data)
+        return search(root-&gt;left, key);
+    else
+        return search(root-&gt;right, key);
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>BST Search Example</h2>
+
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><table>
+                        <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">Node* search(Node* root, int key) {
+    if (root == NULL || root-&gt;data == key)
+        return root;
+    if (key &lt; root-&gt;data)
+        return search(root-&gt;left, key);
+    else
+        return search(root-&gt;right, key);
+}</code></pre>
+                <thead><tr><th>stack function call</th><th>return</th></tr></thead>
+                <tbody>
+                  <tr><td>search(37, 29)</td><td>29</td></tr>
+                  <tr><td>search(23, 29)</td><td>29</td></tr>
+                  <tr><td>search(29, 29)</td><td>29</td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 46%;min-width:0;">
+              <img
+            src = "../_static/images/tree/bst_search.png"
+            alt = "A binary search tree searching example"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >             </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- BST Insertion -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>BST Insertion</h1>
+        </section>
+
+        <section class="frame">
+          <h2>BST Insertion</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">Node* insert(Node* root, int key) {
+    if (root == NULL) {
+        return new Node(key);
+    }
+    if (key &lt; root-&gt;data){
+        root-&gt;left = insert(root-&gt;left, key);
+    }
+    else if (key &gt; root-&gt;data){
+        root-&gt;right = insert(root-&gt;right, key);
+    }
+    return root;
+}</code></pre>
+          <ul>
+            <li><p>New node is placed maintaining the BST property</p></li>
+            <li><p>Recursion helps move through the tree until correct position is found</p></li>
+            <li><p>Complexity: O(log n)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>BST Insertion Example</h2>
+          
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><table>
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">Node* insert(Node* root, int key) {
+    if (root == NULL) {
+        return new Node(key);
+    }
+    if (key &lt; root-&gt;data){
+        root-&gt;left = insert(root-&gt;left, key);
+    }
+    else if (key &gt; root-&gt;data){
+        root-&gt;right = insert(root-&gt;right, key);
+    }
+    return root;
+}</code></pre>
+                <thead><tr><th>function call stack</th><th>return</th></tr></thead>
+                <tbody>
+                  <tr><td>insert(37, 33) 37-&gt;left = insert(23, 33)</td><td>37</td></tr>
+                  <tr><td>insert(23, 33) 23-&gt;right = insert(29, 33)</td><td>23</td></tr>
+                  <tr><td>insert(29, 33) 29-&gt;right = insert(null, 33)</td><td>29</td></tr>
+                  <tr><td>insert(null, 33)</td><td>33</td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 46%;min-width:0;">
+             <img
+            src = "../_static/images/tree/bst_insert.png"
+            alt = "A exmaple tree insertion "
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          > 
+                    </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- BST Deletion -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>BST Deletion</h1>
+        </section>
+
+        <section class="frame">
+          <h2>BST Deletion</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">Node* deleteNode(Node* root, int key) {
+    if (root == NULL) return root;
+    if (key &lt; root-&gt;data)
+        root-&gt;left = deleteNode(root-&gt;left, key);
+    else if (key &gt; root-&gt;data)
+        root-&gt;right = deleteNode(root-&gt;right, key);
+    else {
+        if (!root-&gt;left) return root-&gt;right;
+        else if (!root-&gt;right) return root-&gt;left;
+        Node* temp = minValueNode(root-&gt;right);
+        root-&gt;data = temp-&gt;data;
+        root-&gt;right = deleteNode(root-&gt;right, temp-&gt;data);
+    }
+    return root;
+}</code></pre>
+          <ul>
+            <li><p>No child: delete node directly</p></li>
+            <li><p>One child: connect parent to child</p></li>
+            <li><p>Two children: replace node with its inorder successor (the leftmost child of this node's right subtree)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>BST Deletion Example — No Child (delete 29)</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            
+            <div style="flex:1;min-width:0;"><table>
+               <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp"> 1 Node* deleteNode(Node* root, int key) {
+ 2     if (root == NULL)
+ 3         return NULL;
+ 4     if (key &lt; root-&gt;data)
+ 5         root-&gt;left = deleteNode(root-&gt;left, key);
+ 6     else if (key &gt; root-&gt;data)
+ 7         root-&gt;right = deleteNode(root-&gt;right, key);
+ 8     else {
+ 9         if (root-&gt;left == NULL)
+10             return root-&gt;right;
+11         if (root-&gt;right == NULL)
+12             return root-&gt;left;
+13         Node* succ = minValueNode(root-&gt;right);
+14         root-&gt;data = succ-&gt;data;
+15         root-&gt;right = deleteNode(root-&gt;right, succ-&gt;data);
+16     }
+17     return root;
+18 }</code></pre>
+                <thead><tr><th>function call stack</th><th>return</th></tr></thead>
+                <tbody>
+                  <tr><td>delete(37, 29) 37-&gt;left = delete(23, 29)</td><td>37</td></tr>
+                  <tr><td>delete(23, 29) 23-&gt;right = delete(29, 29)</td><td>23</td></tr>
+                  <tr><td>delete insert(29, 29) return null</td><td>null</td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 46%;min-width:0;">
+             <img
+            src = "../_static/images/tree/bst_del_leaf.png"
+            alt = "A BST deletion example with no child"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >             </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>BST Deletion Example — One Child (delete 12)</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><table>
+                        <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp"> 1 Node* deleteNode(Node* root, int key) {
+ 2     if (root == NULL)
+ 3         return NULL;
+ 4     if (key &lt; root-&gt;data)
+ 5         root-&gt;left = deleteNode(root-&gt;left, key);
+ 6     else if (key &gt; root-&gt;data)
+ 7         root-&gt;right = deleteNode(root-&gt;right, key);
+ 8     else {
+ 9         if (root-&gt;left == NULL)
+10             return root-&gt;right;
+11         if (root-&gt;right == NULL)
+12             return root-&gt;left;
+13         Node* succ = minValueNode(root-&gt;right);
+14         root-&gt;data = succ-&gt;data;
+15         root-&gt;right = deleteNode(root-&gt;right, succ-&gt;data);
+16     }
+17     return root;
+18 }</code></pre>
+                <thead><tr><th>function call stack</th><th>return</th></tr></thead>
+                <tbody>
+                  <tr><td>delete(37, 12) 37-&gt;left = delete(23, 12)</td><td>37</td></tr>
+                  <tr><td>delete(23, 12) 23-&gt;left = delete(12, 12)</td><td>23</td></tr>
+                  <tr><td>delete(12, 12) return 12-&gt;left, 1</td><td>1</td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 46%;min-width:0;">
+              <img
+            src = "../_static/images/tree/bst_del_one.png"
+            alt = "A BST deletion example with one child"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >             </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>BST Deletion Example — Two Children (delete 23)</h2>
+          
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><table>
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp"> 1 Node* deleteNode(Node* root, int key) {
+ 2     if (root == NULL)
+ 3         return NULL;
+ 4     if (key &lt; root-&gt;data)
+ 5         root-&gt;left = deleteNode(root-&gt;left, key);
+ 6     else if (key &gt; root-&gt;data)
+ 7         root-&gt;right = deleteNode(root-&gt;right, key);
+ 8     else {
+ 9         if (root-&gt;left == NULL)
+10             return root-&gt;right;
+11         if (root-&gt;right == NULL)
+12             return root-&gt;left;
+13         Node* succ = minValueNode(root-&gt;right);
+14         root-&gt;data = succ-&gt;data;
+15         root-&gt;right = deleteNode(root-&gt;right, succ-&gt;data);
+16     }
+17     return root;
+18 }</code></pre>
+                <thead><tr><th>function call stack</th><th>return</th></tr></thead>
+                <tbody>
+                  <tr><td>delete(A, 23) A-&gt;left = delete(B, 23)</td><td>A</td></tr>
+                  <tr><td>delete(B, 23) succ=25 B-&gt;data=25 B-&gt;right=delete(E,25)</td><td>B</td></tr>
+                  <tr><td>delete(E, 25) E-&gt;left = delete(F, 25)</td><td>E</td></tr>
+                  <tr><td>delete(F, 25)</td><td>null</td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 46%;min-width:0;">
+              <img
+            src = "../_static/images/tree/bst_del_two.png"
+            alt = "A BST deletion example with two children"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >                 </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Tree Traversal -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Tree Traversal</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Tree Traversal Methods</h2>
+          <p>Traversal means visiting every node in a specific order</p>
+          <ul>
+            <li><p><strong>Inorder</strong> (left, root, right) — prints nodes in ascending order for BSTs</p></li>
+            <li><p><strong>Preorder</strong> (root, left, right) — useful for copying or exporting tree structure</p></li>
+            <li><p><strong>Postorder</strong> (left, right, root) — useful for deleting or freeing trees</p></li>
+            <li><p><strong>Level order</strong> (breadth-first) — uses a queue to traverse level by level</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Inorder Traversal Example</h2>
+          
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><table>
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">1 void inorder(Node* root) {
+2     if (root == NULL) return;
+3     inorder(root-&gt;left);
+4     visit(root);
+5     inorder(root-&gt;right);
+6 }</code></pre>
+                <thead><tr><th>call</th><th>action</th></tr></thead>
+                <tbody>
+                  <tr><td>Inorder(37)</td><td>go left</td></tr>
+                  <tr><td>&nbsp;&nbsp;Inorder(23)&rarr;Inorder(12)&rarr;Inorder(1)</td><td>visit(1) ①</td></tr>
+                  <tr><td>&nbsp;&nbsp;back to 12</td><td>visit(12) ②</td></tr>
+                  <tr><td>&nbsp;&nbsp;back to 23</td><td>visit(23) ③</td></tr>
+                  <tr><td>&nbsp;&nbsp;Inorder(29)</td><td>visit(29) ④</td></tr>
+                  <tr><td>back to 37</td><td>visit(37) ⑤</td></tr>
+                  <tr><td>&nbsp;&nbsp;Inorder(45)&rarr;visit(41)⑥,visit(45)⑦,visit(56)⑧</td><td></td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 46%;min-width:0;">
+             <img
+            src = "../_static/images/tree/traversal_inorder.png"
+            alt = "A inorder travesal example"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >         </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Preorder Traversal Example</h2>
+          
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><table>
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp"> 8 void preorder(Node* root) {
+ 9     if (root == NULL) return;
+10     visit(root);
+11     preorder(root-&gt;left);
+12     preorder(root-&gt;right);
+13 }</code></pre>
+                <thead><tr><th>call</th><th>action</th></tr></thead>
+                <tbody>
+                  <tr><td>preorder(37)</td><td>visit(37) ①</td></tr>
+                  <tr><td>&nbsp;&nbsp;preorder(23)</td><td>visit(23) ②</td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;preorder(12)</td><td>visit(12) ③</td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;preorder(1)</td><td>visit(1) ④</td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;preorder(29)</td><td>visit(29) ⑤</td></tr>
+                  <tr><td>&nbsp;&nbsp;preorder(45)</td><td>visit(41)⑥, visit(45)⑦, visit(56)⑧</td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 46%;min-width:0;">
+              <img
+            src = "../_static/images/tree/traversal_preorder.png"
+            alt = "A preorder travesal example"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Postorder Traversal Example</h2>
+        
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><table>
+               <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">15 void postorder(Node* root) {
+16     if (root == NULL) return;
+17     postorder(root-&gt;left);
+18     postorder(root-&gt;right);
+19     visit(root);
+20 }</code></pre>
+                <thead><tr><th>call</th><th>action</th></tr></thead>
+                <tbody>
+                  <tr><td>postorder(37)</td><td>go left</td></tr>
+                  <tr><td>&nbsp;&nbsp;postorder(12)&rarr;postorder(1)</td><td>visit(1) ①</td></tr>
+                  <tr><td>&nbsp;&nbsp;back to 12</td><td>visit(12) ②</td></tr>
+                  <tr><td>&nbsp;&nbsp;postorder(29)</td><td>visit(29) ③</td></tr>
+                  <tr><td>&nbsp;&nbsp;back to 23</td><td>visit(23) ④</td></tr>
+                  <tr><td>&nbsp;&nbsp;postorder(45)&rarr;visit(41)⑤,visit(56)⑥,visit(45)⑦</td><td></td></tr>
+                  <tr><td>back to 37</td><td>visit(37) ⑧ — last!</td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 46%;min-width:0;">
+             <img
+            src = "../_static/images/tree/traversal_postorder.png"
+            alt = "A postorder travesal example"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;"
+          >         </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Level Order Traversal</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><table>
+                        <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">22 void levelorder(Node* root) {
+23     queue&lt;Node*&gt; q;
+24     q.enqueue(root);
+25     while (!q.empty()) {
+26         Node* node = q.front(); q.dequeue();
+27         visit(node);
+28         if (node-&gt;left)  q.enqueue(node-&gt;left);
+29         if (node-&gt;right) q.enqueue(node-&gt;right);
+30     }
+31 }</code></pre>
+                <thead><tr><th>operation</th><th>queue</th><th>visited</th></tr></thead>
+                <tbody>
+                  <tr><td>enqueue(37)</td><td>37</td><td></td></tr>
+                  <tr><td>node=front()=37 dequeue(), visit()</td><td></td><td>37</td></tr>
+                  <tr><td>enqueue(23), enqueue(45)</td><td>23 45</td><td>37</td></tr>
+                  <tr><td>node=front()=23, dequeue(), visit()</td><td>45</td><td>37 23</td></tr>
+                  <tr><td>enqueue(12), enqueue(29)</td><td>45 12 29</td><td>37 23</td></tr>
+                  <tr><td>node=front()=45, dequeue(), visit()</td><td>12 29</td><td>37 23 45</td></tr>
+                  <tr><td>enqueue(41), enqueue(56)</td><td>12 29 41 56</td><td>37 23 45</td></tr>
+                  <tr><td>node=front()=12, dequeue(), visit(); enqueue(1)</td><td>29 41 56 1</td><td>37 23 45 12</td></tr>
+                  <tr><td>node=front()=29, dequeue(), visit()</td><td>41 56 1</td><td>37 23 45 12 29</td></tr>
+                  <tr><td>node=front()=41, dequeue(), visit()</td><td>56 1</td><td>37 23 45 12 29 41</td></tr>
+                  <tr><td>node=front()=56, dequeue(), visit()</td><td>1</td><td>37 23 45 12 29 41 56</td></tr>
+                  <tr><td>node=front()=1, dequeue(), visit()</td><td></td><td>37 23 45 12 29 41 56 1</td></tr>
+                </tbody>
+              </table></div>
+            <div style="flex:0 0 36%;min-width:0;">
+              <img
+            src = "../_static/images/tree/level_order.png"
+            alt = "A level order travesal example"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Height of a BST -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Height of a BST</h1>
+        </section>
+
+
+        <section class="frame">
+          <h2>Height of a BST</h2>
+          <p>Height is the number of edges on the longest path from root to a leaf</p>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-cpp">1 int height(Node* root) {{
+2     if (root == NULL)
+3         return -1;
+4     int left  = height(root-&gt;left);
+5     int right = height(root-&gt;right);
+6     return 1 + max(left, right);
+7 }}</code></pre>
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-text">height(37)                    &rarr; 1+max(l,r) = 3
+  L: height(23)               &rarr; 1+max(l,r) = 2
+    L: height(12)             &rarr; 1+max(l,r) = 1
+      L: height(1)            &rarr; 1+max(l,r) = 0
+        L: height(null)       &rarr; -1
+        R: height(null)       &rarr; -1
+      R: height(null)         &rarr; -1
+    R: height(29)             &rarr; 1+max(l,r) = 0
+      L: height(null)         &rarr; -1
+      R: height(null)         &rarr; -1
+  R: height(45)               &rarr; 1+max(l,r) = 1
+    L: height(41)             &rarr; 1+max(l,r) = 0
+      L: height(null)         &rarr; -1
+      R: height(null)         &rarr; -1
+    R: height(56)             &rarr; 1+max(l,r) = 0
+      L: height(null)         &rarr; -1
+      R: height(null)         &rarr; -1</code></pre></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img
+            src = "../_static/images/tree/height_bst.png"
+            alt = "A tree example with height"
+            style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">     </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Parent Pointer & Efficiency -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>BST Efficiency</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Parent Node Pointer</h2>
+          <ul>
+            <li><p>Useful for upward traversal (finding parent)</p></li>
+            <li><p>Helpful in finding successor or predecessor nodes</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">struct Node {
+    int   data;
+    Node* left;
+    Node* right;
+    Node* parent;
+    Node(int val) : data(val), left(NULL), right(NULL), parent(NULL) {}
+};</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>BST Efficiency and the Problem</h2>
+          <p>The efficiency of a Binary Search Tree (BST) depends on its height:</p>
+          <ul>
+            <li><p>Search, insertion, and deletion operations take O(h) time</p></li>
+            <li><p>For a balanced BST, height ≈ log&#8322;(n) &rarr; operations are O(log n)</p></li>
+            <li><p>For a skewed (unbalanced) tree, height ≈ n &rarr; operations degrade to O(n)</p></li>
+          </ul>
+          <p>Example &mdash; Insert: 1, 2, 3, 4, 5</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">1
+ \
+  2
+   \
+    3
+     \
+      4
+       \
+        5</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Solutions to Maintain Efficiency</h2>
+          <ul>
+            <li><p><strong>Solution 1: Randomized Insertion</strong></p>
+              <ul>
+                <li><p>Insert nodes in random order so the tree tends to stay roughly balanced</p></li>
+                <li><p>Works well statistically but not guaranteed for all cases</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Solution 2: Balancing Mechanisms</strong></p>
+              <ul>
+                <li><p>To guarantee logarithmic performance, use self-balancing trees</p></li>
+                <li><p>These trees automatically perform rotations to maintain balance after insertions or deletions</p></li>
+                <li><p>AVL tree, Red-black tree, B-tree — guarantee height ~ O(log n) always</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Solution 3: External Balancing</strong></p>
+              <ul>
+                <li><p>Periodically rebuilding the BST using a sorted array or list of values when it becomes too unbalanced</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Solution 4: Move recently accessed node toward the root</strong></p>
+              <ul>
+                <li><p>This idea leads to Splay Trees</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+      </section>
+<section>
+
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+          <ul>
+            <li><p><strong>BST Property</strong>: left &lt; root &lt; right, holds recursively at every node</p></li>
+            <li><p><strong>Operations</strong>: all run in O(h), O(log n) when balanced, O(n) when skewed</p>
+              <ul>
+                <li><p><strong>Search &amp; Insert</strong>: compare key, go left or right until found or NULL</p></li>
+                <li><p><strong>Delete: no child</strong>: remove directly</p></li>
+                <li><p><strong>Delete: one child</strong>: bypass node, connect parent to child</p></li>
+                <li><p><strong>Delete: two children</strong>: replace with inorder successor, delete successor</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Traversals</strong></p>
+              <ul>
+                <li><p><strong>Inorder</strong>: sorted output</p></li>
+                <li><p><strong>Preorder</strong>: copy / serialize</p></li>
+                <li><p><strong>Postorder</strong>: delete / free</p></li>
+                <li><p><strong>Level order</strong>: breadth-first, uses a queue</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Balancing</strong>: skewed tree degrades to O(n); fix with AVL, Red-Black, or B-tree</p></li>
+          </ul>
+        </section>
+      </section>
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
