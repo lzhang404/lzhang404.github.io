@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Heaps</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    table { border-collapse: collapse; width: 100%; font-size: 0.82em; margin: 0.4em 0; }
+    table th, table td { border: 1px solid #ccc; padding: 5px 10px; text-align: left; }
+    table th { background: #e8eaf6; font-weight: 600; }
+    table tr:nth-child(even) td { background: #f5f5f5; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- Title -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Heaps</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- Overview -->
+      <section>
+
+        <section class="frame">
+          <h2>Outline</h2>
+          <ul>
+            <li><p><strong>Heap concept</strong>: complete binary tree, heap property, max-heap vs min-heap</p></li>
+            <li><p><strong>Heap operations</strong>: insert and remove with percolation</p></li>
+            <li><p><strong>Array representation</strong>: why arrays work, parent and child index formulas</p></li>
+            <li><p><strong>Percolation algorithms</strong>: percolate-up and percolate-down code</p></li>
+            <li><p><strong>Heapify</strong>: building a heap from an unsorted array in O(n)</p></li>
+            <li><p><strong>Heapsort</strong>: O(n log n) in-place sorting with heaps</p></li>
+            <li><p><strong>Priority queue</strong>: mapping enqueue and dequeue onto heap operations</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Learning Goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li><p>Define the heap property and distinguish max-heap from min-heap</p></li>
+            <li><p>Trace insert and remove step by step and explain why each step is necessary</p></li>
+            <li><p>Map any heap tree to an array using parent and child index formulas</p></li>
+            <li><p>Read and explain the percolate-up and percolate-down algorithms</p></li>
+            <li><p>Trace heapify on an example and explain why it runs in O(n)</p></li>
+            <li><p>Trace heapsort and explain why the result is sorted</p></li>
+            <li><p>Explain how a heap implements a priority queue and which variant to use</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Heap Concept -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Heap Concept</h1>
+        </section>
+
+        <section class="frame">
+          <h2>What Is a Heap?</h2>
+          <p>A heap is a tree-based data structure optimized for fast access to the maximum or minimum element</p>
+          <ul>
+            <li><p><strong>Not fully sorted</strong>: only the root is guaranteed to be the max (or min)</p></li>
+            <li><p><strong>Weaker than a sorted structure</strong>: but much cheaper to maintain</p></li>
+            <li><p><strong>Applications</strong>: scheduling, simulation, priority management, heapsort</p></li>
+            <li><p>A heap is always a <strong>complete binary tree</strong> with one additional ordering rule</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Complete Binary Tree</h2>
+          <p>A heap must be a <strong>complete binary tree</strong>: this shape gives heaps their O(log N) guarantee</p>
+          <ul>
+            <li><p>Every level except possibly the last is fully filled</p></li>
+            <li><p>The last level fills from <strong>left to right</strong>, with no gaps</p></li>
+            <li><p>A complete binary tree with N nodes always has height ⌊log₂ N⌋</p></li>
+            <li><p>This bounded height means percolation never takes more than O(log N) steps</p></li>
+            <li><p>The no-gap property allows the entire tree to be stored in a flat array</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>The Heap Property</h2>
+          <p>The heap property is a local ordering rule between each node and its children</p>
+          <ul>
+            <li><p><strong>Max-heap property</strong>: every node's key &ge; its children's keys</p></li>
+            <li><p><strong>Min-heap property</strong>: every node's key &le; its children's keys</p></li>
+            <li><p>The property must hold at <em>every</em> node, not just the root</p></li>
+            <li><p>It does <em>not</em> impose any ordering between nodes in different subtrees</p></li>
+            <li><p>As a result, the max (or min) is always at the root, accessible in O(1)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Max-Heap</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Each node's key &ge; both children's keys</p></li>
+              <li><p>The root always holds the <strong>maximum</strong> key</p></li>
+              <li><p>The ordering holds along any root-to-leaf path</p></li>
+              <li><p>No guarantee between nodes in different subtrees</p></li>
+              <li><p>Used when the largest item has the highest priority</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/maxheap_example.png"
+                   alt="Max-heap example: 88 at root, children 80 and 55"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Min-Heap</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Each node's key &le; both children's keys</p></li>
+              <li><p>The root always holds the <strong>minimum</strong> key</p></li>
+              <li><p>Mirror image of a max-heap: only the comparison direction changes</p></li>
+              <li><p>Used when the smallest item has the highest priority</p></li>
+              <li><p><strong>Example</strong>: tech support queue: ticket 1 is served before ticket 10; dequeue removes the minimum in O(log N)</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/minheap_example.png"
+                   alt="Min-heap example: 33 at root"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Heap Operations -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Heap Operations</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Insert Overview</h2>
+          <p>Two invariants must hold at all times: complete binary tree shape and heap property</p>
+          <ul>
+            <li><p><strong>Step 1: preserve shape</strong></p></li>
+            <ul>
+              <li>add new node at the next available position on the bottom level, left to right</li>
+            </ul>
+            <li><p><strong>Step 2: restore heap property</strong>:</p></li>
+            <ul>
+              <li>new node may be larger than its parent, so <strong>percolate up</strong></p></li>
+            </ul> 
+            <li><strong>Percolate up</strong>: repeatedly swap the node with its parent while it is larger than its parent</li>
+            <li><p>Stop when node &le; its parent, or when it reaches the root</p></li>
+            <li><p>Cost: O(log N): at most one swap per level of the tree</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Insert Example: Initial Heap</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Current heap: <code>[88, 80, 55, 33]</code></p></li>
+              <li><p>88 is at the root, the current maximum</p></li>
+              <li><p>Heap property holds at every node</p></li>
+              <li><p>Goal: insert the value <strong>90</strong></p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/insert_01_initial.png"
+                   alt="Initial max-heap [88, 80, 55, 33]"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Insert Example: Add at Last Position</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Place 90 at index 4 (right child of 80): shape preserved</p></li>
+              <li><p>Current heap: <code>[88, 80, 55, 33, 90]</code></p></li>
+              <li><p>Problem: 90 &gt; 80 (parent at index 1): heap property violated</p></li>
+              <li><p>Begin percolating 90 upward</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/insert_02_added.png"
+                   alt="90 added at last position, highlighted in orange"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Insert Example: Swap 90 and 80</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>90 &gt; 80 (parent): swap: 90 moves to index 1, 80 to index 4</p></li>
+              <ul>
+                <li>Swap: 90 moves to index 1, 80 to index 4</li>
+                <li>Current heap: <code>[88, 90, 55, 33, 1]</code></li>
+              </ul>
+              <li><p>Check again: 90 &gt; 88 (new parent at index 0)</p></li>
+              <li><p>Heap property still violated: continue percolating up</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/insert_03_swap1.png"
+                   alt="90 swapped with 80, now at index 1"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Insert Example: Swap 90 and 88 (Done)</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>90 &gt; 88 (parent):</p></li>
+              <ul>
+                <li>Swap: 90 moves to root (index 0)</li>
+                <li>Current heap: <code>[90, 88, 55, 33, 1]</code></li>
+              </ul>
+              <li><p>90 is now at the root: no parent to compare with, stop</p></li>
+              <li><p>Heap property holds at every node. Insert complete.</p></li>
+              <li><p>Total: 2 swaps for a 5-node heap (height = 2)</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/insert_04_done.png"
+                   alt="90 now at root: insert complete"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Remove Overview</h2>
+          <p>Remove always targets the root (the maximum). The root cannot simply be deleted.</p>
+          <ul>
+            <li><p><strong>Why not delete the root directly?</strong>: the tree would split into two disconnected subtrees</p></li>
+            <li><p><strong>Step 1: preserve shape</strong>: copy the last node's value to the root, then delete the last node</p></li>
+            <li><p><strong>Step 2: restore heap property</strong>: new root value is likely too small, so <strong>percolate down</strong></p></li>
+            <li><p><strong>Percolate down</strong>: repeatedly swap with the <em>larger</em> child until node &ge; both children</p></li>
+            <li><p>Cost: O(log N): at most one swap per level</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Remove Example: Initial Heap</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Current heap: <code>[90, 88, 55, 33, 80]</code></p></li>
+              <li><p>90 is at the root: the value to be removed and returned</p></li>
+              <li><p>Last node is 80 at index 4</p></li>
+              <li><p>Plan: copy 80 to root, delete index 4, then sift down</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/remove_01_initial.png"
+                   alt="Max-heap [90, 88, 55, 33, 80] before removal"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Remove Example: Copy Last Node to Root</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>80 is copied to root; index 4 is deleted: shape preserved</p></li>
+              <li>Current heap: <code>[80, 88, 55, 33]</code></li>
+              <li><p>Problem: 80 &lt; 88 (left child): heap property violated at root</p></li>
+              <li><p>Begin percolating 80 downward</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/remove_02_replaced.png"
+                   alt="80 placed at root after removing 90"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Remove Example: Percolate Down (Done)</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Children of root:</p></li>
+              <ul><li> 88 (left) and 55 (right): larger child is 88</li></ul>
+              <li><p>80 &lt; 88: swap: 88 moves to root, 80 moves to index 1</p></li>
+              <ul><li> swap: 88 moves to root, 80 moves to index 1</li>
+              <li>Current heap: <code>[88, 80, 55, 33]</code></li></ul>
+              <li><p>80's only child is 33:</p></li>
+              <ul><li>80 &gt; 33, heap property holds. Stop.</li></ul>
+              <li><p>Heap restored. 88 is the new maximum at the root.</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/remove_03_done.png"
+                   alt="Heap restored: [88, 80, 55, 33]"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Array Representation -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Array Representation</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Why Use an Array?</h2>
+          <p>Heaps are stored in flat arrays, not with pointer-based node structs</p>
+          <ul>
+            <li><p><strong>No gaps</strong>: a complete binary tree fills each level left to right, so no index is wasted</p></li>
+            <li><p><strong>No pointer overhead</strong>: no <code>left</code>, <code>right</code>, or <code>parent</code> fields needed</p></li>
+            <li><p><strong>Level-order mapping</strong>: number nodes top to bottom, left to right, starting at index 0</p></li>
+            <li><p><strong>Navigation by arithmetic</strong>: parent and child indices computed from formulas alone</p></li>
+            <li><p>Better cache performance than pointer-based trees</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Level-Order Indexing</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Root is at index <strong>0</strong></p></li>
+              <li><p>Left child of node <em>i</em>: index <strong>2i + 1</strong></p></li>
+              <li><p>Right child of node <em>i</em>: index <strong>2i + 2</strong></p></li>
+              <li><p>Parent of node <em>i</em>: index <strong>&lfloor;(i &minus; 1) / 2&rfloor;</strong></p></li>
+              <li><p>Leaf nodes occupy indices &lfloor;N/2&rfloor; through N &minus; 1</p></li>
+            </ul></div>
+            <div style="flex:0 0 48%;min-width:0;">
+              <img src="../_static/images/heap/heap_array.png"
+                   alt="Heap [72,58,63,55,16,44] with array indices"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Parent and Child Index Reference</h2>
+          <table>
+            <thead>
+              <tr><th>Node index</th><th>Parent index</th><th>Child indices</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0 (root)</td><td>N/A</td><td>1, 2</td></tr>
+              <tr><td>1</td><td>0</td><td>3, 4</td></tr>
+              <tr><td>2</td><td>0</td><td>5, 6</td></tr>
+              <tr><td>3</td><td>1</td><td>7, 8</td></tr>
+              <tr><td><em>i</em></td><td>&lfloor;(<em>i</em> &minus; 1) / 2&rfloor;</td><td>2<em>i</em> + 1 &nbsp;and&nbsp; 2<em>i</em> + 2</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>These formulas replace all pointer navigation: no <code>node-&gt;left</code> or <code>node-&gt;right</code></p></li>
+            <li><p>Leaf nodes have no children: their child indices would be &ge; N</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Percolation Algorithms -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Percolation Algorithms</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Percolate Up (Max-Heap)</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;">
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">// nodeIndex = index of newly inserted node
+while (nodeIndex > 0) {
+  int p = (nodeIndex - 1) / 2;
+  if (arr[nodeIndex] <= arr[p])
+    break;    // heap property holds
+  swap(arr[nodeIndex], arr[p]);
+  nodeIndex = p;  // move up one level
+}</code></pre>
+              <ul>
+                <li><p><code>nodeIndex &gt; 0</code>: stop when we reach the root</p></li>
+                <li><p><code>&lt;=</code> condition: stop as soon as node &le; parent</p></li>
+                <li><p><code>nodeIndex = p</code>: follow node upward after each swap</p></li>
+                <li><p>At most O(log N) swaps: one per level</p></li>
+              </ul>
+            </div>
+            <div style="flex:0 0 40%;min-width:0;">
+              <img src="../_static/images/heap/insert_04_done.png"
+                   alt="Result after inserting 90 and percolating up"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Percolate Down (Max-Heap)</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;">
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">void siftDown(int arr[], int n, int i) {
+  while (true) {
+    int l = 2*i+1, r = 2*i+2;
+    int largest = i;
+    if (l < n && arr[l] > arr[largest]) largest = l;
+    if (r < n && arr[r] > arr[largest]) largest = r;
+    if (largest == i) break; // heap property holds
+    swap(arr[i], arr[largest]);
+    i = largest;             // follow node down
+  }
+}</code></pre>
+              <ul>
+                <li><p><code>largest = i</code>: assume current node is in the right place</p></li>
+                <li><p>Check both children; track the larger one in <code>largest</code></p></li>
+                <li><p><code>if (largest == i) break</code>: no child is larger, done</p></li>
+                <li><p><code>i = largest</code>: follow the displaced node downward</p></li>
+              </ul>
+            </div>
+            <div style="flex:0 0 40%;min-width:0;">
+              <img src="../_static/images/heap/remove_03_done.png"
+                   alt="Result after removing 90 and percolating down"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Heapify -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Heapify</h1>
+        </section>
+
+        <section class="frame">
+          <h2>What Is Heapify?</h2>
+          <p>Heapify converts an unsorted array into a valid max-heap in-place</p>
+          <ul>
+            <li><p><strong>Naive approach</strong>: call insert N times: O(N log N) total</p></li>
+            <li><p><strong>Heapify approach</strong>: apply sift-down to every internal node, bottom-up: O(N) total</p></li>
+            <li><p>Leaf nodes (indices &lfloor;N/2&rfloor; through N &minus; 1) are already valid one-node heaps: skip them</p></li>
+            <li><p>Start at the last internal node (index &lfloor;N/2&rfloor; &minus; 1) and work back to the root</p></li>
+            <li><p>After each sift-down call, the subtree rooted at that node becomes a valid heap</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Heapify Example: Input Array</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Input: <code>[77, 55, 92, 67, 98, 24, 42]</code>, N = 7</p></li>
+              <li><p>Last internal node: &lfloor;7/2&rfloor; &minus; 1 = <strong>index 2</strong> (node 92)</p></li>
+              <li><p><strong>i = 2</strong>: children are 24 and 42: both smaller, no swap</p></li>
+              <li><p>Move to i = 1</p></li>
+            </ul></div>
+            <div style="flex:0 0 46%;min-width:0;">
+              <img src="../_static/images/heap/heapify_01_input.png"
+                   alt="Input [77,55,92,67,98,24,42] as a tree"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Heapify Example: Process i = 1</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p><strong>i = 1</strong> (node 55): children are 67 (index 3) and 98 (index 4)</p></li>
+              <li><p>Largest child is 98: 98 &gt; 55, swap 55 and 98</p></li>
+              <li><p>55 moves to index 4: it is a leaf, sift-down stops</p></li>
+              <li><p>Subtree at index 1 is now a valid heap</p></li>
+              <li><p>Move to i = 0</p></li>
+            </ul></div>
+            <div style="flex:0 0 46%;min-width:0;">
+              <img src="../_static/images/heap/heapify_02_step1.png"
+                   alt="After i=1: 98 and 55 swapped"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Heapify Example: Process i = 0</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p><strong>i = 0</strong> (node 77): children are 98 (index 1) and 92 (index 2)</p></li>
+              <li><p>Largest child is 98: 98 &gt; 77, swap 77 and 98</p></li>
+              <li><p>77 sinks to index 1; children of index 1 are 67 and 55: both smaller, stop</p></li>
+              <li><p>Final: <code>[98, 77, 92, 67, 55, 24, 42]</code>: valid max-heap</p></li>
+            </ul></div>
+            <div style="flex:0 0 46%;min-width:0;">
+              <img src="../_static/images/heap/heapify_03_done.png"
+                   alt="Final heap [98,77,92,67,55,24,42]"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Heapify Code and Complexity</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">void heapify(int arr[], int n) {
+    for (int i = n / 2 - 1; i >= 0; --i)
+        siftDown(arr, n, i);   // every internal node, bottom-up
+}</code></pre>
+          <ul>
+            <li><p>Complexity is <strong>O(N)</strong>, not O(N log N)</p></li>
+            <li><p>~N/2 leaf nodes do zero work</p></li>
+            <li><p>~N/4 nodes one level up do at most 1 swap each</p></li>
+            <li><p>~N/8 nodes two levels up do at most 2 swaps each</p></li>
+            <li><p>Total sums to a convergent geometric series: O(N)</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Heapsort -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Heapsort</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Heapsort Overview</h2>
+          <p>Heapsort uses the heap to sort an array in-place</p>
+          <ul>
+            <li><p><strong>Phase 1</strong>: heapify the array: largest element rises to root. Cost: O(N)</p></li>
+            <li><p><strong>Phase 2</strong>: repeat N &minus; 1 times: swap root (current max) with last active element, shrink heap by one, sift new root down. Cost: O(N log N)</p></li>
+            <li><p>Each swap permanently places one element in its final sorted position at the back</p></li>
+            <li><p><strong>Total</strong>: O(N log N), in-place, O(1) extra space, not stable</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Heapsort: Phase 1: Heapify</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>Input: <code>[4, 10, 3, 5, 1, 2]</code></p></li>
+              <li><p>Apply heapify: 10 rises to the root</p></li>
+              <li><p>Result: <code>[10, 5, 3, 4, 1, 2]</code></p></li>
+              <li><p>Ready to begin extractions</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/heapsort_02_heapified.png"
+                   alt="After heapify: [10,5,3,4,1,2]"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Heapsort: First Extraction</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>swap(arr[0], arr[5]): 10 goes to its final position (gray); heap size = 5</p></li>
+              <li><p>Sift 2 down: 2 &lt; 5, swap; 2 &lt; 4, swap</p></li>
+              <li><p>Active heap: <code>[5, 4, 3, 2, 1]</code></p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/heapsort_03_extract1.png"
+                   alt="After first extraction: 10 sorted, heap [5,4,3,2,1]"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Heapsort: Second Extraction</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>swap(arr[0], arr[4]): 5 goes to its final position; heap size = 4</p></li>
+              <li><p>Sift 1 down: 1 &lt; 4, swap</p></li>
+              <li><p>Active heap: <code>[4, 2, 3, 1]</code></p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/heapsort_04_extract2.png"
+                   alt="After second extraction: 5 and 10 sorted"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Heapsort: Third Extraction</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>swap(arr[0], arr[3]): 4 goes to its final position; heap size = 3</p></li>
+              <li><p>Sift 1 down: 1 &lt; 3, swap; children of index 2 are out of heap, stop</p></li>
+              <li><p>Active heap: <code>[3, 2, 1]</code></p></li>
+              <li><p>Continue: extract 3, extract 2, one element left: done</p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/heapsort_05_extract3.png"
+                   alt="After third extraction: 4, 5, 10 sorted"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Heapsort: Sorted Result</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;"><ul>
+              <li><p>All nodes are in sorted position: no active heap remains</p></li>
+              <li><p>Sorted in-place: no extra array needed</p></li>
+              <li><p>Final result: <code>[1, 2, 3, 4, 5, 10]</code></p></li>
+            </ul></div>
+            <div style="flex:0 0 44%;min-width:0;">
+              <img src="../_static/images/heap/heapsort_06_sorted.png"
+                   alt="Fully sorted [1,2,3,4,5,10]"
+                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Heapsort Implementation</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">void heapSort(int arr[], int n) {
+    // Phase 1: build max-heap in O(N)
+    for (int i = n / 2 - 1; i >= 0; --i)
+        siftDown(arr, n, i);
+
+    // Phase 2: extract elements one by one
+    for (int end = n - 1; end > 0; --end) {
+        swap(arr[0], arr[end]);   // max to its final position
+        siftDown(arr, end, 0);    // heap is now [0..end-1]
+    }
+}</code></pre>
+          <ul>
+            <li><p><code>siftDown(arr, end, 0)</code> passes <code>end</code> as heap size: sorted region at the back is never touched</p></li>
+            <li><p>Worst-case O(N log N): no degenerate cases like quicksort</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Priority Queue -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Priority Queue</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Priority Queue Concept</h2>
+          <p>A priority queue serves items by priority, not by insertion order</p>
+          <ul>
+            <li><p><strong>Enqueue</strong>: add an item with an associated priority value</p></li>
+            <li><p><strong>Dequeue</strong>: remove and return the item with the highest priority</p></li>
+            <li><p>Unlike a regular queue (FIFO), arrival order does not determine service order</p></li>
+            <li><p><strong>Example</strong>: hospital ER serves patients by medical urgency, not arrival time</p></li>
+            <li><p><strong>Example</strong>: OS scheduler always runs the highest-priority process next</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Priority Queue Operations</h2>
+          <table>
+            <thead>
+              <tr><th>Operation</th><th>Description</th><th>Example queue [42, 61, 98]</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Enqueue</td><td>Insert by priority</td><td>Enqueue(87) &rarr; [42, 61, 87, 98]</td></tr>
+              <tr><td>Dequeue</td><td>Remove and return highest priority</td><td>Dequeue() &rarr; returns 42</td></tr>
+              <tr><td>Peek</td><td>Read highest priority without removing</td><td>Peek() &rarr; returns 42</td></tr>
+              <tr><td>IsEmpty</td><td>True if no items remain</td><td>Returns false</td></tr>
+              <tr><td>GetLength</td><td>Number of items</td><td>Returns 3</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Heap as Priority Queue</h2>
+          <p>A heap maps directly onto priority queue operations</p>
+          <table>
+            <thead>
+              <tr><th>Operation</th><th>Heap function</th><th>Time</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Enqueue</td><td>Insert + percolate up</td><td>O(log N)</td></tr>
+              <tr><td>Dequeue</td><td>Remove root + percolate down</td><td>O(log N)</td></tr>
+              <tr><td>Peek</td><td>Read <code>arr[0]</code></td><td>O(1)</td></tr>
+              <tr><td>IsEmpty</td><td>Check heap size == 0</td><td>O(1)</td></tr>
+              <tr><td>GetLength</td><td>Return heap size</td><td>O(1)</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Max-Heap vs Min-Heap for Priority Queues</h2>
+          <p>The choice depends on what "highest priority" means in your application</p>
+          <ul>
+            <li><p><strong>Use a max-heap</strong>: when larger values mean higher priority
+              <ul>
+                <li><p>Job scheduler where higher urgency score runs first</p></li>
+              </ul>
+            </p></li>
+            <li><p><strong>Use a min-heap</strong>: when smaller values mean higher priority
+              <ul>
+                <li><p>Dijkstra's algorithm always expands the node with the smallest known distance</p></li>
+                <li><p>Tech support queue where lower ticket number is served first</p></li>
+              </ul>
+            </p></li>
+            <li><p>The data structure is identical: only the comparison direction changes</p></li>
+            <li><p>All runtimes remain O(log N) for enqueue and dequeue regardless of choice</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Summary -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+          <ul>
+            <li><p><strong>Heap</strong>: complete binary tree where each node &ge; (max-heap) or &le; (min-heap) its children; root holds max or min in O(1)</p></li>
+            <li><p><strong>Insert / Remove</strong>: both O(log N), using percolation to restore heap property
+              <ul>
+                <li><p><strong>Insert</strong>: add at last position, percolate up</p></li>
+                <li><p><strong>Remove</strong>: copy last node to root, percolate down</p></li>
+              </ul>
+            </p></li>
+            <li><p><strong>Array storage</strong>: parent at &lfloor;(i &minus; 1)/2&rfloor;; children at 2i + 1 and 2i + 2</p></li>
+            <li><p><strong>Heapify</strong>: builds valid heap from any array in O(N), bottom-up sift-down</p></li>
+            <li><p><strong>Heapsort</strong>: heapify + N &minus; 1 root extractions = O(N log N), in-place, not stable</p></li>
+            <li><p><strong>Priority queue</strong>: enqueue = insert, dequeue = remove; use max- or min-heap based on priority convention</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
