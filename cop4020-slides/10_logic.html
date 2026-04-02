@@ -17,6 +17,7 @@
     <div class="reveal">
       <div class="slides" role="main">
 
+        <!-- ==================== TITLE ==================== -->
         <section>
           <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
             <h1>Logic Programming &amp; Declarative Paradigms</h1>
@@ -27,6 +28,7 @@
           </section>
         </section>
 
+        <!-- ==================== SECTION 1: OVERVIEW ==================== -->
         <section>
           <section id="overview" class="title-slide slide level1">
             <h1>Overview</h1>
@@ -90,6 +92,7 @@
           </section>
         </section>
 
+        <!-- ==================== SECTION 2: DECLARATIVE FOUNDATIONS ==================== -->
         <section>
           <section id="declarative-foundations" class="title-slide slide level1">
             <h1>Declarative foundations</h1>
@@ -247,9 +250,10 @@
           </section>
         </section>
 
+        <!-- ==================== SECTION 3: PROLOG BASICS ==================== -->
         <section>
-          <section id="prolog-basics-and-unification" class="title-slide slide level1">
-            <h1>Prolog basics and unification</h1>
+          <section id="prolog-basics" class="title-slide slide level1">
+            <h1>Prolog basics</h1>
           </section>
 
           <section id="horn-clauses-why-prolog-works" class="frame">
@@ -282,14 +286,15 @@
               <li><p>A query starts with <code>?-</code></p></li>
             </ul>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
-parent(alice, bob).
-parent(bob, carol).
+parent(alice, bob).       % fact: alice is a parent of bob
+parent(bob, carol).       % fact: bob is a parent of carol
 
+% rule: X is a grandparent of Z if X is a parent of Y and Y is a parent of Z
 grandparent(X, Z) :-
   parent(X, Y),
   parent(Y, Z).
 
-?- grandparent(alice, Who).</code></pre>
+?- grandparent(alice, Who).   % query: who are alice's grandchildren?</code></pre>
           </section>
 
           <section id="example-knowledge-base-family" class="frame">
@@ -308,9 +313,9 @@ male(eric).
 female(carol).
 
 % rules
-grandparent(X, Z) :- parent(X, Y), parent(Y, Z).
-mother(X, Y)      :- parent(X, Y), female(X).
-father(X, Y)      :- parent(X, Y), male(X).</code></pre>
+grandparent(X, Z) :- parent(X, Y), parent(Y, Z).  % X is grandparent of Z if X→Y→Z
+mother(X, Y)      :- parent(X, Y), female(X).      % X is mother of Y if X is a parent and female
+father(X, Y)      :- parent(X, Y), male(X).        % X is father of Y if X is a parent and male</code></pre>
             <p>Reading:</p>
             <ul>
               <li><p><code>mother(X,Y)</code> is true if <code>X</code> is a parent of <code>Y</code> and <code>X</code> is female</p></li>
@@ -348,6 +353,13 @@ father(X, Y)      :- parent(X, Y), male(X).</code></pre>
               <li><p><code>?- parent(alice, Y).</code> asks for Alice's children</p></li>
               <li><p><code>?- parent(X, bob).</code> asks for Bob's parents</p></li>
             </ul>
+          </section>
+        </section>
+
+        <!-- ==================== SECTION 4: UNIFICATION ==================== -->
+        <section>
+          <section id="unification" class="title-slide slide level1">
+            <h1>Unification</h1>
           </section>
 
           <section id="unification-the-matching-engine" class="frame">
@@ -435,6 +447,7 @@ father(X, Y)      :- parent(X, Y), male(X).</code></pre>
           </section>
         </section>
 
+        <!-- ==================== SECTION 5: EXECUTION MODEL AND SEARCH ==================== -->
         <section>
           <section id="execution-model-and-search" class="title-slide slide level1">
             <h1>Execution model and search</h1>
@@ -483,31 +496,39 @@ grandparent(X, Z) :- parent(X, Y), parent(Y, Z).</code></pre>
             <p>This is why one query can produce multiple answers.</p>
           </section>
 
-          <section id="practice-4-predict-a-trace-outcome" class="frame">
-            <h2>Practice 4: predict a trace outcome</h2>
-            <p>Consider:</p>
+          <section id="practice-3-backtracking" class="frame">
+            <h2>Practice 3: reasoning about backtracking</h2>
+            <p><strong>Part A</strong> — trace the search:</p>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
 p(a).
 p(b).
 q(b).
 r(X) :- p(X), q(X).</code></pre>
-            <p>Questions:</p>
             <ul>
-              <li><p>What does <code>?- r(X).</code> return?</p></li>
-              <li><p>In what order are candidates tried?</p></li>
+              <li><p>What does <code>?- r(X).</code> return, and in what order are candidates tried?</p></li>
+            </ul>
+            <p><strong>Part B</strong> — count the answers:</p>
+            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
+color(red).  color(green).  color(blue).
+pair(X, Y) :- color(X), color(Y), X \= Y.</code></pre>
+            <ul>
+              <li><p>How many answers does <code>?- pair(X, Y).</code> generate, and what is the first?</p></li>
             </ul>
           </section>
 
-          <section id="practice-4-answer-predict-a-trace-outcome" class="frame">
-            <h2>Practice 4 Answer: predict a trace outcome</h2>
-            <p>Evaluate <code>r(X) :- p(X), q(X).</code></p>
+          <section id="practice-3-answer-backtracking" class="frame">
+            <h2>Practice 3 Answer: reasoning about backtracking</h2>
+            <p><strong>Part A:</strong></p>
             <ul>
-              <li><p>Try <code>p(X)</code> first: <code>X = a</code></p></li>
-              <li><p>Then <code>q(a)</code> fails</p></li>
-              <li><p>Backtrack to <code>p(X)</code>: next fact gives <code>X = b</code></p></li>
-              <li><p><code>q(b)</code> succeeds</p></li>
+              <li><p>Try <code>p(X)</code>: <code>X = a</code> → then <code>q(a)</code> fails → backtrack</p></li>
+              <li><p>Try <code>p(X)</code> again: <code>X = b</code> → then <code>q(b)</code> succeeds</p></li>
+              <li><p>Result: one answer, <code>X = b</code></p></li>
             </ul>
-            <p>Result: one answer <code>X = b</code>.</p>
+            <p><strong>Part B:</strong></p>
+            <ul>
+              <li><p>Total ordered pairs: <span class="math inline">\(3 \times 3 = 9\)</span>; remove 3 equal pairs: <span class="math inline">\(6\)</span> answers</p></li>
+              <li><p>First answer: <code>X = red</code>, <code>Y = green</code> (red/red is rejected, next is red/green)</p></li>
+            </ul>
           </section>
 
           <section id="depth-first-search-the-good-and-the-risky" class="frame">
@@ -528,52 +549,12 @@ r(X) :- p(X), q(X).</code></pre>
               <li><p>Clause order and recursion structure matter for termination</p></li>
             </ul>
           </section>
+        </section>
 
-          <section id="backtracking-diagram-conceptual" class="frame">
-            <h2>Backtracking diagram (conceptual)</h2>
-            <p>For the query <code>?- r(X).</code> with <code>p(a). p(b). q(b). r(X) :- p(X), q(X).</code></p>
-            <table style="width:100%; border-collapse:collapse; font-family:monospace; font-size:0.85em;">
-              <thead>
-                <tr style="background:#f0f0f0;">
-                  <th style="padding:6px 10px; border:1px solid #ccc; text-align:left;">Goal</th>
-                  <th style="padding:6px 10px; border:1px solid #ccc; text-align:left;">Clause tried</th>
-                  <th style="padding:6px 10px; border:1px solid #ccc; text-align:left;">Binding</th>
-                  <th style="padding:6px 10px; border:1px solid #ccc; text-align:left;">Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>r(X)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>r(X):-p(X),q(X)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;">—</td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;">expand to <code>p(X), q(X)</code></td>
-                </tr>
-                <tr style="background:#fff8e1;">
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>p(X)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>p(a)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>X = a</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;">try <code>q(a)</code> next</td>
-                </tr>
-                <tr style="background:#fff8e1;">
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>q(a)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;">no match</td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;">—</td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><strong>FAIL → backtrack</strong></td>
-                </tr>
-                <tr style="background:#e8f5e9;">
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>p(X)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>p(b)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>X = b</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;">try <code>q(b)</code> next</td>
-                </tr>
-                <tr style="background:#e8f5e9;">
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>q(b)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><code>q(b)</code></td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;">—</td>
-                  <td style="padding:6px 10px; border:1px solid #ccc;"><strong>SUCCESS: X = b</strong></td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- ==================== SECTION 6: NEGATION AND CONTROL ==================== -->
+        <section>
+          <section id="negation-and-control" class="title-slide slide level1">
+            <h1>Negation and control</h1>
           </section>
 
           <section id="negation-as-failure" class="frame">
@@ -585,11 +566,14 @@ r(X) :- p(X), q(X).</code></pre>
             </ul>
             <p>Example:</p>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
-bird(tweety).
-penguin(pingu).
+%fact
+bird(tweety).            
+penguin(pingu).          
 
-bird(X) :- penguin(X).
+% rule: every penguin is also a bird
+bird(X) :- penguin(X).  
 
+% X can fly if X is a bird AND X is not provably a penguin
 can_fly(X) :- bird(X), \+ penguin(X).</code></pre>
             <p>Caution:</p>
             <ul>
@@ -633,8 +617,8 @@ not_bird(X) :- \+ bird(X).</code></pre>
             </ul>
           </section>
 
-          <section id="practice-5-goal-ordering-for-safety" class="frame">
-            <h2>Practice 5: goal ordering for safety</h2>
+          <section id="practice-4-goal-ordering-for-safety" class="frame">
+            <h2>Practice 4: goal ordering for safety</h2>
             <p>Suppose:</p>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
 bird(tweety).
@@ -649,8 +633,8 @@ bird(X) :- penguin(X).</code></pre>
             <p>Explain in terms of variable binding and search.</p>
           </section>
 
-          <section id="practice-5-answer-goal-ordering-for-safety" class="frame">
-            <h2>Practice 5 Answer: goal ordering for safety</h2>
+          <section id="practice-4-answer-goal-ordering-for-safety" class="frame">
+            <h2>Practice 4 Answer: goal ordering for safety</h2>
             <p>Safer is B:</p>
             <ul>
               <li><p><code>bird(X)</code> binds <code>X</code> to known candidates first</p></li>
@@ -663,33 +647,60 @@ bird(X) :- penguin(X).</code></pre>
             </ul>
           </section>
 
-          <section id="practice-6-backtracking-with-multiple-answers" class="frame">
-            <h2>Practice 6: backtracking with multiple answers</h2>
-            <p>Consider:</p>
-            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
-color(red).
-color(green).
-color(blue).
-
-pair(X, Y) :- color(X), color(Y), X \= Y.</code></pre>
-            <p>Questions:</p>
+          <section id="the-cut-control-feature" class="frame">
+            <h2>The cut (!) (control feature)</h2>
+            <p>The cut <code>!</code> is a special goal that, when reached, <strong>commits to the choices made so far</strong>:</p>
             <ul>
-              <li><p>How many answers does <code>?- pair(X, Y).</code> generate?</p></li>
-              <li><p>What is the first answer given top-to-bottom, left-to-right search?</p></li>
+              <li><p>It prunes all remaining choice points created since the current predicate was called</p></li>
+              <li><p>Once past the cut, Prolog cannot backtrack into the current clause</p></li>
+            </ul>
+            <p>Example: deterministic max</p>
+            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
+% X is the max if X >= Y  — cut commits, so clause 2 is never tried
+max(X, Y, X) :- X &gt;= Y, !.
+% Y is the max otherwise (only reached if X &lt; Y)
+max(_, Y, Y).</code></pre>
+            <p>Caution:</p>
+            <ul>
+              <li><p>Cut makes programs less purely declarative</p></li>
+              <li><p>Use it deliberately to control search, not as a patch for logic errors</p></li>
             </ul>
           </section>
 
-          <section id="practice-6-answer-backtracking-with-multiple-answers" class="frame">
-            <h2>Practice 6 Answer: backtracking with multiple answers</h2>
-            <p>There are 3 colors, and <code>X \= Y</code> removes equal pairs:</p>
+          <section id="practice-5-where-does-cut-change-answers" class="frame">
+            <h2>Practice 5: where does cut change answers?</h2>
+            <p>Consider:</p>
+            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
+p(1).
+p(2).
+
+q(2).
+
+r(X) :- p(X), !, q(X).
+r(X) :- p(X).</code></pre>
+            <p>Question:</p>
             <ul>
-              <li><p>Total ordered pairs: <span class="math inline">\(3 \times 3 = 9\)</span></p></li>
-              <li><p>Remove 3 equal pairs: <span class="math inline">\(9 - 3 = 6\)</span></p></li>
+              <li><p>What are the answers to <code>?- r(X).</code>?</p></li>
+              <li><p>Explain the effect of the cut</p></li>
             </ul>
-            <p>First answer order:</p>
+          </section>
+
+          <section id="practice-5-answer-where-does-cut-change-answers" class="frame">
+            <h2>Practice 5 Answer: where does cut change answers?</h2>
+            <p>Evaluating the first clause: <code>r(X) :- p(X), !, q(X).</code></p>
             <ul>
-              <li><p><code>X = red</code>, then <code>Y = red</code> is rejected, next <code>Y = green</code></p></li>
-              <li><p>First success: <code>X = red</code>, <code>Y = green</code></p></li>
+              <li><p><code>p(X)</code> first gives <code>X = 1</code></p></li>
+              <li><p>The cut fires, committing to <code>X = 1</code> and blocking all remaining choice points, including <code>p(2)</code> and the second clause of <code>r</code></p></li>
+              <li><p><code>q(1)</code> fails, and there is nowhere left to backtrack</p></li>
+            </ul>
+            <ul>
+              <li><p>The second clause <code>r(X) :- p(X).</code> is never reached because the cut eliminates it as an alternative.</p></li>
+              <li><p>Final answer: <code>?- r(X).</code> <strong>fails</strong> with no solutions.</p></li>
+            </ul>
+            <p>Without the cut</p>
+            <ul>
+              <li>First clause, would eventually reach <code>X = 2</code> via <code>p(2)</code> and <code>q(2)</code>, yielding one solution.</li>
+              <li>Second clause, would yield 1, and 2</li>
             </ul>
           </section>
 
@@ -725,6 +736,7 @@ pair(X, Y) :- color(X), color(Y), X \= Y.</code></pre>
           </section>
         </section>
 
+        <!-- ==================== SECTION 7: PROGRAMMING WITH PROLOG ==================== -->
         <section>
           <section id="programming-with-prolog" class="title-slide slide level1">
             <h1>Programming with Prolog</h1>
@@ -748,10 +760,14 @@ pair(X, Y) :- color(X), color(Y), X \= Y.</code></pre>
             <h2>member/2 and append/3 (classic)</h2>
             <p>The number after the slash is the arity: the number of arguments.</p>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
+% base case: X is a member if it is the head of the list
 member(X, [X|_]).
+% recursive case: X is a member if it is in the tail
 member(X, [_|T]) :- member(X, T).
 
+% base case: appending an empty list gives Ys unchanged
 append([], Ys, Ys).
+% recursive case: move the head of the first list onto the result
 append([H|T], Ys, [H|Zs]) :- append(T, Ys, Zs).</code></pre>
             <p>Notes:</p>
             <ul>
@@ -763,7 +779,7 @@ append([H|T], Ys, [H|Zs]) :- append(T, Ys, Zs).</code></pre>
           <section id="anonymous-variable" class="frame">
             <h2>The underscore <code>_</code>: anonymous variable</h2>
             <ul>
-              <li><p><code>_</code> means “there is some value here, but I do not care what it is”</p></li>
+              <li><p><code>_</code> means "there is some value here, but I do not care what it is"</p></li>
               <li><p>Each <code>_</code> is treated as a fresh variable</p></li>
               <li><p>Two uses of <code>_</code> do <strong>not</strong> mean the same value</p></li>
             </ul>
@@ -797,7 +813,9 @@ edge(b, c).
 edge(c, d).
 edge(a, d).
 
+% base case: there is a path if a direct edge exists
 path(X, Y) :- edge(X, Y).
+% recursive case: go one hop, then find a path from there
 path(X, Y) :- edge(X, Z), path(Z, Y).</code></pre>
             <p>This expresses transitive closure, but may loop on cyclic graphs.</p>
           </section>
@@ -818,20 +836,23 @@ path(X, Y) :- edge(X, Z), path(Z, Y).</code></pre>
           <section id="graph-reachability-with-visited-set" class="frame">
             <h2>Graph reachability with visited set</h2>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
+% entry point: start with X already in the visited list
 path(X, Y) :- path(X, Y, [X]).
 
+% base case: destination reached via a direct edge
 path(X, Y, _) :-
   edge(X, Y).
 
+% recursive case: take an edge to Z if Z has not been visited yet
 path(X, Y, Visited) :-
   edge(X, Z),
-  \+ member(Z, Visited),
-  path(Z, Y, [Z|Visited]).</code></pre>
+  \+ member(Z, Visited),       % avoid revisiting nodes
+  path(Z, Y, [Z|Visited]).     % add Z to the visited list</code></pre>
             <p>Now the recursion stops revisiting nodes.</p>
           </section>
 
-          <section id="practice-7-list-relations" class="frame">
-            <h2>Practice 7: list relations</h2>
+          <section id="practice-6-list-relations" class="frame">
+            <h2>Practice 6: list relations</h2>
             <p>Implement the following in Prolog:</p>
             <ul>
               <li><p><code>last(X, List)</code> : X is the last element of List</p></li>
@@ -844,14 +865,18 @@ path(X, Y, Visited) :-
             </ul>
           </section>
 
-          <section id="practice-7-answer-list-relations" class="frame">
-            <h2>Practice 7 Answer: list relations</h2>
+          <section id="practice-6-answer-list-relations" class="frame">
+            <h2>Practice 6 Answer: list relations</h2>
             <p>One possible solution set:</p>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
+% base case: X is last if the list has only one element
 last(X, [X]).
+% recursive case: skip the head, look in the tail
 last(X, [_|T]) :- last(X, T).
 
+% P is a prefix if appending something to P gives L
 prefix(P, L) :- append(P, _, L).
+% S is a suffix if appending S to something gives L
 suffix(S, L) :- append(_, S, L).</code></pre>
             <p>Note:</p>
             <ul>
@@ -872,63 +897,14 @@ suffix(S, L) :- append(_, S, L).</code></pre>
               <li><p>Better: generate only the needed structure, apply constraints early</p></li>
             </ul>
           </section>
+        </section>
 
-          <section id="the-cut-control-feature" class="frame">
-            <h2>The cut (!) (control feature)</h2>
-            <p>The cut <code>!</code> is a special goal that, when reached, <strong>commits to the choices made so far</strong>:</p>
-            <ul>
-              <li><p>It prunes all remaining choice points created since the current predicate was called</p></li>
-              <li><p>Once past the cut, Prolog cannot backtrack into the current clause</p></li>
-            </ul>
-            <p>Example: deterministic max</p>
-            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
-max(X, Y, X) :- X &gt;= Y, !.
-max(_, Y, Y).</code></pre>
-            <p>Caution:</p>
-            <ul>
-              <li><p>Cut makes programs less purely declarative</p></li>
-              <li><p>Use it deliberately to control search, not as a patch for logic errors</p></li>
-            </ul>
+        <!-- ==================== SECTION 8: APPLICATIONS ==================== -->
+        <section>
+          <section id="applications" class="title-slide slide level1">
+            <h1>Applications</h1>
           </section>
 
-          <section id="practice-8-where-does-cut-change-answers" class="frame">
-            <h2>Practice 8: where does cut change answers?</h2>
-            <p>Consider:</p>
-            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
-p(1).
-p(2).
-
-q(2).
-
-r(X) :- p(X), !, q(X).
-r(X) :- p(X).</code></pre>
-            <p>Question:</p>
-            <ul>
-              <li><p>What are the answers to <code>?- r(X).</code>?</p></li>
-              <li><p>Explain the effect of the cut</p></li>
-            </ul>
-          </section>
-
-      <section id="practice-8-answer-where-does-cut-change-answers" class="frame">
-        <h2>Practice 8 Answer: Where Does Cut Change Answers?</h2>
-        <p>Evaluating the first clause: <code>r(X) :- p(X), !, q(X).</code></p>
-        <ul>
-          <li><p><code>p(X)</code> first gives <code>X = 1</code></p></li>
-          <li><p>The cut fires, committing to <code>X = 1</code> and blocking all remaining choice points, including <code>p(2)</code> and the second clause of <code>r</code></p></li>
-          <li><p><code>q(1)</code> fails, and there is nowhere left to backtrack</p></li>
-        </ul>
-        <ul>
-          <li><p>The second clause <code>r(X) :- p(X).</code> is never reached because the cut eliminates it as an alternative.</p>
-        </li>
-        <li><p>Final answer: <code>?- r(X).</code> <strong>fails</strong> with no solutions.</p>
-        </li>
-        </ul>
-               <p>Without the cut</p>
-        <ul>
-          <li>First clause, would eventually reach <code>X = 2</code> via <code>p(2)</code> and <code>q(2)</code>, yielding one solution.</li>
-          <li>Second clause, would yield 1, and 2</li>
-        </ul>
-      </section>
           <section id="from-pure-relations-to-constraints" class="frame">
             <h2>From pure relations to constraints</h2>
             <p>"Pure" Prolog:</p>
@@ -948,10 +924,11 @@ r(X) :- p(X).</code></pre>
             <h2>CLP(FD) flavor</h2>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
 solve(X, Y) :-
-  X in 1..5,
-  Y in 1..5,
-  X #\= Y,
-  X + Y #= 6.</code></pre>
+  X in 1..5,       % X must be an integer between 1 and 5
+  Y in 1..5,       % Y must be an integer between 1 and 5
+  X #\= Y,         % X and Y must be different
+  X + Y #= 6.      % their sum must equal 6
+</code></pre>
             <p>Variables represent unknown choices; constraints rule out impossible choices early.</p>
           </section>
 
@@ -972,16 +949,23 @@ solve(X, Y) :-
           <section id="prerequisites-example-conceptual-prolog" class="frame">
             <h2>Prerequisites example (conceptual Prolog)</h2>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
-prereq(cop3530, cop2510).
-prereq(cop4020, cop3530).
-prereq(cda3100, cop2510).
+%fact
+% cop3530 directly requires cop2510
+prereq(cop3530, cop2510).   
+prereq(cop4020, cop3530).  
+prereq(cda3100, cop2510).  
 
-passed(alice, cop2510).
-passed(alice, cda3100).
+% alice has passed cop2510
+passed(alice, cop2510).     
+passed(alice, cda3100).     
 
+% base case: X needs Y if Y is a direct prerequisite of X
 needs(X, Y) :- prereq(X, Y).
+% recursive case: X needs Y if X needs Z and Z needs Y (transitive)
 needs(X, Y) :- prereq(X, Z), needs(Z, Y).
 
+% S is eligible for C if: S has not already passed C,
+% and there is no prerequisite P of C that S has not passed
 eligible(S, C) :-
   \+ passed(S, C),
   \+ (needs(C, P), \+ passed(S, P)).</code></pre>
@@ -998,12 +982,6 @@ eligible(S, C) :-
             <ul>
               <li><p>Many real rule systems blend declarative rules with evaluation strategy constraints</p></li>
             </ul>
-          </section>
-        </section>
-
-        <section>
-          <section id="industry-and-wrap-up" class="title-slide slide level1">
-            <h1>Industry and wrap-up</h1>
           </section>
 
           <section id="sql-comparison-same-idea" class="frame">
@@ -1022,8 +1000,8 @@ WHERE e.student = 'alice';</code></pre>
             </ul>
           </section>
 
-          <section id="practice-10-translate-between-prolog-and-sql-conceptually" class="frame">
-            <h2>Practice 10: translate between Prolog and SQL</h2>
+          <section id="practice-7-translate-between-prolog-and-sql-conceptually" class="frame">
+            <h2>Practice 7: translate between Prolog and SQL</h2>
             <p>Given relation facts:</p>
             <ul>
               <li><p><code>orders(Customer, Item).</code></p></li>
@@ -1036,8 +1014,8 @@ WHERE e.student = 'alice';</code></pre>
             </ul>
           </section>
 
-          <section id="practice-10-answer-translate-between-prolog-and-sql" class="frame">
-            <h2>Practice 10 Answer: translate between Prolog and SQL</h2>
+          <section id="practice-7-answer-translate-between-prolog-and-sql" class="frame">
+            <h2>Practice 7 Answer: translate between Prolog and SQL</h2>
             <p>Prolog:</p>
             <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"><code class="language-prolog">
 spent(C, D) :-
@@ -1081,8 +1059,8 @@ JOIN price p ON o.item = p.item;</code></pre>
             </ul>
           </section>
 
-          <section id="practice-11-write-a-policy-as-horn-style-rules" class="frame">
-            <h2>Practice 11: write a policy as Horn-style rules</h2>
+          <section id="practice-8-write-a-policy-as-horn-style-rules" class="frame">
+            <h2>Practice 8: write a policy as Horn-style rules</h2>
             <p>Write rules for:</p>
             <ul>
               <li><p>"A request is allowed if the user is an admin."</p></li>
@@ -1097,8 +1075,8 @@ JOIN price p ON o.item = p.item;</code></pre>
             </ul>
           </section>
 
-          <section id="practice-11-answer-policy-as-rules" class="frame">
-            <h2>Practice 11 Answer: policy as rules</h2>
+          <section id="practice-8-answer-policy-as-rules" class="frame">
+            <h2>Practice 8 Answer: policy as rules</h2>
             <p>Rules:</p>
             <ul>
               <li><p><code>allow(U,R) :- admin(U).</code></p></li>
@@ -1126,6 +1104,13 @@ JOIN price p ON o.item = p.item;</code></pre>
               <li><p>Add constraints</p></li>
               <li><p>Let the solver find satisfying assignments</p></li>
             </ul>
+          </section>
+        </section>
+
+        <!-- ==================== SECTION 9: WRAP-UP ==================== -->
+        <section>
+          <section id="industry-and-wrap-up" class="title-slide slide level1">
+            <h1>Wrap-up</h1>
           </section>
 
           <section id="when-prolog-style-thinking-is-a-good-fit" class="frame">
