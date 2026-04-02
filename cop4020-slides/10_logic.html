@@ -909,21 +909,26 @@ r(X) :- p(X).</code></pre>
             </ul>
           </section>
 
-          <section id="practice-8-answer-where-does-cut-change-answers" class="frame">
-            <h2>Practice 8 Answer: where does cut change answers?</h2>
-            <p>Evaluate first clause: <code>r(X) :- p(X), !, q(X).</code></p>
-            <ul>
-              <li><p><code>p(X)</code> first gives <code>X = 1</code></p></li>
-              <li><p>Cut commits to this choice, so Prolog will not backtrack to <code>p(2)</code> in that clause</p></li>
-              <li><p>Then <code>q(1)</code> fails</p></li>
-            </ul>
-            <p>Then Prolog tries the second clause: <code>r(X) :- p(X).</code></p>
-            <ul>
-              <li><p>This yields <code>X = 1</code> and then <code>X = 2</code></p></li>
-            </ul>
-            <p>Final answers: <code>X = 1 ; X = 2</code>.</p>
-          </section>
-
+      <section id="practice-8-answer-where-does-cut-change-answers" class="frame">
+        <h2>Practice 8 Answer: Where Does Cut Change Answers?</h2>
+        <p>Evaluating the first clause: <code>r(X) :- p(X), !, q(X).</code></p>
+        <ul>
+          <li><p><code>p(X)</code> first gives <code>X = 1</code></p></li>
+          <li><p>The cut fires, committing to <code>X = 1</code> and blocking all remaining choice points, including <code>p(2)</code> and the second clause of <code>r</code></p></li>
+          <li><p><code>q(1)</code> fails, and there is nowhere left to backtrack</p></li>
+        </ul>
+        <ul>
+          <li><p>The second clause <code>r(X) :- p(X).</code> is never reached because the cut eliminates it as an alternative.</p>
+        </li>
+        <li><p>Final answer: <code>?- r(X).</code> <strong>fails</strong> with no solutions.</p>
+        </li>
+        </ul>
+               <p>Without the cut</p>
+        <ul>
+          <li>First clause, would eventually reach <code>X = 2</code> via <code>p(2)</code> and <code>q(2)</code>, yielding one solution.</li>
+          <li>Second clause, would yield 1, and 2</li>
+        </ul>
+      </section>
           <section id="from-pure-relations-to-constraints" class="frame">
             <h2>From pure relations to constraints</h2>
             <p>"Pure" Prolog:</p>
