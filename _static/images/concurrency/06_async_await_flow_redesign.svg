@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" width="900" height="360" font-family="system-ui, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1e293b"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="360" fill="white"/>
+
+  <!-- Time axis -->
+  <line x1="150" y1="34" x2="868" y2="34" stroke="#1e293b" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="856" y="30" font-size="16" fill="#1e293b" font-weight="bold">time →</text>
+
+  <!-- ===== async fn row (y=52-98) ===== -->
+  <rect x="10" y="54" width="132" height="36" rx="10" fill="#2463eb"/>
+  <text x="76" y="77" text-anchor="middle" font-size="18" font-weight="bold" fill="white">async fn</text>
+
+  <!-- [run] blue x=160-340 -->
+  <rect x="160" y="57" width="180" height="33" rx="6" fill="#2463eb"/>
+  <text x="250" y="78" text-anchor="middle" font-size="16" fill="white" font-weight="bold">run</text>
+
+  <!-- gap (light bg) x=340-620 -->
+  <rect x="340" y="57" width="280" height="33" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="480" y="78" text-anchor="middle" font-size="14" fill="#94a3b8" font-style="italic">suspended</text>
+
+  <!-- [resume] blue x=620-790 -->
+  <rect x="620" y="57" width="170" height="33" rx="6" fill="#2463eb"/>
+  <text x="705" y="78" text-anchor="middle" font-size="16" fill="white" font-weight="bold">resume</text>
+
+  <!-- ===== Promise row (y=118-164) ===== -->
+  <rect x="10" y="120" width="132" height="36" rx="10" fill="#1e293b"/>
+  <text x="76" y="143" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Promise</text>
+
+  <!-- empty before x=160-360 -->
+  <rect x="160" y="123" width="200" height="33" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="260" y="144" text-anchor="middle" font-size="14" fill="#cbd5e1">—</text>
+
+  <!-- [pending] x=360-610 -->
+  <rect x="360" y="123" width="250" height="33" rx="6" fill="#1e293b"/>
+  <text x="485" y="144" text-anchor="middle" font-size="16" fill="white" font-weight="bold">pending</text>
+
+  <!-- [resolved] x=610-790 -->
+  <rect x="610" y="123" width="180" height="33" rx="6" fill="#0f8f83"/>
+  <text x="700" y="144" text-anchor="middle" font-size="16" fill="white" font-weight="bold">resolved</text>
+
+  <!-- ===== Event Loop row (y=184-230) ===== -->
+  <rect x="10" y="186" width="132" height="36" rx="10" fill="#0f8f83"/>
+  <text x="76" y="209" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Event Loop</text>
+
+  <!-- [other callbacks] teal x=360-610 -->
+  <rect x="360" y="189" width="250" height="33" rx="6" fill="#0f8f83"/>
+  <text x="485" y="210" text-anchor="middle" font-size="16" fill="white" font-weight="bold">other callbacks</text>
+
+  <!-- ===== Vertical dashed lines ===== -->
+  <!-- "await" line at x=345 -->
+  <line x1="345" y1="40" x2="345" y2="238" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,4"/>
+  <rect x="310" y="240" width="72" height="26" rx="5" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="346" y="258" text-anchor="middle" font-size="16" font-weight="bold" fill="#dc2626">await</text>
+
+  <!-- "resolve" line at x=610 -->
+  <line x1="610" y1="40" x2="610" y2="238" stroke="#0f8f83" stroke-width="2" stroke-dasharray="6,4"/>
+  <rect x="572" y="240" width="78" height="26" rx="5" fill="#ebfbf8" stroke="#0f8f83" stroke-width="1.5"/>
+  <text x="611" y="258" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f8f83">resolve</text>
+
+  <!-- Row separator lines -->
+  <line x1="150" y1="108" x2="800" y2="108" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="150" y1="174" x2="800" y2="174" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Legend / explanation row -->
+  <text x="450" y="308" text-anchor="middle" font-size="15" fill="#64748b">async fn suspends at await, yielding control to the event loop until the Promise resolves</text>
+</svg>

@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-
 <title>Concurrency Models</title>
     <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
     <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -19,669 +18,933 @@
     <div class="slides" role="main">
 
 <section>
-<section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
-<h1>Concurrency Models</h1>
-<div class="subtitle docutils container">
-<p><strong>Module 11</strong></p>
-<p>Liting Zhang</p>
-</div>
-</section>
+  <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+           data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+  <h1>Concurrency Models</h1>
+  <div class="subtitle docutils container">
+  <p><strong>Module 11</strong></p>
+  <p>Liting Zhang</p>
+  </div>
+  </section>
 </section>
 
+<!-- =====================================================================
+     OVERVIEW
+     ===================================================================== -->
 <section class="slide level2">
+  <section id="overview" class="frame">
+  <h2>Overview</h2>
+<ul>
+  <li><p>Why concurrency: throughput vs responsiveness; concurrency vs parallelism</p></li>
+  <li><p>Shared-memory threads, synchronization, and memory model visibility</p></li>
+  <li><p>Deadlocks, livelock, and starvation</p></li>
+  <li><p>Message passing: Go goroutines and channels</p></li>
+  <li><p>Futures, Promises, async/await, and event loops</p></li>
+  <li><p>Rust: compile-time safety; structured concurrency</p></li>
+  <li><p>Industry tradeoffs: choosing and mixing models</p></li>
+</ul>
+  </section>
 
-<section id="overview" class="frame">
-<h2>Overview</h2>
+  <section id="learning-goals" class="frame">
+  <h2>Learning goals</h2>
+  <p>After this lecture, you should be able to</p>
 <ul>
-<li><p>Bridge from Module 10: execution strategy now moves from proof search to concurrent scheduling</p></li>
-<li><p>Why concurrency: performance vs responsiveness</p></li>
-<li><p>Shared-memory threads: races and coordination</p></li>
-<li><p>Synchronization: locks, semaphores, monitors, condition
-variables</p></li>
-<li><p>Deadlocks: how they happen, how to avoid them</p></li>
-<li><p>Message passing and actors; Go goroutines and channels</p></li>
-<li><p>Async/await and event loops (Node.js, TS/JS, Python
-async)</p></li>
-<li><p>Industry angle: web servers, microservices, Node back-ends, Go
-services</p></li>
-<li><p>Rust cameo: safety story and tradeoffs</p></li>
+  <li><p>Explain throughput vs latency as motivations for concurrency</p></li>
+  <li><p>Identify race conditions and explain happens-before visibility</p></li>
+  <li><p>Explain deadlock conditions; distinguish deadlock, livelock, and starvation</p></li>
+  <li><p>Choose the right synchronization primitive for a given scenario</p></li>
+  <li><p>Explain Promise states, combinators, and async/await scheduling</p></li>
+  <li><p>Compare thread-based, channel-based, async, and compile-time-safe models</p></li>
+  <li><p>Identify orphaned tasks and explain structured concurrency guarantees</p></li>
 </ul>
+  </section>
 </section>
-<section id="learning-goals" class="frame">
-<h2>Learning goals</h2>
-<p>After this lecture, you should be able to</p>
-<ul>
-<li><p>Explain why systems use concurrency for throughput and for
-latency</p></li>
-<li><p>Identify shared-state hazards: race conditions and lost
-updates</p></li>
-<li><p>Explain deadlock conditions and recognize common deadlock
-patterns</p></li>
-<li><p>Choose between mutexes, semaphores, and monitors for
-coordination</p></li>
-<li><p>Describe message passing and actor-style concurrency at a high
-level</p></li>
-<li><p>Explain event loops and async/await scheduling</p></li>
-<li><p>Compare thread-based concurrency and async I/O
-concurrency</p></li>
-<li><p>Read small examples in Java/C#, Go, TypeScript, Python async, and
-Rust</p></li>
-</ul>
-</section>
-<section id="module-boundary-and-placement" class="frame">
-<h2>Module boundary and placement</h2>
-<ul>
-<li><p><strong>From Module 10:</strong> both modules separate specification from execution strategy; here the strategy is scheduling/interleaving.</p></li>
-<li><p><strong>This module (11):</strong> focuses on correctness hazards and coordination models for concurrent execution.</p></li>
-<li><p><strong>To Module 12:</strong> runtime behavior (stack, exceptions, memory reclamation) explains many concurrency failure modes in production.</p></li>
-</ul>
-</section>
-<section id="language-map-for-this-module" class="frame">
-<h2>Language map for this module</h2>
-<ul>
-<li><p><strong>Java/C#:</strong> shared-memory threads and locking primitives.</p></li>
-<li><p><strong>Go:</strong> message passing with goroutines and channels.</p></li>
-<li><p><strong>TypeScript/Python:</strong> async/await and event-loop concurrency.</p></li>
-<li><p><strong>Rust (cameo):</strong> compile-time safety constraints for concurrency.</p></li>
-</ul>
-</section>
-<section id="module-flow-map" class="frame">
-<h2>Module flow map</h2>
-<ul>
-<li><p>Step 1: motivations and hazard vocabulary (race, deadlock, latency/throughput)</p></li>
-<li><p>Step 2: shared-memory model and synchronization primitives</p></li>
-<li><p>Step 3: liveness pitfalls and deadlock prevention</p></li>
-<li><p>Step 4: alternative models (message passing and async event loops)</p></li>
-<li><p>Step 5: model selection under production constraints</p></li>
-</ul>
-</section>
-</section>
+
+<!-- =====================================================================
+     MOTIVATION AND HAZARDS
+     ===================================================================== -->
 <section>
-<section id="motivation-and-hazards" class="title-slide slide level1">
-<h1>Motivation and hazards</h1>
+  <section id="motivation-and-hazards" class="title-slide slide level1">
+  <h1>Motivation and hazards</h1>
+  </section>
 
+  <section id="why-concurrency-exists" class="frame">
+    <h2>Why concurrency exists</h2>
+    <p>Two motivations:</p>
+    <ul>
+      <li><p><strong>Throughput:</strong> maximize completed work per unit time by using multiple cores</p></li>
+      <li><p><strong>Responsiveness/Latency:</strong> keep a system interactive while work happens in the background</p></li>
+    </ul>
+    <p>Examples:</p>
+    <ul>
+      <li><p>web server: handle many requests at once (throughput and latency)</p></li>
+      <li><p>UI app: keep interface live while fetching data (latency)</p></li>
+      <li><p>nightly ETL pipeline: process large data sets quickly (throughput)</p></li>
+    </ul>
+    <p>Many systems need both, and must balance them carefully.</p>
+  </section>
+
+  <section id="concurrency-vs-parallelism" class="frame">
+    <h2>Concurrency vs parallelism</h2>
+    <div style="display:flex;gap:0.1em;align-items:flex-start;margin-top:0.4em;">
+      <div style="flex:1;min-width:0;">
+        <p>Concurrency:</p>
+        <ul>
+          <li><p>structuring the program to handle multiple tasks in progress</p></li>
+          <li><p>tasks may interleave, even on a single core</p></li>
+        </ul>
+        <p>Parallelism:</p>
+        <ul>
+          <li><p>actually running tasks at the same time on multiple cores</p></li>
+        </ul>
+        <p>A program can be concurrent without being parallel.</p>
+      </div>
+      <div style="flex:0 0 46%;min-width:0;">
+        <img class="diagram diagram-compact"
+          src="../_static/images/concurrency/01_concurrent_parallel.png"
+          alt="Diagram comparing interleaved concurrency with simultaneous parallel execution."
+          style="display:block; margin: 0.1em auto; max-width: 100%; max-height: 100%; height:auto;">
+      </div>
+    </div>
+  </section>
+
+  <section id="race-condition" class="frame">
+    <h2>Race condition</h2>
+    <p>Race condition:</p>
+    <ul>
+    <li><p>program behavior depends on timing or interleaving of tasks</p></li>
+    <li><p>two correct-looking pieces of code can break when combined</p></li>
+    </ul>
+    <p>Common symptom:</p>
+    <ul>
+    <li><p>lost updates: two tasks overwrite each other</p></li>
+    </ul>
+    <p>Concurrency bugs are often:</p>
+    <ul>
+    <li><p>rare</p></li>
+    <li><p>timing dependent</p></li>
+    <li><p>hard to reproduce and debug</p></li>
+    </ul>
+  </section>
 </section>
-<section id="motivation-and-hazards-1" class="frame">
-<h2>Motivation and hazards</h2>
-</section>
-<section id="why-concurrency-exists" class="frame">
-<h2>Why concurrency exists</h2>
-<p>Two common motivations:</p>
-<ul>
-<li><p>Performance: increase throughput by using multiple cores</p></li>
-<li><p>Responsiveness: keep a system interactive while work
-happens</p></li>
-</ul>
-<p>Examples:</p>
-<ul>
-<li><p>web server handling many requests at once</p></li>
-<li><p>UI app keeping the interface responsive while fetching
-data</p></li>
-<li><p>pipeline processing logs while continuing to accept new
-events</p></li>
-</ul>
-</section>
-<section id="throughput-vs-latency" class="frame">
-<h2>Throughput vs latency</h2>
-<p>Throughput focus:</p>
-<ul>
-<li><p>goal: maximize completed work per unit time</p></li>
-<li><p>common in batch jobs, data processing, server farms</p></li>
-</ul>
-<p>Latency focus:</p>
-<ul>
-<li><p>goal: reduce time to first response for each task</p></li>
-<li><p>common in interactive apps and user-facing services</p></li>
-</ul>
-<p>Many systems want both, and must trade off carefully.</p>
-</section>
-<section id="concurrency-vs-parallelism" class="frame">
-<h2>Concurrency vs parallelism</h2>
-<p>Concurrency:</p>
-<ul>
-<li><p>structuring the program to handle multiple tasks in
-progress</p></li>
-<li><p>tasks may interleave, even on a single core</p></li>
-</ul>
-<p>Parallelism:</p>
-<ul>
-<li><p>actually running tasks at the same time on multiple
-cores</p></li>
-</ul>
-<p>A program can be concurrent without being parallel.</p>
-</section>
-<section id="race-condition" class="frame">
-<h2>Race condition</h2>
-<p>Race condition:</p>
-<ul>
-<li><p>program behavior depends on timing or interleaving of
-tasks</p></li>
-<li><p>two correct-looking pieces of code can break when
-combined</p></li>
-</ul>
-<p>Common symptom:</p>
-<ul>
-<li><p>lost updates: two tasks overwrite each other</p></li>
-</ul>
-<p>Concurrency bugs are often:</p>
-<ul>
-<li><p>rare</p></li>
-<li><p>timing dependent</p></li>
-<li><p>hard to reproduce and debug</p></li>
-</ul>
-</section>
-<section id="practice-1-classify-the-motivation" class="frame">
-<h2>Practice 1: classify the motivation</h2>
-<p>For each scenario, decide whether the main motivation is throughput,
-latency, or both.</p>
-<ul>
-<li><p>A web server handling 10,000 concurrent connections</p></li>
-<li><p>A photo editor exporting a large image while UI stays
-responsive</p></li>
-<li><p>A nightly ETL job processing 2 TB of logs</p></li>
-<li><p>A multiplayer game server handling physics and
-networking</p></li>
-</ul>
-</section>
-<section id="practice-1-answer-classify-the-motivation" class="frame">
-<h2>Practice 1 Answer: classify the motivation</h2>
-<p>One reasonable classification:</p>
-<ul>
-<li><p>web server: both</p></li>
-<li><p>photo editor: latency/responsiveness</p></li>
-<li><p>ETL job: throughput</p></li>
-<li><p>game server: both, with strong latency requirements</p></li>
-</ul>
-</section></section>
+
+<!-- =====================================================================
+     THREADS AND SYNCHRONIZATION
+     ===================================================================== -->
 <section>
-<section id="threads-and-synchronization"
-class="title-slide slide level1">
-<h1>Threads and synchronization</h1>
+  <section id="threads-and-synchronization" class="title-slide slide level1">
+  <h1>Threads and synchronization</h1>
+  </section>
 
-</section>
-<section id="threads-and-synchronization-1" class="frame">
-<h2>Threads and synchronization</h2>
-</section>
-<section id="threads-and-shared-memory-model" class="frame">
-<h2>Threads and shared memory model</h2>
-<p>Threads share memory.</p>
-<ul>
-<li><p>multiple threads access the same variables and objects</p></li>
-<li><p>coordination is required to preserve invariants</p></li>
-</ul>
-<p>Benefits:</p>
-<ul>
-<li><p>direct sharing can be fast</p></li>
-<li><p>fits well with in-memory data structures</p></li>
-</ul>
-<p>Costs:</p>
-<ul>
-<li><p>correctness depends on interleavings</p></li>
-<li><p>shared mutable state is the main source of bugs</p></li>
-</ul>
-</section>
-<section id="java-lost-update-example" class="frame">
-<h2>Java: lost update example</h2>
-<p>Two threads increment a shared counter.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-java">class Counter {
-  int value = 0;
-  void inc() { value = value + 1; }
-}
-public class Demo {
-  static Counter c = new Counter();
-  static Runnable work = () -&gt; {
-    for (int i = 0; i &lt; 1_000_000; i++) c.inc();
-  };
+  <section id="threads-and-shared-memory-model" class="frame">
+    <h2>Threads and shared memory model</h2>
+    <p>Threads share memory.</p>
+    <ul>
+      <li><p>multiple threads access the same variables and objects</p></li>
+      <li><p>coordination is required to preserve invariants</p></li>
+    </ul>
+    <p>Benefits:</p>
+    <ul>
+      <li><p>direct sharing can be fast</p></li>
+      <li><p>fits well with in-memory data structures</p></li>
+    </ul>
+    <p>Costs:</p>
+    <ul>
+      <li><p>correctness depends on interleavings</p></li>
+      <li><p>shared mutable state is the main source of bugs</p></li>
+    </ul>
+  </section>
 
-  public static void main(String[] args) throws Exception {
-    Thread t1 = new Thread(work);
-    Thread t2 = new Thread(work);
-    t1.start(); t2.start();
-    t1.join(); t2.join();
-    System.out.println(c.value);
+  <section id="java-lost-update-example" class="frame">
+    <h2>Java: lost update example</h2>
+    <p>Two threads increment a shared counter.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-java">class Counter {
+    int value = 0;
+    void inc() { value = value + 1; }
   }
-}</code></pre>
-<p>Expected: 2,000,000. Actual: often less.</p>
-</section>
-<section id="why-increment-is-not-atomic" class="frame">
-<h2>Why increment is not atomic</h2>
-<p>The increment expands into steps:</p>
-<ul>
-<li><p>load value</p></li>
-<li><p>add 1</p></li>
-<li><p>store result</p></li>
-</ul>
-<p>Two threads can interleave:</p>
-<ul>
-<li><p>both load the same old value</p></li>
-<li><p>both store old+1</p></li>
-<li><p>one increment is lost</p></li>
-</ul>
-</section>
-<section id="java-fix-with-synchronized" class="frame">
-<h2>Java: fix with synchronized</h2>
-<p>synchronized makes the critical section mutually exclusive.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-java">class Counter {
-  int value = 0;
-  synchronized void inc() { value = value + 1; }
-}</code></pre>
-<p>Correctness improves, but contention can hurt performance.</p>
-</section>
-<section id="synchronization-toolbox" class="frame">
-<h2>Synchronization toolbox</h2>
-<p>Common primitives:</p>
-<ul>
-<li><p>mutex / lock: mutual exclusion for critical sections</p></li>
-<li><p>semaphore: limit concurrency or represent resource
-counts</p></li>
-<li><p>monitor: lock plus condition waiting</p></li>
-<li><p>condition variable: block until a predicate becomes true</p></li>
-</ul>
-<p>Many bugs come from:</p>
-<ul>
-<li><p>missing locks</p></li>
-<li><p>wrong lock scope</p></li>
-<li><p>inconsistent lock ordering</p></li>
-<li><p>waiting without a loop</p></li>
-</ul>
-</section>
-<section id="mutex-lock" class="frame">
-<h2>Mutex / lock</h2>
-<p>Mutex:</p>
-<ul>
-<li><p>allows one thread at a time into a critical section</p></li>
-<li><p>protects invariants on shared mutable data</p></li>
-</ul>
-<p>Practical guidance:</p>
-<ul>
-<li><p>keep critical sections small</p></li>
-<li><p>lock around an invariant, not around a single line</p></li>
-<li><p>document what the lock protects</p></li>
-</ul>
-</section>
-<section id="semaphore" class="frame">
-<h2>Semaphore</h2>
-<p>Semaphore:</p>
-<ul>
-<li><p>a counter controlling how many threads may proceed</p></li>
-<li><p><code>acquire()</code> decrements, <code>release()</code>
-increments</p></li>
-</ul>
-<p>Common uses:</p>
-<ul>
-<li><p>limit concurrency (max N in-flight tasks)</p></li>
-<li><p>resource pools (N connections, N workers)</p></li>
-</ul>
-</section>
-<section id="monitor-and-condition-variable" class="frame">
-<h2>Monitor and condition variable</h2>
-<p>Monitor:</p>
-<ul>
-<li><p>a lock plus a way to wait for conditions safely</p></li>
-<li><p>wait releases the lock, then blocks, then reacquires before
-returning</p></li>
-</ul>
-<p>Condition variable:</p>
-<ul>
-<li><p>used with a predicate and a loop</p></li>
-<li><p>avoids busy waiting</p></li>
-</ul>
-</section>
-<section id="java-bounded-buffer-sketch-with-waitnotify" class="frame">
-<h2>Java: bounded buffer sketch with wait/notify</h2>
-<p>Producer/consumer using a monitor.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\scriptsize"
-data-tabsize="1"><code class="language-java">import java.util.*;
+  public class Demo {
+    static Counter c = new Counter();
+    static Runnable work = () -&gt; {
+      for (int i = 0; i &lt; 1_000_000; i++) c.inc();
+    };
 
-class BoundedQueue&lt;T&gt; {
-  private final int cap;
-  private final ArrayDeque&lt;T&gt; q = new ArrayDeque&lt;&gt;();
-
-  BoundedQueue(int cap) { this.cap = cap; }
-
-  public synchronized void put(T x) throws InterruptedException {
-    while (q.size() == cap) wait();
-    q.addLast(x);
-    notifyAll();
-  }
-
-  public synchronized T take() throws InterruptedException {
-    while (q.isEmpty()) wait();
-    T x = q.removeFirst();
-    notifyAll();
-    return x;
-  }
-}</code></pre>
-<p>while is required because conditions may change before the lock is
-reacquired.</p>
-</section></section>
-<section>
-<section id="deadlocks-and-pitfalls" class="title-slide slide level1">
-<h1>Deadlocks and pitfalls</h1>
-
-</section>
-<section id="deadlocks-and-pitfalls-1" class="frame">
-<h2>Deadlocks and pitfalls</h2>
-</section>
-<section id="deadlock-pattern" class="frame">
-<h2>Deadlock pattern</h2>
-<p>Deadlock:</p>
-<ul>
-<li><p>threads wait forever because each is waiting for another to
-release something</p></li>
-</ul>
-<p>Simple pattern:</p>
-<ul>
-<li><p>Thread A holds lock L1, wants L2</p></li>
-<li><p>Thread B holds lock L2, wants L1</p></li>
-</ul>
-<p>The program may appear correct until it freezes under a rare
-interleaving.</p>
-</section>
-<section id="deadlock-conditions-coffman" class="frame">
-<h2>Deadlock conditions (Coffman)</h2>
-<p>Deadlock becomes possible when all are present:</p>
-<ul>
-<li><p>mutual exclusion</p></li>
-<li><p>hold and wait</p></li>
-<li><p>no preemption</p></li>
-<li><p>circular wait</p></li>
-</ul>
-<p>Avoidance strategies remove at least one condition.</p>
-</section>
-<section id="java-deadlock-example" class="frame">
-<h2>Java: deadlock example</h2>
-<p>Two locks, opposite acquisition order.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-java">final Object a = new Object();
-final Object b = new Object();
-
-Thread t1 = new Thread(() -&gt; {
-  synchronized (a) {
-    try { Thread.sleep(10); } catch (Exception e) {}
-    synchronized (b) { System.out.println(&quot;t1&quot;); }
-  }
-});
-
-Thread t2 = new Thread(() -&gt; {
-  synchronized (b) {
-    try { Thread.sleep(10); } catch (Exception e) {}
-    synchronized (a) { System.out.println(&quot;t2&quot;); }
-  }
-});
-t1.start(); t2.start();</code></pre>
-<p>A common fix is consistent lock ordering.</p>
-</section>
-<section id="avoiding-deadlocks" class="frame">
-<h2>Avoiding deadlocks</h2>
-<p>Practical techniques:</p>
-<ul>
-<li><p>lock ordering: always acquire locks in a consistent global
-order</p></li>
-<li><p>timeouts: abandon and retry rather than wait forever</p></li>
-<li><p>reduce lock scope and avoid nested locks</p></li>
-<li><p>prefer higher-level designs: queues, actors, channels</p></li>
-</ul>
-</section>
-<section id="other-common-pitfalls" class="frame">
-<h2>Other common pitfalls</h2>
-<p>Issues that look like deadlocks or cause similar outages:</p>
-<ul>
-<li><p>blocking I/O while holding a lock</p></li>
-<li><p>waiting without a loop on a condition variable</p></li>
-<li><p>unbounded queues causing memory blowups</p></li>
-<li><p>priority inversion: low priority thread holds a lock needed by
-high priority work</p></li>
-</ul>
-<p>In production, symptoms often appear as latency spikes and request
-timeouts.</p>
-</section>
-<section id="practice-3-deadlock-diagnosis" class="frame">
-<h2>Practice 3: deadlock diagnosis</h2>
-<p>In the deadlock example:</p>
-<ul>
-<li><p>Which Coffman conditions are present</p></li>
-<li><p>Give one minimal code/design change to reduce risk</p></li>
-</ul>
-</section>
-<section id="practice-3-answer-deadlock-diagnosis" class="frame">
-<h2>Practice 3 Answer: deadlock diagnosis</h2>
-<p>Conditions present:</p>
-<ul>
-<li><p>mutual exclusion: locks are exclusive</p></li>
-<li><p>hold and wait: each thread holds one lock while waiting for the
-other</p></li>
-<li><p>no preemption: locks are released only voluntarily</p></li>
-<li><p>circular wait: A waits for B and B waits for A</p></li>
-</ul>
-<p>Minimal change:</p>
-<ul>
-<li><p>consistent lock ordering (both threads acquire a then b)</p></li>
-</ul>
-</section></section>
-<section class="slide level2">
-<section id="bridge-shared-memory-to-message-passing" class="frame">
-<h2>Bridge: shared memory to message passing</h2>
-<p>Shared-memory threads emphasize protecting mutable state.</p>
-<p>Next model shift: avoid sharing by default and communicate via channels/messages.</p>
-<ul>
-<li><p>Trade lock coordination for protocol/queue design</p></li>
-<li><p>Many race bugs disappear, but backpressure and message ordering become central</p></li>
-</ul>
-</section>
-</section>
-<section>
-<section id="message-passing-and-go" class="title-slide slide level1">
-<h1>Message passing and Go</h1>
-
-</section>
-<section id="message-passing-and-go-1" class="frame">
-<h2>Message passing and Go</h2>
-</section>
-<section id="message-passing-model" class="frame">
-<h2>Message passing model</h2>
-<p>Message passing:</p>
-<ul>
-<li><p>components communicate by sending messages</p></li>
-<li><p>shared memory is minimized or avoided</p></li>
-<li><p>state is owned by one component and updated sequentially</p></li>
-</ul>
-<p>Benefits:</p>
-<ul>
-<li><p>fewer shared-memory races</p></li>
-<li><p>clearer ownership boundaries</p></li>
-</ul>
-<p>Costs:</p>
-<ul>
-<li><p>messaging overhead and protocol design</p></li>
-<li><p>must handle ordering, retries, and failures in distributed
-cases</p></li>
-</ul>
-</section>
-<section id="actor-model-intuition" class="frame">
-<h2>Actor model intuition</h2>
-<p>Actor:</p>
-<ul>
-<li><p>owns its state</p></li>
-<li><p>processes one message at a time</p></li>
-<li><p>can send messages to other actors</p></li>
-</ul>
-<p>Typical result:</p>
-<ul>
-<li><p>fewer data races in local actor state</p></li>
-<li><p>concurrency scales by adding more actors</p></li>
-</ul>
-<p>Similar ideas appear in event-driven microservices and queue-based
-systems.</p>
-</section>
-<section id="channels-as-coordination" class="frame">
-<h2>Channels as coordination</h2>
-<p>Channel:</p>
-<ul>
-<li><p>a queue connecting producers and consumers</p></li>
-<li><p>can be buffered or unbuffered</p></li>
-<li><p>can provide backpressure by blocking senders when full</p></li>
-</ul>
-<p>Channels often simplify reasoning:</p>
-<ul>
-<li><p>send/receive is explicit coordination</p></li>
-<li><p>avoid many shared-memory locks</p></li>
-</ul>
-</section>
-<section id="go-goroutines-and-channels" class="frame">
-<h2>Go: goroutines and channels</h2>
-<p>Goroutines are lightweight concurrent functions.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\scriptsize"
-data-tabsize="1"><code class="language-go">package main
-import &quot;fmt&quot;
-func worker(in &lt;-chan int, out chan&lt;- int) {
-  for x := range in {
-    out &lt;- x * x
-  }
-  close(out)
-}
-func main() {
-  in := make(chan int)
-  out := make(chan int)
-  go worker(in, out)
-  go func() {
-    for _, v := range []int{1, 2, 3, 4} {
-      in &lt;- v
+    public static void main(String[] args) throws Exception {
+      Thread t1 = new Thread(work);
+      Thread t2 = new Thread(work);
+      t1.start(); t2.start();
+      t1.join(); t2.join();
+      System.out.println(c.value);
     }
-    close(in)
-  }()
-  for y := range out {
-    fmt.Println(y)
-  }
-}</code></pre>
-<p>The worker reads until in is closed, then closes out.</p>
+  }</code></pre>
+    <p>Expected: 2,000,000. Actual: often less.</p>
+  </section>
+
+  <section id="why-increment-is-not-atomic" class="frame">
+    <h2>Race Condition: Lost Update</h2>
+    <img class="diagram diagram-full"
+      src="../_static/images/concurrency/02_race_condition.png"
+      alt="Timeline showing two threads causing a lost update race condition."
+      style="display:block; margin: 0.1em auto; max-width: 80%; max-height: 80%; height:auto;">
+  </section>
+
+  <section id="java-fix-with-synchronized" class="frame">
+    <h2>Java: fix with synchronized</h2>
+    <p>synchronized makes the critical section mutually exclusive.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-java">class Counter {
+      int value = 0;
+      synchronized void inc() { value = value + 1; }
+    }</code></pre>
+    <p>Correctness improves, but contention can hurt performance.</p>
+  </section>
+
+  <section id="synchronization-toolbox" class="frame">
+  <h2>Synchronization toolbox</h2>
+    <p>Common primitives:</p>
+    <ul>
+    <li><p>mutex / lock: mutual exclusion for critical sections</p></li>
+    <li><p>semaphore: limit concurrency or represent resource counts</p></li>
+    <li><p>monitor: lock plus condition waiting</p></li>
+    <li><p>condition variable: block until a predicate becomes true</p></li>
+    </ul>
+    <p>Many bugs come from:</p>
+    <ul>
+    <li><p>missing locks</p></li>
+    <li><p>wrong lock scope</p></li>
+    <li><p>inconsistent lock ordering</p></li>
+    <li><p>waiting without a loop</p></li>
+    </ul>
+  </section>
+
+  <section id="mutex-lock" class="frame">
+    <h2>Mutex / lock</h2>
+    <p>Mutex:</p>
+    <ul>
+    <li><p>allows one thread at a time into a critical section</p></li>
+    <li><p>protects invariants on shared mutable data</p></li>
+    </ul>
+    <p>Practical guidance:</p>
+    <ul>
+    <li><p>keep critical sections small</p></li>
+    <li><p>lock around an invariant, not around a single line</p></li>
+    <li><p>document what the lock protects</p></li>
+    </ul>
+  </section>
+
+  <section id="semaphore" class="frame">
+    <h2>Semaphore</h2>
+    <p>Semaphore:</p>
+    <ul>
+    <li><p>a counter controlling how many threads may proceed</p></li>
+    <li><p><code>acquire()</code> decrements, <code>release()</code> increments</p></li>
+    </ul>
+    <p>Common uses:</p>
+    <ul>
+    <li><p>limit concurrency (max N in-flight tasks)</p></li>
+    <li><p>resource pools (N connections, N workers)</p></li>
+    </ul>
+  </section>
+
+  <section id="monitor-and-condition-variable" class="frame">
+    <h2>Monitor and condition variable</h2>
+    <p>Monitor:</p>
+    <ul>
+    <li><p>a lock plus a way to wait for conditions safely</p></li>
+    <li><p>wait releases the lock, then blocks, then reacquires before returning</p></li>
+    </ul>
+    <p>Condition variable:</p>
+    <ul>
+    <li><p>used with a predicate and a loop</p></li>
+    <li><p>avoids busy waiting</p></li>
+    </ul>
+  </section>
+
+  <section id="java-bounded-buffer-sketch-with-waitnotify" class="frame">
+    <h2>Java: bounded buffer sketch with wait/notify</h2>
+    <p>Producer/consumer using a monitor.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\scriptsize"
+    data-tabsize="1"><code class="language-java">import java.util.*;
+
+    class BoundedQueue&lt;T&gt; {
+      private final int cap;
+      private final ArrayDeque&lt;T&gt; q = new ArrayDeque&lt;&gt;();
+
+      BoundedQueue(int cap) { this.cap = cap; }
+
+      public synchronized void put(T x) throws InterruptedException {
+        while (q.size() == cap) wait();
+        q.addLast(x);
+        notifyAll();
+      }
+
+      public synchronized T take() throws InterruptedException {
+        while (q.isEmpty()) wait();
+        T x = q.removeFirst();
+        notifyAll();
+        return x;
+      }
+    }</code></pre>
+    <p>while is required because conditions may change before the lock is reacquired.</p>
+  </section>
+
+  <section id="memory-model-and-visibility" class="frame">
+    <h2>Memory model and visibility</h2>
+    <p>Without synchronization, compilers and hardware may:</p>
+    <ul>
+    <li><p>reorder instructions for optimization</p></li>
+    <li><p>cache writes in registers or local caches, delaying visibility to other threads</p></li>
+    </ul>
+    <p>Java Memory Model (JMM) formalizes this with <strong>happens-before</strong>:</p>
+    <ul>
+    <li><p>if action A happens-before action B, A's writes are guaranteed visible to B</p></li>
+    <li><p>established by: releasing/acquiring a lock, starting a thread, volatile reads/writes</p></li>
+    </ul>
+    <p>Key insight: locks do more than mutual exclusion; they also enforce memory visibility across threads.</p>
+    <p>A correctly synchronized program (no data races) behaves as if instructions run in some sequential order.</p>
+  </section>
+
 </section>
-<section id="go-worker-pool-pattern" class="frame">
-<h2>Go: worker pool pattern</h2>
-<p>A common production pattern:</p>
-<ul>
-<li><p>a bounded number of worker goroutines</p></li>
-<li><p>a jobs channel</p></li>
-<li><p>a results channel</p></li>
-</ul>
-<p>Why it matters:</p>
-<ul>
-<li><p>bounds resource usage</p></li>
-<li><p>provides backpressure under overload</p></li>
-<li><p>avoids spawning unbounded goroutines</p></li>
-</ul>
+
+<!-- =====================================================================
+     DEADLOCKS AND PITFALLS
+     ===================================================================== -->
+<section>
+  <section id="deadlocks-and-pitfalls" class="title-slide slide level1">
+  <h1>Deadlocks and pitfalls</h1>
+  </section>
+
+  <section id="deadlock-pattern" class="frame">
+  <h2>Deadlock pattern</h2>
+  <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+    <div style="flex:1;min-width:0;">
+      <p>Deadlock:</p>
+      <ul>
+      <li><p>threads wait forever because each is waiting for another to release something</p></li>
+      </ul>
+      <p>Simple pattern:</p>
+      <ul>
+      <li><p>Thread A holds lock L1, wants L2</p></li>
+      <li><p>Thread B holds lock L2, wants L1</p></li>
+      </ul>
+      <p>The program may appear correct until it freezes under a rare interleaving.</p>
+    </div>
+    <div style="flex:0 0 44%;min-width:0;">
+      <img class="diagram diagram-full"
+        src="../_static/images/concurrency/03_deadlock.png"
+        alt="Circular wait diagram showing two threads each holding one lock and waiting on the other."
+        style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+    </div>
+  </div>
+  </section>
+
+  <section id="deadlock-conditions-coffman" class="frame">
+    <h2>Deadlock conditions (Coffman)</h2>
+    <p>Deadlock becomes possible when all are present:</p>
+    <ul>
+    <li><p>mutual exclusion</p></li>
+    <li><p>hold and wait</p></li>
+    <li><p>no preemption</p></li>
+    <li><p>circular wait</p></li>
+    </ul>
+    <p>Avoidance strategies remove at least one condition.</p>
+  </section>
+
+  <section id="java-deadlock-example" class="frame">
+    <h2>Java: deadlock example</h2>
+    <p>Two locks, opposite acquisition order.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-java">final Object a = new Object();
+    final Object b = new Object();
+
+    Thread t1 = new Thread(() -&gt; {
+      synchronized (a) {
+        try { Thread.sleep(10); } catch (Exception e) {}
+        synchronized (b) { System.out.println(&quot;t1&quot;); }
+      }
+    });
+
+    Thread t2 = new Thread(() -&gt; {
+      synchronized (b) {
+        try { Thread.sleep(10); } catch (Exception e) {}
+        synchronized (a) { System.out.println(&quot;t2&quot;); }
+      }
+    });
+    t1.start(); t2.start();</code></pre>
+    <p>A common fix is consistent lock ordering.</p>
+  </section>
+
+  <section id="avoiding-deadlocks" class="frame">
+    <h2>Avoiding deadlocks</h2>
+    <p>Practical techniques:</p>
+    <ul>
+    <li><p>lock ordering: always acquire locks in a consistent global order</p></li>
+    <li><p>timeouts: abandon and retry rather than wait forever</p></li>
+    <li><p>reduce lock scope and avoid nested locks</p></li>
+    <li><p>prefer higher-level designs: queues, actors, channels</p></li>
+    </ul>
+  </section>
+
+  <section id="other-common-pitfalls" class="frame">
+    <h2>Other common pitfalls</h2>
+    <p>Issues that look like deadlocks or cause similar outages:</p>
+    <ul>
+    <li><p>blocking I/O while holding a lock</p></li>
+    <li><p>waiting without a loop on a condition variable</p></li>
+    <li><p>unbounded queues causing memory blowups</p></li>
+    <li><p>priority inversion: low priority thread holds a lock needed by high priority work</p></li>
+    </ul>
+    <p>In production, symptoms often appear as latency spikes and request timeouts.</p>
+  </section>
+
+  <section id="livelock-and-starvation" class="frame">
+    <h2>Livelock and starvation</h2>
+    <p>Both are <strong>liveness failures</strong>: the system is running but some threads make no progress.</p>
+    <p>Livelock:</p>
+    <ul>
+    <li><p>threads are not blocked, but keep reacting to each other with no net progress</p></li>
+    <li><p>example: two threads each detect a conflict and retry simultaneously, forever yielding to each other</p></li>
+    <li><p>harder to detect than deadlock because the CPU appears busy</p></li>
+    </ul>
+    <p>Starvation:</p>
+    <ul>
+    <li><p>a thread is perpetually denied access to a resource despite being runnable</p></li>
+    <li><p>common cause: unfair scheduling or a high-priority thread monopolizing a lock</p></li>
+    <li><p>fix: use fair locks or bounded waiting policies</p></li>
+    </ul>
+    <p>Contrast with deadlock: in a deadlock all involved threads are blocked; in livelock they are active; in starvation only some are indefinitely delayed.</p>
+  </section>
 </section>
-<section id="practice-4-detect-a-channel-deadlock" class="frame">
-<h2>Practice 4: detect a channel deadlock</h2>
-<p>What happens here?</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-go">package main
+
+<!-- =====================================================================
+     MESSAGE PASSING AND GO
+     ===================================================================== -->
+<section>
+  <section id="message-passing-and-go" class="title-slide slide level1">
+  <h1>Message passing and Go</h1>
+  </section>
+
+  <section id="message-passing-model" class="frame">
+    <h2>Message passing model</h2>
+    <p>Message passing:</p>
+    <ul>
+    <li><p>components communicate by sending messages</p></li>
+    <li><p>shared memory is minimized or avoided</p></li>
+    <li><p>state is owned by one component and updated sequentially</p></li>
+    </ul>
+    <p>Benefits:</p>
+    <ul>
+    <li><p>fewer shared-memory races</p></li>
+    <li><p>clearer ownership boundaries</p></li>
+    </ul>
+    <p>Costs:</p>
+    <ul>
+    <li><p>messaging overhead and protocol design</p></li>
+    <li><p>must handle ordering, retries, and failures in distributed cases</p></li>
+    </ul>
+  </section>
+
+  <section id="go-philosophy" class="frame">
+    <h2>Go's central idea</h2>
+    <p style="font-style:italic; font-size:1.1em; text-align:center; margin:0.5em 0;">
+      "Do not communicate by sharing memory.<br>
+       Instead, share memory by communicating."
+    </p>
+    <p>What this means in practice:</p>
+    <ul>
+      <li><p>instead of multiple goroutines reading and writing the same variable, <strong>one goroutine owns the data</strong></p></li>
+      <li><p>when another goroutine needs it, the data is <strong>sent through a channel</strong></p></li>
+      <li><p>ownership transfers with the message; only one goroutine has the data at a time</p></li>
+      <li><p>no shared state means no locks needed, and no deadlocks from locks</p></li>
+    </ul>
+    <p>Think of it like email: you do not edit a shared file together simultaneously; you send it, and the recipient takes over.</p>
+  </section>
+
+  <section id="what-is-a-goroutine" class="frame">
+    <h2>What is a goroutine?</h2>
+    <p><strong>Short answer: a goroutine is Go's version of a thread.</strong> It is an independent concurrent task that runs alongside other goroutines.</p>
+    <p>You start one with just the word <code>go</code>:</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-go">doWork()     // normal call: your program waits here until done
+
+go doWork()  // goroutine: a new "thread" starts; your program moves on immediately</code></pre>
+    <p>Why Go uses goroutines instead of calling them threads:</p>
+    <ul>
+      <li><p>an OS thread costs about 1 MB of memory; a goroutine starts at about 2 KB</p></li>
+      <li><p>you can have hundreds of thousands of goroutines; that many OS threads would crash the system</p></li>
+      <li><p>the Go runtime multiplexes goroutines onto a small pool of real OS threads automatically</p></li>
+      <li><p>but conceptually: <strong>one goroutine = one independent concurrent task = one thread</strong></p></li>
+    </ul>
+  </section>
+
+  <section id="goroutine-analogy" class="frame">
+    <h2>Goroutine = thread</h2>
+    <p>Think of each goroutine as a separate thread.</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-go">go boilPasta()    // Thread 1: runs independently in background
+go chopVeggies()  // Thread 2: also runs independently at the same time
+waitForBoth()     // main thread waits for both to finish</code></pre>
+    <ul>
+      <li><p>Without <code>go</code> (sequential): boil pasta (15 min), then chop (5 min) = 20 min total</p></li>
+      <li><p>With <code>go</code> (concurrent): both run at the same time = 15 min total</p></li>
+      <li><p>On a single CPU core, these threads interleave (take turns rapidly)</p></li>
+      <li><p>On multiple cores, they run truly in parallel. The code is identical either way; Go handles the scheduling.</p></li>
+    </ul>
+  </section>
+
+  <section id="actor-model-intuition" class="frame">
+    <h2>Actor model intuition</h2>
+    <p>Actor:</p>
+    <ul>
+    <li><p>owns its state</p></li>
+    <li><p>processes one message at a time</p></li>
+    <li><p>can send messages to other actors</p></li>
+    </ul>
+    <p>Typical result:</p>
+    <ul>
+    <li><p>fewer data races in local actor state</p></li>
+    <li><p>concurrency scales by adding more actors</p></li>
+    </ul>
+    <p>Similar ideas appear in event-driven microservices and queue-based systems.</p>
+  </section>
+
+  <section id="channels-as-coordination" class="frame">
+    <h2>Channels as coordination</h2>
+    <p>Channel:</p>
+    <ul>
+    <li><p>a queue connecting producers and consumers</p></li>
+    <li><p>can be buffered or unbuffered</p></li>
+    <li><p>can provide backpressure by blocking senders when full</p></li>
+    </ul>
+    <p>Channels often simplify reasoning:</p>
+    <ul>
+    <li><p>send/receive is explicit coordination</p></li>
+    <li><p>avoid many shared-memory locks</p></li>
+    </ul>
+  </section>
+
+  <section id="channel-syntax" class="frame">
+    <h2>Channel syntax: send and receive</h2>
+    <p>Create a channel that carries integers:</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-go">ch := make(chan int)      // unbuffered channel
+ch := make(chan int, 5)  // buffered: holds up to 5 values</code></pre>
+    <p>Send and receive (the arrow always shows the direction data flows):</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-go">ch &lt;- 42       // SEND: put 42 into the channel  (arrow points into ch)
+
+x := &lt;-ch     // RECEIVE: take a value out      (arrow points out of ch)</code></pre>
+    <p>The critical rule: <strong>channels block</strong>.</p>
+    <ul>
+      <li><p>sending blocks until a receiver is ready</p></li>
+      <li><p>receiving blocks until a sender puts something in</p></li>
+      <li><p>this automatic synchronization replaces many lock patterns</p></li>
+    </ul>
+  </section>
+
+  <section id="buffered-vs-unbuffered" class="frame">
+    <h2>Buffered vs unbuffered channels</h2>
+    <p><strong>Unbuffered</strong> (default): sender blocks until the receiver is ready. Both threads must meet at the same moment.</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-go">ch := make(chan int)   // unbuffered
+
+// Thread 1                    // Thread 2
+ch &lt;- 42               // BLOCKS here until Thread 2 receives
+x := &lt;-ch  // both threads sync at this point</code></pre>
+    <p><strong>Buffered</strong>: sender can drop values in without waiting, up to the buffer capacity.</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-go">ch := make(chan int, 3) // buffered: holds up to 3 values
+
+// Thread 1 can run ahead:
+ch &lt;- 1   // goes into buffer, does NOT block
+ch &lt;- 2   // goes into buffer, does NOT block
+ch &lt;- 3   // goes into buffer, does NOT block
+ch &lt;- 4   // buffer full: NOW blocks until Thread 2 reads one</code></pre>
+<ul>
+  <li>unbuffered = passing a baton (both runners meet at the same spot); </li>
+  <li>buffered = leaving parcels in a mailbox (sender does not wait for the recipient).</li>
+</ul>
+
+  </section>
+
+  <section id="go-goroutines-and-channels" class="frame">
+    <h2>Go Example: Ticketing</h2>
+    <p><code>ticketsLeft</code> lives only inside <code>inventoryManager</code>. No other goroutine can see or touch it.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\scriptsize"
+    data-tabsize="1"><code class="language-go">package main
+import "fmt"
+
+type BookingRequest struct {
+    customerID int
+    reply      chan string  // owner sends the answer back here
+}
+
+// THE OWNER: the only goroutine that ever reads or writes ticketsLeft
+func inventoryManager(requests chan BookingRequest) {
+    ticketsLeft := 3  // private to this goroutine; no other goroutine can touch it
+
+    for req := range requests {   // process one request at a time
+        if ticketsLeft &gt; 0 {
+            ticketsLeft--
+            req.reply &lt;- fmt.Sprintf("Customer %d: booked! (%d left)", req.customerID, ticketsLeft)
+        } else {
+            req.reply &lt;- fmt.Sprintf("Customer %d: sold out", req.customerID)
+        }
+    }
+}
 
 func main() {
-  ch := make(chan int)
-  ch &lt;- 1
+    requests := make(chan BookingRequest, 10)
+    go inventoryManager(requests)    // start the owner goroutine
+
+    results := make(chan string, 5)
+    for id := 1; id &lt;= 5; id++ {   // 5 customers arrive simultaneously
+        go func(id int) {
+            reply := make(chan string, 1)
+            requests &lt;- BookingRequest{id, reply}  // ask the owner
+            results &lt;- &lt;-reply                     // wait for answer
+        }(id)
+    }
+    for i := 0; i &lt; 5; i++ { fmt.Println(&lt;-results) }
 }</code></pre>
-<ul>
-<li><p>Does it finish, block, or crash</p></li>
-<li><p>Why</p></li>
-</ul>
+  </section>
+
+  <section id="go-worker-pool-pattern" class="frame">
+    <h2>Go: worker pool pattern</h2>
+    <p>A common production pattern:</p>
+    <ul>
+    <li><p>a bounded number of worker goroutines</p></li>
+    <li><p>a jobs channel</p></li>
+    <li><p>a results channel</p></li>
+    </ul>
+    <p>Why it matters:</p>
+    <ul>
+    <li><p>bounds resource usage</p></li>
+    <li><p>provides backpressure under overload</p></li>
+    <li><p>avoids spawning unbounded goroutines</p></li>
+    </ul>
+  </section>
+
+  <section id="practice-4-detect-a-channel-deadlock" class="frame">
+    <h2>Practice: detect a channel deadlock</h2>
+    <p>What happens here?</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-go">package main
+
+    func main() {
+      ch := make(chan int)
+      ch &lt;- 1
+    }</code></pre>
+    <ul>
+    <li><p>Does it finish, block, or crash</p></li>
+    <li><p>Why</p></li>
+    </ul>
+  </section>
+
+  <section id="practice-4-answer-detect-a-channel-deadlock" class="frame">
+  <h2>Practice Answer: detect a channel deadlock</h2>
+  <p>It panics immediately with a runtime deadlock error:</p>
+  <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code>fatal error: all goroutines are asleep - deadlock!</code></pre>
+  <ul>
+  <li><p>ch is unbuffered: a send blocks until a receiver is ready</p></li>
+  <li><p>there is no receiver goroutine</p></li>
+  <li><p>the Go runtime detects that all goroutines are sleeping and panics rather than hanging silently</p></li>
+  </ul>
+  <p>Compare to Java: a Java deadlock hangs silently. Go crashes immediately with a clear error, which is much easier to debug.</p>
+  <p>Note: the runtime can only detect this when every goroutine is blocked. If a goroutine were spinning, the deadlock would go undetected.</p>
+  </section>
 </section>
-<section id="practice-4-answer-detect-a-channel-deadlock" class="frame">
-<h2>Practice 4 Answer: detect a channel deadlock</h2>
-<p>It blocks forever.</p>
-<ul>
-<li><p>ch is unbuffered</p></li>
-<li><p>send blocks until a receiver is ready</p></li>
-<li><p>there is no receiver</p></li>
-</ul>
-</section></section>
-<section class="slide level2">
-<section id="bridge-message-passing-to-async" class="frame">
-<h2>Bridge: message passing to async/await</h2>
-<p>Both models handle many in-flight tasks, but with different defaults:</p>
-<ul>
-<li><p>Go model: explicit goroutines/channels, often multi-threaded runtime</p></li>
-<li><p>Async/await model: event-loop scheduling, often single-threaded user code</p></li>
-</ul>
-</section>
-</section>
+
+<!-- =====================================================================
+     FUTURES AND PROMISES
+     ===================================================================== -->
 <section>
-<section id="asyncawait-and-event-loops"
-class="title-slide slide level1">
-<h1>Async/await and event loops</h1>
+  <section id="futures-and-promises" class="title-slide slide level1">
+    <h1>Futures and Promises</h1>
+  </section>
+
+  <section id="what-is-a-promise" class="frame">
+    <h2>What is a Future / Promise?</h2>
+    <ul>
+      <li><p>A <strong>Promise</strong> (JS/TS) or <strong>Future</strong> (Java, Scala) is a
+    placeholder for a value that does not exist yet.</p></li>
+    <li>Key idea: separate <em>starting</em> a computation from <em>using its result</em></li>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">const p: Promise&lt;number&gt; = fetchPrice("AAPL"); // starts immediately, returns a placeholder
+// ... do other work while the fetch runs ...
+const price = await p;  // use the result later, when needed</code></pre>
+    <li>A Promise has three states:</li>
+    <ul>
+      <li><p><strong>pending</strong>: the computation is still running</p></li>
+      <li><p><strong>fulfilled</strong>: it finished successfully, the value is ready</p></li>
+      <li><p><strong>rejected</strong>: it failed, an error is available</p></li>
+    </ul>
+    </ul>
+  </section>
+
+  <section id="callback-hell" class="frame">
+    <h2>The problem Promises solve: callback hell</h2>
+    <p>Before Promises, sequential async steps required deeply nested callbacks:</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">// Callback style: "pyramid of doom"
+fetchUser(id, (user) =&gt; {
+    fetchOrders(user, (orders) =&gt; {
+        fetchInvoice(orders[0], (invoice) =&gt; {
+            console.log(invoice);  // three levels deep, error handling missing
+        });
+    });
+});</code></pre>
+    <p>Promises flatten this into a readable chain:</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">// Promise chain: flat and readable
+fetchUser(id)
+    .then(user   =&gt; fetchOrders(user))
+    .then(orders =&gt; fetchInvoice(orders[0]))
+    .then(invoice =&gt; console.log(invoice))
+    .catch(err  =&gt; console.error(err));  // one handler for all errors</code></pre>
+  </section>
+
+  <section id="js-ts-promise-basics" class="frame">
+    <h2>JS/TS: Promise basics</h2>
+    <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em"
+         data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-typescript">// Creating a Promise manually
+const p = new Promise&lt;number&gt;((resolve, reject) =&gt; {
+    setTimeout(() =&gt; resolve(42), 1000); // fulfills after 1s
+    // or: reject(new Error("something went wrong"))
+});
+
+// Consuming a Promise
+p.then(value =&gt; console.log("got:", value))  // runs on fulfillment
+ .catch(err  =&gt; console.error("error:", err)) // runs on rejection
+ .finally(()  =&gt; console.log("always runs")); // cleanup, like finally in try/catch
+
+// With async/await (same thing, cleaner syntax)
+try {
+    const value = await p;
+    console.log("got:", value);
+} catch (err) {
+    console.error("error:", err);
+} finally {
+    console.log("always runs");
+}</code></pre>
+    <p>In practice you rarely construct a <code>new Promise</code> manually.
+    Library functions (fetch, fs.readFile, setTimeout wrapped) return Promises
+    for you. You mostly consume them with <code>await</code> or <code>.then()</code>.</p>
+  </section>
+
+  <section id="js-ts-combining-promises" class="frame">
+    <h2>JS/TS: combining multiple Promises</h2>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">// All four start simultaneously (NOT sequential awaits)
+const [user, orders, config] = await Promise.all([
+    fetchUser(id), fetchOrders(id), fetchConfig()
+]);</code></pre>
+    <table style="font-size:0.82em; border-collapse:collapse; width:100%; margin-top:0.5em;">
+      <thead>
+        <tr style="background:#E2E8F0;">
+          <th style="padding:5px 10px;">Combinator</th>
+          <th style="padding:5px 10px;">Resolves when</th>
+          <th style="padding:5px 10px;">Rejects when</th>
+          <th style="padding:5px 10px;">Use case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:4px 10px;"><code>Promise.all</code></td>
+          <td>all fulfill</td>
+          <td>any rejects (fast-fail)</td>
+          <td>need all results; one failure = abort</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:4px 10px;"><code>Promise.allSettled</code></td>
+          <td>all settle (either way)</td>
+          <td>never rejects</td>
+          <td>want all outcomes; failures reported not thrown</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 10px;"><code>Promise.race</code></td>
+          <td>first to settle</td>
+          <td>first to settle (if reject)</td>
+          <td>timeout: race a fetch against a delay Promise</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:4px 10px;"><code>Promise.any</code></td>
+          <td>first to fulfill</td>
+          <td>all reject</td>
+          <td>try multiple sources; use whichever responds first</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  
+  <section id="java-completable-future" class="frame">
+    <h2>Java: CompletableFuture</h2>
+    <p>Java's equivalent of Promises. Same ideas, typed API.</p>
+    <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em"
+         data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-java">// Start an async computation in the thread pool
+CompletableFuture&lt;User&gt; userFuture =
+    CompletableFuture.supplyAsync(() -&gt; fetchUser(id));
+
+// Chain transformations (.then() equivalent)
+CompletableFuture&lt;List&lt;Order&gt;&gt; ordersFuture =
+    userFuture.thenApply(user -&gt; fetchOrders(user));
+
+// Block and get the result (like await)
+List&lt;Order&gt; orders = ordersFuture.join();
+
+// Combining (like Promise.all)
+CompletableFuture.allOf(future1, future2, future3)
+    .join(); // waits for all three</code></pre>
+    <p>Comparison:</p>
+    <ul>
+      <li><p><code>supplyAsync</code> = <code>new Promise</code> + work runs in thread pool</p></li>
+      <li><p><code>thenApply</code> = <code>.then()</code></p></li>
+      <li><p><code>exceptionally</code> = <code>.catch()</code></p></li>
+      <li><p><code>join()</code> = <code>await</code> (blocks the calling thread)</p></li>
+    </ul>
+  </section>
 
 </section>
-<section id="asyncawait-and-event-loops-1" class="frame">
-<h2>Async/await and event loops</h2>
-</section>
-<section id="event-loop-model" class="frame">
-<h2>Event loop model</h2>
-<p>Event loop:</p>
-<ul>
-<li><p>one main thread processes queued tasks/callbacks</p></li>
-<li><p>I/O registers completion events, then returns quickly</p></li>
-<li><p>when I/O completes, a callback/task is queued</p></li>
-</ul>
-<p>Benefits:</p>
-<ul>
-<li><p>handles many concurrent I/O tasks efficiently</p></li>
-<li><p>reduces shared-memory races when most code runs on one
-thread</p></li>
-</ul>
-<p>Cost:</p>
-<ul>
-<li><p>blocking the event loop breaks responsiveness for
-everything</p></li>
-</ul>
-</section>
-<section id="asyncawait-as-structured-callbacks" class="frame">
-<h2>Async/await as structured callbacks</h2>
-<p>async/await:</p>
-<ul>
-<li><p>syntax that makes promise/callback style code readable</p></li>
-<li><p>await yields control back to the scheduler/event loop</p></li>
-</ul>
-<p>Operational picture:</p>
-<ul>
-<li><p>run until first await</p></li>
-<li><p>pause the function</p></li>
-<li><p>resume later when the awaited operation completes</p></li>
-</ul>
-</section>
-<section id="typescript-basic-asyncawait" class="frame">
-<h2>TypeScript: basic async/await</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">function delay(ms: number): Promise&lt;void&gt; {
-  return new Promise(resolve =&gt; setTimeout(resolve, ms));
-}
 
-async function f(): Promise&lt;void&gt; {
-  console.log(&quot;A&quot;);
-  await delay(10);
-  console.log(&quot;B&quot;);
-}
+<!-- =====================================================================
+     ASYNC/AWAIT AND EVENT LOOPS
+     ===================================================================== -->
+<section>
+  <section id="asyncawait-and-event-loops" class="title-slide slide level1">
+  <h1>Async/await and event loops</h1>
+  </section>
 
-console.log(&quot;start&quot;);
-f();
-console.log(&quot;end&quot;);</code></pre>
-<p>Typical output: start, A, end, then later B.</p>
-</section>
-<section id="typescript-sequential-vs-parallel-awaits" class="frame">
-<h2>TypeScript: sequential vs parallel awaits</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">function work(x: number): Promise&lt;number&gt; {
-  return new Promise(resolve =&gt; setTimeout(() =&gt; resolve(x * x), 10));
-}
+  <section id="the-io-problem" class="frame">
+    <h2>Why async? The cost of waiting for I/O</h2>
+    <ul>
+      <li><p>Most of a web server's time is spent <em>waiting</em>: for a database to reply, a file to load, an API to respond.</p></li>
+      <li><p><strong>Thread-per-request model:</strong> assign one thread to each request; it blocks while waiting.</p>
+        <ul>
+          <li><p>10,000 concurrent requests = 10,000 threads = roughly 10 GB of memory just for thread stacks</p></li>
+          <li><p>most of those threads are sleeping, doing nothing useful</p></li>
+        </ul>
+      </li>
+      <li><p><strong>Event loop model (Node.js, Python asyncio):</strong> one thread handles everything, but never blocks.</p>
+        <ul>
+          <li><p>like a single restaurant waiter serving many tables</p></li>
+          <li><p>while table 3 waits for food (I/O), the waiter takes table 7's order (another task)</p></li>
+          <li><p>the waiter only freezes if they stop to make a phone call; that must never happen in your code</p></li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <section id="event-loop-model" class="frame">
+    <h2>Event loop model</h2>
+    <p>Event loop:</p>
+    <ul>
+    <li><p>one main thread processes queued tasks/callbacks</p></li>
+    <li><p>I/O registers completion events, then returns quickly</p></li>
+    <li><p>when I/O completes, a callback/task is queued</p></li>
+    </ul>
+    <p>Benefits:</p>
+    <ul>
+    <li><p>handles many concurrent I/O tasks efficiently</p></li>
+    <li><p>reduces shared-memory races when most code runs on one thread</p></li>
+    </ul>
+    <p>Cost:</p>
+    <ul>
+    <li><p>blocking the event loop breaks responsiveness for everything</p></li>
+    </ul>
+  </section>
+
+  <section id="diagram-event-loop" class="frame diagram-slide">
+  <h2>Event loop model </h2>
+  <img class="diagram diagram-full"
+    src="../_static/images/concurrency/04_event_loop.png"
+    alt="Event loop diagram with task queue, loop, I O, and render or response work.">
+  </section>
+
+  <section id="async-await-is-built-on-promises" class="frame">
+    <h2>async/await is built on Promises</h2>
+    <p>They are the same model. <code>async/await</code> is a more readable way to write Promise code.</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+        data-tabsize="1"><code class="language-typescript">// An async function ALWAYS returns a Promise
+  async function getUser(id: string): Promise&lt;User&gt; {
+      return fetchUser(id);  // auto-wrapped in Promise.resolve()
+  }
+
+  // await is just cleaner syntax for .then()
+  // These two do exactly the same thing:
+  const user = await getUser("123");
+
+  getUser("123").then(user =&gt; { /* same result */ });</code></pre>
+    <p>Everything you learned about Promises applies. <code>async/await</code> does not add new behaviour — it just makes the code easier to read and reason about.</p>
+  </section>
+
+  <section id="what-does-await-do" class="frame">
+    <h2>What does <code>await</code> actually do?</h2>
+    <ul>
+    <li><p>When you write <code>await someOperation()</code>, three things happen:</p></li>
+    <ol>
+      <li><p>the current function <strong>pauses</strong> at that line</p></li>
+      <li><p>control <strong>returns to the event loop</strong> so other tasks can run</p></li>
+      <li><p>when the operation completes, the event loop <strong>resumes your function</strong> from exactly where it left off</p></li>
+    </ol>
+        <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">async function f() {
+    console.log("A");   // runs on the event loop thread
+    await delay(10);    // pauses f; event loop is free to run other tasks
+    console.log("B");   // resumes here after 10ms; still the same thread
+}</code></pre>
+      <li>The function does not disappear. Its local variables are preserved.</li>
+      <li>When resumed, it continues as if nothing happened in between.</li>
+      <li>Important: <strong>await does not start a new thread</strong>. </li>
+      <ul>
+        <li>The same single thread pauses one task and picks up another</li>
+        <li>This is why async code mostly avoids race conditions: only one function runs at a time.</li>
+      </ul>
+    </ul>
+
+  </section>
+
+  <section id="diagram-async-await-flow" class="frame diagram-slide">
+  <h2>Async/await execution flow</h2>
+  <img class="diagram diagram-full"
+    src="../_static/images/concurrency/06_async_await_flow_redesign.svg"
+    alt="Timeline showing async function pause at await and later resume after promise resolution."
+    style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+  </section>
+
+  <section id="typescript-basic-asyncawait" class="frame">
+    <h2>JS/TS: basic async/await</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-typescript">function delay(ms: number): Promise&lt;void&gt; {
+      return new Promise(resolve =&gt; setTimeout(resolve, ms));
+    }
+
+    async function f(): Promise&lt;void&gt; {
+      console.log(&quot;A&quot;);
+      await delay(10);
+      console.log(&quot;B&quot;);
+    }
+
+    console.log(&quot;start&quot;);
+    f();
+    console.log(&quot;end&quot;);</code></pre>
+    <p>Typical output: start, A, end, then later B.</p>
+  </section>
+
+  <section id="typescript-sequential-vs-parallel-awaits" class="frame">
+    <h2>JS/TS: sequential vs parallel awaits</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-typescript">function work(x: number): Promise&lt;number&gt; {
+      return new Promise(resolve =&gt; setTimeout(() =&gt; resolve(x * x), 10));
+    }
 
 async function sequential(xs: number[]): Promise&lt;number[]&gt; {
   const out: number[] = [];
@@ -692,259 +955,599 @@ async function sequential(xs: number[]): Promise&lt;number[]&gt; {
 async function parallel(xs: number[]): Promise&lt;number[]&gt; {
   return Promise.all(xs.map(work));
 }</code></pre>
-<p>parallel starts all operations first, then awaits completion.</p>
-</section>
-<section id="python-asyncawait-basics" class="frame">
-<h2>Python: async/await basics</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-python">import asyncio
+    <p>parallel starts all operations first, then awaits completion.</p>
+  </section>
+
+  <section id="python-asyncawait-basics" class="frame">
+    <h2>Python: async/await basics</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-python">
+import asyncio
 
 async def work(x: int) -&gt; int:
-    await asyncio.sleep(0.01)
-    return x * x
+  await asyncio.sleep(0.01)
+  return x * x
 
 async def main() -&gt; None:
-    xs = [1, 2, 3, 4]
-    ys = await asyncio.gather(*(work(x) for x in xs))
-    print(ys)
+  xs = [1, 2, 3, 4]
+  ys = await asyncio.gather(*(work(x) for x in xs))
+  print(ys)
 
 asyncio.run(main())</code></pre>
-<p>gather is similar to Promise.all.</p>
-</section>
-<section id="async-does-not-imply-cpu-parallelism" class="frame">
-<h2>Async does not imply CPU parallelism</h2>
-<p>Many async runtimes:</p>
-<ul>
-<li><p>overlap I/O waits</p></li>
-<li><p>run callbacks on one main thread</p></li>
-</ul>
-<p>Consequence:</p>
-<ul>
-<li><p>CPU-heavy code blocks the event loop</p></li>
-<li><p>for CPU-heavy work, use worker pools, threads, or
-processes</p></li>
-</ul>
-<p>This is why production Node services often offload CPU-heavy
-tasks.</p>
-</section>
-<section id="practice-5-predict-output-ordering-typescript"
-class="frame">
-<h2>Practice 5: predict output ordering (TypeScript)</h2>
-<p>Predict the order.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">function delay(ms: number): Promise&lt;void&gt; {
-  return new Promise(r =&gt; setTimeout(r, ms));
-}
+    <p>gather is similar to Promise.all: all tasks start simultaneously.</p>
+  </section>
 
-async function g(): Promise&lt;void&gt; {
-  console.log(&quot;g1&quot;);
-  await delay(0);
-  console.log(&quot;g2&quot;);
-}
+  <section id="async-does-not-imply-cpu-parallelism" class="frame">
+    <h2>Async does not imply CPU parallelism</h2>
+    <p>Many async runtimes:</p>
+    <ul>
+    <li><p>overlap I/O waits</p></li>
+    <li><p>run callbacks on one main thread</p></li>
+    </ul>
+    <p>Consequence:</p>
+    <ul>
+    <li><p>CPU-heavy code blocks the event loop</p></li>
+    <li><p>for CPU-heavy work, use worker pools, threads, or processes</p></li>
+    </ul>
+    <p>This is why production Node services often offload CPU-heavy tasks.</p>
+  </section>
 
-console.log(&quot;A&quot;);
-g();
-console.log(&quot;B&quot;);</code></pre>
+  <section id="practice-5-predict-output-ordering-typescript" class="frame">
+    <h2>Practice: predict output ordering (JS/TS)</h2>
+    <p>Predict the order.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-typescript">function delay(ms: number): Promise&lt;void&gt; {
+      return new Promise(r =&gt; setTimeout(r, ms));
+    }
+
+    async function g(): Promise&lt;void&gt; {
+      console.log(&quot;g1&quot;);
+      await delay(0);
+      console.log(&quot;g2&quot;);
+    }
+
+    console.log(&quot;A&quot;);
+    g();
+    console.log(&quot;B&quot;);</code></pre>
+  </section>
+
+  <section id="practice-5-answer-predict-output-ordering-typescript" class="frame">
+    <h2>Practice Answer: predict output ordering (JS/TS)</h2>
+    <p>Output: A, g1, B, g2</p>
+    <ul>
+    <li><p>A prints first</p></li>
+    <li><p>g() is called; runs until await; prints g1</p></li>
+    <li><p>await delay(0) yields to the event loop even with 0 ms; await always yields before continuing</p></li>
+    <li><p>control returns to main; B prints</p></li>
+    <li><p>event loop resumes g; g2 prints</p></li>
+    </ul>
+    <p>Key insight: await delay(0) is not a no-op. Any await gives the event loop a turn to run other tasks first.</p>
+  </section>
 </section>
-<section id="practice-5-answer-predict-output-ordering-typescript"
-class="frame">
-<h2>Practice 5 Answer: predict output ordering (TypeScript)</h2>
-<p>A typical order:</p>
-<ul>
-<li><p>A</p></li>
-<li><p>g1</p></li>
-<li><p>B</p></li>
-<li><p>g2</p></li>
-</ul>
-<p>Reason:</p>
-<ul>
-<li><p>g runs until await, then yields</p></li>
-<li><p>g2 runs later when the promise resolves</p></li>
-</ul>
-</section></section>
+
+<!-- =====================================================================
+     RUST
+     ===================================================================== -->
 <section>
-<section id="industry-and-language-tradeoffs"
-class="title-slide slide level1">
-<h1>Industry and language tradeoffs</h1>
+  <section id="rust" class="title-slide slide level1">
+  <h1>Rust: compile-time safety</h1>
+  </section>
 
-</section>
-<section id="industry-and-language-tradeoffs-1" class="frame">
-<h2>Industry and language tradeoffs</h2>
-</section>
-<section id="choosing-a-concurrency-model-in-practice" class="frame">
-<h2>Choosing a concurrency model in practice</h2>
-<p>Questions engineers ask:</p>
-<ul>
-<li><p>Is the workload I/O-heavy or CPU-heavy</p></li>
-<li><p>How many concurrent tasks are typical at peak</p></li>
-<li><p>What are latency requirements and tail latency
-constraints</p></li>
-<li><p>What failure modes matter: overload, backpressure, partial
-outages</p></li>
-</ul>
-<p>In practice, systems often mix models:</p>
-<ul>
-<li><p>async I/O for network calls</p></li>
-<li><p>worker pools for CPU-bound transformations</p></li>
-<li><p>message queues for cross-service decoupling</p></li>
-</ul>
-</section>
-<section id="web-servers-typical-concurrency-choices" class="frame">
-<h2>Web servers: typical concurrency choices</h2>
-<p>Common architectures:</p>
-<ul>
-<li><p>thread-per-request: simple mental model, heavy at high
-scale</p></li>
-<li><p>thread pool: bound thread count, queue work</p></li>
-<li><p>event loop: many I/O connections, fewer threads</p></li>
-<li><p>hybrid: event loop plus worker pool</p></li>
-</ul>
-<p>The best choice depends on workload shape and performance goals.</p>
-</section>
-<section id="backpressure-and-overload" class="frame">
-<h2>Backpressure and overload</h2>
-<p>Under load:</p>
-<ul>
-<li><p>unbounded queues increase memory usage and latency</p></li>
-<li><p>downstream services become bottlenecks</p></li>
-</ul>
-<p>Practical mechanisms:</p>
-<ul>
-<li><p>bounded queues and worker pools</p></li>
-<li><p>semaphores limiting in-flight work</p></li>
-<li><p>timeouts, retries with jitter, circuit breakers</p></li>
-</ul>
-</section>
-<section id="rust-cameo-safety-angle" class="frame">
-<h2>Rust cameo: safety angle</h2>
-<p>Rust emphasizes safety against data races:</p>
-<ul>
-<li><p>ownership and borrowing prevent many unsafe shared
-mutations</p></li>
-<li><p>safe shared mutation typically uses synchronization
-wrappers</p></li>
-</ul>
-<p>Takeaway:</p>
-<ul>
-<li><p>language design can move concurrency errors from runtime bugs to
-compile-time constraints</p></li>
-</ul>
-</section>
-<section id="rust-shared-counter-sketch" class="frame">
-<h2>Rust: shared counter sketch</h2>
-<p>Arc + Mutex is a common safe pattern.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-rust">use std::sync::{Arc, Mutex};
-use std::thread;
+  <section id="rust-the-problem" class="frame">
+    <h2>Rust: the problem with other languages</h2>
+    <ul>
+      <li>In Java, this compiles and runs, but produces a race condition at runtime:</li>
+  
+   
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-java">int value = 0;
+void inc() { value = value + 1; }  // compiles fine, races silently</code></pre>
+    <li>The Java compiler has no idea there is a problem.</li>
+    <li>The bug appears only under specific timing, in production, under load.</li>
+    <li>Rust's design goal: <strong>make data races a compile-time error, not a runtime surprise</strong>.</li>
+    <ul>
+      <li><p>if your code has a data race, it will not compile</p></li>
+      <li><p>if it compiles, the compiler has verified there are no data races</p></li>
+      <li><p>this guarantee holds without a garbage collector and without a runtime checker</p></li>
+    </ul>
+    </ul>
+  </section>
 
-fn main() {
-  let c = Arc::new(Mutex::new(0));
-  let mut handles = vec![];
+  <section id="rust-cameo-safety-angle" class="frame">
+    <h2>Rust: how ownership prevents races</h2>
+    <p>Rust's core rule: <strong>at any moment, a value has exactly one owner</strong>.</p>
+    <p>For concurrency, this means the compiler tracks who owns each piece of data:</p>
+    <ul>
+    <li><p>if you try to send data to another thread without transferring ownership, it will not compile</p></li>
+    <li><p>if you try to share mutable data across threads without synchronization, it will not compile</p></li>
+    <li><p>safe shared mutation requires explicit wrappers: <code>Arc</code> and <code>Mutex</code></p></li>
+    </ul>
+    <p>Takeaway: language design can move concurrency errors from runtime bugs to compile-time constraints. You write slightly more code upfront; you get a correctness guarantee in return.</p>
+  </section>
 
-  for _ in 0..2 {
-    let c2 = Arc::clone(&amp;c);
-    handles.push(thread::spawn(move || {
-      for _ in 0..1000 {
-        let mut v = c2.lock().unwrap();
-        *v += 1;
+  <section id="rust-arc-mutex-explained" class="frame">
+    <h2>Rust: Arc and Mutex explained</h2>
+    <p>Two types work together to allow safe shared mutation across threads:</p>
+    <p><strong>Mutex&lt;T&gt;</strong>: wraps a value so it can only be accessed while the lock is held.</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-rust">let m = Mutex::new(0);
+let mut val = m.lock().unwrap(); // acquire lock; get access to the inner value
+*val += 1;                       // modify it
+// lock is released automatically when `val` goes out of scope</code></pre>
+    <p><strong>Arc&lt;T&gt;</strong> (Atomic Reference Counting): allows multiple owners across threads. Like a shared pointer that is safe to clone and send to other threads.</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-rust">let shared = Arc::new(Mutex::new(0));
+let clone  = Arc::clone(&amp;shared); // both point to the same Mutex
+// give `clone` to another thread; Arc tracks ownership count atomically</code></pre>
+    <p>Together, <code>Arc&lt;Mutex&lt;T&gt;&gt;</code> is Rust's standard pattern for anything equivalent to a Java <code>synchronized</code> field.</p>
+  </section>
+
+  <section id="rust-shared-counter-sketch" class="frame">
+    <h2>Rust: shared counter sketch</h2>
+    <p>Arc + Mutex is a common safe pattern.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-rust">use std::sync::{Arc, Mutex};
+    use std::thread;
+
+    fn main() {
+      let c = Arc::new(Mutex::new(0));
+      let mut handles = vec![];
+
+      for _ in 0..2 {
+        let c2 = Arc::clone(&amp;c);
+        handles.push(thread::spawn(move || {
+          for _ in 0..1000 {
+            let mut v = c2.lock().unwrap();
+            *v += 1;
+          }
+        }));
       }
-    }));
-  }
 
-  for h in handles { h.join().unwrap(); }
-  println!(&quot;{}&quot;, *c.lock().unwrap());
-}</code></pre>
+      for h in handles { h.join().unwrap(); }
+      println!(&quot;{}&quot;, *c.lock().unwrap());
+    }</code></pre>
+  </section>
+
+  <section id="rust-compiler-catches" class="frame">
+    <h2>Rust: what the compiler catches</h2>
+    <ul>
+      <li><p>If you try to share data across threads without <code>Arc</code> and <code>Mutex</code>, the compiler rejects it:</p></li>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-rust">let mut count = 0;
+thread::spawn(|| {
+    count += 1;  // compile error!
+});
+// error: closure may outlive the current function
+// note: `count` is borrowed here but needs to be owned by the new thread</code></pre>
+    <li>The error message explains exactly what is wrong and points you toward the fix (<code>Arc&lt;Mutex&lt;_&gt;&gt;</code>).</li>
+    <li>The equivalent Java code compiles without warnings and silently produces wrong answers under concurrent load.</li>
+    <li>The tradeoff: Rust's ownership system has a learning curve. You spend more time satisfying the compiler upfront; you get a verified absence of data races as the payoff.</li>
+    </ul>
+  </section>
 </section>
-<section id="practice-6-choose-a-model" class="frame">
-<h2>Practice 6: choose a model</h2>
-<p>For each service, choose a reasonable default concurrency model and
-explain why:</p>
-<ul>
-<li><p>chat server that mostly does network I/O</p></li>
-<li><p>image resizing service that is CPU-heavy</p></li>
-<li><p>API gateway that calls many downstream services</p></li>
-<li><p>log processor that does batch transformations nightly</p></li>
-</ul>
-</section>
-<section id="practice-6-answer-choose-a-model" class="frame">
-<h2>Practice 6 Answer: choose a model</h2>
-<p>One reasonable set of choices:</p>
-<ul>
-<li><p>chat server: event loop or async I/O, worker pool for CPU tasks
-if needed</p></li>
-<li><p>image resizing: threads/processes for CPU parallelism</p></li>
-<li><p>API gateway: async I/O, bounded concurrency, timeouts</p></li>
-<li><p>batch log processor: parallel map/reduce style, worker pools,
-distributed if needed</p></li>
-</ul>
-</section></section>
+
+<!-- =====================================================================
+     STRUCTURED CONCURRENCY
+     ===================================================================== -->
 <section>
-<section id="review" class="title-slide slide level1">
-<h1>Review</h1>
+  <section id="structured-concurrency" class="title-slide slide level1">
+    <h1>Structured concurrency</h1>
+  </section>
 
+  <section id="orphaned-tasks-problem" class="frame">
+    <h2>The problem: orphaned tasks</h2>
+    <p>In Go, launching a goroutine is fire-and-forget:</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-go">func handleRequest(w http.ResponseWriter, r *http.Request) {
+    go logAnalytics(r)   // launched and forgotten
+    sendResponse(w)      // request finishes and returns
+}
+// logAnalytics keeps running after the response is sent.
+// If it panics or leaks, nobody knows. No way to cancel it.</code></pre>
+    <p>In JS/TS, an unawaited Promise fails silently:</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">async function handleRequest() {
+    fetchAnalytics();   // unawaited: if this rejects, nobody catches it
+    return sendResponse();
+}</code></pre>
+    <p>These are <strong>orphaned tasks</strong>: concurrent work with no parent tracking its lifetime. Common consequences:</p>
+    <ul>
+      <li><p>resource leaks (database connections, file handles never closed)</p></li>
+      <li><p>uncaught errors that silently corrupt state</p></li>
+      <li><p>tasks that outlive their context and use stale data</p></li>
+    </ul>
+  </section>
+
+  <section id="structured-concurrency-core-idea" class="frame">
+    <h2>Structured concurrency: the core rule</h2>
+    <ul>
+      <li><p><strong>A concurrent task cannot outlive the scope that created it.</strong></p></li>
+      <li><p>When a scope exits:</p></li>
+      <ul>
+        <li><p>if all children finished successfully, the scope returns normally</p></li>
+        <li><p>if any child failed, remaining children are cancelled and the error propagates</p></li>
+        <li><p>the scope does not return until every child has finished or been cancelled</p></li>  
+      </ul>
+      <li>Analogy:</li>
+      <ul>
+        <li> a regular function call. When you call <code>f()</code>, you know exactly when it returns; everything it started is done by then. Structured concurrency gives concurrent tasks the same guarantee.</li>
+      </ul>
+      <li>Compare to goto:</li>
+      <ul>
+        <li>  
+          Unstructured jumps were replaced by functions, loops, and if-statements (structured programming). Structured concurrency does the same for concurrent execution.
+        </li></ul>
+
+      <li><p>Languages with native support: <strong>Java 21</strong> (StructuredTaskScope), <strong>Kotlin</strong> (coroutineScope), <strong>Swift</strong> (async let / TaskGroup).</p></li>
+    </ul>
+  </section>
+
+  <section id="java-structured-task-scope" class="frame">
+    <h2>Java 21: StructuredTaskScope</h2>
+    <p>Fetch user and orders in parallel. If either fails, cancel the other.</p>
+    <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em"
+         data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-java">String result;
+try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+
+    Future&lt;User&gt;        user   = scope.fork(() -&gt; fetchUser(id));
+    Future&lt;List&lt;Order&gt;&gt; orders = scope.fork(() -&gt; fetchOrders(id));
+
+    scope.join();          // wait for both subtasks
+    scope.throwIfFailed(); // if either threw, rethrow here
+
+    result = buildResponse(user.resultNow(), orders.resultNow());
+
+}   // scope closes: any still-running subtasks are cancelled automatically
+    // both subtasks are guaranteed to have finished before this line</code></pre>
+    <p>Key properties:</p>
+    <ul>
+      <li><p><code>ShutdownOnFailure</code>: if one subtask throws, the other is cancelled</p></li>
+      <li><p><code>ShutdownOnSuccess</code>: cancel remaining subtasks as soon as one succeeds (useful for racing)</p></li>
+      <li><p>the try-with-resources block is the scope boundary; nothing leaks out</p></li>
+    </ul>
+  </section>
+
+  <section id="kotlin-coroutine-scope" class="frame">
+    <h2>Kotlin: coroutineScope</h2>
+    <p>Kotlin coroutines enforce structured concurrency by default.</p>
+    <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em"
+         data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-kotlin">suspend fun loadDashboard(id: String): Dashboard = coroutineScope {
+    // async launches a child coroutine inside this scope
+    val user   = async { fetchUser(id) }
+    val orders = async { fetchOrders(id) }
+    // both run concurrently inside the scope
+
+    Dashboard(user.await(), orders.await())
+    // coroutineScope does NOT return until both children finish
+    // if either throws, the other is cancelled and the exception propagates
+}</code></pre>
+    <p>Contrast with <code>GlobalScope.launch</code> (unstructured, discouraged):</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-kotlin">// Bad: fire-and-forget, no parent, no cancellation
+GlobalScope.launch { fetchUser(id) }  // orphaned task</code></pre>
+    <p>Kotlin's design makes the structured approach the easy path and the unstructured approach explicit and obviously named.</p>
+  </section>
+
+  <section id="js-ts-structured-concurrency" class="frame">
+    <h2>JS/TS: approximating structured concurrency</h2>
+    <p>JS/TS has no native scope enforcement, but <code>Promise.all</code> approximates
+    the "wait for all children" guarantee:</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">// Structured-style: all tasks tied to this function's lifetime
+async function loadDashboard(id: string): Promise&lt;Dashboard&gt; {
+    const [user, orders] = await Promise.all([
+        fetchUser(id),   // child task 1
+        fetchOrders(id), // child task 2
+    ]);
+    return { user, orders };
+    // function does not return until both are done (or one rejects)
+}
+
+// Unstructured (avoid): fire-and-forget
+async function bad(id: string) {
+    fetchUser(id);          // unawaited, orphaned, no error handling
+    return doOtherWork();
+}</code></pre>
+    <p>Practical rule: <strong>always await every Promise you create</strong>.
+    If you intentionally fire-and-forget, attach a <code>.catch()</code> handler so errors are not silently swallowed.</p>
+  </section>
+
+  <section id="structured-concurrency-practice" class="frame">
+    <h2>Practice: spot the orphaned task</h2>
+    <p>Which of these has an orphaned task? What goes wrong?</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">// Version A
+async function processOrder(id: string) {
+    await saveOrder(id);
+    sendConfirmationEmail(id);  // returns a Promise
+    return { success: true };
+}
+
+// Version B
+async function processOrder(id: string) {
+    await saveOrder(id);
+    await sendConfirmationEmail(id);
+    return { success: true };
+}</code></pre>
+  </section>
+
+  <section id="structured-concurrency-practice-answer" class="frame">
+    <h2>Practice Answer: spot the orphaned task</h2>
+    <p><strong>Version A</strong> has an orphaned task.</p>
+    <ul>
+      <li><p><code>sendConfirmationEmail(id)</code> returns a Promise that is never awaited</p></li>
+      <li><p>the function returns <code>{ success: true }</code> immediately, before the email is sent</p></li>
+      <li><p>if the email call fails, the error is silently discarded; the caller sees success</p></li>
+      <li><p>if the server shuts down right after the response, the email may never send</p></li>
+    </ul>
+    <p><strong>Version B</strong> is structured: the function does not return until the email call completes or throws. If it throws, the error propagates to the caller.</p>
+    <p>If sending the email is genuinely optional and should not block the response, the correct fix is still explicit:</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">sendConfirmationEmail(id).catch(err =&gt; logger.error("email failed", err));
+// intentionally not awaited; error is handled explicitly, not silently dropped</code></pre>
+  </section>
 </section>
-<section id="review-1" class="frame">
-<h2>Review</h2>
+
+<!-- =====================================================================
+     INDUSTRY AND LANGUAGE TRADEOFFS
+     ===================================================================== -->
+<section>
+  <section id="industry-and-language-tradeoffs" class="title-slide slide level1">
+  <h1>Language tradeoffs</h1>
+  </section>
+
+  <section id="language-comparison" class="frame">
+    <h2>Comparing the models</h2>
+    <table style="font-size:0.78em; border-collapse:collapse; width:100%;">
+      <thead>
+        <tr style="background:#E2E8F0;">
+          <th style="padding:5px 8px; text-align:left;"></th>
+          <th style="padding:5px 8px;">Java / C#</th>
+          <th style="padding:5px 8px;">Go</th>
+          <th style="padding:5px 8px;">JS/TS / Python</th>
+          <th style="padding:5px 8px;">Rust</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:4px 8px;"><strong>Model</strong></td>
+          <td style="padding:4px 8px;">Shared memory + locks</td>
+          <td style="padding:4px 8px;">Message passing + channels</td>
+          <td style="padding:4px 8px;">Event loop + async/await</td>
+          <td style="padding:4px 8px;">Shared memory, compile-time safe</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:4px 8px;"><strong>Best for</strong></td>
+          <td style="padding:4px 8px;">CPU-heavy parallel work</td>
+          <td style="padding:4px 8px;">Many concurrent tasks, pipelines</td>
+          <td style="padding:4px 8px;">I/O-heavy servers, APIs</td>
+          <td style="padding:4px 8px;">Systems needing both speed and safety</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 8px;"><strong>Race detection</strong></td>
+          <td style="padding:4px 8px;">At runtime (or not at all)</td>
+          <td style="padding:4px 8px;">By design (no sharing)</td>
+          <td style="padding:4px 8px;">Single thread (mostly safe)</td>
+          <td style="padding:4px 8px;">At compile time</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:4px 8px;"><strong>Deadlock risk</strong></td>
+          <td style="padding:4px 8px;">Yes</td>
+          <td style="padding:4px 8px;">Lower (channels reduce it)</td>
+          <td style="padding:4px 8px;">No (single thread)</td>
+          <td style="padding:4px 8px;">Possible but rarer</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="choosing-a-concurrency-model-in-practice" class="frame">
+    <h2>Choosing a concurrency model in practice</h2>
+    <p>Questions engineers ask:</p>
+    <ul>
+    <li><p>Is the workload I/O-heavy or CPU-heavy</p></li>
+    <li><p>How many concurrent tasks are typical at peak</p></li>
+    <li><p>What are latency requirements and tail latency constraints</p></li>
+    <li><p>What failure modes matter: overload, backpressure, partial outages</p></li>
+    </ul>
+    <p>In practice, systems often mix models:</p>
+    <ul>
+    <li><p>async I/O for network calls</p></li>
+    <li><p>worker pools for CPU-bound transformations</p></li>
+    <li><p>message queues for cross-service decoupling</p></li>
+    </ul>
+  </section>
+
+  <section id="web-servers-typical-concurrency-choices" class="frame">
+    <h2>Web servers: typical concurrency choices</h2>
+    <p>Common architectures:</p>
+    <ul>
+    <li><p>thread-per-request: simple mental model, heavy at high scale</p></li>
+    <li><p>thread pool: bound thread count, queue work</p></li>
+    <li><p>event loop: many I/O connections, fewer threads</p></li>
+    <li><p>hybrid: event loop plus worker pool</p></li>
+    </ul>
+    <p>The best choice depends on workload shape and performance goals.</p>
+  </section>
+
+  <section id="backpressure-and-overload" class="frame">
+    <h2>Backpressure and overload</h2>
+    <p>Under load:</p>
+    <ul>
+    <li><p>unbounded queues increase memory usage and latency</p></li>
+    <li><p>downstream services become bottlenecks</p></li>
+    </ul>
+    <p>Practical mechanisms:</p>
+    <ul>
+    <li><p>bounded queues and worker pools</p></li>
+    <li><p>semaphores limiting in-flight work</p></li>
+    <li><p>timeouts, retries with jitter, circuit breakers</p></li>
+    </ul>
+  </section>
+
+  <section id="practice-6-choose-a-model" class="frame">
+    <h2>Practice 6: choose a model</h2>
+    <p>For each service, choose a reasonable default concurrency model and explain why:</p>
+    <ul>
+    <li><p>chat server that mostly does network I/O</p></li>
+    <li><p>image resizing service that is CPU-heavy</p></li>
+    <li><p>API gateway that calls many downstream services</p></li>
+    <li><p>log processor that does batch transformations nightly</p></li>
+    </ul>
+  </section>
+
+  <section id="practice-6-answer-choose-a-model" class="frame">
+    <h2>Practice 6 Answer: choose a model</h2>
+    <p>One reasonable set of choices:</p>
+    <ul>
+    <li><p>chat server: event loop or async I/O, worker pool for CPU tasks if needed</p></li>
+    <li><p>image resizing: threads/processes for CPU parallelism</p></li>
+    <li><p>API gateway: async I/O, bounded concurrency, timeouts</p></li>
+    <li><p>batch log processor: parallel map/reduce style, worker pools, distributed if needed</p></li>
+    </ul>
+  </section>
 </section>
-<section id="summary-what-to-remember" class="frame">
-<h2>Summary: what to remember</h2>
-<ul>
-<li><p>Concurrency targets throughput and responsiveness</p></li>
-<li><p>Shared-memory threads need synchronization to prevent
-races</p></li>
-<li><p>Locks, semaphores, and monitors solve different coordination
-problems</p></li>
-<li><p>Deadlocks come from circular waits and inconsistent acquisition
-patterns</p></li>
-<li><p>Message passing and channels isolate state and reduce
-shared-memory bugs</p></li>
-<li><p>Event loops and async/await excel for I/O-heavy
-concurrency</p></li>
-<li><p>Real systems mix models and need backpressure under
-overload</p></li>
-<li><p>Languages influence which concurrency patterns are
-idiomatic</p></li>
-</ul>
+
+<!-- =====================================================================
+     REVIEW
+     ===================================================================== -->
+<section>
+  <section id="review" class="title-slide slide level1">
+  <h1>Review</h1>
+  </section>
+
+  <section id="concurrency-models-taxonomy" class="frame">
+    <h2>Concurrency models: the full picture</h2>
+    <p><strong>Core models</strong> (each a different approach to the same problem):</p>
+    <table style="font-size:0.75em; border-collapse:collapse; width:100%;">
+      <thead>
+        <tr style="background:#E2E8F0;">
+          <th style="padding:4px 8px; text-align:left;">Model</th>
+          <th style="padding:4px 8px; text-align:left;">Core idea</th>
+          <th style="padding:4px 8px; text-align:left;">Languages</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:3px 8px;"><strong>Shared memory + locks</strong></td>
+          <td>threads share memory; protect with mutex / semaphore / monitor</td>
+          <td>Java, C++, C#, Python</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:3px 8px;"><strong>Message passing (CSP)</strong></td>
+          <td>no sharing; data flows through typed channels</td>
+          <td>Go, Rust</td>
+        </tr>
+        <tr>
+          <td style="padding:3px 8px;"><strong>Actor model</strong></td>
+          <td>each actor owns state; communicates via mailbox only</td>
+          <td>Erlang, Elixir, Akka</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:3px 8px;"><strong>Futures and Promises</strong></td>
+          <td>placeholder for a future value; composable and combinable</td>
+          <td>JS/TS, Java, Scala, Python</td>
+        </tr>
+        <tr>
+          <td style="padding:3px 8px;"><strong>Async/await + event loop</strong></td>
+          <td>one thread, non-blocking I/O, cooperative scheduling</td>
+          <td>JS/TS, Python, C#, Rust</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:3px 8px;"><strong>Ownership-based</strong></td>
+          <td>compile-time rules prevent data races entirely</td>
+          <td>Rust</td>
+        </tr>
+        <tr>
+          <td style="padding:3px 8px;"><strong>Structured concurrency</strong></td>
+          <td>child tasks cannot outlive their parent scope</td>
+          <td>Java 21, Kotlin, Swift</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="concurrency-models-specialized" class="frame">
+    <h2>Specialized concurrency models (reference)</h2>
+    <table style="font-size:0.78em; border-collapse:collapse; width:100%;">
+      <thead>
+        <tr style="background:#E2E8F0;">
+          <th style="padding:4px 10px; text-align:left;">Model</th>
+          <th style="padding:4px 10px; text-align:left;">Core idea</th>
+          <th style="padding:4px 10px; text-align:left;">Where you see it</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:3px 10px;"><strong>Software Transactional Memory</strong></td>
+          <td>memory updates commit or roll back atomically, like DB transactions</td>
+          <td>Haskell, Clojure</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:3px 10px;"><strong>Coroutines</strong></td>
+          <td>cooperative multitasking; functions suspend and resume at yield points</td>
+          <td>Kotlin, Python generators, Lua</td>
+        </tr>
+        <tr>
+          <td style="padding:3px 10px;"><strong>Reactive streams</strong></td>
+          <td>data flows as a stream with built-in backpressure between stages</td>
+          <td>RxJS, Project Reactor, Akka Streams</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:3px 10px;"><strong>Data parallelism</strong></td>
+          <td>apply the same operation to a large dataset in parallel, implicitly</td>
+          <td>Java parallel streams, NumPy, Spark</td>
+        </tr>
+        <tr>
+          <td style="padding:3px 10px;"><strong>Fork / join</strong></td>
+          <td>recursively divide work into subtasks; idle threads steal work</td>
+          <td>Java ForkJoinPool, Cilk</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:3px 10px;"><strong>Lock-free / atomic</strong></td>
+          <td>use hardware compare-and-swap instead of locks; no blocking</td>
+          <td>java.util.concurrent.atomic, std::atomic (C++)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="review-questions" class="frame">
+    <h2>Review questions</h2>
+    <ul>
+    <li><p>Give one throughput example and one latency example for concurrency</p></li>
+    <li><p>Why is <code>value = value + 1</code> unsafe across threads without synchronization</p></li>
+    <li><p>What does happens-before guarantee, and what establishes it in Java</p></li>
+    <li><p>What is a simple deadlock avoidance strategy</p></li>
+    <li><p>How does livelock differ from deadlock; how does starvation differ from both</p></li>
+    <li><p>In Go, what happens when you send on an unbuffered channel with no receiver; why is that better than Java</p></li>
+    <li><p>What is the difference between <code>Promise.all</code> and <code>Promise.allSettled</code>; when would you choose each</p></li>
+    <li><p>Why does <code>await delay(0)</code> still yield to the event loop even with a zero-millisecond delay</p></li>
+    <li><p>What does <code>Arc&lt;Mutex&lt;T&gt;&gt;</code> in Rust do, and why are both wrappers needed</p></li>
+    <li><p>What is an orphaned task; give one JS/TS example of how one is accidentally created</p></li>
+    <li><p>What guarantee does structured concurrency make that plain <code>async/await</code> does not</p></li>
+    </ul>
+  </section>
 </section>
-<section id="review-questions" class="frame">
-<h2>Review questions</h2>
-<ul>
-<li><p>Give one throughput example and one latency example for
-concurrency</p></li>
-<li><p>Why is value = value + 1 unsafe across threads</p></li>
-<li><p>What is a simple deadlock avoidance strategy</p></li>
-<li><p>When is a semaphore a better fit than a mutex</p></li>
-<li><p>Why can async code still be single-threaded</p></li>
-<li><p>What problem do channels solve compared to shared state</p></li>
-</ul>
-</section></section>
+
     </div>
   </div>
 
   <script src="../_static/revealjs/dist/reveal.js"></script>
-    
-    
-      <script src="../_static/revealjs/plugin/notes/notes.js"></script>
-      <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
-      <script src="../_static/revealjs/plugin/math/math.js"></script>
-      
-    
-    <script>
-        var revealjsConfig = new Object();
-        Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
-        
-        
-        
-          revealjsConfig.plugins = [
-            RevealNotes,RevealHighlight,RevealMath,
-          ];
-        
-        // More info https://github.com/hakimel/reveal.js#configuration
-        Reveal.initialize(revealjsConfig);
-    </script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
 
-  </body>
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true,
+      "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null,
+      "mouseWheel": false, "width": 960, "height": 540});
+    revealjsConfig.plugins = [RevealNotes,RevealHighlight,RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
 </html>

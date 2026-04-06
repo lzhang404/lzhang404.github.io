@@ -1,3 +1,5 @@
+*.DS_Store
+
 *.tex
 # Created by https://www.gitignore.io/api/c,c++,clion,cmake,eclipse,visualstudio,premake-gmake,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=c,c++,clion,cmake,eclipse,visualstudio,premake-gmake,visualstudiocode
