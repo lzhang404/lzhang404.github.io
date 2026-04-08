@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Prompt Engineering for Code Generation</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    table { border-collapse: collapse; width: 100%; font-size: 0.82em; margin: 0.4em 0; }
+    table th, table td { border: 1px solid #ccc; padding: 5px 10px; text-align: left; }
+    table th { background: #e8eaf6; font-weight: 600; }
+    table tr:nth-child(even) td { background: #f5f5f5; }
+    .code-compact pre { font-size: 0.63em; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- Title -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Prompt Engineering for Code Generation</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- Overview -->
+      <section>
+
+        <section class="frame">
+          <h2>Outline</h2>
+          <ul>
+            <li><p><strong>What is prompt engineering</strong>: definition, goals, and why it matters</p></li>
+            <li><p><strong>Core techniques</strong>: context setting, task definition, example-based prompting, code comments</p></li>
+            <li><p><strong>AI coding tools</strong>: current landscape and how to choose</p></li>
+            <li><p><strong>Advanced techniques</strong>: chain-of-thought, generated knowledge, testing, refinement</p></li>
+            <li><p><strong>Best practices and security</strong>: prompting responsibly</p></li>
+            <li><p><strong>SDLC workflow</strong>: applying prompt engineering at every stage</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Learning Goals</h2>
+          <p>After this lecture, you should be able to</p>
+          <ul>
+            <li><p>Explain what prompt engineering is and why it improves LLM output quality</p></li>
+            <li><p>Apply context setting and task definition to structure effective prompts</p></li>
+            <li><p>Distinguish zero-shot, one-shot, and few-shot prompting and choose the right approach</p></li>
+            <li><p>Use chain-of-thought and refinement prompting for complex coding tasks</p></li>
+            <li><p>Identify appropriate AI coding tools for different task types</p></li>
+            <li><p>Apply prompt engineering strategies across the software development lifecycle</p></li>
+            <li><p>Recognize security and privacy risks when prompting with LLMs</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- What is Prompt Engineering -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>What Is Prompt Engineering?</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Definition and Goals</h2>
+          <ul>
+            <li><p><strong>Prompt engineering</strong>: crafting clear, structured inputs to guide an LLM toward producing high-quality, specific output</p></li>
+            <li><p><strong>For code generation</strong>: translating developer intent into natural language an LLM can interpret precisely</p></li>
+            <li><p><strong>Core goal</strong>: communicate <em>what</em> you need, <em>how</em> it should behave, and <em>what constraints</em> apply</p></li>
+            <li><p><strong>Modern framing</strong>: think of the LLM as a CPU and the context window as RAM; your job is to load exactly the right information for each task</p></li>
+            <li><p>A vague prompt leads to vague code; a specific, well-constrained prompt leads to specific, testable code</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Techniques Overview</h2>
+          <ul>
+            <li><p><strong>Context Setting</strong>: supply the environment, language, framework, and assumptions</p></li>
+            <li><p><strong>Task Definition</strong>: describe exactly what the function should do, including signature, inputs, outputs, and edge cases</p></li>
+            <li><p><strong>Example-Based Prompting</strong>: zero-shot, one-shot, and few-shot to guide behavior with examples</p></li>
+            <li><p><strong>Instructions and Code Comments</strong>: break complex tasks into steps; annotate expected behavior inline</p></li>
+            <li><p><strong>Advanced Techniques</strong>: chain-of-thought, generated knowledge, iterative refinement</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Core Techniques -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Core Techniques</h1>
+        </section>
+
+        <!-- Context Setting -->
+        <section class="frame">
+          <h2>Context Setting: What and Why</h2>
+          <p>Context setting provides the environment, tools, and assumptions so the LLM knows <em>how</em> to approach the task</p>
+          <ul>
+            <li><p><strong>Without context</strong>: the model guesses your language, stack, and constraints</p></li>
+            <li><p><strong>With context</strong>: the model generates code that fits your actual system</p></li>
+            <li><p>Typical context includes: programming language, framework, database, security requirements, and coding style</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Context Setting: Poor vs. Good</h2>
+          <ul>
+            <li><p><strong>Poor prompt</strong>: <em>"Write code to get a user from the database."</em></p></li>
+            <li><p>Problems: no language specified, no database info, no return type, no security guidance (SQL injection risk)</p></li>
+            <li><p><strong>Improved prompt</strong>: <em>"We are using Java with JDBC to connect to a MySQL database. Retrieve a user from the <code class="inline">users</code> table using <code class="inline">PreparedStatement</code> to prevent SQL injection."</em></p></li>
+            <li><p>This sets: language (Java), tech (JDBC + MySQL), constraint (PreparedStatement)</p></li>
+          </ul>
+        </section>
+
+        <!-- Task Definition -->
+        <section class="frame">
+          <h2>Task Definition</h2>
+          <p>Task definition describes <em>precisely</em> what the model must produce</p>
+          <ul>
+            <li><p><strong>Goal</strong>: what the function accomplishes</p></li>
+            <li><p><strong>Signature</strong>: function name, parameter types, and return type</p></li>
+            <li><p><strong>Inputs and outputs</strong>: what values go in, what comes back</p></li>
+            <li><p><strong>Expected behavior</strong>: normal case, edge cases, error handling</p></li>
+            <li><p><strong>Optional</strong>: algorithm or data structure to use</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Task Definition: Example</h2>
+          <p>Well-defined task prompt (continuing the JDBC example):</p>
+          <ul>
+            <li><p>Write <code class="inline">getUserById(Connection conn, int id) -&gt; User</code> that retrieves a user from the <code class="inline">users</code> table</p></li>
+            <li><p>Use query: <code class="inline">SELECT id, name, email FROM users WHERE id = ?</code></p></li>
+            <li><p>Map the <code class="inline">ResultSet</code> into a <code class="inline">User</code> object with fields <code class="inline">id</code>, <code class="inline">name</code>, <code class="inline">email</code></p></li>
+            <li><p>Return <code class="inline">null</code> if no record is found</p></li>
+          </ul>
+          <p>This defines: function signature, SQL query, mapping logic, and the edge case for missing records</p>
+        </section>
+
+        <!-- Comparison Table -->
+        <section class="frame">
+          <h2>Context Setting vs. Task Definition</h2>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Context Setting</th>
+                <th>Task Definition</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Answers</strong></td>
+                <td>"Where am I? What tools do I have?"</td>
+                <td>"What exactly must I build?"</td>
+              </tr>
+              <tr>
+                <td><strong>Focus</strong></td>
+                <td>Language, framework, environment, constraints</td>
+                <td>Goal, signature, inputs/outputs, edge cases</td>
+              </tr>
+              <tr>
+                <td><strong>Poor example</strong></td>
+                <td>"Fix this code."</td>
+                <td>"Make something that finds what's common."</td>
+              </tr>
+              <tr>
+                <td><strong>Good example</strong></td>
+                <td>"I'm using Python to clean user input in a web app."</td>
+                <td>"Write <code>sanitize_input(s: str) -&gt; str</code> removing non-alphanumeric chars."</td>
+              </tr>
+              <tr>
+                <td><strong>Best practice</strong></td>
+                <td>Set the scene first</td>
+                <td>Then define the task precisely</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Example-Based Prompting -->
+        <section class="frame">
+          <h2>Example-Based Prompting</h2>
+          <ul>
+            <li><p><strong>Zero-shot</strong>: no example provided; the model relies on its general training</p></li>
+            <li><p><strong>One-shot</strong>: one input/output example is provided to clarify the expected format</p></li>
+            <li><p><strong>Few-shot</strong>: multiple examples guide the model toward a specific algorithm, structure, or behavior</p></li>
+            <li><p>More examples reduce ambiguity and help the model generalize correctly</p></li>
+            <li><p>Use few-shot when the task has a precise definition the model may otherwise interpret loosely</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Zero-Shot Prompt</h2>
+          <p>Prompt:</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">Write a Python function to find what's common between two strings.</code></pre>
+          <ul>
+            <li><p><strong>Weakness: "common"</strong> is ambiguous: shared characters? common substrings? longest common subsequence?</p></li>
+            <li><p>No function name, no type hints, no indication of algorithm</p></li>
+            <li><p>Output format and return type are left entirely to the model</p></li>
+            <li><p>Acceptable for simple or well-known tasks; insufficient for precise algorithmic work</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>One-Shot Prompt</h2>
+          <p>Prompt:</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">Write a Python function longest_common_subsequence(str1, str2) that returns
+the longest common subsequence (LCS) between two strings.
+Example:
+  longest_common_subsequence("ABCBDAB", "BDCAB") → "BCAB"</code></pre>
+          <ul>
+            <li><p>Introduces the correct terminology: LCS</p></li>
+            <li><p>Provides a clear function name and concrete input/output example</p></li>
+            <li><p>Algorithm choice is still left to the model</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Few-Shot Prompt</h2>
+          <p>Prompt:</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">Write longest_common_subsequence(str1: str, str2: str) -> str using dynamic
+programming. Use the examples below to guide the implementation.
+  Input: "ABCBDAB", "BDCAB"   → Output: "BCAB"
+  Input: "AGGTAB",  "GXTXAYB" → Output: "GTAB"
+  Input: "HELLO",   "YELLOW"  → Output: "ELLO"</code></pre>
+          <ul>
+            <li><p>Multiple examples reinforce the expected structure and algorithm</p></li>
+            <li><p>Specifying "dynamic programming" pins the implementation approach</p></li>
+            <li><p>Repeated varied data encourages generalizable logic (e.g., the 2-D DP matrix)</p></li>
+          </ul>
+        </section>
+
+        <!-- Instructions & Code Comments -->
+        <section class="frame">
+          <h2>Instructions and Code Comments</h2>
+          <ul>
+            <li><p><strong>Break complex tasks into numbered steps</strong>: the model follows sequential reasoning more reliably than a single dense description</p></li>
+            <li><p><strong>Use inline comments</strong>: annotate what each block should do, the expected types, and any constraints</p></li>
+            <li><p><strong>Be explicit about input/output structure</strong>: list-of-dicts vs. flat list, string vs. list of strings, etc.</p></li>
+          </ul>
+          <p>Example comment-based prompt:</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-python"># Define a function to filter users by age
+# Input: list of dicts, each with keys 'name' (str) and 'age' (int)
+# Output: list of names (str) where age <= 30</code></pre>
+        </section>
+
+      </section>
+
+      <!-- AI Coding Tools -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>AI Coding Tools</h1>
+        </section>
+
+        <section class="frame">
+          <h2>The Landscape: Four Categories</h2>
+          <p>AI coding tools in 2026 fall into four categories, each serving a different part of the workflow</p>
+          <ul>
+            <li><p><strong>IDE extensions</strong>: plug into your existing editor and add autocomplete, chat, and agent mode without changing your environment</p></li>
+            <li><p><strong>AI-native IDEs</strong>: standalone editors rebuilt around AI, with deeper codebase awareness and tighter integration</p></li>
+            <li><p><strong>Terminal and cloud agents</strong>: operate autonomously at the repo level — read, write, run, and commit across many files</p></li>
+            <li><p><strong>Open-source / BYOK</strong>: free tools where you supply your own API key; full control, no vendor lock-in</p></li>
+          </ul>
+          <p>Per the <strong>Stack Overflow 2025 Developer Survey</strong> (49,000+ respondents across 177 countries): 84% of developers use or plan to use AI tools, up from 76% in 2024; 51% of professional developers use them daily</p>
+        </section>
+
+        <section class="frame">
+          <h2>IDE Extensions</h2>
+          <p>These augment your existing editor; no workflow change required</p>
+          <ul>
+            <li><p><strong>GitHub Copilot</strong> (Microsoft): inline autocomplete + agent mode; works in VS Code, JetBrains, Neovim, Xcode; $10/month; broadest IDE support</p></li>
+            <li><p><strong>Gemini Code Assist</strong> (Google): deep integration with Google Cloud, Firebase, and BigQuery; 1M-token context; best for GCP-heavy stacks</p></li>
+            <li><p><strong>Amazon Q Developer</strong>: AWS-native; understands your cloud infrastructure; free individual plan with code suggestions and security scanning</p></li>
+            <li><p><strong>Tabnine</strong>: privacy-focused; supports on-premises deployment; good for enterprises with strict data residency requirements</p></li>
+            <li><p><strong>JetBrains AI Assistant</strong>: native JetBrains integration; no context-switching for IntelliJ, PyCharm, or GoLand users</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>AI-Native IDEs</h2>
+          <p>These replace the editor; AI is woven into every workflow rather than bolted on</p>
+          <ul>
+            <li><p><strong>Cursor</strong>: VS Code fork; Supermaven autocomplete (fastest in the industry); Composer for multi-file edits; agent mode; codebase indexing; $20/month — used by 67% of the Fortune 500 and 2M+ developers as of early 2026 (Fortune, Sacra)</p></li>
+            <li><p><strong>Windsurf</strong> (formerly Codeium): standalone IDE; Cascade agent for autonomous multi-file changes; Arena Mode for side-by-side model comparison; $15/month Pro; FedRAMP-compliant enterprise tier</p></li>
+            <li><p><strong>Zed</strong>: built in Rust with GPU acceleration; open-source; native multiplayer collaboration; pay-as-you-go for hosted AI, or self-host</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Terminal and Cloud Agents</h2>
+          <p>These operate autonomously at the repo or system level</p>
+          <ul>
+            <li><p><strong>Claude Code</strong> (Anthropic): terminal-native; 1M-token context reads entire codebases; 80.8% SWE-bench Verified score — highest publicly reported score as of early 2026 (Anthropic system card, Claude Opus 4.6); Claude Pro ($20/mo) or Claude Max ($100–200/mo)</p></li>
+            <li><p><strong>Codex CLI / Codex Web</strong> (OpenAI): powered by GPT-5.4-Codex; runs parallel tasks in isolated cloud sandboxes; writes features, reviews PRs, and commits changes; included with ChatGPT Plus/Pro</p></li>
+            <li><p><strong>Gemini CLI</strong> (Google): free and open-source terminal agent powered by Gemini; good for developers who want zero cost and no lock-in</p></li>
+            <li><p><strong>Devin</strong> (Cognition): cloud-based autonomous software engineer; handles end-to-end feature work with minimal human guidance</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Open-Source and BYOK Tools</h2>
+          <p>Free to use; you supply your own API key and pay only for usage</p>
+          <ul>
+            <li><p><strong>Aider</strong>: CLI agent with first-class git integration; every change creates a tracked commit with a descriptive message; supports Claude, GPT-4o, Gemini, and local models</p></li>
+            <li><p><strong>Cline</strong>: VS Code extension; BYOK; Teams tier (first 10 seats free); transparent API cost tracking</p></li>
+            <li><p><strong>Continue.dev</strong>: VS Code and JetBrains extension; open-source; model-agnostic via MCP; good Cursor alternative for those who won't switch editors</p></li>
+            <li><p><strong>OpenCode</strong>: open-source terminal agent; provider-agnostic (DeepSeek, Claude, GPT, local models); no subscription cost beyond API usage</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Choosing the Right Tool</h2>
+          <ul>
+            <li><p><strong>Stay in your editor</strong>: GitHub Copilot (any IDE), Gemini Code Assist (GCP), Amazon Q (AWS), Tabnine (private/on-prem)</p></li>
+            <li><p><strong>Replace your editor</strong>: Cursor (most polished), Windsurf (enterprise compliance, Cascade agent), Zed (performance + open-source)</p></li>
+            <li><p><strong>Whole-codebase agent work</strong>: Claude Code (highest capability), Codex CLI/Web (OpenAI ecosystem), Aider (open-source git-first)</p></li>
+            <li><p><strong>Zero cost</strong>: Gemini CLI, Aider + local model, Continue.dev + DeepSeek API, OpenCode</p></li>
+            <li><p><strong>Common 2026 stack</strong>: Cursor for daily flow + Claude Code or Codex for large tasks</p></li>
+            <li><p><strong>Privacy first</strong>: verify enterprise/private tiers before pasting proprietary code into any tool</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Advanced Techniques -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Advanced Techniques</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Advanced Techniques Overview</h2>
+          <ul>
+            <li><p><strong>Chain-of-Thought</strong>: decompose multi-step reasoning explicitly before asking for code</p></li>
+            <li><p><strong>Generated Knowledge</strong>: supply domain facts or external definitions to anchor the model's reasoning</p></li>
+            <li><p><strong>Testing and Evaluation</strong>: ask the model to write tests alongside code to validate correctness</p></li>
+            <li><p><strong>Refinement and Iteration</strong>: improve output with successive, targeted follow-up prompts</p></li>
+          </ul>
+        </section>
+
+        <!-- Chain-of-Thought -->
+        <section class="frame">
+          <h2>Chain-of-Thought Prompting</h2>
+          <p>Ask the model to reason step-by-step before writing code</p>
+          <ul>
+            <li><p><strong>Use case</strong>: multi-step logic, algorithm design, debugging complex bugs</p></li>
+            <li><p><strong>Prompt</strong>: <em>"Explain how to validate a Sudoku board in Python. Break the task into logical steps and then implement each step."</em></p></li>
+            <li><p><strong>Model output</strong>: loop rows, loop columns, check each 3×3 sub-box, return valid if all pass</p></li>
+            <li><p><strong>Why it works</strong>: reasoning appears before code generation, so the model catches logic gaps early</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Chain-of-Thought: Bug-Fix Example</h2>
+          <p><strong>Without CoT</strong>:</p>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-text">Fix the bug in this code:
+def is_palindrome(s):
+    return s == s[::-1]
+print(is_palindrome(12321))</code></pre>
+          <p><strong>With CoT</strong>: adding "Think step by step" produces a response that identifies the type error (<code class="inline">int</code> has no slice operator), explains the fix, and then rewrites the function with <code class="inline">str(s)</code></p>
+          <ul>
+            <li><p>CoT narrows the search space the model explores before committing to code</p></li>
+          </ul>
+        </section>
+
+        <!-- Generated Knowledge -->
+        <section class="frame">
+          <h2>Generated Knowledge Prompting</h2>
+          <p>Provide domain knowledge or external definitions to anchor the implementation</p>
+          <ul>
+            <li><p><strong>Use case</strong>: algorithms the model may implement loosely without a precise definition</p></li>
+            <li><p><strong>Prompt</strong>: <em>"Use the formal definition of Levenshtein distance to implement a string similarity function in Python."</em></p></li>
+            <li><p>The model explains the DP approach (edit matrix with insert/delete/substitute costs) before coding</p></li>
+            <li><p><strong>Bonus tip</strong>: explicitly ask the model to explain the algorithm first, then implement; this separates reasoning from generation and catches misunderstandings early</p></li>
+          </ul>
+        </section>
+
+        <!-- Testing & Evaluation -->
+        <section class="frame">
+          <h2>Testing and Evaluation</h2>
+          <p>Ask the model to generate test cases alongside code</p>
+          <ul>
+            <li><p><strong>Use case</strong>: validating correctness, catching edge cases, enforcing expected behavior</p></li>
+            <li><p><strong>Prompt</strong>: <em>"Write <code class="inline">unittest</code> test cases in Python for a function that parses dates from strings."</em></p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-python">import unittest
+class TestDateParser(unittest.TestCase):
+    def test_valid_format(self):
+        self.assertEqual(parse_date("2025-09-03"), datetime(2025, 9, 3))
+    def test_invalid_format(self):
+        with self.assertRaises(ValueError):
+            parse_date("03-09-2025")</code></pre>
+        </section>
+
+        <!-- Refinement -->
+        <section class="frame">
+          <h2>Refinement and Iteration</h2>
+          <p>Improve unclear or incomplete output with targeted follow-up prompts</p>
+          <ul>
+            <li><p><strong>First prompt</strong>: <em>"Write a Python function to detect palindromes."</em></p></li>
+            <li><p>Model output works for lowercase ASCII strings only</p></li>
+            <li><p><strong>Refinement prompt</strong>: <em>"Revise the function to ignore case and non-alphabetic characters."</em></p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-python">def is_palindrome(s):
+    s = ''.join(c.lower() for c in s if c.isalnum())
+    return s == s[::-1]</code></pre>
+          <ul>
+            <li><p>Each refinement should be one focused change; avoid stacking multiple changes per prompt</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Best Practices & Security -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Best Practices and Security</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Prompting Best Practices</h2>
+          <ul>
+            <li><p><strong>Be specific, not verbose</strong>: research shows LLM reasoning degrades beyond ~3,000 tokens; the practical sweet spot for most prompts is 150-300 words</p></li>
+            <li><p><strong>Context before task</strong>: set the language, framework, and constraints before stating what to build</p></li>
+            <li><p><strong>Try zero-shot first</strong>: modern models are strong; add examples only when the zero-shot output is consistently wrong</p></li>
+            <li><p><strong>One change per refinement</strong>: treat the first output as a draft and make focused, targeted follow-up prompts</p></li>
+            <li><p><strong>Specify output format</strong>: tell the model the exact structure you want (function only, with tests, with docstring, etc.)</p></li>
+            <li><p><strong>Always verify and test</strong>: LLMs produce plausible-looking but sometimes incorrect code; run and validate everything</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Security and Privacy Considerations</h2>
+          <ul>
+            <li><p><strong>Internal vs. public models</strong>: internal/enterprise deployments keep data off public servers; public models may log inputs</p></li>
+            <li><p><strong>Never include secrets</strong>: no passwords, API keys, tokens, or credentials in any prompt</p></li>
+            <li><p><strong>No PII</strong>: avoid real names, SSNs, medical data, or other personally identifiable information</p></li>
+            <li><p><strong>Style and standards</strong>: generated code must still comply with your organization's coding standards and security policies</p></li>
+            <li><p><strong>Output review</strong>: treat generated code the same as third-party code: inspect, test, and audit before shipping</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- SDLC Workflow -->
+      <section>
+
+        <section class="title-slide slide level1">
+          <h1>Prompting Across the SDLC</h1>
+        </section>
+
+        <section class="frame">
+          <h2>SDLC Workflow Overview</h2>
+          <p>Prompt engineering can assist at every stage of the software development lifecycle</p>
+          <ul>
+            <li><p><strong>Planning</strong>: risk analysis, timeline estimation, tool selection</p></li>
+            <li><p><strong>Analysis</strong>: requirements gathering, cost-benefit analysis, risk prioritization</p></li>
+            <li><p><strong>Design</strong>: data modeling, design patterns, UI/UX guidance</p></li>
+            <li><p><strong>Implementation</strong>: code generation, optimization, translation across languages</p></li>
+            <li><p><strong>Testing</strong>: test case generation, bug reports, security testing</p></li>
+            <li><p><strong>Deployment</strong>: deployment scripts, configuration, monitoring strategies</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Planning Stage</h2>
+          <p>Use LLMs to identify risks and scope the project</p>
+          <ul>
+            <li><p><em>"What are the potential risks and challenges of this project?"</em></p></li>
+            <li><p><em>"What is a realistic timeline and budget for this scope?"</em></p></li>
+            <li><p><em>"What tools and technologies best fit this requirement?"</em></p></li>
+          </ul>
+          <p><strong>Sample prompt</strong>: <em>"Generate a project charter for a mobile healthcare app (appointment scheduling, medical records, provider messaging). Team of 5 developers, 6-month timeline, $500K budget. Follow our company style guide."</em></p>
+        </section>
+
+        <section class="frame">
+          <h2>Analysis Stage</h2>
+          <p>Use LLMs to draft requirements documents and surface trade-offs</p>
+          <ul>
+            <li><p><em>"What are the functional and non-functional requirements for this system?"</em></p></li>
+            <li><p><em>"What are the design principles to follow?"</em></p></li>
+            <li><p><em>"How should we prioritize and mitigate identified risks?"</em></p></li>
+          </ul>
+          <p><strong>Sample prompt</strong>: <em>"Write an SRS for a retail inventory and sales system. Include functional requirements (add/modify/delete products, track inventory, generate reports), non-functional requirements (scalable, secure, desktop and mobile), UI design, data management, and security sections."</em></p>
+        </section>
+
+        <section class="frame">
+          <h2>Design Stage</h2>
+          <p>Use LLMs to explore architecture, patterns, and data models</p>
+          <ul>
+            <li><p><em>"Help me design the data model for this project."</em></p></li>
+            <li><p><em>"What design patterns best fit this feature?"</em></p></li>
+            <li><p><em>"What are best practices for responsive design here?"</em></p></li>
+          </ul>
+          <p><strong>Sample prompt</strong>: <em>"Generate a detailed design document for a retail inventory system with a modular web-based UI. Include architecture diagrams, database schema (with backup and recovery), and user interface design. Follow our style guide."</em></p>
+        </section>
+
+        <section class="frame">
+          <h2>Implementation Stage</h2>
+          <p>Use LLMs for code generation, optimization, and translation</p>
+          <ul>
+            <li><p><em>"Write a function to implement this feature."</em></p></li>
+            <li><p><em>"Optimize this code for performance and scalability."</em></p></li>
+            <li><p><em>"Translate this Java function to Python."</em></p></li>
+          </ul>
+          <p><strong>Sample prompt</strong>: <em>"Generate Python code snippets for a personal finance web app. Features: add/track income and expenses, generate reports, set financial goals. Use a modern web framework, follow separation of concerns, and adhere to our style guide."</em></p>
+        </section>
+
+        <section class="frame">
+          <h2>Testing Stage</h2>
+          <p>Use LLMs to create test cases and improve coverage</p>
+          <ul>
+            <li><p><em>"Write test cases for this feature."</em></p></li>
+            <li><p><em>"Generate a bug report from this behavior."</em></p></li>
+            <li><p><em>"What are best practices for security testing this endpoint?"</em></p></li>
+          </ul>
+          <p><strong>Sample prompt</strong>: <em>"Generate test cases for an e-commerce app (browse, add to cart, checkout). Cover: browsing with/without filters, discount codes, multiple payment methods. Include a test plan, test data with varied inputs, and test scripts."</em></p>
+        </section>
+
+        <section class="frame">
+          <h2>Deployment Stage</h2>
+          <p>Use LLMs to automate deployment and configure infrastructure</p>
+          <ul>
+            <li><p><em>"What deployment strategy fits this project?"</em></p></li>
+            <li><p><em>"Help me configure the server for this application."</em></p></li>
+            <li><p><em>"How should we monitor performance and availability?"</em></p></li>
+          </ul>
+          <p><strong>Sample prompt</strong>: <em>"Generate Kubernetes deployment scripts for a Node.js + MongoDB e-commerce app on AWS. Automate the deployment pipeline and include configuration files and documentation."</em></p>
+        </section>
+
+      </section>
+
+      <!-- Takeaways -->
+      <section>
+
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+          <ul>
+            <li><p><strong>Prompt quality drives output quality</strong>: specific, well-constrained prompts produce specific, testable code</p></li>
+            <li><p><strong>Context before task</strong>: set the environment, language, and constraints before defining what to build</p></li>
+            <li><p><strong>Keep prompts concise</strong>: aim for 150-300 words; longer prompts dilute the model's focus</p></li>
+            <li><p><strong>Try zero-shot first</strong>: modern models are capable; reach for few-shot only when zero-shot falls short</p></li>
+            <li><p><strong>Chain-of-thought for complex logic</strong>: ask the model to reason before it codes</p></li>
+            <li><p><strong>Use the right tool for the task</strong>: Copilot for daily autocomplete, Cursor for multi-file edits, Claude Code for large codebase-wide work</p></li>
+            <li><p><strong>Always verify</strong>: treat generated code like third-party code; test and audit before shipping</p></li>
+            <li><p><strong>Never share secrets</strong>: no passwords, API keys, or PII in any prompt</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Resources</h2>
+          <ul>
+            <li><p><strong>Reference</strong>: Prompt Engineering Guide (promptingguide.ai): comprehensive coverage of all techniques with latest research<br/>
+                <a href="https://www.promptingguide.ai">promptingguide.ai</a></p></li>
+            <li><p><strong>Docs</strong>: Anthropic Prompt Engineering Guide<br/>
+                <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview">docs.anthropic.com</a></p></li>
+            <li><p><strong>Docs</strong>: OpenAI Prompt Engineering Guide<br/>
+                <a href="https://platform.openai.com/docs/guides/prompt-engineering">platform.openai.com</a></p></li>
+            <li><p><strong>Video</strong>: "Google's 9-Hour Prompt Engineering Course in 20 Minutes"<br/>
+                <a href="https://www.youtube.com/watch?v=p09yRj47kNM">youtube.com/watch?v=p09yRj47kNM</a></p></li>
+            <li><p><strong>Tool comparisons</strong>: NxCode AI Coding Tools Rankings (updated 2026)<br/>
+                <a href="https://www.nxcode.io/resources/news/best-ai-for-coding-2026-complete-ranking">nxcode.io</a></p></li>
+          </ul>
+        </section>
+
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
