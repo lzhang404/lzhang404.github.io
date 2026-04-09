@@ -59,9 +59,7 @@
       <!-- =========================================================
            Overview
            ========================================================= -->
-      <!-- =========================================================
-           Overview
-           ========================================================= -->
+
       <section>
         <section class="frame">
           <h2>Outline</h2>
@@ -89,16 +87,6 @@
           </ul>
         </section>
 
-        <section class="frame">
-          <h2>Big idea</h2>
-          <ul>
-            <li><p>A <strong>graph</strong> models relationships between entities using vertices and edges</p></li>
-            <li><p>Different graph properties (directed, weighted, cyclic) call for different algorithms</p></li>
-            <li><p><strong>BFS</strong> finds shortest paths by edge count; it explores level by level using a queue</p></li>
-            <li><p><strong>DFS</strong> explores deeply before backtracking; it uses a stack and is useful for cycle detection</p></li>
-            <li><p><strong>Dijkstra's algorithm</strong> finds shortest paths in weighted graphs by always expanding the closest known vertex</p></li>
-          </ul>
-        </section>
       </section>
 
       <!-- =========================================================
@@ -269,7 +257,7 @@
 
               <ul>
                 <li><p>Left graph (acyclic): no way to follow directed edges from a vertex and return to it</p></li>
-                <li><p>Right graph (cyclic): two distinct cycles exist</p>
+                <li><p>Right graph (cyclic): distinct cycles exist</p>
                 </li>
               </ul>
 
@@ -386,6 +374,22 @@ D: [A, C]</code></pre>
           </table>
         </section>
 
+        <section class="frame">
+          <h2>Practice</h2>
+          <p>How many edges are in the undirected graph G represented by the following adjacency matrix?</p>
+          <table>
+            <thead>
+              <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>A</strong></td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+              <tr><td><strong>B</strong></td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+              <tr><td><strong>C</strong></td><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+              <tr><td><strong>D</strong></td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </section>
+
       </section>
 
       <!-- =========================================================
@@ -456,17 +460,17 @@ D: [A, C]</code></pre>
     vector&lt;bool&gt; visited(g.size(), false);
 
     visited[start] = true;  // mark before enqueue to avoid duplicates
-    q.push(start);
+    q.enqueue(start);
 
     while (!q.empty()) {
         int u = q.front();
-        q.pop();
+        q.dequeue();
         // process u here
 
         for (int v : g.adj[u]) {
             if (!visited[v]) {
                 visited[v] = true;
-                q.push(v);
+                q.enqueue(v);
             }
         }
     }
@@ -743,7 +747,7 @@ D: [A, C]</code></pre>
             <div class="text-col">
               <ul>
                 <li><p>Directed weighted graph, vertices A–F</p></li>
-                <li><p>Edges: A&rightarrow;B:4, A&rightarrow;C:2, B&rightarrow;C:5, B&rightarrow;D:10, C&rightarrow;E:3, E&rightarrow;D:4, E&rightarrow;F:2, D&rightarrow;F:11</p></li>
+          
                 <li><p>Starting vertex: A. Push <code class="inline">(0, A)</code></p></li>
               </ul>
               <table>
