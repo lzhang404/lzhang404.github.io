@@ -426,7 +426,6 @@ D: [A, C]</code></pre>
           <h2>Breadth-first search: idea</h2>
           <ul>
             <li><p>Visit the start vertex, then all its neighbors, then their unvisited neighbors, and so on</p></li>
-            <li><p>Explores the graph <strong>level by level</strong>, radiating outward from the start</p></li>
             <li><p>Uses a <strong>queue</strong> (FIFO) to decide which vertex to visit next</p>
               <ul>
                 <li><p>A queue ensures we always process closer vertices before farther ones</p></li>
@@ -482,13 +481,8 @@ D: [A, C]</code></pre>
           <div class="two-col">
             <div class="text-col">
               <ul>
-                <li><p>Start at <strong>A</strong>. BFS explores the graph <strong>level by level</strong>.</p></li>
+                <li><p>Start at <strong>A</strong>. BFS explores the graph level by level.</p></li>
                 <li><p>When more than one unvisited neighbor is available, visit them in <strong>alphabetical order</strong>.</p></li>
-                <li><p><strong>Level 0:</strong> A</p></li>
-                <li><p><strong>Level 1:</strong> B, C</p></li>
-                <li><p><strong>Level 2:</strong> D</p></li>
-                <li><p><strong>Level 3:</strong> E, F</p></li>
-                <li><p>Traversal order: <strong>A, B, C, D, E, F</strong></p></li>
               </ul>
             </div>
             <div class="media-col">
@@ -498,6 +492,25 @@ D: [A, C]</code></pre>
               />
             </div>
           </div>
+<table>
+  <thead>
+    <tr>
+      <th></th>
+      <th>Action</th>
+      <th>Queue</th>
+      <th>Visited Order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>0</td><td>Mark A visited. Enqueue A</td><td>[A]</td><td>A</td></tr>
+    <tr><td>1</td><td>Dequeue A. Visit B, Enqueue B. Visit C, Enqueue C.</td><td>[B, C]</td><td>A, B, C</td></tr>
+    <tr><td>2</td><td>Dequeue B. Visit D, Enqueue D</td><td>[C, D]</td><td>A, B, C, D</td></tr>
+    <tr><td>3</td><td>Dequeue C. No unvisited neighbors</td><td>[D]</td><td>A, B, C, D</td></tr>
+    <tr><td>4</td><td>Dequeue D. Visit E, Enqueue E. Visit F, Enqueue F.</td><td>[E, F]</td><td>A, B, C, D, E, F</td></tr>
+    <tr><td>5</td><td>Dequeue E. No unvisited neighbors</td><td>[F]</td><td>A, B, C, D, E, F</td></tr>
+    <tr><td>6</td><td>Dequeue F. No unvisited neighbors</td><td>[]</td><td>A, B, C, D, E, F</td></tr>
+  </tbody>
+</table>
           </section>
 
         <section class="frame">
@@ -580,15 +593,9 @@ D: [A, C]</code></pre>
               <ul>
                <li><p>Start at A; DFS dives deep before backtracking</p></li>
               <li><p>When more than one unvisited neighbor is available, push them in <strong>alphabetical order</strong></p></li>
-              <li><p>Push A. Stack: [A]</p></li>
-<li><p>Pop A, visit A. Push B, C. Stack: [B, C]</p></li>
-<li><p>Pop C, visit C. Push D (A already visited). Stack: [B, D]</p></li>
-<li><p>Pop D, visit D. Push E, F (B and C already visited). Stack: [B, E, F]</p></li>
-<li><p>Pop F, visit F. No unvisited neighbors. Stack: [B, E]</p></li>
-<li><p>Pop E, visit E. No unvisited neighbors. Stack: [B]</p></li>
-<li><p>Pop B, visit B. No unvisited neighbors (A and D already visited). Stack: []</p></li>
-<li><p>Visit order: <strong>A, C, D, F, E, B</strong></p></li>
+
               </ul>
+              
             </div>
             <div class="media-col">
               <img
@@ -597,6 +604,25 @@ D: [A, C]</code></pre>
               />
             </div>
           </div>
+                    <table>
+  <thead>
+    <tr>
+      <th>Step</th>
+      <th>Action</th>
+      <th>Stack</th>
+      <th>Visited Order</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>0</td><td>Push A</td><td>[A]</td><td></td></tr>
+    <tr><td>1</td><td>Pop A, visit A. Push B, C</td><td>[B, C]</td><td>A</td></tr>
+    <tr><td>2</td><td>Pop C, visit C. Push D</td><td>[B, D]</td><td>A, C</td></tr>
+    <tr><td>3</td><td>Pop D, visit D. Push E, F</td><td>[B, E, F]</td><td>A, C, D</td></tr>
+    <tr><td>4</td><td>Pop F, visit F. No unvisited neighbors</td><td>[B, E]</td><td>A, C, D, F</td></tr>
+    <tr><td>5</td><td>Pop E, visit E. No unvisited neighbors</td><td>[B]</td><td>A, C, D, F, E</td></tr>
+    <tr><td>6</td><td>Pop B, visit B. No unvisited neighbors</td><td>[]</td><td>A, C, D, F, E, B</td></tr>
+  </tbody>
+</table>
         </section>
 
         <section class="frame">

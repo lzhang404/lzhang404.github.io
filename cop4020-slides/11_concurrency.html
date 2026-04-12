@@ -548,22 +548,24 @@ x := &lt;-ch     // RECEIVE: take a value out      (arrow points out of ch)</cod
 
   <section id="buffered-vs-unbuffered" class="frame">
     <h2>Buffered vs unbuffered channels</h2>
-    <p><strong>Unbuffered</strong> (default): sender blocks until the receiver is ready. Both threads must meet at the same moment.</p>
+    <p><strong>Unbuffered</strong> (default): sender blocks until the receiver is ready. Both goroutines must meet at the same moment.</p>
     <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
          data-tabsize="1"><code class="language-go">ch := make(chan int)   // unbuffered
 
-// Thread 1                    // Thread 2
-ch &lt;- 42               // BLOCKS here until Thread 2 receives
-x := &lt;-ch  // both threads sync at this point</code></pre>
+go func() { ch &lt;- 42 }() // goroutine 1: BLOCKS here until goroutine 2 receives
+x := &lt;-ch               // goroutine 2 (main): both sync at this point</code></pre>
     <p><strong>Buffered</strong>: sender can drop values in without waiting, up to the buffer capacity.</p>
     <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
          data-tabsize="1"><code class="language-go">ch := make(chan int, 3) // buffered: holds up to 3 values
 
-// Thread 1 can run ahead:
-ch &lt;- 1   // goes into buffer, does NOT block
-ch &lt;- 2   // goes into buffer, does NOT block
-ch &lt;- 3   // goes into buffer, does NOT block
-ch &lt;- 4   // buffer full: NOW blocks until Thread 2 reads one</code></pre>
+// goroutine 1 can run ahead:
+go func() {
+    ch &lt;- 1   // goes into buffer, does NOT block
+    ch &lt;- 2   // goes into buffer, does NOT block
+    ch &lt;- 3   // goes into buffer, does NOT block
+    ch &lt;- 4   // buffer full: NOW blocks until main reads one
+}()
+x := &lt;-ch   // goroutine 2 (main): reads one, unblocking goroutine 1</code></pre>
 <ul>
   <li>unbuffered = passing a baton (both runners meet at the same spot); </li>
   <li>buffered = leaving parcels in a mailbox (sender does not wait for the recipient).</li>
@@ -662,30 +664,162 @@ func main() {
 </section>
 
 <!-- =====================================================================
-     FUTURES AND PROMISES
+     FUTURES AND PROMISES, async/await
      ===================================================================== -->
 <section>
-  <section id="futures-and-promises" class="title-slide slide level1">
-    <h1>Futures and Promises</h1>
+  <section id="async-concurrency" class="title-slide slide level1">
+    <h1>Async concurrency: event loops, promises, and async/await</h1>
   </section>
 
-  <section id="what-is-a-promise" class="frame">
-    <h2>What is a Future / Promise?</h2>
+  <section id="async-big-picture" class="frame">
+    <h2>The big picture</h2>
+    <table style="font-size:0.82em; border-collapse:collapse; width:100%;">
+      <thead>
+        <tr style="background:#E2E8F0;">
+          <th style="padding:5px 10px; text-align:left;">Layer</th>
+          <th style="padding:5px 10px; text-align:left;">What it does</th>
+          <th style="padding:5px 10px; text-align:left;">Examples</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:4px 10px;"><strong>Runtime model</strong></td>
+          <td>runs tasks, waits for I/O, schedules continuations</td>
+          <td>event loop, task scheduler</td>
+        </tr>
+        <tr style="background:#F8FAFC;">
+          <td style="padding:4px 10px;"><strong>Abstraction</strong></td>
+          <td>represents a result that will exist later</td>
+          <td>Promise, Future</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 10px;"><strong>Syntax</strong></td>
+          <td>makes async code look like ordinary step-by-step code</td>
+          <td><code>async</code> / <code>await</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.8em;">Same async ecosystem, different layers.</p>
+  </section>
+
+  <section id="the-io-problem" class="frame">
+    <h2>Why async? The cost of waiting for I/O</h2>
     <ul>
-      <li><p>A <strong>Promise</strong> (JS/TS) or <strong>Future</strong> (Java, Scala) is a
-    placeholder for a value that does not exist yet.</p></li>
-    <li>Key idea: separate <em>starting</em> a computation from <em>using its result</em></li>
+      <li><p>Most web programs spend much of their time <em>waiting</em>: for a database, a file, or another service.</p></li>
+      <li><p><strong>Thread-per-request model:</strong> one thread handles one request and blocks while waiting.</p>
+        <ul>
+          <li><p>many concurrent requests can mean many sleeping threads</p></li>
+          <li><p>this wastes memory and scheduling overhead</p></li>
+        </ul>
+      </li>
+      <li><p><strong>Async/event-loop model:</strong> do not block while waiting for I/O.</p>
+        <ul>
+          <li><p>while one operation waits, the runtime can run another task</p></li>
+          <li><p>good for servers with many concurrent I/O-bound requests</p></li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <section id="event-loop-model" class="frame">
+    <h2>Event loop model</h2>
+    <ul>
+      <li><p>one main thread processes queued tasks/callbacks</p></li>
+      <li><p>I/O starts, then returns quickly instead of blocking that thread</p></li>
+      <li><p>when I/O completes, the runtime queues a continuation/callback</p></li>
+    </ul>
+    <p><strong>Benefits:</strong></p>
+    <ul>
+      <li><p>handles many concurrent I/O waits efficiently</p></li>
+      <li><p>often reduces shared-memory race conditions in user code</p></li>
+    </ul>
+    <p><strong>Cost:</strong> if your code blocks the event loop, everything waits.</p>
+  </section>
+
+  <section id="diagram-event-loop" class="frame diagram-slide">
+    <h2>Event loop model</h2>
+    <img class="diagram diagram-full"
+      src="../_static/images/concurrency/04_event_loop.png"
+      alt="Event loop diagram with task queue, loop, I O, and render or response work.">
+  </section>
+  <section id="typescript-basic-asyncawait" class="frame">
+    <h2>First example: async/await in JS/TS</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
+      data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+      data-tabsize="1"><code class="language-typescript">function delay(ms: number): Promise&lt;void&gt; {
+  return new Promise(resolve =&gt; setTimeout(resolve, ms));
+}
+
+async function f(): Promise&lt;void&gt; {
+  console.log("A");
+  await delay(10);
+  console.log("B");
+}
+
+console.log("start");
+f();
+console.log("end");</code></pre>
+    <p>Typical output: <code>start</code>, <code>A</code>, <code>end</code>, then later <code>B</code>.</p>
+  </section>
+
+  <section id="what-does-await-do" class="frame">
+    <h2>What does <code>await</code> actually do?</h2>
+    <ol>
+      <li><p>the current async function <strong>pauses</strong> at that line</p></li>
+      <li><p>control returns to the runtime, so other tasks can run</p></li>
+      <li><p>when the awaited operation finishes, the function <strong>resumes</strong> from where it paused</p></li>
+    </ol>
     <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
-         data-tabsize="1"><code class="language-typescript">const p: Promise&lt;number&gt; = fetchPrice("AAPL"); // starts immediately, returns a placeholder
-// ... do other work while the fetch runs ...
-const price = await p;  // use the result later, when needed</code></pre>
-    <li>A Promise has three states:</li>
+      data-tabsize="1"><code class="language-typescript">async function f() {
+  console.log("A");
+  await delay(10);
+  console.log("B");
+}</code></pre>
     <ul>
-      <li><p><strong>pending</strong>: the computation is still running</p></li>
-      <li><p><strong>fulfilled</strong>: it finished successfully, the value is ready</p></li>
-      <li><p><strong>rejected</strong>: it failed, an error is available</p></li>
+      <li><p><code>await</code> does <strong>not</strong> start a new thread</p></li>
+      <li><p>local variables are preserved across the pause</p></li>
+      <li><p>the function continues later as if execution had been suspended and resumed</p></li>
     </ul>
+  </section>
+
+  <section id="diagram-async-await-flow" class="frame diagram-slide">
+    <h2>Async/await execution flow</h2>
+    <img class="diagram diagram-full"
+      src="../_static/images/concurrency/06_async_await_flow_redesign.svg"
+      alt="Timeline showing async function pause at await and later resume after promise resolution."
+      style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
+  </section>
+
+  <section id="practice-predict-output-ordering-typescript" class="frame">
+    <h2>Practice: predict output ordering (JS/TS)</h2>
+    <p>Predict the order.</p>
+    <pre data-xleftmargin="3pt" data-linenos=""
+      data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+      data-tabsize="1"><code class="language-typescript">function delay(ms: number): Promise&lt;void&gt; {
+  return new Promise(r =&gt; setTimeout(r, ms));
+}
+
+async function g(): Promise&lt;void&gt; {
+  console.log("g1");
+  await delay(0);
+  console.log("g2");
+}
+
+console.log("A");
+g();
+console.log("B");</code></pre>
+  </section>
+<section id="practice-5-answer-predict-output-ordering-typescript" class="frame">
+    <h2>Practice Answer: predict output ordering (JS/TS)</h2>
+    <p>Output: A, g1, B, g2</p>
+    <ul>
+    <li><p>A prints first</p></li>
+    <li><p>g() is called; runs until await; prints g1</p></li>
+    <li><p>await delay(0) yields to the event loop even with 0 ms; await always yields before continuing</p></li>
+    <li><p>control returns to main; B prints</p></li>
+    <li><p>event loop resumes g; g2 prints</p></li>
     </ul>
+    <p>Key insight: await delay(0) is not a no-op. Any await gives the event loop a turn to run other tasks first.</p>
   </section>
 
   <section id="callback-hell" class="frame">
@@ -710,6 +844,25 @@ fetchUser(id)
     .catch(err  =&gt; console.error(err));  // one handler for all errors</code></pre>
   </section>
 
+  <section id="what-is-a-promise" class="frame">
+    <h2>What is a Future / Promise?</h2>
+    <ul>
+      <li><p>A <strong>Promise</strong> (JS/TS) or <strong>Future</strong> (Java, Scala) is a
+    placeholder for a value that does not exist yet.</p></li>
+    <li>Key idea: separate <em>starting</em> a computation from <em>using its result</em></li>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">const p: Promise&lt;number&gt; = fetchPrice("AAPL"); // starts immediately, returns a placeholder
+// ... do other work while the fetch runs ...
+const price = await p;  // use the result later, when needed</code></pre>
+    <li>A Promise has three states:</li>
+    <ul>
+      <li><p><strong>pending</strong>: the computation is still running</p></li>
+      <li><p><strong>fulfilled</strong>: it finished successfully, the value is ready</p></li>
+      <li><p><strong>rejected</strong>: it failed, an error is available</p></li>
+    </ul>
+    </ul>
+  </section>
+
   <section id="js-ts-promise-basics" class="frame">
     <h2>JS/TS: Promise basics</h2>
     <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em"
@@ -724,18 +877,47 @@ p.then(value =&gt; console.log("got:", value))  // runs on fulfillment
  .catch(err  =&gt; console.error("error:", err)) // runs on rejection
  .finally(()  =&gt; console.log("always runs")); // cleanup, like finally in try/catch
 
-// With async/await (same thing, cleaner syntax)
-try {
-    const value = await p;
-    console.log("got:", value);
-} catch (err) {
-    console.error("error:", err);
-} finally {
-    console.log("always runs");
-}</code></pre>
+</code></pre>
     <p>In practice you rarely construct a <code>new Promise</code> manually.
     Library functions (fetch, fs.readFile, setTimeout wrapped) return Promises
     for you. You mostly consume them with <code>await</code> or <code>.then()</code>.</p>
+  </section>
+
+  <section id="async-await-is-built-on-promises" class="frame">
+    <h2>async/await is built on Promises</h2>
+    <p>They are the same model. <code>async/await</code> is a more readable way to write Promise code.</p>
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+        data-tabsize="1"><code class="language-typescript">// An async function ALWAYS returns a Promise
+  async function getUser(id: string): Promise&lt;User&gt; {
+      return fetchUser(id);  // auto-wrapped in Promise.resolve()
+  }
+
+  // await is just cleaner syntax for .then()
+  // These two do exactly the same thing:
+  const user = await getUser("123");
+
+  getUser("123").then(user =&gt; { /* same result */ });</code></pre>
+    <p>Everything you learned about Promises applies. <code>async/await</code> does not add new behaviour — it just makes the code easier to read and reason about.</p>
+  </section>
+
+  <section id="typescript-sequential-vs-parallel-awaits" class="frame">
+    <h2>JS/TS: sequential vs parallel awaits</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-typescript">function work(x: number): Promise&lt;number&gt; {
+      return new Promise(resolve =&gt; setTimeout(() =&gt; resolve(x * x), 10));
+    }
+
+async function sequential(xs: number[]): Promise&lt;number[]&gt; {
+  const out: number[] = [];
+  for (const x of xs) out.push(await work(x));
+  return out;
+}
+
+async function parallel(xs: number[]): Promise&lt;number[]&gt; {
+  return Promise.all(xs.map(work));
+}</code></pre>
+    <p>parallel starts all operations first, then awaits completion.</p>
   </section>
 
   <section id="js-ts-combining-promises" class="frame">
@@ -783,8 +965,41 @@ const [user, orders, config] = await Promise.all([
     </table>
   </section>
 
-  
-  <section id="java-completable-future" class="frame">
+  <section id="async-does-not-imply-cpu-parallelism" class="frame">
+    <h2>Async does not imply CPU parallelism</h2>
+    <p>Many async runtimes:</p>
+    <ul>
+    <li><p>overlap I/O waits</p></li>
+    <li><p>run callbacks on one main thread</p></li>
+    </ul>
+    <p>Consequence:</p>
+    <ul>
+    <li><p>CPU-heavy code blocks the event loop</p></li>
+    <li><p>for CPU-heavy work, use worker pools, threads, or processes</p></li>
+    </ul>
+    <p>This is why production Node services often offload CPU-heavy tasks.</p>
+  </section>
+
+  <section id="python-asyncawait-basics" class="frame">
+    <h2>Python: async/await basics</h2>
+    <pre data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-python">
+import asyncio
+
+async def work(x: int) -&gt; int:
+  await asyncio.sleep(0.01)
+  return x * x
+
+async def main() -&gt; None:
+  xs = [1, 2, 3, 4]
+  ys = await asyncio.gather(*(work(x) for x in xs))
+  print(ys)
+
+asyncio.run(main())</code></pre>
+    <p>gather is similar to Promise.all: all tasks start simultaneously.</p>
+  </section>
+<section id="java-completable-future" class="frame">
     <h2>Java: CompletableFuture</h2>
     <p>Java's equivalent of Promises. Same ideas, typed API.</p>
     <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em"
@@ -809,221 +1024,6 @@ CompletableFuture.allOf(future1, future2, future3)
       <li><p><code>exceptionally</code> = <code>.catch()</code></p></li>
       <li><p><code>join()</code> = <code>await</code> (blocks the calling thread)</p></li>
     </ul>
-  </section>
-
-</section>
-
-<!-- =====================================================================
-     ASYNC/AWAIT AND EVENT LOOPS
-     ===================================================================== -->
-<section>
-  <section id="asyncawait-and-event-loops" class="title-slide slide level1">
-  <h1>Async/await and event loops</h1>
-  </section>
-
-  <section id="the-io-problem" class="frame">
-    <h2>Why async? The cost of waiting for I/O</h2>
-    <ul>
-      <li><p>Most of a web server's time is spent <em>waiting</em>: for a database to reply, a file to load, an API to respond.</p></li>
-      <li><p><strong>Thread-per-request model:</strong> assign one thread to each request; it blocks while waiting.</p>
-        <ul>
-          <li><p>10,000 concurrent requests = 10,000 threads = roughly 10 GB of memory just for thread stacks</p></li>
-          <li><p>most of those threads are sleeping, doing nothing useful</p></li>
-        </ul>
-      </li>
-      <li><p><strong>Event loop model (Node.js, Python asyncio):</strong> one thread handles everything, but never blocks.</p>
-        <ul>
-          <li><p>like a single restaurant waiter serving many tables</p></li>
-          <li><p>while table 3 waits for food (I/O), the waiter takes table 7's order (another task)</p></li>
-          <li><p>the waiter only freezes if they stop to make a phone call; that must never happen in your code</p></li>
-        </ul>
-      </li>
-    </ul>
-  </section>
-
-  <section id="event-loop-model" class="frame">
-    <h2>Event loop model</h2>
-    <p>Event loop:</p>
-    <ul>
-    <li><p>one main thread processes queued tasks/callbacks</p></li>
-    <li><p>I/O registers completion events, then returns quickly</p></li>
-    <li><p>when I/O completes, a callback/task is queued</p></li>
-    </ul>
-    <p>Benefits:</p>
-    <ul>
-    <li><p>handles many concurrent I/O tasks efficiently</p></li>
-    <li><p>reduces shared-memory races when most code runs on one thread</p></li>
-    </ul>
-    <p>Cost:</p>
-    <ul>
-    <li><p>blocking the event loop breaks responsiveness for everything</p></li>
-    </ul>
-  </section>
-
-  <section id="diagram-event-loop" class="frame diagram-slide">
-  <h2>Event loop model </h2>
-  <img class="diagram diagram-full"
-    src="../_static/images/concurrency/04_event_loop.png"
-    alt="Event loop diagram with task queue, loop, I O, and render or response work.">
-  </section>
-
-  <section id="async-await-is-built-on-promises" class="frame">
-    <h2>async/await is built on Promises</h2>
-    <p>They are the same model. <code>async/await</code> is a more readable way to write Promise code.</p>
-    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
-        data-tabsize="1"><code class="language-typescript">// An async function ALWAYS returns a Promise
-  async function getUser(id: string): Promise&lt;User&gt; {
-      return fetchUser(id);  // auto-wrapped in Promise.resolve()
-  }
-
-  // await is just cleaner syntax for .then()
-  // These two do exactly the same thing:
-  const user = await getUser("123");
-
-  getUser("123").then(user =&gt; { /* same result */ });</code></pre>
-    <p>Everything you learned about Promises applies. <code>async/await</code> does not add new behaviour — it just makes the code easier to read and reason about.</p>
-  </section>
-
-  <section id="what-does-await-do" class="frame">
-    <h2>What does <code>await</code> actually do?</h2>
-    <ul>
-    <li><p>When you write <code>await someOperation()</code>, three things happen:</p></li>
-    <ol>
-      <li><p>the current function <strong>pauses</strong> at that line</p></li>
-      <li><p>control <strong>returns to the event loop</strong> so other tasks can run</p></li>
-      <li><p>when the operation completes, the event loop <strong>resumes your function</strong> from exactly where it left off</p></li>
-    </ol>
-        <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
-         data-tabsize="1"><code class="language-typescript">async function f() {
-    console.log("A");   // runs on the event loop thread
-    await delay(10);    // pauses f; event loop is free to run other tasks
-    console.log("B");   // resumes here after 10ms; still the same thread
-}</code></pre>
-      <li>The function does not disappear. Its local variables are preserved.</li>
-      <li>When resumed, it continues as if nothing happened in between.</li>
-      <li>Important: <strong>await does not start a new thread</strong>. </li>
-      <ul>
-        <li>The same single thread pauses one task and picks up another</li>
-        <li>This is why async code mostly avoids race conditions: only one function runs at a time.</li>
-      </ul>
-    </ul>
-
-  </section>
-
-  <section id="diagram-async-await-flow" class="frame diagram-slide">
-  <h2>Async/await execution flow</h2>
-  <img class="diagram diagram-full"
-    src="../_static/images/concurrency/06_async_await_flow_redesign.svg"
-    alt="Timeline showing async function pause at await and later resume after promise resolution."
-    style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-  </section>
-
-  <section id="typescript-basic-asyncawait" class="frame">
-    <h2>JS/TS: basic async/await</h2>
-    <pre data-xleftmargin="3pt" data-linenos=""
-    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-    data-tabsize="1"><code class="language-typescript">function delay(ms: number): Promise&lt;void&gt; {
-      return new Promise(resolve =&gt; setTimeout(resolve, ms));
-    }
-
-    async function f(): Promise&lt;void&gt; {
-      console.log(&quot;A&quot;);
-      await delay(10);
-      console.log(&quot;B&quot;);
-    }
-
-    console.log(&quot;start&quot;);
-    f();
-    console.log(&quot;end&quot;);</code></pre>
-    <p>Typical output: start, A, end, then later B.</p>
-  </section>
-
-  <section id="typescript-sequential-vs-parallel-awaits" class="frame">
-    <h2>JS/TS: sequential vs parallel awaits</h2>
-    <pre data-xleftmargin="3pt" data-linenos=""
-    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-    data-tabsize="1"><code class="language-typescript">function work(x: number): Promise&lt;number&gt; {
-      return new Promise(resolve =&gt; setTimeout(() =&gt; resolve(x * x), 10));
-    }
-
-async function sequential(xs: number[]): Promise&lt;number[]&gt; {
-  const out: number[] = [];
-  for (const x of xs) out.push(await work(x));
-  return out;
-}
-
-async function parallel(xs: number[]): Promise&lt;number[]&gt; {
-  return Promise.all(xs.map(work));
-}</code></pre>
-    <p>parallel starts all operations first, then awaits completion.</p>
-  </section>
-
-  <section id="python-asyncawait-basics" class="frame">
-    <h2>Python: async/await basics</h2>
-    <pre data-xleftmargin="3pt" data-linenos=""
-    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-    data-tabsize="1"><code class="language-python">
-import asyncio
-
-async def work(x: int) -&gt; int:
-  await asyncio.sleep(0.01)
-  return x * x
-
-async def main() -&gt; None:
-  xs = [1, 2, 3, 4]
-  ys = await asyncio.gather(*(work(x) for x in xs))
-  print(ys)
-
-asyncio.run(main())</code></pre>
-    <p>gather is similar to Promise.all: all tasks start simultaneously.</p>
-  </section>
-
-  <section id="async-does-not-imply-cpu-parallelism" class="frame">
-    <h2>Async does not imply CPU parallelism</h2>
-    <p>Many async runtimes:</p>
-    <ul>
-    <li><p>overlap I/O waits</p></li>
-    <li><p>run callbacks on one main thread</p></li>
-    </ul>
-    <p>Consequence:</p>
-    <ul>
-    <li><p>CPU-heavy code blocks the event loop</p></li>
-    <li><p>for CPU-heavy work, use worker pools, threads, or processes</p></li>
-    </ul>
-    <p>This is why production Node services often offload CPU-heavy tasks.</p>
-  </section>
-
-  <section id="practice-5-predict-output-ordering-typescript" class="frame">
-    <h2>Practice: predict output ordering (JS/TS)</h2>
-    <p>Predict the order.</p>
-    <pre data-xleftmargin="3pt" data-linenos=""
-    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-    data-tabsize="1"><code class="language-typescript">function delay(ms: number): Promise&lt;void&gt; {
-      return new Promise(r =&gt; setTimeout(r, ms));
-    }
-
-    async function g(): Promise&lt;void&gt; {
-      console.log(&quot;g1&quot;);
-      await delay(0);
-      console.log(&quot;g2&quot;);
-    }
-
-    console.log(&quot;A&quot;);
-    g();
-    console.log(&quot;B&quot;);</code></pre>
-  </section>
-
-  <section id="practice-5-answer-predict-output-ordering-typescript" class="frame">
-    <h2>Practice Answer: predict output ordering (JS/TS)</h2>
-    <p>Output: A, g1, B, g2</p>
-    <ul>
-    <li><p>A prints first</p></li>
-    <li><p>g() is called; runs until await; prints g1</p></li>
-    <li><p>await delay(0) yields to the event loop even with 0 ms; await always yields before continuing</p></li>
-    <li><p>control returns to main; B prints</p></li>
-    <li><p>event loop resumes g; g2 prints</p></li>
-    </ul>
-    <p>Key insight: await delay(0) is not a no-op. Any await gives the event loop a turn to run other tasks first.</p>
   </section>
 </section>
 
@@ -1055,34 +1055,48 @@ void inc() { value = value + 1; }  // compiles fine, races silently</code></pre>
     </ul>
   </section>
 
-  <section id="rust-cameo-safety-angle" class="frame">
-    <h2>Rust: how ownership prevents races</h2>
-    <p>Rust's core rule: <strong>at any moment, a value has exactly one owner</strong>.</p>
-    <p>For concurrency, this means the compiler tracks who owns each piece of data:</p>
-    <ul>
-    <li><p>if you try to send data to another thread without transferring ownership, it will not compile</p></li>
-    <li><p>if you try to share mutable data across threads without synchronization, it will not compile</p></li>
+ <section id="rust-cameo-safety-angle" class="frame">
+  <h2>Rust: how ownership prevents races</h2>
+  <ul>
+    <li><p>Rust's core rule: <strong>at any moment, a value has exactly one owner</strong>.</p>
+</li>
+  <li><p>For concurrency, the compiler tracks who owns each piece of data:</p>
+  </li>
+  <ul>
+    <li><p>send data to another thread without transferring ownership → <strong>compile error</strong></p></li>
+    <li><p>share mutable data across threads without synchronization → <strong>compile error</strong></p></li>
     <li><p>safe shared mutation requires explicit wrappers: <code>Arc</code> and <code>Mutex</code></p></li>
-    </ul>
-    <p>Takeaway: language design can move concurrency errors from runtime bugs to compile-time constraints. You write slightly more code upfront; you get a correctness guarantee in return.</p>
-  </section>
+  </ul>
+  <li>Takeaway:</li>
+  <ul>
+    <li><p>concurrency errors move from runtime bugs to compile-time constraints</p></li>
+    <li><p>slightly more code upfront; correctness guarantee in return</p></li>
+  </ul>
+  </ul>
+</section>
 
-  <section id="rust-arc-mutex-explained" class="frame">
-    <h2>Rust: Arc and Mutex explained</h2>
-    <p>Two types work together to allow safe shared mutation across threads:</p>
-    <p><strong>Mutex&lt;T&gt;</strong>: wraps a value so it can only be accessed while the lock is held.</p>
-    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
-         data-tabsize="1"><code class="language-rust">let m = Mutex::new(0);
+  <section id="rust-arc-mutex" class="frame">
+  <h2>Rust: Arc and Mutex</h2>
+  <p>Two types work together to allow safe shared mutation across threads:</p>
+  <p><strong>Mutex&lt;T&gt;</strong>: only one thread can access the value at a time.</p>
+  <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+       data-tabsize="1"><code class="language-rust">let m = Mutex::new(0);
 let mut val = m.lock().unwrap(); // acquire lock; get access to the inner value
 *val += 1;                       // modify it
 // lock is released automatically when `val` goes out of scope</code></pre>
-    <p><strong>Arc&lt;T&gt;</strong> (Atomic Reference Counting): allows multiple owners across threads. Like a shared pointer that is safe to clone and send to other threads.</p>
-    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
-         data-tabsize="1"><code class="language-rust">let shared = Arc::new(Mutex::new(0));
+  <p><strong>Arc&lt;T&gt;</strong> (Atomic Reference Counting): allows multiple threads to share ownership.</p>
+  <ul>
+    <li><p>safe to clone and send to other threads</p></li>
+    <li><p>tracks how many owners exist; cleans up when the last one drops</p></li>
+  </ul>
+  <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+       data-tabsize="1"><code class="language-rust">let shared = Arc::new(Mutex::new(0));
 let clone  = Arc::clone(&amp;shared); // both point to the same Mutex
 // give `clone` to another thread; Arc tracks ownership count atomically</code></pre>
-    <p>Together, <code>Arc&lt;Mutex&lt;T&gt;&gt;</code> is Rust's standard pattern for anything equivalent to a Java <code>synchronized</code> field.</p>
-  </section>
+  <ul>
+    <li><p><code>Arc&lt;Mutex&lt;T&gt;&gt;</code> together = Rust's equivalent of a Java <code>synchronized</code> field</p></li>
+  </ul>
+</section>
 
   <section id="rust-shared-counter-sketch" class="frame">
     <h2>Rust: shared counter sketch</h2>
@@ -1111,24 +1125,27 @@ let clone  = Arc::clone(&amp;shared); // both point to the same Mutex
     }</code></pre>
   </section>
 
-  <section id="rust-compiler-catches" class="frame">
-    <h2>Rust: what the compiler catches</h2>
-    <ul>
-      <li><p>If you try to share data across threads without <code>Arc</code> and <code>Mutex</code>, the compiler rejects it:</p></li>
-    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
-         data-tabsize="1"><code class="language-rust">let mut count = 0;
+<section id="rust-compiler-catches" class="frame">
+  <h2>Rust: what the compiler catches</h2>
+  <p>Share data across threads without <code>Arc</code> and <code>Mutex</code> → <strong>compile error</strong>:</p>
+  <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+       data-tabsize="1"><code class="language-rust">let mut count = 0;
 thread::spawn(|| {
     count += 1;  // compile error!
 });
 // error: closure may outlive the current function
 // note: `count` is borrowed here but needs to be owned by the new thread</code></pre>
-    <li>The error message explains exactly what is wrong and points you toward the fix (<code>Arc&lt;Mutex&lt;_&gt;&gt;</code>).</li>
-    <li>The equivalent Java code compiles without warnings and silently produces wrong answers under concurrent load.</li>
-    <li>The tradeoff: Rust's ownership system has a learning curve. You spend more time satisfying the compiler upfront; you get a verified absence of data races as the payoff.</li>
-    </ul>
-  </section>
+  <ul>
+    <li><p>error message explains exactly what is wrong and points toward the fix (<code>Arc&lt;Mutex&lt;_&gt;&gt;</code>)</p></li>
+    <li><p>equivalent Java code compiles without warnings and silently produces wrong answers under load</p></li>
+  </ul>
+  <p>Tradeoff:</p>
+  <ul>
+    <li><p>learning curve upfront to satisfy the compiler</p></li>
+    <li><p>payoff: <strong>verified absence of data races</strong>.</p></li>
+  </ul>
 </section>
-
+</section>
 <!-- =====================================================================
      STRUCTURED CONCURRENCY
      ===================================================================== -->
@@ -1162,28 +1179,22 @@ thread::spawn(|| {
   </section>
 
   <section id="structured-concurrency-core-idea" class="frame">
-    <h2>Structured concurrency: the core rule</h2>
-    <ul>
-      <li><p><strong>A concurrent task cannot outlive the scope that created it.</strong></p></li>
-      <li><p>When a scope exits:</p></li>
-      <ul>
-        <li><p>if all children finished successfully, the scope returns normally</p></li>
-        <li><p>if any child failed, remaining children are cancelled and the error propagates</p></li>
-        <li><p>the scope does not return until every child has finished or been cancelled</p></li>  
-      </ul>
-      <li>Analogy:</li>
-      <ul>
-        <li> a regular function call. When you call <code>f()</code>, you know exactly when it returns; everything it started is done by then. Structured concurrency gives concurrent tasks the same guarantee.</li>
-      </ul>
-      <li>Compare to goto:</li>
-      <ul>
-        <li>  
-          Unstructured jumps were replaced by functions, loops, and if-statements (structured programming). Structured concurrency does the same for concurrent execution.
-        </li></ul>
+  <h2>Structured concurrency: the core rule</h2>
+  <p><strong>A concurrent task cannot outlive the scope that created it.</strong></p>
+  <p>When a scope exits:</p>
+  <ul>
+    <li><p>all children finished successfully: scope returns normally</p></li>
+    <li><p>any child failed: remaining children are cancelled and the error propagates</p></li>
+    <li><p>scope never returns until every child is done or cancelled</p></li>
+  </ul>
 
-      <li><p>Languages with native support: <strong>Java 21</strong> (StructuredTaskScope), <strong>Kotlin</strong> (coroutineScope), <strong>Swift</strong> (async let / TaskGroup).</p></li>
-    </ul>
-  </section>
+  <p>Languages with native support:</p>
+  <ul>
+    <li><p><strong>Java 21</strong>: StructuredTaskScope</p></li>
+    <li><p><strong>Kotlin</strong>: coroutineScope</p></li>
+    <li><p><strong>Swift</strong>: async let / TaskGroup</p></li>
+  </ul>
+</section>
 
   <section id="java-structured-task-scope" class="frame">
     <h2>Java 21: StructuredTaskScope</h2>
@@ -1191,17 +1202,16 @@ thread::spawn(|| {
     <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em"
          data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-java">String result;
 try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+  Future&lt;User&gt;        user   = scope.fork(() -&gt; fetchUser(id));
+  Future&lt;List&lt;Order&gt;&gt; orders = scope.fork(() -&gt; fetchOrders(id));
 
-    Future&lt;User&gt;        user   = scope.fork(() -&gt; fetchUser(id));
-    Future&lt;List&lt;Order&gt;&gt; orders = scope.fork(() -&gt; fetchOrders(id));
+  scope.join();          // wait for both subtasks
+  scope.throwIfFailed(); // if either threw, rethrow here
 
-    scope.join();          // wait for both subtasks
-    scope.throwIfFailed(); // if either threw, rethrow here
+  result = buildResponse(user.resultNow(), orders.resultNow());
 
-    result = buildResponse(user.resultNow(), orders.resultNow());
-
-}   // scope closes: any still-running subtasks are cancelled automatically
-    // both subtasks are guaranteed to have finished before this line</code></pre>
+} // scope closes: any still-running subtasks are cancelled automatically
+  // both subtasks are guaranteed to have finished before this line</code></pre>
     <p>Key properties:</p>
     <ul>
       <li><p><code>ShutdownOnFailure</code>: if one subtask throws, the other is cancelled</p></li>
@@ -1215,14 +1225,14 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
     <p>Kotlin coroutines enforce structured concurrency by default.</p>
     <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em"
          data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-kotlin">suspend fun loadDashboard(id: String): Dashboard = coroutineScope {
-    // async launches a child coroutine inside this scope
-    val user   = async { fetchUser(id) }
-    val orders = async { fetchOrders(id) }
-    // both run concurrently inside the scope
+  // async launches a child coroutine inside this scope
+  val user   = async { fetchUser(id) }
+  val orders = async { fetchOrders(id) }
+  // both run concurrently inside the scope
 
-    Dashboard(user.await(), orders.await())
-    // coroutineScope does NOT return until both children finish
-    // if either throws, the other is cancelled and the exception propagates
+  Dashboard(user.await(), orders.await())
+  // coroutineScope does NOT return until both children finish
+  // if either throws, the other is cancelled and the exception propagates
 }</code></pre>
     <p>Contrast with <code>GlobalScope.launch</code> (unstructured, discouraged):</p>
     <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
@@ -1245,14 +1255,20 @@ async function loadDashboard(id: string): Promise&lt;Dashboard&gt; {
     return { user, orders };
     // function does not return until both are done (or one rejects)
 }
-
 // Unstructured (avoid): fire-and-forget
 async function bad(id: string) {
     fetchUser(id);          // unawaited, orphaned, no error handling
     return doOtherWork();
 }</code></pre>
-    <p>Practical rule: <strong>always await every Promise you create</strong>.
-    If you intentionally fire-and-forget, attach a <code>.catch()</code> handler so errors are not silently swallowed.</p>
+    <p>Practical rule: </p>
+      <ul>
+        <li><strong>always await every Promise you create</strong>.</li>
+        <li>If you intentionally fire-and-forget, attach a <code>.catch()</code> handler so errors are not silently swallowed.</li>
+      <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"
+         data-tabsize="1"><code class="language-typescript">sendConfirmationEmail(id).catch(err => logger.error("email failed", err));
+</code></pre>
+      </ul>
+    
   </section>
 
   <section id="structured-concurrency-practice" class="frame">
@@ -1420,55 +1436,76 @@ async function processOrder(id: string) {
   </section>
 
   <section id="concurrency-models-taxonomy" class="frame">
-    <h2>Concurrency models: the full picture</h2>
-    <p><strong>Core models</strong> (each a different approach to the same problem):</p>
-    <table style="font-size:0.75em; border-collapse:collapse; width:100%;">
-      <thead>
-        <tr style="background:#E2E8F0;">
-          <th style="padding:4px 8px; text-align:left;">Model</th>
-          <th style="padding:4px 8px; text-align:left;">Core idea</th>
-          <th style="padding:4px 8px; text-align:left;">Languages</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="padding:3px 8px;"><strong>Shared memory + locks</strong></td>
-          <td>threads share memory; protect with mutex / semaphore / monitor</td>
-          <td>Java, C++, C#, Python</td>
-        </tr>
-        <tr style="background:#F8FAFC;">
-          <td style="padding:3px 8px;"><strong>Message passing (CSP)</strong></td>
-          <td>no sharing; data flows through typed channels</td>
-          <td>Go, Rust</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 8px;"><strong>Actor model</strong></td>
-          <td>each actor owns state; communicates via mailbox only</td>
-          <td>Erlang, Elixir, Akka</td>
-        </tr>
-        <tr style="background:#F8FAFC;">
-          <td style="padding:3px 8px;"><strong>Futures and Promises</strong></td>
-          <td>placeholder for a future value; composable and combinable</td>
-          <td>JS/TS, Java, Scala, Python</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 8px;"><strong>Async/await + event loop</strong></td>
-          <td>one thread, non-blocking I/O, cooperative scheduling</td>
-          <td>JS/TS, Python, C#, Rust</td>
-        </tr>
-        <tr style="background:#F8FAFC;">
-          <td style="padding:3px 8px;"><strong>Ownership-based</strong></td>
-          <td>compile-time rules prevent data races entirely</td>
-          <td>Rust</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 8px;"><strong>Structured concurrency</strong></td>
-          <td>child tasks cannot outlive their parent scope</td>
-          <td>Java 21, Kotlin, Swift</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <h2>Concurrency models</h2>
+
+  <p><strong>Core models</strong> (different approaches to coordinating concurrent work):</p>
+  <table style="font-size:0.75em; border-collapse:collapse; width:100%; margin-bottom:16px;">
+    <thead>
+      <tr style="background:#E2E8F0;">
+        <th style="padding:4px 8px; text-align:left;">Model</th>
+        <th style="padding:4px 8px; text-align:left;">Core idea</th>
+        <th style="padding:4px 8px; text-align:left;">Languages / ecosystems</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px;"><strong>Shared memory + locks</strong></td>
+        <td>threads share state; synchronize with mutex / semaphore / monitor / atomics</td>
+        <td>Java, C++, C#, Python, Rust</td>
+      </tr>
+      <tr style="background:#F8FAFC;">
+        <td style="padding:3px 8px;"><strong>Message passing (CSP-style)</strong></td>
+        <td>concurrent units communicate by sending values through channels</td>
+        <td>Go, Rust</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px;"><strong>Actor model</strong></td>
+        <td>each actor owns its state; communicates only by mailbox/message passing</td>
+        <td>Erlang, Elixir, Akka</td>
+      </tr>
+      <tr style="background:#F8FAFC;">
+        <td style="padding:3px 8px;"><strong>Event-loop / async task model</strong></td>
+        <td>tasks suspend while waiting on I/O; runtime schedules continuation</td>
+        <td>JS/TS, Python, C#, Rust</td>
+      </tr>
+    </tbody>
+  </table>
+ </section>
+
+ <section id="concurrency-abstraction" class="frame">
+  <h2>Abstractions and disciplines built on top</h2>
+  <table style="font-size:0.75em; border-collapse:collapse; width:100%;">
+    <thead>
+      <tr style="background:#E2E8F0;">
+        <th style="padding:4px 8px; text-align:left;">Abstraction / discipline</th>
+        <th style="padding:4px 8px; text-align:left;">Core idea</th>
+        <th style="padding:4px 8px; text-align:left;">Languages / ecosystems</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px;"><strong>Futures and Promises</strong></td>
+        <td>placeholder for a value that will be available later; composable result container</td>
+        <td>JS/TS, Java, Scala, Python, Rust, C#</td>
+      </tr>
+      <tr style="background:#F8FAFC;">
+        <td style="padding:3px 8px;"><strong>Async/await</strong></td>
+        <td>syntax for suspending and resuming async computations without callback chains</td>
+        <td>JS/TS, Python, C#, Rust</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px;"><strong>Structured concurrency</strong></td>
+        <td>child tasks belong to a parent scope and cannot outlive it</td>
+        <td>Java, Kotlin, Swift</td>
+      </tr>
+      <tr style="background:#F8FAFC;">
+        <td style="padding:3px 8px;"><strong>Ownership-based safety</strong></td>
+        <td>compile-time ownership and borrowing rules prevent data races in safe code</td>
+        <td>Rust</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 
   <section id="concurrency-models-specialized" class="frame">
     <h2>Specialized concurrency models (reference)</h2>
