@@ -439,15 +439,15 @@ D: [A, C]</code></pre>
         <section class="frame">
           <h2>BFS: algorithm steps</h2>
           <ul>
-            <li><p>Step 1: Mark start vertex visited; enqueue it</p></li>
-            <li><p>Step 2: Dequeue vertex u</p></li>
+            <li><p>Step 1: Mark start vertex visited; push it</p></li>
+            <li><p>Step 2: pop vertex u</p></li>
             <li><p>Step 3: For each neighbor v of u:</p>
               <ul>
-                <li><p>If v has not been visited, mark it visited and enqueue it</p></li>
+                <li><p>If v has not been visited, mark it visited and push it</p></li>
               </ul>
             </li>
             <li><p>Step 4: Repeat from Step 2 until the queue is empty</p></li>
-            <li><p>Key invariant: when a vertex is dequeued, all vertices at a smaller distance from the start have already been visited</p></li>
+            <li><p>Key invariant: when a vertex is popd, all vertices at a smaller distance from the start have already been visited</p></li>
           </ul>
         </section>
 
@@ -458,18 +458,18 @@ D: [A, C]</code></pre>
     queue&lt;int&gt; q;
     vector&lt;bool&gt; visited(g.size(), false);
 
-    visited[start] = true;  // mark before enqueue to avoid duplicates
-    q.enqueue(start);
+    visited[start] = true;  // mark before push to avoid duplicates
+    q.push(start);
 
     while (!q.empty()) {
         int u = q.front();
-        q.dequeue();
+        q.pop();
         // process u here
 
         for (int v : g.adj[u]) {
             if (!visited[v]) {
                 visited[v] = true;
-                q.enqueue(v);
+                q.push(v);
             }
         }
     }
@@ -502,13 +502,13 @@ D: [A, C]</code></pre>
     </tr>
   </thead>
   <tbody>
-    <tr><td>0</td><td>Mark A visited. Enqueue A</td><td>[A]</td><td>A</td></tr>
-    <tr><td>1</td><td>Dequeue A. Visit B, Enqueue B. Visit C, Enqueue C.</td><td>[B, C]</td><td>A, B, C</td></tr>
-    <tr><td>2</td><td>Dequeue B. Visit D, Enqueue D</td><td>[C, D]</td><td>A, B, C, D</td></tr>
-    <tr><td>3</td><td>Dequeue C. No unvisited neighbors</td><td>[D]</td><td>A, B, C, D</td></tr>
-    <tr><td>4</td><td>Dequeue D. Visit E, Enqueue E. Visit F, Enqueue F.</td><td>[E, F]</td><td>A, B, C, D, E, F</td></tr>
-    <tr><td>5</td><td>Dequeue E. No unvisited neighbors</td><td>[F]</td><td>A, B, C, D, E, F</td></tr>
-    <tr><td>6</td><td>Dequeue F. No unvisited neighbors</td><td>[]</td><td>A, B, C, D, E, F</td></tr>
+    <tr><td>0</td><td>Mark A visited. push A</td><td>[A]</td><td>A</td></tr>
+    <tr><td>1</td><td>pop A. Visit B, push B. Visit C, push C.</td><td>[B, C]</td><td>A, B, C</td></tr>
+    <tr><td>2</td><td>pop B. Visit D, push D</td><td>[C, D]</td><td>A, B, C, D</td></tr>
+    <tr><td>3</td><td>pop C. No unvisited neighbors</td><td>[D]</td><td>A, B, C, D</td></tr>
+    <tr><td>4</td><td>pop D. Visit E, push E. Visit F, push F.</td><td>[E, F]</td><td>A, B, C, D, E, F</td></tr>
+    <tr><td>5</td><td>pop E. No unvisited neighbors</td><td>[F]</td><td>A, B, C, D, E, F</td></tr>
+    <tr><td>6</td><td>pop F. No unvisited neighbors</td><td>[]</td><td>A, B, C, D, E, F</td></tr>
   </tbody>
 </table>
           </section>
@@ -562,7 +562,7 @@ D: [A, C]</code></pre>
         </section>
 
         <section class="frame">
-          <h2>DFS: implementation</h2>
+          <h2>DFS: iterative implementation </h2>
           <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void dfs(const Graph& g, int start) {
     stack&lt;int&gt; st;
@@ -586,6 +586,32 @@ D: [A, C]</code></pre>
 }</code></pre>
         </section>
 
+         <section class="frame">
+          <h2>DFS: recursive implementation</h2>
+          <ul>
+            <li><p>The call stack replaces the explicit stack: each recursive call goes one level deeper</p></li>
+            <li><p>Backtracking happens automatically when a call returns</p></li>
+            <li><p>The helper function <code class="inline">dfsHelper</code> is called once per unvisited vertex</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void dfsHelper(const Graph& g, int u, vector&lt;bool&gt;& visited) {
+    visited[u] = true;
+    // process u here
+    for (int v : g.adj[u]) {
+        if (!visited[v]) {
+            dfsHelper(g, v, visited);  // recurse into unvisited neighbor
+        }
+    }
+}
+void dfs(const Graph& g, int start) {
+    vector&lt;bool&gt; visited(g.size(), false);
+    dfsHelper(g, start, visited);
+}</code></pre>
+          <ul>
+            <li><p><strong>Iterative vs. recursive</strong>: both produce a valid DFS order; visit order may differ because the iterative version pushes all neighbors at once while the recursive version processes them one at a time</p></li>
+          </ul>
+        </section>
+
         <section class="frame">
           <h2>DFS example</h2>
           <div class="two-col">
@@ -604,7 +630,7 @@ D: [A, C]</code></pre>
               />
             </div>
           </div>
-                    <table>
+<table>
   <thead>
     <tr>
       <th>Step</th>
@@ -615,12 +641,13 @@ D: [A, C]</code></pre>
   </thead>
   <tbody>
     <tr><td>0</td><td>Push A</td><td>[A]</td><td></td></tr>
-    <tr><td>1</td><td>Pop A, visit A. Push B, C</td><td>[B, C]</td><td>A</td></tr>
-    <tr><td>2</td><td>Pop C, visit C. Push D</td><td>[B, D]</td><td>A, C</td></tr>
-    <tr><td>3</td><td>Pop D, visit D. Push E, F</td><td>[B, E, F]</td><td>A, C, D</td></tr>
-    <tr><td>4</td><td>Pop F, visit F. No unvisited neighbors</td><td>[B, E]</td><td>A, C, D, F</td></tr>
-    <tr><td>5</td><td>Pop E, visit E. No unvisited neighbors</td><td>[B]</td><td>A, C, D, F, E</td></tr>
-    <tr><td>6</td><td>Pop B, visit B. No unvisited neighbors</td><td>[]</td><td>A, C, D, F, E, B</td></tr>
+    <tr><td>1</td><td>Pop A, mark visited. Push B, C</td><td>[B, C]</td><td>A</td></tr>
+    <tr><td>2</td><td>Pop C, mark visited. Push D</td><td>[B, D]</td><td>A, C</td></tr>
+    <tr><td>3</td><td>Pop D, mark visited. Push B, E, F</td><td>[B, B, E, F]</td><td>A, C, D</td></tr>
+    <tr><td>4</td><td>Pop F, mark visited. No unvisited neighbors</td><td>[B, B, E]</td><td>A, C, D, F</td></tr>
+    <tr><td>5</td><td>Pop E, mark visited. No unvisited neighbors</td><td>[B, B]</td><td>A, C, D, F, E</td></tr>
+    <tr><td>6</td><td>Pop B, mark visited. No unvisited neighbors</td><td>[B]</td><td>A, C, D, F, E, B</td></tr>
+    <tr><td>7</td><td>Pop B, already visited, skip</td><td>[]</td><td>A, C, D, F, E, B</td></tr>
   </tbody>
 </table>
         </section>
