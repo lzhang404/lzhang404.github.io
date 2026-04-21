@@ -29,143 +29,93 @@
 </section>
 
 <section>
-<section id="overview" class="title-slide slide level1">
-<h1>Overview</h1>
-<div class="frame">
+  <section id="overview" class="title-slide slide level1">
+  <h1>Overview</h1>
+  </section>
 
-</div>
+  <section id="overview-1" class="frame">
+  <h2>Overview</h2>
+  <p>Topics today:</p>
+  <ul>
+    <li><p>Exception handling models: error codes, exceptions, typed
+    results</p></li>
+    <li><p>Stack unwinding, finally blocks, resource cleanup</p></li>
+    <li><p>Memory management: manual free, reference counting, tracing
+    GC</p></li>
+    <li><p>Industry angle: reliability, memory safety, debugging
+    failures</p></li>
+    <li><p>Rust: ownership as an alternative to tracing GC</p></li>
+    </ul>
+    <p>Languages:</p>
+    <ul>
+    <li><p>Java, C++, TypeScript, Rust</p></li>
+    <li><p>Python for reference counting and context managers</p></li>
+    </ul>
+  </section>
+
+  <section id="learning-goals" class="frame">
+    <h2>Learning goals</h2>
+    <p>After this lecture, you should be able to:</p>
+    <ul>
+    <li><p>Compare error codes, exceptions, and typed results</p></li>
+    <li><p>Trace stack unwinding and predict which cleanup code
+    runs</p></li>
+    <li><p>Compare manual memory, reference counting, and tracing
+    GC</p></li>
+    <li><p>Explain why GC does not prevent all memory leaks</p></li>
+    <li><p>Connect runtime choices to reliability and performance</p></li>
+    </ul>
+  </section>
+ </section>
+
+<section>
+  <section id="runtime" class="title-slide slide level1">
+  <h1>Runtime System Basic</h1>
+  </section>
+  <section id="what-a-runtime-system-is-responsible-for" class="frame">
+    <h2>What a runtime system is responsible for</h2>
+    <p>A runtime system provides the machinery and rules for:</p>
+    <ul>
+    <li><p>function calls, call stack, stack frames</p></li>
+    <li><p>exception propagation and unwinding</p></li>
+    <li><p>heap allocation and object layout</p></li>
+    <li><p>memory reclamation strategy</p></li>
+    <li><p>observability: stack traces, crash reports, profiling
+    hooks</p></li>
+    </ul>
+    <p>Takeaway:</p>
+    <ul>
+    <li><p>language features often depend on runtime support and
+    conventions</p></li>
+    </ul>
+  </section>
+  <section id="runtime-anatomy-stack-heap-handlers" class="frame">
+  <h2>Runtime anatomy: stack, heap, handlers</h2>
+  <ul>
+  <li><p><strong>Stack:</strong> call frames, return addresses, local control context</p></li>
+  <li><p><strong>Heap:</strong> dynamically allocated objects and shared structures</p></li>
+  <li><p><strong>Exception handler chain:</strong> where control transfers during failures</p></li>
+  </ul>
+  <p>This anatomy explains both correctness bugs (wrong cleanup) and performance issues (allocation/GC pressure).</p>
+  </section>
+  <section id="two-kinds-of-failures-in-real-systems" class="frame">
+  <h2>Two kinds of failures in real systems</h2>
+  <p>In production:</p>
+  <ul>
+  <li><p><strong>expected:</strong>timeouts, missing files, invalid input, permission
+  denied</p></li>
+  <li><p><strong>unexpected:</strong> null dereference, out-of-bounds,
+  use-after-free</p></li>
+  </ul>
+  <p>Runtime choices determine:</p>
+  <ul>
+  <li><p>how failures are represented</p></li>
+  <li><p>how they propagate across layers</p></li>
+  <li><p>whether cleanup happens reliably during failure paths</p></li>
+  </ul>
+  </section>
 </section>
-<section id="overview-1" class="frame">
-<h2>Overview</h2>
-<p>Topics today:</p>
-<ul>
-<li><p>Bridge from Module 11: understand runtime behavior underneath concurrent code</p></li>
-<li><p>Exception handling models: error codes, exceptions, typed
-results</p></li>
-<li><p>Stack unwinding, finally blocks, resource cleanup</p></li>
-<li><p>Memory management: manual free, reference counting, tracing
-GC</p></li>
-<li><p>Industry angle: reliability, memory safety, debugging
-failures</p></li>
-<li><p>Rust: ownership as an alternative to tracing GC</p></li>
-</ul>
-<p>Languages:</p>
-<ul>
-<li><p>Java, C++, TypeScript, Rust</p></li>
-<li><p>Python for reference counting and context managers</p></li>
-</ul>
-</section>
-<section id="learning-goals" class="frame">
-<h2>Learning goals</h2>
-<p>After this lecture, you should be able to:</p>
-<ul>
-<li><p>Compare error codes, exceptions, and typed results</p></li>
-<li><p>Trace stack unwinding and predict which cleanup code
-runs</p></li>
-<li><p>Compare manual memory, reference counting, and tracing
-GC</p></li>
-<li><p>Explain why GC does not prevent all memory leaks</p></li>
-<li><p>Connect runtime choices to reliability and performance</p></li>
-</ul>
-</section>
-<section id="module-boundary-and-placement" class="frame">
-<h2>Module boundary and placement</h2>
-<ul>
-<li><p><strong>From Module 11:</strong> concurrency hazards were model-level; now we study runtime mechanisms that shape failure and recovery.</p></li>
-<li><p><strong>This module (12):</strong> focuses on exceptions, unwinding/cleanup, and memory management strategies.</p></li>
-<li><p><strong>To Module 13:</strong> these runtime tradeoffs become language-selection and DSL design constraints.</p></li>
-</ul>
-<p>Scope note: synchronization algorithms stay in Module 11; today is runtime behavior and reliability.</p>
-</section>
-<section id="language-map-for-this-module" class="frame">
-<h2>Language map for this module</h2>
-<ul>
-<li><p><strong>Java:</strong> checked/unchecked exceptions and unwinding behavior.</p></li>
-<li><p><strong>C++:</strong> RAII and explicit ownership control.</p></li>
-<li><p><strong>TypeScript/Python:</strong> practical exception and retention pitfalls.</p></li>
-<li><p><strong>Rust:</strong> ownership + Result as a runtime-strategy alternative.</p></li>
-</ul>
-</section>
-<section id="module-flow-map" class="frame">
-<h2>Module flow map</h2>
-<ul>
-<li><p>Step 1: runtime responsibilities and failure classification</p></li>
-<li><p>Step 2: error signaling models and propagation</p></li>
-<li><p>Step 3: unwinding and cleanup guarantees</p></li>
-<li><p>Step 4: memory management strategies and tradeoffs</p></li>
-<li><p>Step 5: ownership-as-strategy (Rust) and production selection criteria</p></li>
-</ul>
-</section>
-<section id="what-a-runtime-system-is-responsible-for" class="frame">
-<h2>What a runtime system is responsible for</h2>
-<p>A runtime system provides the machinery and rules for:</p>
-<ul>
-<li><p>function calls, call stack, stack frames</p></li>
-<li><p>exception propagation and unwinding</p></li>
-<li><p>heap allocation and object layout</p></li>
-<li><p>memory reclamation strategy</p></li>
-<li><p>observability: stack traces, crash reports, profiling
-hooks</p></li>
-</ul>
-<p>Takeaway:</p>
-<ul>
-<li><p>language features often depend on runtime support and
-conventions</p></li>
-</ul>
-</section>
-<section id="runtime-anatomy-stack-heap-handlers" class="frame">
-<h2>Runtime anatomy: stack, heap, handlers</h2>
-<ul>
-<li><p><strong>Stack:</strong> call frames, return addresses, local control context</p></li>
-<li><p><strong>Heap:</strong> dynamically allocated objects and shared structures</p></li>
-<li><p><strong>Exception handler chain:</strong> where control transfers during failures</p></li>
-</ul>
-<p>This anatomy explains both correctness bugs (wrong cleanup) and performance issues (allocation/GC pressure).</p>
-</section>
-<section id="two-kinds-of-failures-in-real-systems" class="frame">
-<h2>Two kinds of failures in real systems</h2>
-<p>In production:</p>
-<ul>
-<li><p>expected: timeouts, missing files, invalid input, permission
-denied</p></li>
-<li><p>unexpected: null dereference, out-of-bounds,
-use-after-free</p></li>
-</ul>
-<p>Runtime choices determine:</p>
-<ul>
-<li><p>how failures are represented</p></li>
-<li><p>how they propagate across layers</p></li>
-<li><p>whether cleanup happens reliably during failure paths</p></li>
-</ul>
-</section>
-<section id="practice-expected-vs-unexpected" class="frame">
-<h2>Practice: expected vs unexpected</h2>
-<p>Classify each as expected or unexpected:</p>
-<ul>
-<li><p>a user enters an invalid email address</p></li>
-<li><p>a network call to a dependency times out</p></li>
-<li><p>an array index goes out of range</p></li>
-<li><p>a null pointer is dereferenced</p></li>
-<li><p>a file is missing in a CLI tool</p></li>
-</ul>
-</section>
-<section id="practice-answer-expected-vs-unexpected" class="frame">
-<h2>Practice answer: expected vs unexpected</h2>
-<p>One reasonable classification:</p>
-<ul>
-<li><p>invalid email address: expected</p></li>
-<li><p>network timeout: expected</p></li>
-<li><p>array index out of range: unexpected (bug or missing
-guard)</p></li>
-<li><p>null pointer dereference: unexpected (bug)</p></li>
-<li><p>missing file in CLI tool: expected</p></li>
-</ul>
-<p>Takeaway:</p>
-<ul>
-<li><p>expected failures should be part of normal control flow</p></li>
-<li><p>unexpected failures should be loud and easy to diagnose</p></li>
-</ul>
-</section></section>
+
 <section>
 <section id="exceptions-and-error-handling"
 class="title-slide slide level1">
@@ -220,20 +170,7 @@ class="title-slide slide level1">
 <li><p>teams often need conventions about what can throw</p></li>
 </ul>
 </section>
-<section id="typed-results-strengths-and-weaknesses" class="frame">
-<h2>Typed results: strengths and weaknesses</h2>
-<p>Strengths:</p>
-<ul>
-<li><p>failure is part of the return type</p></li>
-<li><p>callers can be forced to handle both cases</p></li>
-<li><p>branching on error types is straightforward</p></li>
-</ul>
-<p>Weaknesses:</p>
-<ul>
-<li><p>verbose signatures if everything returns Result</p></li>
-<li><p>developers may still shortcut with unwrap or crash</p></li>
-</ul>
-</section>
+
 <section id="checked-vs-unchecked-exceptions" class="frame">
 <h2>Checked vs unchecked exceptions</h2>
 <p>Java separates exceptions into categories:</p>
@@ -307,194 +244,185 @@ async function fetchJson(url: string): Promise&lt;any&gt; {
   return await res.json();
 }</code></pre>
 </section>
-<section id="practice-choose-a-model" class="frame">
-<h2>Practice: choose a model</h2>
-<p>For each scenario, pick a reasonable primary error model:</p>
-<ul>
-<li><p>parsing user input in a web request</p></li>
-<li><p>network timeout calling a dependency</p></li>
-<li><p>invalid configuration at startup</p></li>
-<li><p>out-of-bounds access in a core data structure</p></li>
-<li><p>missing optional file in a CLI tool</p></li>
-</ul>
+
+
 </section>
-<section id="practice-answer-choose-a-model" class="frame">
-<h2>Practice answer: choose a model</h2>
-<p>One reasonable set of choices:</p>
-<ul>
-<li><p>parsing user input: typed result or exception translated to a 400
-response</p></li>
-<li><p>network timeout: typed error propagated, handled at boundary with
-retry policy</p></li>
-<li><p>invalid config at startup: fail fast, crash with clear
-message</p></li>
-<li><p>out-of-bounds: bug, crash/panic in development, add guards where
-needed</p></li>
-<li><p>missing optional file: typed error or exception caught at main
-with user-friendly output</p></li>
-</ul>
-</section></section>
+
 <section>
-<section id="unwinding-and-cleanup" class="title-slide slide level1">
-<h1>Unwinding and cleanup</h1>
-<div class="frame">
+  <section id="unwinding-and-cleanup" class="title-slide slide level1">
+  <h1>Unwinding and cleanup</h1>
+  </section>
 
-</div>
-</section>
-<section id="stack-unwinding" class="frame">
-<h2>Stack unwinding</h2>
-<p>When an exception is thrown:</p>
-<ul>
-<li><p>the runtime searches for a handler up the call stack</p></li>
-<li><p>frames are popped until a matching handler is found</p></li>
-<li><p>cleanup code runs based on language rules</p></li>
-</ul>
-<p>Key question:</p>
-<ul>
-<li><p>what is guaranteed to run during unwinding</p></li>
-</ul>
-</section>
-<section id="finally-blocks-and-structured-cleanup" class="frame">
-<h2>Finally blocks and structured cleanup</h2>
-<p>Cleanup must happen even on early exit:</p>
-<ul>
-<li><p>normal return</p></li>
-<li><p>thrown exception</p></li>
-<li><p>multiple returns</p></li>
-</ul>
-<p>Constructs:</p>
-<ul>
-<li><p>Java: finally, try-with-resources</p></li>
-<li><p>Python: try/finally, with</p></li>
-<li><p>C++: destructors and RAII</p></li>
-<li><p>Rust: Drop at end of scope</p></li>
-</ul>
-</section>
-<section id="java-finally-runs-during-unwinding" class="frame">
-<h2>Java: finally runs during unwinding</h2>
-<p>Predict the output.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-java">class T {
-  static void f() {
-    try {
-      System.out.println(&quot;A&quot;);
-      throw new RuntimeException(&quot;boom&quot;);
-    } finally {
-      System.out.println(&quot;B&quot;);
+  <section id="stack-unwinding" class="frame">
+  <h2>Stack unwinding</h2>
+  <p>When an exception is thrown:</p>
+  <ul>
+  <li><p>the runtime searches for a handler up the call stack</p></li>
+  <li><p>frames are popped until a matching handler is found</p></li>
+  <li><p>cleanup code runs based on language rules</p></li>
+  </ul>
+  <p>Key question:</p>
+  <ul>
+  <li><p>what is guaranteed to run during unwinding</p></li>
+  </ul>
+  </section>
+
+  <section id="finally-blocks-and-structured-cleanup" class="frame">
+  <h2>Finally blocks and structured cleanup</h2>
+  <p>Cleanup must happen even on early exit:</p>
+  <ul>
+  <li><p>normal return</p></li>
+  <li><p>thrown exception</p></li>
+  <li><p>multiple returns</p></li>
+  </ul>
+  <p>Constructs:</p>
+  <ul>
+  <li><p>Java: finally, try-with-resources</p></li>
+  <li><p>Python: with statement (context managers), try/finally</p></li>
+  <li><p>C++: destructors and RAII</p></li>
+  <li><p>Rust: Drop at end of scope</p></li>
+  </ul>
+  </section>
+
+  <section id="java-finally-runs-during-unwinding" class="frame">
+  <h2>Java: finally runs during unwinding</h2>
+  <p>Predict the output.</p>
+  <pre data-xleftmargin="3pt" data-linenos=""
+  data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+  data-tabsize="1"><code class="language-java">class T {
+    static void f() {
+      try {
+        System.out.println(&quot;A&quot;);
+        throw new RuntimeException(&quot;boom&quot;);
+      } finally {
+        System.out.println(&quot;B&quot;);
+      }
     }
-  }
 
-  public static void main(String[] args) {
-    try { f(); } catch (Exception e) { System.out.println(&quot;C&quot;); }
-  }
-}</code></pre>
-</section>
-<section id="practice-answer-finally-runs-during-unwinding"
-class="frame">
-<h2>Practice answer: finally runs during unwinding</h2>
-<p>Expected output:</p>
-<ul>
-<li><p>A prints in the try block</p></li>
-<li><p>exception thrown, then finally runs, so B prints</p></li>
-<li><p>caller catches, so C prints</p></li>
-</ul>
-<p>Takeaway:</p>
-<ul>
-<li><p>structured cleanup makes failure paths safe by default</p></li>
-</ul>
-</section>
-<section id="c-cleanup-raii-mental-model" class="frame">
-<h2>C++ cleanup: RAII mental model</h2>
-<p>In C++:</p>
-<ul>
-<li><p>local objects are destroyed when leaving scope</p></li>
-<li><p>destruction happens on normal return and on exception
-unwinding</p></li>
-<li><p>resource cleanup is encoded in destructors</p></li>
-</ul>
-<p>Typical consequence:</p>
-<ul>
-<li><p>less explicit finally code</p></li>
-<li><p>more emphasis on wrapping resources in objects</p></li>
-</ul>
-</section>
-<section id="c-raii-closes-files-on-all-paths" class="frame">
-<h2>C++: RAII closes files on all paths</h2>
-<p>Cleanup is deterministic at scope exit.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-cpp">#include &lt;fstream&gt;
-#include &lt;string&gt;
-#include &lt;stdexcept&gt;
+    public static void main(String[] args) {
+      try { f(); } catch (Exception e) { System.out.println(&quot;C&quot;); }
+    }
+  }</code></pre>
+  </section>
 
-std::string read_all(const std::string&amp; path) {
-  std::ifstream in(path);
-  if (!in) { throw std::runtime_error(&quot;open failed&quot;); }
+  <section id="practice-answer-finally-runs-during-unwinding"
+  class="frame">
+  <h2>Practice answer: finally runs during unwinding</h2>
+  <p>Expected output:</p>
+  <ul>
+  <li><p>A prints in the try block</p></li>
+  <li><p>exception thrown, then finally runs, so B prints</p></li>
+  <li><p>caller catches, so C prints</p></li>
+  </ul>
+  <p>Takeaway:</p>
+  <ul>
+  <li><p>structured cleanup makes failure paths safe by default</p></li>
+  </ul>
+  </section>
 
-  std::string s, line;
-  while (std::getline(in, line)) {
-    s += line;
-    s += &quot;\n&quot;;
-  }
-  return s; // in is closed here
-}</code></pre>
+  <section id="c-cleanup-raii-mental-model" class="frame">
+  <h2>C++ cleanup: RAII mental model</h2>
+  <p>In C++:</p>
+  <ul>
+  <li><p>local objects are destroyed when leaving scope</p></li>
+  <li><p>destruction happens on normal return and on exception
+  unwinding</p></li>
+  <li><p>resource cleanup is encoded in destructors</p></li>
+  </ul>
+  <p>Typical consequence:</p>
+  <ul>
+  <li><p>less explicit finally code</p></li>
+  <li><p>more emphasis on wrapping resources in objects</p></li>
+  </ul>
+  </section>
+
+  <section id="c-raii-closes-files-on-all-paths" class="frame">
+  <h2>C++: RAII closes files on all paths</h2>
+  <p>Cleanup is deterministic at scope exit.</p>
+  <pre data-xleftmargin="3pt" data-linenos=""
+  data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+  data-tabsize="1"><code class="language-cpp">#include &lt;fstream&gt;
+  #include &lt;string&gt;
+  #include &lt;stdexcept&gt;
+
+  std::string read_all(const std::string&amp; path) {
+    std::ifstream in(path);
+    if (!in) { throw std::runtime_error(&quot;open failed&quot;); }
+
+    std::string s, line;
+    while (std::getline(in, line)) {
+      s += line;
+      s += &quot;\n&quot;;
+    }
+    return s; // in is closed here
+  }</code></pre>
+  </section>
+
+  <section id="java-try-with-resources" class="frame">
+  <h2>Java: try-with-resources closes on all paths</h2>
+  <p>Resources declared in the try header are closed automatically.</p>
+  <pre data-xleftmargin="3pt" data-linenos=""
+  data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+  data-tabsize="1"><code class="language-java">import java.io.*;
+
+  class Demo {
+    static int countLines(String path) throws IOException {
+      // BufferedReader is closed on normal return AND on exception
+      try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+        int count = 0;
+        while (br.readLine() != null) count++;
+        return count;
+      }
+    }
+  }</code></pre>
+  <p>Takeaway:</p>
+  <ul>
+  <li><p>try-with-resources is the preferred pattern over explicit finally for closeable resources</p></li>
+  </ul>
+  </section>
+
+  <section id="python-with-statement" class="frame">
+  <h2>Python: with statement guarantees cleanup</h2>
+  <p>The context manager protocol runs cleanup even on exception.</p>
+  <pre data-xleftmargin="3pt" data-linenos=""
+  data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+  data-tabsize="1"><code class="language-python"># with closes the file on normal exit and on exception
+  with open("data.txt") as f:
+      contents = f.read()
+  # f is closed here regardless
+
+  # equivalent explicit form:
+  f = open("data.txt")
+  try:
+      contents = f.read()
+  finally:
+      f.close()</code></pre>
+  <p>Takeaway:</p>
+  <ul>
+  <li><p>with is syntactic sugar over try/finally; any class implementing __enter__() and __exit__() can be used</p></li>
+  </ul>
+  </section>
+
+  <section id="resource-leaks-are-not-only-memory-leaks" class="frame">
+  <h2>Resource leaks are not only memory leaks</h2>
+  <p>Common resources:</p>
+  <ul>
+  <li><p>file descriptors, sockets, database connections</p></li>
+  <li><p>locks, permits, thread handles</p></li>
+  </ul>
+  <p>Production symptom:</p>
+  <ul>
+  <li><p>memory stable, but process dies due to too many open
+  files</p></li>
+  </ul>
+  <p>Practice idea:</p>
+  <ul>
+  <li><p>prefer language-supported structured cleanup constructs</p></li>
+  </ul>
+  </section>
+
 </section>
-<section id="resource-leaks-are-not-only-memory-leaks" class="frame">
-<h2>Resource leaks are not only memory leaks</h2>
-<p>Common resources:</p>
-<ul>
-<li><p>file descriptors, sockets, database connections</p></li>
-<li><p>locks, permits, thread handles</p></li>
-</ul>
-<p>Production symptom:</p>
-<ul>
-<li><p>memory stable, but process dies due to too many open
-files</p></li>
-</ul>
-<p>Practice idea:</p>
-<ul>
-<li><p>prefer language-supported structured cleanup constructs</p></li>
-</ul>
-</section>
-<section id="practice-where-should-you-catch" class="frame">
-<h2>Practice: where should you catch</h2>
-<p>For each place, decide catch or do not catch:</p>
-<ul>
-<li><p>inside a low-level parsing function</p></li>
-<li><p>inside a reusable library utility</p></li>
-<li><p>at the HTTP request handler boundary</p></li>
-<li><p>at a background job loop boundary</p></li>
-<li><p>at thread entry points</p></li>
-</ul>
-</section>
-<section id="practice-answer-where-should-you-catch" class="frame">
-<h2>Practice answer: where should you catch</h2>
-<p>One reasonable policy:</p>
-<ul>
-<li><p>low-level parsing function: do not catch, return/propagate with
-context</p></li>
-<li><p>reusable library utility: do not catch unless translating to a
-better error type</p></li>
-<li><p>HTTP request handler boundary: catch and translate to an error
-response</p></li>
-<li><p>background job loop boundary: catch, log, keep worker
-alive</p></li>
-<li><p>thread entry points: catch, log, avoid silent thread
-death</p></li>
-</ul>
-</section></section>
-<section class="slide level2">
-<section id="bridge-errors-to-memory" class="frame">
-<h2>Bridge: from error paths to memory strategy</h2>
-<p>Error handling and memory management are connected design decisions:</p>
-<ul>
-<li><p>Cleanup guarantees determine whether failures leak resources</p></li>
-<li><p>Ownership model determines how hard cleanup is to reason about</p></li>
-<li><p>Runtime policy (manual, RC, tracing GC, ownership types) shapes failure modes</p></li>
-</ul>
-</section>
-</section>
+
 <section>
 <section id="memory-management-strategies"
 class="title-slide slide level1">
@@ -536,59 +464,49 @@ engineered</p></li>
 <li><p>complex ownership reasoning at scale</p></li>
 </ul>
 </section>
-<section id="c-raw-ownership-creates-easy-mistakes" class="frame">
-<h2>C++: raw ownership creates easy mistakes</h2>
-<p>The caller must remember the ownership rule.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-cpp">#include &lt;cstring&gt;
 
-char* make_msg(const char* name) {
-  char* p = new char[64];
-  std::strcpy(p, &quot;hi &quot;);
-  std::strcat(p, name);
-  return p; // caller must delete[] p
+  <section id="c-raw-ownership-creates-easy-mistakes" class="frame">
+    <h2>C++: raw ownership creates easy mistakes</h2>
+    <p>The caller must know the ownership rule and the size contract.</p>
+    <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" 
+    data-tabsize="1"><code class="language-cpp">#include &lt;cstring&gt;
+// caller must delete[] the returned pointer
+char* make_greeting(const char* name) {
+  char* p = new char[64];         // fixed buffer
+  std::strcpy(p, "hello, ");
+  std::strcat(p, name);           // overflows if name > 56 chars
+  return p;
 }</code></pre>
-</section>
-<section id="c-practice-what-goes-wrong" class="frame">
-<h2>C++ practice: what goes wrong</h2>
-<p>Identify two different bugs that are easy to write with make_msg:</p>
-<ul>
-<li><p>one that causes a leak</p></li>
-<li><p>one that causes a crash or memory corruption</p></li>
-</ul>
-</section>
-<section id="c-practice-answer-what-goes-wrong" class="frame">
-<h2>C++ practice answer: what goes wrong</h2>
-<p>Two common bug shapes:</p>
-<ul>
-<li><p>leak: caller forgets to delete[] the returned pointer</p></li>
-<li><p>crash/corruption: caller deletes twice, or uses the pointer after
-deleting</p></li>
-</ul>
-<p>Takeaway:</p>
-<ul>
-<li><p>raw ownership is hard to audit across module boundaries</p></li>
-</ul>
-</section>
-<section id="modern-c-approach-raii-and-smart-pointers" class="frame">
-<h2>Modern C++ approach: RAII and smart pointers</h2>
-<p>Modern C++ conventions:</p>
-<ul>
-<li><p>prefer std::string, std::vector for buffers</p></li>
-<li><p>prefer std::unique_ptr for single-owner heap allocations</p></li>
-<li><p>use std::shared_ptr only when shared ownership is truly
-needed</p></li>
-</ul>
-<p>Goal:</p>
-<ul>
-<li><p>make ownership visible in types, not in comments</p></li>
-</ul>
-</section>
-<section id="c-unique_ptr-makes-ownership-explicit" class="frame">
-<h2>C++: unique_ptr makes ownership explicit</h2>
-<p>Deterministic cleanup at scope exit.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
+    <p>Three common bug shapes:</p>
+    <ul>
+    <li><p>buffer overflow: </p></li>
+    <ul><li>name longer than 56 characters overruns the 64-byte buffer, corrupting adjacent memory</li></ul>
+    <li><p>leak: </p></li>
+    <ul><li>caller forgets to delete[] the returned pointer</li></ul>
+    <li><p>use-after-free: </p></li>
+    <ul><li>caller deletes the pointer, then reads or writes through it</li></ul>
+    </ul>
+    <p>Takeaway:</p>
+    <ul>
+    <li><p>raw ownership is hard to audit across module boundaries</p></li>
+    <li> size contracts compound the problem</li>
+    </ul>
+  </section>
+
+  <section id="modern-c-approach-raii-and-smart-pointers" class="frame">
+    <h2>Modern C++ approach: RAII and smart pointers</h2>
+    <p>Modern C++ conventions:</p>
+    <ul>
+      <li><p>prefer std::string, std::vector for buffers</p></li>
+      <li><p>prefer std::unique_ptr for single-owner heap allocations</p></li>
+      <li><p>use std::shared_ptr only when shared ownership is truly
+      needed</p></li>
+    </ul>
+    <p>Goal:</p>
+    <ul>
+      <li><p>make ownership visible in types, not in comments</p></li>
+    </ul>
+    <pre data-xleftmargin="3pt" data-linenos=""
 data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
 data-tabsize="1"><code class="language-cpp">#include &lt;memory&gt;
 #include &lt;string&gt;
@@ -597,107 +515,154 @@ std::unique_ptr&lt;std::string&gt; build() {
   auto p = std::make_unique&lt;std::string&gt;(&quot;hello&quot;);
   return p; // moved out, still one owner
 } // no manual delete needed</code></pre>
-</section>
-<section id="reference-counting" class="frame">
-<h2>Reference counting</h2>
-<p>Reference counting strategy:</p>
-<ul>
-<li><p>each object tracks how many references point to it</p></li>
-<li><p>increment on new reference, decrement on drop</p></li>
-<li><p>free when the count hits zero</p></li>
-</ul>
-<p>Benefits:</p>
-<ul>
-<li><p>reclamation is incremental</p></li>
-<li><p>predictable in many interactive workloads</p></li>
-</ul>
-<p>Problem:</p>
-<ul>
-<li><p>cycles can leak: A points to B and B points to A</p></li>
-</ul>
-</section>
-<section id="tracing-garbage-collection" class="frame">
-<h2>Tracing garbage collection</h2>
-<p>Tracing GC reclaims by reachability:</p>
-<ul>
-<li><p>identify roots: stack, globals, registers</p></li>
-<li><p>mark objects reachable from roots</p></li>
-<li><p>reclaim unmarked objects, sometimes compact</p></li>
-</ul>
-<p>Key property:</p>
-<ul>
-<li><p>cycles are collected if unreachable from roots</p></li>
-</ul>
-</section>
-<section id="generational-garbage-collection" class="frame">
-<h2>Generational garbage collection</h2>
-<p>Common observation:</p>
-<ul>
-<li><p>most objects die young</p></li>
-</ul>
-<p>Design:</p>
-<ul>
-<li><p>collect young objects frequently</p></li>
-<li><p>collect old objects less frequently</p></li>
-<li><p>track old-to-young references with write barriers</p></li>
-</ul>
-</section>
-<section id="gc-does-not-prevent-all-leaks" class="frame">
-<h2>GC does not prevent all leaks</h2>
-<p>GC collects unreachable objects, but leaks still happen when:</p>
-<ul>
-<li><p>objects remain reachable from roots but are logically
-unused</p></li>
-<li><p>caches grow without eviction</p></li>
-<li><p>event listeners or callbacks retain closures</p></li>
-</ul>
-<p>Symptom:</p>
-<ul>
-<li><p>heap growth, more GC cycles, worse tail latency</p></li>
-</ul>
-</section>
-<section id="typescript-accidental-retention-sketch" class="frame">
-<h2>TypeScript: accidental retention sketch</h2>
-<p>A cache can grow forever without eviction.</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">const cache = new Map&lt;string, any&gt;();
+  </section>
 
+  <section id="reference-counting" class="frame">
+  <h2>Reference counting</h2>
+  <p>Reference counting strategy:</p>
+  <ul>
+  <li><p>each object tracks how many references point to it</p></li>
+  <li><p>increment on new reference, decrement on drop</p></li>
+  <li><p>free when the count hits zero</p></li>
+  </ul>
+  <p>Benefits:</p>
+  <ul>
+  <li><p>reclamation is incremental</p></li>
+  <li><p>predictable in many interactive workloads</p></li>
+  </ul>
+  <p>Problem:</p>
+  <ul>
+  <li><p>cycles can leak: A points to B and B points to A</p></li>
+  </ul>
+  </section>
+
+  <section id="reference-counting-cycle-problem" class="frame">
+  <h2>Reference counting: cycles prevent reclamation</h2>
+  <p>When two objects point to each other, neither count reaches zero.</p>
+  <pre data-xleftmargin="3pt" data-linenos=""
+  data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+  data-tabsize="1"><code class="language-python">
+class Node:
+  def __init__(self, val):
+      self.val = val
+      self.ref = None
+
+a = Node(1)     # Node(1): 1 reference, from variable a
+b = Node(2)     # Node(2): 1 reference, from variable b
+
+a.ref = b       # Node(2): now 2 references (b, a.ref)
+b.ref = a       # Node(1): now 2 references (a, b.ref)
+
+del a           # Node(1): drops to 1 (still referenced by b.ref)
+del b           # Node(2): drops to 1 (still referenced by a.ref)</code></pre>
+  <p>CPython handles this with a supplemental cycle collector, but it does not run deterministically.</p>
+  </section>
+
+  <section id="weak-references-break-cycles" class="frame">
+  <h2>Weak references break RC cycles</h2>
+  <p>A weak reference does not increment the reference count.</p>
+  <pre data-xleftmargin="3pt" data-linenos=""
+  data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+  data-tabsize="1"><code class="language-python">
+import weakref
+
+class Node:
+  def __init__(self, val):
+    self.val = val
+    self.ref = None      # strong reference
+    self.back = None     # weak reference
+
+a = Node(1)   # variable a strongly references Node(1)
+b = Node(2)   # variable b strongly references Node(2)
+
+a.ref = b     # Node(2) now has 2 strong refs: b, a.ref
+b.back = weakref.ref(a) # weak reference to Node(1)
+                        # does NOT increase Node(1)'s strong ref count
+
+del a         # remove variable a's reference to Node(1)
+              # Node(1) strong ref count goes to 0, so it is freed
+              # b.back() now returns None
+
+del b         # remove variable b's reference to Node(2)
+              # if no other strong refs exist, Node(2) is freed</code></pre>
+  <p>Takeaway:</p>
+  <ul>
+  <li><p>use weak references for back-pointers and observer patterns where the reference should not extend the object's lifetime</p></li>
+  </ul>
+  </section>
+
+  <section id="tracing-garbage-collection" class="frame">
+  <h2>Tracing garbage collection</h2>
+  <p>Tracing GC reclaims by reachability:</p>
+  <ul>
+  <li><p>identify roots: stack, globals, registers</p></li>
+  <li><p>mark objects reachable from roots</p></li>
+  <li><p>reclaim unmarked objects, sometimes compact</p></li>
+  </ul>
+  <p>Key property:</p>
+  <ul>
+  <li><p>cycles are collected if unreachable from roots</p></li>
+  </ul>
+  </section>
+
+  <section id="generational-garbage-collection" class="frame">
+  <h2>Generational garbage collection</h2>
+  <p>Common observation:</p>
+  <ul>
+  <li><p>most objects die young</p></li>
+  </ul>
+  <p>Design:</p>
+  <ul>
+  <li><p>collect young objects frequently</p></li>
+  <li><p>collect old objects less frequently</p></li>
+  <li><p>track old-to-young references with write barriers</p></li>
+  </ul>
+  </section>
+
+  <section id="gc-does-not-prevent-all-leaks" class="frame">
+  <h2>GC does not prevent all leaks</h2>
+  <p>GC collects unreachable objects, but leaks still happen when:</p>
+  <ul>
+  <li><p>objects remain reachable from roots but are logically
+  unused</p></li>
+  <li><p>caches grow without eviction</p></li>
+  <li><p>event listeners or callbacks retain closures</p></li>
+  </ul>
+  <p>Symptom:</p>
+  <ul>
+  <li><p>heap growth, more GC cycles, worse tail latency</p></li>
+  </ul>
+  </section>
+
+  <section id="typescript-accidental-retention-sketch" class="frame">
+    <h2>TypeScript: accidental retention</h2>
+    <pre style="flex:1; margin:0;" data-xleftmargin="3pt" data-linenos=""
+    data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
+    data-tabsize="1"><code class="language-typescript">const cache = new Map&lt;string, any&gt;();
+    
 export async function getUser(id: string) {
   if (cache.has(id)) return cache.get(id);
 
-  const user = await fetch(`/api/user/${id}`).then(r =&gt; r.json());
+  const user = await fetch(`/api/user/${id}`)
+    .then(r =&gt; r.json());
   cache.set(id, user);
   return user;
 }</code></pre>
+    <p>What goes wrong:</p>
+    <ul>
+      <li>cache grows without bound</li>
+      <li>objects stay reachable from the root and GC never collects them.</li>
+    </ul>
+    <p>Fix:</p>
+    <ul>
+    <li><p>policy: cache only hot keys or a bounded set</p></li>
+    <li><p>technical: add eviction - LRU, TTL, or size cap</p></li>
+    </ul>
+    <p>Symptom: heap grows, GC runs more often, tail latency increases.</p>
+  </section>
+
 </section>
-<section id="practice-find-the-leak" class="frame">
-<h2>Practice: find the leak</h2>
-<p>In the cache example, list two fixes:</p>
-<ul>
-<li><p>one policy fix</p></li>
-<li><p>one technical fix</p></li>
-</ul>
-<p>Also name one place where the bug might show up:</p>
-<ul>
-<li><p>latency, memory, or error rate</p></li>
-</ul>
-</section>
-<section id="practice-answer-find-the-leak" class="frame">
-<h2>Practice answer: find the leak</h2>
-<p>Fixes:</p>
-<ul>
-<li><p>policy fix: only cache a bounded set of ids, or cache only hot
-keys</p></li>
-<li><p>technical fix: add eviction (LRU), TTL, size cap, or periodic
-cleanup</p></li>
-</ul>
-<p>Symptom:</p>
-<ul>
-<li><p>memory increases, GC becomes more frequent, tail latency
-increases</p></li>
-</ul>
-</section></section>
+
 <section>
 <section id="rust-ownership" class="title-slide slide level1">
 <h1>Ownership model (Rust case study)</h1>
@@ -730,19 +695,20 @@ data-tabsize="1"><code class="language-rust">fn main() {
   println!(&quot;{}&quot;, t);
 }</code></pre>
 </section>
+
 <section id="rust-result-for-recoverable-errors" class="frame">
-<h2>Rust: Result for recoverable errors</h2>
-<p>Rust splits failure into:</p>
-<ul>
-<li><p>Result for recoverable errors</p></li>
-<li><p>panic for programmer bugs or impossible states</p></li>
-</ul>
-<p>Practical benefit:</p>
-<ul>
-<li><p>error handling is explicit in types, but still concise with ?
-syntax</p></li>
-</ul>
+  <h2>Rust: Result for recoverable errors</h2>
+  <p>Rust splits failure into:</p>
+  <ul>
+  <li><p><code>Result&lt;T, E&gt; </code> for recoverable errors</p></li>
+  <li><p><code>panic!</code> for programmer bugs or impossible states</p></li>
+  </ul>
+  <p>Practical benefit:</p>
+  <ul>
+  <li><p>error handling is explicit in types, but still concise with <code>?</code> syntax</p></li>
+  </ul>
 </section>
+
 <section id="rust-result-and-for-propagation" class="frame">
 <h2>Rust: Result and ? for propagation</h2>
 <p>Errors are values, propagation is concise.</p>
@@ -758,148 +724,83 @@ fn read_all(path: &amp;str) -&gt; Result&lt;String, io::Error&gt; {
   Ok(s)
 }</code></pre>
 </section>
-<section id="practice-panic-or-result" class="frame">
-<h2>Practice: panic or Result</h2>
-<p>For each case, choose panic or Result:</p>
-<ul>
-<li><p>parse a user-provided integer</p></li>
-<li><p>open a config file at startup</p></li>
-<li><p>internal invariant violated in a data structure</p></li>
-<li><p>network timeout talking to a dependency</p></li>
-<li><p>index into an array with a user-provided index</p></li>
-</ul>
-</section>
-<section id="practice-answer-panic-or-result" class="frame">
-<h2>Practice answer: panic or Result</h2>
-<p>One reasonable set of choices:</p>
-<ul>
-<li><p>parse user integer: Result</p></li>
-<li><p>open config file at startup: Result, but exit if missing and
-required</p></li>
-<li><p>internal invariant violated: panic</p></li>
-<li><p>network timeout: Result</p></li>
-<li><p>user-provided index: Result or safe check returning
-None/Err</p></li>
-</ul>
-</section></section>
-<section>
-<section id="industry-angle" class="title-slide slide level1">
-<h1>Industry angle</h1>
-<div class="frame">
 
-</div>
 </section>
-<section id="industry-angle-memory-safety-and-reliability"
-class="frame">
-<h2>Industry angle: memory safety and reliability</h2>
-<p>Why runtime choices matter:</p>
-<ul>
-<li><p>memory safety bugs can become security issues</p></li>
-<li><p>crashes and leaks increase incident rate</p></li>
-<li><p>tail latency is affected by pauses and allocator
-pressure</p></li>
-</ul>
-<p>Typical tradeoffs:</p>
-<ul>
-<li><p>C/C++: control and speed, more risk without strict
-discipline</p></li>
-<li><p>GC languages: simpler memory ownership, less control over
-reclamation timing</p></li>
-<li><p>Rust: strong safety guarantees, some complexity in ownership
-design</p></li>
-</ul>
-</section>
-<section id="choosing-a-strategy-in-practice" class="frame">
-<h2>Choosing a strategy in practice</h2>
-<p>Questions engineers ask:</p>
-<ul>
-<li><p>is predictable latency required, or is average throughput the
-priority</p></li>
-<li><p>do we interface with native code and manual allocators</p></li>
-<li><p>what tooling is available for debugging leaks and
-corruption</p></li>
-<li><p>how costly are crashes in this environment</p></li>
-<li><p>what is the team skill set and existing ecosystem</p></li>
-</ul>
-<p>Practical reality:</p>
-<ul>
-<li><p>many systems mix languages and therefore mix runtime
-strategies</p></li>
-</ul>
-</section>
-<section id="practice-choose-a-runtime-style-for-components"
-class="frame">
-<h2>Practice: choose a runtime style for components</h2>
-<p>For each component, pick a likely style and justify:</p>
-<ul>
-<li><p>browser UI code</p></li>
-<li><p>kernel driver</p></li>
-<li><p>backend web service handling many requests</p></li>
-<li><p>game engine core loop</p></li>
-<li><p>data science notebook workflow</p></li>
-</ul>
-</section>
-<section id="practice-answer-choose-a-runtime-style-for-components"
-class="frame">
-<h2>Practice answer: choose a runtime style for components</h2>
-<p>One reasonable set of choices:</p>
-<ul>
-<li><p>browser UI: GC, focus on pause control and leak
-avoidance</p></li>
-<li><p>kernel driver: manual memory, strict review and
-sanitizers</p></li>
-<li><p>backend web service: GC or Rust, focus on reliability and tail
-latency</p></li>
-<li><p>game engine loop: C++ with RAII, custom allocators, predictable
-frame times</p></li>
-<li><p>data science notebook: GC or RC, fast iteration and rich
-libraries</p></li>
-</ul>
-</section></section>
-<section>
-<section id="review" class="title-slide slide level1">
-<h1>Review</h1>
-<div class="frame">
 
-</div>
-</section>
-<section id="review-1" class="frame">
-<h2>Review</h2>
-</section>
+<section>
+  <section id="wrap-up" class="title-slide slide level1">
+  <h1>Wrap Up</h1>
+  </section>
+
+  <section id="memory-safety-and-reliability"
+  class="frame">
+  <h2> memory safety and reliability</h2>
+  <p>Why runtime choices matter:</p>
+  <ul>
+  <li><p>memory safety bugs can become security issues</p></li>
+  <li><p>crashes and leaks increase incident rate</p></li>
+  <li><p>tail latency is affected by pauses and allocator
+  pressure</p></li>
+  </ul>
+  <p>Typical tradeoffs:</p>
+  <ul>
+  <li><p>C/C++: control and speed, more risk without strict
+  discipline</p></li>
+  <li><p>GC languages: simpler memory ownership, less control over
+  reclamation timing</p></li>
+  <li><p>Rust: strong safety guarantees, some complexity in ownership
+  design</p></li>
+  </ul>
+  </section>
+
+  <section id="choosing-a-strategy-in-practice" class="frame">
+  <h2>Choosing a strategy in practice</h2>
+  <p>Questions engineers ask:</p>
+  <ul>
+  <li><p>is predictable latency required, or is average throughput the
+  priority</p></li>
+  <li><p>do we interface with native code and manual allocators</p></li>
+  <li><p>what tooling is available for debugging leaks and
+  corruption</p></li>
+  <li><p>how costly are crashes in this environment</p></li>
+  <li><p>what is the team skill set and existing ecosystem</p></li>
+  </ul>
+  <p>Practical reality:</p>
+  <ul>
+  <li><p>many systems mix languages and therefore mix runtime
+  strategies</p></li>
+  </ul>
+  </section>
+
 <section id="summary-what-to-remember" class="frame">
 <h2>Summary: what to remember</h2>
 <ul>
-<li><p>Error codes, exceptions, and typed results trade visibility for
-convenience</p></li>
-<li><p>Stack unwinding changes control flow and requires structured
-cleanup</p></li>
-<li><p>RAII, try-with-resources, with, and Drop make cleanup
-reliable</p></li>
-<li><p>Manual memory offers control but risks corruption and
-leaks</p></li>
-<li><p>Reference counting is incremental but cycles require special
-handling</p></li>
-<li><p>Tracing GC collects cycles but can introduce pauses and
-overhead</p></li>
-<li><p>GC languages can still leak through accidental retention from
-roots</p></li>
-<li><p>Rust ownership provides memory safety without tracing GC for many
-cases</p></li>
+<li>Error handling: visibility vs. convenience</li>
+<li>Stack unwinding: changes control flow</li>
+<li>Structured cleanup: <code>finally, RAII, with, Drop</code></li>
+<li>Manual memory: control with risk</li>
+<li>Reference counting: immediate reclaim, but cycles leak</li>
+<li>Weak references: break cycles</li>
+<li>Tracing GC: handles cycles, adds overhead</li>
+<li>GC leaks: reachable objects stay alive</li>
+<li>Rust ownership: safety without GC pauses</li>
 </ul>
 </section>
+
 <section id="review-questions" class="frame">
 <h2>Review questions</h2>
 <ul>
 <li><p>What is stack unwinding and what code runs during it</p></li>
 <li><p>When are checked exceptions helpful and when are they
 harmful</p></li>
-<li><p>Why do cycles leak under reference counting</p></li>
+<li><p>Why do cycles leak under reference counting, and how do weak references help</p></li>
 <li><p>Why does generational GC help performance in many
 programs</p></li>
 <li><p>Name two ways a GC language can still leak memory</p></li>
 <li><p>In Rust, when should you use Result versus panic</p></li>
 </ul>
-</section></section>
+</section>
+</section>
     </div>
   </div>
 

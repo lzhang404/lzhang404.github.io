@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" data-content_root="../">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-<title>Language Design, DSLs, and Industry Case Studies</title>
+    <title>Language Design and DSLs</title>
     <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
     <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
@@ -13,939 +13,757 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-</head>
-<body>
-  <div class="reveal">
-    <div class="slides" role="main">
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides" role="main">
 
-<section>
-<section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
-<h1>Language Design, DSLs, and Industry Case
-Studies</h1>
-<div class="subtitle docutils container">
-<p><strong>Module 13</strong></p>
-<p>Liting Zhang</p>
-</div>
-</section>
-</section>
+        <!-- =========================================================
+        TITLE
+        ========================================================= -->
+        <section>
+          <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+            <h1>Language Design and DSLs</h1>
+            <div class="subtitle docutils container">
+              <p><strong>Module 13</strong></p>
+              <p>Liting Zhang</p>
+            </div>
+          </section>
+        </section>
 
-<section class="slide level2">
+        <!-- =========================================================
+        OVERVIEW
 
-<section id="overview" class="frame">
-<h2>Overview</h2>
-<ul>
-<li><p>Bridge from Module 12: convert runtime/concurrency tradeoffs into language and DSL design decisions</p></li>
-<li><p>Language design trade-offs in the real world (constraints,
-stakeholders, risk)</p></li>
-<li><p>DSLs in industry: why they exist and why they fail</p></li>
-<li><p>DSL product thinking: scope, non-goals, safety, and
-versioning</p></li>
-<li><p>Using earlier compiler content (lexing/parsing/AST) as a black box; focus here is semantics, usability, tooling, and governance</p></li>
-<li><p>Case studies: Go vs Java vs Rust vs TypeScript (decision
-framing)</p></li>
-<li><p>Why JS <span class="math inline">\(\rightarrow\)</span> TS worked
-(gradual typing + tooling incentives)</p></li>
-<li><p>JVM/CLR ecosystems: how runtimes + libraries shape language
-choices</p></li>
-<li><p>Industry angle: hiring, tooling, performance, maintainability,
-migration cost</p></li>
-</ul>
-</section>
-<section id="learning-goals" class="frame">
-<h2>Learning goals</h2>
-<p>After this lecture, you should be able to</p>
-<ul>
-<li><p>Evaluate language design decisions using constraints and
-trade-offs</p></li>
-<li><p>Decide when to use a DSL vs a general-purpose language vs config
-conventions</p></li>
-<li><p>Design a DSL scope: features, non-goals, and safety
-boundaries</p></li>
-<li><p>Specify DSL semantics: evaluation model, determinism, and error
-behavior</p></li>
-<li><p>Plan for adoption: tooling needs, testing strategy, and
-versioning</p></li>
-<li><p>Compare Go/Java/Rust/TypeScript decisions using concrete
-criteria</p></li>
-<li><p>Explain why gradual typing enabled JavaScript <span
-class="math inline">\(\rightarrow\)</span> TypeScript migration</p></li>
-<li><p>Describe how ecosystem and runtime affect long-term
-maintainability</p></li>
-</ul>
-</section>
-<section id="module-boundary-and-placement" class="frame">
-<h2>Module boundary and placement</h2>
-<ul>
-<li><p><strong>From Modules 11 and 12:</strong> concurrency and runtime mechanisms are prerequisites, not re-taught topics.</p></li>
-<li><p><strong>This module (13):</strong> focuses on decision frameworks, DSL boundaries, semantics, and adoption strategy.</p></li>
-<li><p><strong>Course wrap-up role:</strong> integrates prior modules into practical architecture and tooling choices.</p></li>
-</ul>
-</section>
-<section id="language-map-for-this-module" class="frame">
-<h2>Language map for this module</h2>
-<ul>
-<li><p><strong>General design framework:</strong> language-agnostic constraints and tradeoffs.</p></li>
-<li><p><strong>Case-study languages:</strong> Go, Java, Rust, TypeScript as comparative examples.</p></li>
-<li><p><strong>DSL focus:</strong> external and embedded DSL design, semantics, and productization.</p></li>
-</ul>
-</section>
-<section id="module-flow-map" class="frame">
-<h2>Module flow map</h2>
-<ul>
-<li><p>Step 1: define constraints and tradeoff criteria</p></li>
-<li><p>Step 2: decide config vs DSL vs general-purpose code</p></li>
-<li><p>Step 3: specify DSL semantics, safety boundaries, and tooling</p></li>
-<li><p>Step 4: map design to implementation architecture and static checks</p></li>
-<li><p>Step 5: evaluate language choices and capstone scope using one rubric</p></li>
-</ul>
-</section>
-<section id="course-synthesis-map" class="frame">
-<h2>Course synthesis map</h2>
-<ul>
-<li><p>Modules 2-3: syntax pipeline (lexing/parsing/AST)</p></li>
-<li><p>Modules 4-8: names, types, expressions, subprograms, OOP/module boundaries</p></li>
-<li><p>Modules 9-12: FP, logic, concurrency, and runtime tradeoffs</p></li>
-</ul>
-<p>This module integrates those pieces into practical language and DSL design decisions.</p>
-</section>
-</section>
-<section>
-<section id="language-design-in-practice"
-class="title-slide slide level1">
-<h1>Language design in practice</h1>
+        ========================================================= -->
+        <section class="slide level2">
+          <section id="overview0" class="title-slide slide level1">
+            <h1>Overview</h1>
+          </section>
 
-</section>
-<section id="language-design-in-practice-1" class="frame">
-<h2>Language design in practice</h2>
-</section>
-<section id="language-decisions-are-product-decisions" class="frame">
-<h2>Language decisions are product decisions</h2>
-<p>In industry, language decisions are rarely academic.</p>
-<ul>
-<li><p>You are optimizing for an organization, not just a
-compiler</p></li>
-<li><p>Stakeholders include: engineers, security, SRE, PM, compliance,
-hiring</p></li>
-<li><p>Most “language design” happens in APIs, DSLs, and
-conventions</p></li>
-</ul>
-<p>A helpful reframing:</p>
-<ul>
-<li><p><strong>What mistakes do we want to make
-impossible?</strong></p></li>
-<li><p><strong>What do we want to make easy and
-frequent?</strong></p></li>
-<li><p><strong>What do we want to make hard or
-forbidden?</strong></p></li>
-</ul>
-</section>
-<section id="constraint-checklist-engineers-actually-use" class="frame">
-<h2>Constraint checklist engineers actually use</h2>
-<p>Typical constraints:</p>
-<ul>
-<li><p>Runtime constraints: latency (p99), throughput, memory
-footprint</p></li>
-<li><p>Safety constraints: untrusted input, sandboxing, compliance,
-auditability</p></li>
-<li><p>Operational constraints: observability, debugging, incident
-response</p></li>
-<li><p>Delivery constraints: CI/CD, build time, deployment
-model</p></li>
-<li><p>Team constraints: hiring pool, onboarding time, code review
-norms</p></li>
-<li><p>Migration constraints: existing codebase, interop, incremental
-rollout</p></li>
-</ul>
-<p>Language features are only valuable if they reduce risk or cost under
-these constraints.</p>
-</section>
-<section id="trade-offs-a-practical-table-mindset" class="frame">
-<h2>Trade-offs: a practical table mindset</h2>
-<p>A useful evaluation lens:</p>
-<ul>
-<li><p>Readability: can reviewers understand intent quickly</p></li>
-<li><p>Writability: can authors express common tasks with low
-friction</p></li>
-<li><p>Reliability: does the system prevent/contain mistakes</p></li>
-<li><p>Cost: training, tooling, runtime cost, maintenance cost</p></li>
-</ul>
-<p>Design implies choosing defaults:</p>
-<ul>
-<li><p>defaults become culture (lint rules, style guides,
-idioms)</p></li>
-<li><p>defaults also become failure modes</p></li>
-</ul>
-</section>
-<section id="a-common-pattern-constrain-the-dangerous-parts"
-class="frame">
-<h2>A common pattern: constrain the dangerous parts</h2>
-<p>Organizations often prefer:</p>
-<ul>
-<li><p>a small set of safe primitives</p></li>
-<li><p>explicit escape hatches (rare, reviewed)</p></li>
-<li><p>tooling that catches mistakes early</p></li>
-</ul>
-<p>Examples:</p>
-<ul>
-<li><p>restricted query languages instead of embedding arbitrary
-code</p></li>
-<li><p>typed APIs to prevent misuse</p></li>
-<li><p>safe-by-default concurrency patterns</p></li>
-</ul>
-</section>
-<section id="practice-1-identify-constraints-and-pick-a-direction"
-class="frame">
-<h2>Practice 1: identify constraints and pick a direction</h2>
-<p>Scenario: A company wants a policy system for access control.</p>
-<ul>
-<li><p>Policies must be auditable and reviewed</p></li>
-<li><p>Must not allow arbitrary code execution</p></li>
-<li><p>Must be fast at runtime and easy to test</p></li>
-<li><p>Policies change weekly; rollback is common</p></li>
-</ul>
-<p>Task:</p>
-<ul>
-<li><p>List the top 3 constraints</p></li>
-<li><p>Would you prefer: (a) config, (b) DSL, or (c) general-purpose
-scripting</p></li>
-<li><p>Give one trade-off you accept</p></li>
-</ul>
-</section>
-<section
-id="practice-1-answer-identify-constraints-and-pick-a-direction"
-class="frame">
-<h2>Practice 1 Answer: identify constraints and pick a direction</h2>
-<p>Likely top constraints:</p>
-<ul>
-<li><p>auditability and reviewability (humans must understand
-diffs)</p></li>
-<li><p>safety (no arbitrary code execution)</p></li>
-<li><p>testability and predictable runtime behavior</p></li>
-</ul>
-<p>Likely choice:</p>
-<ul>
-<li><p>DSL or a constrained policy language</p></li>
-<li><p>config alone often becomes too limited (conditionals,
-composition)</p></li>
-<li><p>scripting is too powerful and risky for this domain</p></li>
-</ul>
-<p>Trade-off accepted:</p>
-<ul>
-<li><p>upfront cost to build tooling and validation</p></li>
-</ul>
-</section></section>
-<section>
-<section id="dsls-when-and-why" class="title-slide slide level1">
-<h1>DSLs: when and why</h1>
+          <section id="overview" class="frame">
+            <h2>Overview</h2>
+            <ul>
+              <li><p>Language design trade-offs in the real world (constraints,
+                stakeholders, risk)</p></li>
+              <li><p>DSLs in industry: why they exist, when they work, and why they fail</p></li>
+              <li><p>DSL product thinking: scope, non-goals, safety, semantics,
+                and versioning</p></li>
+              <li><p>Compiler pipeline stays in the background; focus is on design
+                decisions after parsing</p></li>
+              <li><p>Focus: semantics, usability, tooling, governance, and adoption</p></li>
+              <li><p>Case studies: Go vs Java vs Rust vs TypeScript (decision
+                framing)</p></li>
+              <li><p>Why JS <span class="math inline">\(\rightarrow\)</span> TS worked
+                (gradual typing + tooling payoff)</p></li>
+              <li><p>How runtimes and ecosystems shape language adoption</p></li>
+              <li><p>Industry angle: hiring, tooling, performance, maintainability,
+                and migration cost</p></li>
+            </ul>
+          </section>
 
-</section>
-<section id="dsls-when-and-why-1" class="frame">
-<h2>DSLs: when and why</h2>
-</section>
-<section id="dsl-definition-short" class="frame">
-<h2>DSL definition (short)</h2>
-<p>Domain-Specific Language (DSL):</p>
-<ul>
-<li><p>A language for a narrow domain with constrained
-expressiveness</p></li>
-<li><p>Goal: make the common case easy and the dangerous case
-hard</p></li>
-</ul>
-<p>Two forms:</p>
-<ul>
-<li><p>External DSL: its own syntax (SQL, regex, policy
-languages)</p></li>
-<li><p>Embedded DSL: fluent API inside a host language</p></li>
-</ul>
-<p>Today: we care more about <strong>semantics + adoption</strong> than
-syntax mechanics.</p>
-</section>
-<section id="decision-tree-config-vs-dsl-vs-code" class="frame">
-<h2>Decision tree: config vs DSL vs code</h2>
-<p>A useful heuristic:</p>
-<ul>
-<li><p>Use <strong>config</strong> when:</p>
-<ul>
-<li><p>mostly data, few rules, simple validation</p></li>
-</ul></li>
-<li><p>Use a <strong>DSL</strong> when:</p>
-<ul>
-<li><p>rules/queries/policies need structure and safety</p></li>
-<li><p>non-engineers edit it or diffs must be reviewed like
-contracts</p></li>
-</ul></li>
-<li><p>Use <strong>code</strong> when:</p>
-<ul>
-<li><p>you truly need general computation and reuse</p></li>
-<li><p>engineers own it and sandboxing is not required</p></li>
-</ul></li>
-</ul>
-</section>
-<section id="common-dsl-success-patterns" class="frame">
-<h2>Common DSL success patterns</h2>
-<p>DSLs succeed when they:</p>
-<ul>
-<li><p>have a stable, well-defined domain model</p></li>
-<li><p>benefit from static validation (types, schemas,
-constraints)</p></li>
-<li><p>benefit from optimization or caching (queries, rules)</p></li>
-<li><p>are authored by people who are not runtime engineers</p></li>
-<li><p>need audit trails and explicit semantics</p></li>
-</ul>
-</section>
-<section id="common-dsl-failure-patterns" class="frame">
-<h2>Common DSL failure patterns</h2>
-<p>DSLs fail when:</p>
-<ul>
-<li><p>error messages are poor (users cannot debug)</p></li>
-<li><p>versioning is neglected (breaking changes accumulate)</p></li>
-<li><p>feature creep turns it into a weak general-purpose
-language</p></li>
-<li><p>tooling is missing (no formatter, no lint, no tests)</p></li>
-<li><p>security boundaries are unclear (untrusted inputs,
-injection)</p></li>
-</ul>
-<p>A DSL without tooling is often worse than a small library API.</p>
-</section>
-<section id="external-dsl-example-policy-rules-readable-diffs"
-class="frame">
-<h2>External DSL example: policy rules (readable diffs)</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-plaintext">policy &quot;admin_access&quot; when user.role == &quot;admin&quot; and resource.sensitivity &lt;= 2 {
+          <section id="learning-goals" class="frame">
+            <h2>Learning goals</h2>
+            <p>After this lecture, you should be able to</p>
+            <ul>
+              <li><p>Evaluate language design decisions using constraints and
+                trade-offs</p></li>
+              <li><p>Decide when to use config vs a DSL vs a general-purpose language</p></li>
+              <li><p>Design a DSL scope: features, non-goals, and safety
+                boundaries</p></li>
+              <li><p>Specify DSL semantics: evaluation model, determinism, and error
+                behavior</p></li>
+              <li><p>Plan for adoption: tooling needs, testing strategy, and
+                versioning</p></li>
+              <li><p>Compare Go/Java/Rust/TypeScript decisions using concrete
+                criteria</p></li>
+              <li><p>Explain why gradual typing enabled JavaScript <span
+                class="math inline">\(\rightarrow\)</span> TypeScript migration</p></li>
+              <li><p>Describe how ecosystem and runtime affect long-term
+                maintainability and adoption</p></li>
+            </ul>
+          </section>
+
+          <section id="course-synthesis-map" class="frame">
+            <h2>Course synthesis map</h2>
+            <ul>
+              <li><p>Modules 2-3: syntax pipeline (lexing/parsing/AST)</p></li>
+              <li><p>Modules 4-8: names, types, expressions, subprograms, OOP/module boundaries</p></li>
+              <li><p>Modules 9-12: FP, logic, concurrency, and runtime tradeoffs</p></li>
+            </ul>
+            <p>This module integrates those pieces into practical language and DSL design decisions.</p>
+          </section>
+
+        </section>
+
+        <!-- =========================================================
+        SECTION: Language design in practice
+
+        ========================================================= -->
+        <section>
+          <section id="language-design-in-practice" class="title-slide slide level1">
+            <h1>Language design in practice</h1>
+          </section>
+
+          <section id="language-decisions-are-product-decisions" class="frame">
+            <h2>Language decisions are product decisions</h2>
+            <p>In industry, language decisions are rarely academic:</p>
+            <ul>
+              <li><p>You optimize for an organization, not just a compiler</p></li>
+              <li><p>Stakeholders: engineers, security, SRE, PM, compliance, hiring</p></li>
+              <li><p>Most "language design" happens in APIs, DSLs, and conventions</p></li>
+            </ul>
+            <p>A helpful reframing:</p>
+            <ul>
+              <li><p>What mistakes do we want to make impossible?</p></li>
+              <li><p>What do we want to make easy and frequent?</p></li>
+              <li><p>What do we want to make hard or forbidden?</p></li>
+            </ul>
+          </section>
+
+          <section id="constraint-checklist-engineers-actually-use" class="frame">
+            <h2>Constraint checklist engineers actually use</h2>
+            <p>Typical constraints:</p>
+            <ul>
+              <li><p>Runtime: latency (p99), throughput, memory footprint</p></li>
+              <li><p>Safety: untrusted input, sandboxing, compliance, auditability</p></li>
+              <li><p>Operational: observability, debugging, incident response</p></li>
+              <li><p>Delivery: CI/CD, build time, deployment model</p></li>
+              <li><p>Team: hiring pool, onboarding time, code review norms</p></li>
+              <li><p>Migration: existing codebase, interop, incremental rollout</p></li>
+            </ul>
+            <p>Language features are valuable only when they reduce risk or cost under these constraints.</p>
+          </section>
+
+          <section id="trade-offs-a-practical-table-mindset" class="frame">
+            <h2>Applying the Module 1 rubric to engineering decisions</h2>
+            <p>Module 1 goals (readability, writability, reliability), reframed for industry:</p>
+            <ul>
+              <li><p>Readability: reviewers understand intent quickly</p></li>
+              <li><p>Writability: authors express common tasks with low friction</p></li>
+              <li><p>Reliability: system prevents or contains mistakes</p></li>
+              <li><p>Cost: training, tooling, runtime, maintenance</p></li>
+            </ul>
+            <p>Design implies choosing defaults:</p>
+            <ul>
+              <li><p>Defaults become culture (lint rules, style guides, idioms)</p></li>
+              <li><p>Defaults also become failure modes</p></li>
+            </ul>
+          </section>
+
+          <section id="a-common-pattern-constrain-the-dangerous-parts" class="frame">
+            <h2>A common pattern: constrain the dangerous parts</h2>
+            <p>Organizations often prefer:</p>
+            <ul>
+              <li><p>a small set of safe primitives</p></li>
+              <li><p>explicit escape hatches (rare, reviewed)</p></li>
+              <li><p>tooling that catches mistakes early</p></li>
+            </ul>
+            <p>Examples:</p>
+            <ul>
+              <li><p>restricted query languages instead of embedding arbitrary
+                code</p></li>
+              <li><p>typed APIs to prevent misuse</p></li>
+              <li><p>safe-by-default concurrency patterns</p></li>
+            </ul>
+          </section>
+
+        </section>
+
+        <!-- =========================================================
+        SECTION: DSLs: when and why
+
+        ========================================================= -->
+        <section>
+          <section id="dsls-when-and-why" class="title-slide slide level1">
+            <h1>DSLs: when and why</h1>
+
+          </section>
+
+          <section id="dsl-definition-short" class="frame">
+            <h2>DSL definition</h2>
+            <p>Domain-Specific Language (DSL):</p>
+            <ul>
+              <li><p>A language for a narrow domain with constrained expressiveness</p></li>
+              <li><p>Goal: make the common case easy, the dangerous case hard</p></li>
+            </ul>
+            <p>Two forms:</p>
+            <ul>
+              <li><p>External DSL: its own syntax (SQL, regex, policy languages)</p></li>
+              <li><p>Embedded DSL: fluent API inside a host language</p></li>
+            </ul>
+            <p>You have seen both. Now the new question: how do you design and ship one?</p>
+          </section>
+
+          <section id="decision-tree-config-vs-dsl-vs-code" class="frame">
+            <h2>Decision tree: config vs DSL vs code</h2>
+            <p>Three levels of expressiveness:</p>
+            <ul>
+              <li><p><strong>Config</strong> (JSON, YAML, TOML): pure data, no logic</p>
+                <ul>
+                  <li><p>Use when: simple schema, values differ by environment</p></li>
+                  <li><p>Example: feature flags, DB URLs, log levels</p></li>
+                </ul>
+              </li>
+              <li><p><strong>DSL</strong> (SQL, regex, Terraform HCL): restricted language for one domain</p>
+                <ul>
+                  <li><p>Use when: rules need structure and safety; non-engineers may edit</p></li>
+                  <li><p>Example: access policies, routing rules, discount rules</p></li>
+                </ul>
+              </li>
+              <li><p><strong>Code</strong> (TypeScript, Python, Go): general-purpose language</p>
+                <ul>
+                  <li><p>Use when: arbitrary computation needed, engineers own it</p></li>
+                  <li><p>Example: business logic, data pipelines, services</p></li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+
+          <section id="common-dsl-success-patterns" class="frame">
+            <h2>Common DSL success patterns</h2>
+            <p>DSLs succeed when they:</p>
+            <ul>
+              <li><p>have a stable, well-defined domain model</p></li>
+              <li><p>benefit from static validation (types, schemas,
+                constraints)</p></li>
+              <li><p>benefit from optimization or caching (queries, rules)</p></li>
+              <li><p>are authored by people who are not runtime engineers</p></li>
+              <li><p>need audit trails and explicit semantics</p></li>
+            </ul>
+          </section>
+
+          <section id="common-dsl-failure-patterns" class="frame">
+            <h2>Common DSL failure patterns</h2>
+            <p>DSLs fail when:</p>
+            <ul>
+              <li><p>error messages are poor (users cannot debug)</p></li>
+              <li><p>versioning is neglected (breaking changes accumulate)</p></li>
+              <li><p>feature creep turns it into a weak general-purpose
+                language</p></li>
+              <li><p>tooling is missing (no formatter, no lint, no tests)</p></li>
+              <li><p>security boundaries are unclear (untrusted inputs,
+                injection)</p></li>
+            </ul>
+            <p>A DSL without tooling is often worse than a small library API.</p>
+          </section>
+
+          <section id="external-dsl-example-policy-rules-readable-diffs" class="frame">
+            <h2>External DSL example: policy rules</h2>
+            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-plaintext">
+policy &quot;admin_access&quot; when user.role == &quot;admin&quot; and resource.sensitivity &lt;= 2 {
   allow;
-}
+  }
 
 policy &quot;readonly_guest&quot; when user.role == &quot;guest&quot; {
   allow read;
   deny write;
-}</code></pre>
-<p>Benefits:</p>
-<ul>
-<li><p>reviewers can read intent</p></li>
-<li><p>constrained operators reduce surprises</p></li>
-</ul>
-</section>
-<section id="embedded-dsl-example-builder-pattern-host-tooling"
-class="frame">
-<h2>Embedded DSL example: builder pattern (host tooling)</h2>
-<p>Embedded DSL style (TypeScript):</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">rule(&quot;free_shipping&quot;)
+  }</code></pre>
+            <p>Benefits:</p>
+            <ul>
+              <li><p>reviewers can read intent</p></li>
+              <li><p>constrained operators reduce surprises</p></li>
+            </ul>
+          </section>
+
+          <section id="embedded-dsl-example-builder-pattern-host-tooling" class="frame">
+            <h2>Embedded DSL example: builder pattern (host tooling)</h2>
+            <p>Embedded DSL style (TypeScript):</p>
+            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-typescript">
+rule(&quot;free_shipping&quot;)
   .when(and(eq(varOf(&quot;tier&quot;), str(&quot;gold&quot;)), gte(varOf(&quot;total&quot;), num(50))))
   .do(setVar(&quot;shipping&quot;, num(0)))
   .do(emit(&quot;free shipping applied&quot;));</code></pre>
-<p>Benefits and costs:</p>
-<ul>
-<li><p>gains TypeScript tooling and types</p></li>
-<li><p>loses plain-text readability for non-engineers</p></li>
-</ul>
-</section>
-<section id="practice-2-choose-external-vs-embedded-dsl" class="frame">
-<h2>Practice 2: choose external vs embedded DSL</h2>
-<p>You need a discount rule system:</p>
-<ul>
-<li><p>marketing authors rules</p></li>
-<li><p>engineers review and deploy weekly</p></li>
-<li><p>you must guarantee no network/file access from rules</p></li>
-</ul>
-<p>Task:</p>
-<ul>
-<li><p>choose external DSL or embedded DSL</p></li>
-<li><p>list two advantages and two risks of your choice</p></li>
-</ul>
-</section>
-<section id="practice-2-answer-choose-external-vs-embedded-dsl"
-class="frame">
-<h2>Practice 2 Answer: choose external vs embedded DSL</h2>
-<p>External DSL is usually favored here.</p>
-<p>Advantages:</p>
-<ul>
-<li><p>easier to sandbox: no host-language arbitrary execution</p></li>
-<li><p>reviewable diffs for non-engineers, can enforce restricted
-constructs</p></li>
-</ul>
-<p>Risks:</p>
-<ul>
-<li><p>you must build (and maintain) parsing + error messages +
-tooling</p></li>
-<li><p>feature pressure can expand scope rapidly</p></li>
-</ul>
-</section></section>
-<section>
-<section id="dsl-productization" class="title-slide slide level1">
-<h1>DSL productization</h1>
+            <p>Benefits and costs:</p>
+            <ul>
+              <li><p>gains TypeScript tooling and types</p></li>
+              <li><p>loses plain-text readability for non-engineers</p></li>
+            </ul>
+          </section>
 
-</section>
-<section id="dsl-productization-1" class="frame">
-<h2>DSL productization</h2>
-</section>
-<section id="a-dsl-is-a-contract-not-just-syntax" class="frame">
-<h2>A DSL is a contract, not just syntax</h2>
-<p>A usable DSL needs a spec:</p>
-<ul>
-<li><p>Syntax: what programs look like</p></li>
-<li><p>Semantics: what programs mean (evaluation order, types,
-effects)</p></li>
-<li><p>Errors: what happens on invalid input and how it is
-reported</p></li>
-<li><p>Compatibility: how changes are rolled out over time</p></li>
-</ul>
-<p>Teams adopt DSLs when the contract is stable and debuggable.</p>
-</section>
-<section id="semantics-decisions-that-matter" class="frame">
-<h2>Semantics decisions that matter</h2>
-<p>Questions your DSL must answer:</p>
-<ul>
-<li><p>Determinism: are results stable across runs</p></li>
-<li><p>Evaluation order: do rules run top-to-bottom, all-match,
-first-match</p></li>
-<li><p>Effects: can a rule update state that later rules
-observe</p></li>
-<li><p>Types/coercions: do you allow implicit conversions (usually
-avoid)</p></li>
-<li><p>Error behavior: fail-fast, collect errors, partial
-results</p></li>
-</ul>
-<p>These decisions shape correctness more than the grammar does.</p>
-</section>
-<section id="rule-engine-semantics-three-common-models" class="frame">
-<h2>Rule engine semantics: three common models</h2>
-<p>Common execution models:</p>
-<ul>
-<li><p>All-match:</p>
-<ul>
-<li><p>evaluate every rule, apply all actions</p></li>
-</ul></li>
-<li><p>First-match:</p>
-<ul>
-<li><p>stop after first matching rule (priority semantics)</p></li>
-</ul></li>
-<li><p>Phased:</p>
-<ul>
-<li><p>compute derived facts, then apply actions (reduces order
-bugs)</p></li>
-</ul></li>
-</ul>
-<p>Picking one is a design choice with real bug consequences.</p>
-</section>
-<section id="mini-spec-example-rule-order-is-explicit" class="frame">
-<h2>Mini spec example: rule order is explicit</h2>
-<p>A tiny spec excerpt:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-plaintext">Rules execute top-to-bottom.
+        </section>
+
+        <!-- =========================================================
+        SECTION: DSL productization
+        ========================================================= -->
+        <section>
+          <section id="dsl-productization" class="title-slide slide level1">
+            <h1>DSL productization</h1>
+
+          </section>
+
+          <section id="a-dsl-is-a-contract-not-just-syntax" class="frame">
+            <h2>A DSL is a contract, not just syntax</h2>
+            <p>A usable DSL needs a spec:</p>
+            <ul>
+              <li><p>Syntax: what programs look like</p></li>
+              <li><p>Semantics: what programs mean (evaluation order, types,
+                effects)</p></li>
+              <li><p>Errors: what happens on invalid input and how it is
+                reported</p></li>
+              <li><p>Compatibility: how changes are rolled out over time</p></li>
+            </ul>
+            <p>Teams adopt DSLs when the contract is stable and debuggable.</p>
+          </section>
+
+          <section id="dsl-non-goals" class="frame">
+            <h2>Why DSLs Need Non-Goals</h2>
+            <p>A good DSL is not &quot;small code.&quot; It is a language with a narrow purpose.</p>
+            <ul>
+              <li><p>Good design includes explicit non-goals:</p>
+                <ul>
+                  <li><p>what users are not allowed to express</p></li>
+                  <li><p>what the DSL will not try to automate</p></li>
+                  <li><p>what must stay in host code instead</p></li>
+                </ul>
+              </li>
+              <li><p>Non-goals prevent feature creep and keep semantics teachable</p></li>
+              <li><p>They also make tooling, testing, and versioning manageable</p></li>
+            </ul>
+          </section>
+
+          <section id="core-semantic" class="frame">
+            <h2>Core Semantic Questions</h2>
+            <p>Questions your DSL must answer:</p>
+            <ul>
+              <li><p>Determinism: are results stable across runs</p></li>
+              <li><p>Evaluation order: do rules run top-to-bottom, all-match,
+                first-match</p></li>
+              <li><p>Effects: can a rule update state that later rules
+                observe</p></li>
+              <li><p>Types/coercions: do you allow implicit conversions (usually
+                avoid)</p></li>
+              <li><p>Error behavior: fail-fast, collect errors, partial
+                results</p></li>
+            </ul>
+            <p>These decisions shape correctness more than the grammar does.</p>
+          </section>
+
+          <section id="rule-engine-semantics-three-common-models" class="frame">
+            <h2>Rule engine semantics: three common models</h2>
+            <p>Module 10 introduced rule engines and their use cases (pricing, fraud, access control, alerting). </p>
+            <p>Now the design question: what execution model do you commit to?</p>
+            <ul>
+              <li><p>All-match:</p>
+                <ul>
+                  <li><p>evaluate every rule, apply all actions</p></li>
+                </ul>
+              </li>
+              <li><p>First-match:</p>
+                <ul>
+                  <li><p>stop after first matching rule (priority semantics)</p></li>
+                </ul>
+              </li>
+              <li><p>Phased:</p>
+                <ul>
+                  <li><p>compute derived facts, then apply actions (reduces order
+                    bugs)</p></li>
+                </ul>
+              </li>
+            </ul>
+            <p>Picking one is a design choice with real bug consequences.</p>
+          </section>
+
+          <section id="mini-spec-example-rule-order-is-explicit" class="frame">
+            <h2>Mini spec example: rule order is explicit</h2>
+            <p>A tiny spec excerpt:</p>
+            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="1"><code class="language-plaintext">
+Rules execute top-to-bottom.
 
 A rule condition reads from the current environment.
 
 Actions apply immediately:
-  - set updates the environment
-  - emit appends to the output log
+- set updates the environment
+- emit appends to the output log
 
 If a condition evaluates to non-boolean, that is a runtime error.</code></pre>
-<p>This prevents ambiguity like “does set affect later rules?”</p>
-</section>
-<section id="safety-boundaries-sandboxing-and-budgets" class="frame">
-<h2>Safety boundaries: sandboxing and budgets</h2>
-<p>If DSL input is untrusted:</p>
-<ul>
-<li><p>no file/network access</p></li>
-<li><p>no host eval or dynamic imports</p></li>
-<li><p>bounded computation (no unbounded loops)</p></li>
-<li><p>resource budgets:</p>
-<ul>
-<li><p>max program size, max rules, max actions, max recursion
-depth</p></li>
-</ul></li>
-</ul>
-<p>Reliability boundary:</p>
-<ul>
-<li><p>fail closed for policy/security DSLs</p></li>
-<li><p>record audit logs of evaluation and decisions</p></li>
-</ul>
-</section>
-<section id="tooling-that-makes-a-dsl-viable" class="frame">
-<h2>Tooling that makes a DSL viable</h2>
-<p>Minimum viable tooling:</p>
-<ul>
-<li><p>helpful error messages with line/column and context</p></li>
-<li><p>tests: golden files (input <span
-class="math inline">\(\rightarrow\)</span> output/errors)</p></li>
-<li><p>formatting / consistent style (even a simple
-pretty-printer)</p></li>
-<li><p>docs: examples and common patterns</p></li>
-</ul>
-<p>Nice-to-have:</p>
-<ul>
-<li><p>editor integration (syntax highlighting)</p></li>
-<li><p>static checks (unknown vars, unreachable rules, type
-errors)</p></li>
-</ul>
-</section>
-<section id="versioning-you-will-need-it-earlier-than-you-think"
-class="frame">
-<h2>Versioning: you will need it earlier than you think</h2>
-<p>DSLs evolve. Plan for:</p>
-<ul>
-<li><p>feature flags / opt-in syntax</p></li>
-<li><p>deprecation warnings before removal</p></li>
-<li><p>strict mode vs legacy mode</p></li>
-<li><p>migration tools (even simple search-and-rewrite scripts)</p></li>
-</ul>
-<p>Organizational reality:</p>
-<ul>
-<li><p>you will have many DSL programs across repos</p></li>
-<li><p>changes must be rolled out safely</p></li>
-</ul>
-</section>
-<section id="practice-3-choose-rule-engine-semantics" class="frame">
-<h2>Practice 3: choose rule engine semantics</h2>
-<p>You are designing a fraud rule DSL.</p>
-<ul>
-<li><p>Rules may emit alerts</p></li>
-<li><p>Some rules assign a risk score</p></li>
-<li><p>Engineers often add “exceptions” rules later</p></li>
-</ul>
-<p>Task:</p>
-<ul>
-<li><p>choose all-match, first-match, or phased execution</p></li>
-<li><p>explain one bug that your choice avoids</p></li>
-</ul>
-</section>
-<section id="practice-3-answer-choose-rule-engine-semantics"
-class="frame">
-<h2>Practice 3 Answer: choose rule engine semantics</h2>
-<p>A common good choice: phased.</p>
-<ul>
-<li><p>Phase 1: compute derived facts / risk score
-contributions</p></li>
-<li><p>Phase 2: emit alerts based on final score / facts</p></li>
-</ul>
-<p>Bug avoided:</p>
-<ul>
-<li><p>order-dependent behavior where an early set changes later rule
-meaning</p></li>
-<li><p>“exception rules” become easier to reason about with explicit
-phases</p></li>
-</ul>
-</section></section>
-<section class="slide level2">
-<section id="bridge-dsl-product-to-implementation" class="frame">
-<h2>Bridge: DSL product decisions to implementation</h2>
-<p>Product decisions are implementation constraints:</p>
-<ul>
-<li><p>Chosen semantics determine evaluator architecture</p></li>
-<li><p>Safety boundaries determine what the runtime must forbid</p></li>
-<li><p>Error UX requirements determine parser/type-checker diagnostics</p></li>
-</ul>
-</section>
-</section>
-<section>
-<section id="implementing-a-dsl" class="title-slide slide level1">
-<h1>Implementing a DSL</h1>
+            <p>This prevents ambiguity like "does set affect later rules?"</p>
+          </section>
 
-</section>
-<section id="implementing-a-dsl-1" class="frame">
-<h2>Implementing a DSL </h2>
-</section>
-<section id="implementation-architecture-high-level" class="frame">
-<h2>Implementation architecture (high level)</h2>
-<p>We assume the pipeline exists:</p>
-<ul>
-<li><p>source text <span class="math inline">\(\rightarrow\)</span>
-tokens <span class="math inline">\(\rightarrow\)</span> AST</p></li>
-</ul>
-<p>Today we emphasize what comes next:</p>
-<ul>
-<li><p>semantic checks (unknown variables, type mismatch)</p></li>
-<li><p>evaluation model and outputs</p></li>
-<li><p>errors designed for DSL authors</p></li>
-<li><p>test harness and fixtures</p></li>
-</ul>
-</section>
-<section id="typescript-ast-shape-minimal-for-semantics-discussion"
-class="frame">
-<h2>TypeScript: AST shape (minimal, for semantics discussion)</h2>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type Expr =
-  | { tag: &quot;num&quot;; value: number }
-  | { tag: &quot;str&quot;; value: string }
-  | { tag: &quot;var&quot;; name: string }
-  | { tag: &quot;bin&quot;; op: string; left: Expr; right: Expr };
+          <section id="sandboxing-resource-limits" class="frame">
+            <h2>Sandboxing and Resource Limits</h2>
+            <p>If DSL input is untrusted:</p>
+            <ul>
+              <li><p>no file/network access</p></li>
+              <li><p>no host eval or dynamic imports</p></li>
+              <li><p>bounded computation (no unbounded loops)</p></li>
+              <li><p>resource budgets:</p>
+                <ul>
+                  <li><p>max program size, max rules, max actions, max recursion
+                    depth</p></li>
+                </ul>
+              </li>
+            </ul>
+            <p>Reliability boundary:</p>
+            <ul>
+              <li><p>fail closed for policy/security DSLs</p></li>
+              <li><p>record audit logs of evaluation and decisions</p></li>
+            </ul>
+          </section>
 
-type Action =
-  | { tag: &quot;set&quot;; name: string; expr: Expr }
-  | { tag: &quot;emit&quot;; msg: string };
+          <section id="tooling-that-makes-a-dsl-viable" class="frame">
+            <h2>Tooling that makes a DSL viable</h2>
+            <p>Minimum viable tooling:</p>
+            <ul>
+              <li><p>helpful error messages with line/column and context</p></li>
+              <li><p>tests: golden files (input <span
+                class="math inline">\(\rightarrow\)</span> output/errors)</p></li>
+              <li><p>formatting / consistent style (even a simple
+                pretty-printer)</p></li>
+              <li><p>docs: examples and common patterns</p></li>
+            </ul>
+            <p>Nice-to-have:</p>
+            <ul>
+              <li><p>editor integration (syntax highlighting)</p></li>
+              <li><p>static checks (unknown vars, unreachable rules, type
+                errors)</p></li>
+            </ul>
+          </section>
 
-type Stmt =
-  | { tag: &quot;let&quot;; name: string; expr: Expr }
-  | { tag: &quot;rule&quot;; name: string; cond: Expr; actions: Action[] };
+          <section id="versioning" class="frame">
+            <h2>DSL Evolution and Compatibility</h2>
+            <p>DSLs evolve. Plan for:</p>
+            <ul>
+              <li><p>feature flags / opt-in syntax</p></li>
+              <li><p>deprecation warnings before removal</p></li>
+              <li><p>strict mode vs legacy mode</p></li>
+              <li><p>migration tools (even simple search-and-rewrite scripts)</p></li>
+            </ul>
+            <p>Organizational reality:</p>
+            <ul>
+              <li><p>you will have many DSL programs across repos</p></li>
+              <li><p>changes must be rolled out safely</p></li>
+            </ul>
+          </section>
 
-type Program = { stmts: Stmt[] };</code></pre>
-<p>We use this to discuss checks + semantics, not parsing mechanics.</p>
-</section>
-<section id="semantic-checks-catch-mistakes-before-runtime"
-class="frame">
-<h2>Semantic checks: catch mistakes before runtime</h2>
-<p>Examples of static checks:</p>
-<ul>
-<li><p>unknown variable names (typos)</p></li>
-<li><p>type mismatch in operators (string &lt; number)</p></li>
-<li><p>rule condition must be boolean</p></li>
-<li><p>unreachable rules (if conditions are contradictory)</p></li>
-</ul>
-<p>Why this matters:</p>
-<ul>
-<li><p>DSL authors may not have a debugger</p></li>
-<li><p>production evaluation should be predictable and safe</p></li>
-</ul>
-</section>
-<section id="typescript-type-checking-sketch-small" class="frame">
-<h2>TypeScript: type checking sketch (small)</h2>
-<p>Minimal type universe:</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-typescript">type Ty = &quot;num&quot; | &quot;str&quot; | &quot;bool&quot;;
+        </section>
 
-type Sig = {
-  vars: Map&lt;string, Ty&gt;;
-};
+        <!-- =========================================================
+        BRIDGE: DSL product decisions to implementation
 
-function typeOf(e: Expr, sig: Sig): Ty {
-  switch (e.tag) {
-    case &quot;num&quot;: return &quot;num&quot;;
-    case &quot;str&quot;: return &quot;str&quot;;
-    case &quot;var&quot;: {
-      const t = sig.vars.get(e.name);
-      if (!t) throw new Error(&quot;unknown variable: &quot; + e.name);
-      return t;
+        ========================================================= -->
+        <section class="slide level2">
+          <section id="design-to-implementation" class="frame">
+            <h2>Bridge: from design to implementation</h2>
+            <p>Once the DSL contract is clear, implementation choices follow from it:</p>
+            <ul>
+              <li><p>Chosen semantics determine evaluator architecture</p></li>
+              <li><p>Safety boundaries determine what the runtime must forbid</p></li>
+              <li><p>Error UX requirements determine parser/type-checker diagnostics</p></li>
+            </ul>
+            <p>The key idea: implementation exists to preserve the language decisions you already made.</p>
+          </section>
+        </section>
+
+        <!-- =========================================================
+        SECTION: Implementing a DSL
+        ========================================================= -->
+        <section>
+          <section id="implementing-a-dsl" class="title-slide slide level1">
+            <h1>Implementing a DSL</h1>
+
+          </section>
+
+          <section id="implementation-architecture-high-level" class="frame">
+            <h2>Implementation architecture (high level)</h2>
+            <p>We assume parsing and AST construction already exist:</p>
+            <ul>
+              <li><p>source text <span class="math inline">\(\rightarrow\)</span>
+                tokens <span class="math inline">\(\rightarrow\)</span> AST</p></li>
+            </ul>
+            <p>Today we focus on the design work that still matters after syntax is handled:</p>
+            <ul>
+              <li><p>semantic checks (unknown variables, type mismatch)</p></li>
+              <li><p>evaluation model and outputs</p></li>
+              <li><p>errors designed for DSL authors</p></li>
+              <li><p>test harness and fixtures</p></li>
+            </ul>
+          </section>
+
+          <!-- NEW: replaces the two code slides (AST shape + typeOf sketch).
+          Points back to Modules 3 and 5 instead of re-teaching the pattern. -->
+          <section id="applying-the-pipeline-to-a-dsl" class="frame">
+            <h2>Applying the Modules 3 and 5 pipeline to a DSL</h2>
+            <p>Same mechanism as earlier modules:</p>
+            <ul>
+              <li><p>Module 3: tagged union AST nodes represent syntax structurally</p></li>
+              <li><p>Module 5: a type checker walks the AST and rejects mismatches</p></li>
+            </ul>
+            <p>What changes for a DSL:</p>
+            <ul>
+              <li><p>AST contains only constructs your domain needs</p></li>
+              <li><p>Type checker enforces your DSL's rules, not a general-purpose type system</p></li>
+              <li><p>Error messages written for DSL authors, not engineers</p></li>
+            </ul>
+            <p>Takeaway: DSL implementation is not a new skill. It is the same pipeline applied to a smaller, constrained language.</p>
+          </section>
+
+          <section id="tree-walking-evaluator-in-typescript" class="frame">
+            <h2>Tree-walking evaluator (TypeScript)</h2>
+            <p>After parsing and type-checking, evaluation walks the AST:</p>
+            <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small" data-tabsize="2"><code class="language-typescript">type Env = Record&lt;string, string | number | boolean&gt;;
+
+type Expr =
+  | { kind: "var";  name: string }
+  | { kind: "lit";  value: string | number | boolean }
+  | { kind: "gte";  left: Expr; right: Expr }
+  | { kind: "eq";   left: Expr; right: Expr }
+  | { kind: "and";  left: Expr; right: Expr };
+
+function evaluate(expr: Expr, env: Env): string | number | boolean {
+  switch (expr.kind) {
+    case "var":  return env[expr.name];
+    case "lit":  return expr.value;
+    case "gte":  return (evaluate(expr.left, env) as number) &gt;= (evaluate(expr.right, env) as number);
+    case "eq":   return evaluate(expr.left, env) === evaluate(expr.right, env);
+    case "and":  return (evaluate(expr.left, env) as boolean)
+    &amp;&amp; (evaluate(expr.right, env) as boolean);
     }
-    case &quot;bin&quot;: {
-      const a = typeOf(e.left, sig);
-      const b = typeOf(e.right, sig);
-      if (e.op === &quot;and&quot; || e.op === &quot;or&quot;) {
-        if (a !== &quot;bool&quot; || b !== &quot;bool&quot;) throw new Error(&quot;bool expected&quot;);
-        return &quot;bool&quot;;
-      }
-      if ([&quot;==&quot;, &quot;!=&quot;, &quot;&gt;=&quot;, &quot;&lt;=&quot;, &quot;&gt;&quot;, &quot;&lt;&quot;].includes(e.op)) {
-        if (a !== b) throw new Error(&quot;type mismatch in comparison&quot;);
-        return &quot;bool&quot;;
-      }
-      if ([&quot;+&quot;, &quot;-&quot;, &quot;*&quot;, &quot;/&quot;].includes(e.op)) {
-        if (a !== &quot;num&quot; || b !== &quot;num&quot;) throw new Error(&quot;num expected&quot;);
-        return &quot;num&quot;;
-      }
-      throw new Error(&quot;unknown operator: &quot; + e.op);
-    }
-  }
-}</code></pre>
-<p>This is the same idea as Week 5–6, applied to a DSL.</p>
-</section>
-<section id="practice-4-static-checks" class="frame">
-<h2>Practice 4: static checks</h2>
-<p>Suppose the signature says:</p>
-<ul>
-<li><p>total: num</p></li>
-<li><p>country: str</p></li>
-</ul>
-<p>Which expressions should be rejected?</p>
-<pre data-xleftmargin="3pt" data-linenos=""
-data-numbersep="0.5em" data-frame="leftline" data-fontsize="\small"
-data-tabsize="1"><code class="language-plaintext">A) total &gt;= 50
-B) country &gt;= &quot;US&quot;
-C) total and (50 &gt;= 10)
-D) country == &quot;US&quot;</code></pre>
-</section>
-<section id="practice-4-answer-static-checks" class="frame">
-<h2>Practice 4 Answer: static checks</h2>
-<p>Accepted:</p>
-<ul>
-<li><p>A) total &gt;= 50 (num &gt;= num) <span
-class="math inline">\(\rightarrow\)</span> bool</p></li>
-<li><p>D) country == "US" (str == str) <span
-class="math inline">\(\rightarrow\)</span> bool</p></li>
-</ul>
-<p>Rejected:</p>
-<ul>
-<li><p>B) country &gt;= "US" (string ordering not supported in this DSL
-spec)</p></li>
-<li><p>C) total and ... (and expects bool operands; total is
-num)</p></li>
-</ul>
-</section></section>
-<section>
-<section id="industry-case-studies" class="title-slide slide level1">
-<h1>Industry case studies</h1>
+  }</code></pre>
+            <ul>
+              <li><p>each <code>kind</code> maps to one branch: no hidden control
+                flow</p></li>
+              <li><p>type-checker runs first, so casts here are safe</p></li>
+              <li><p>to add a new operator, add a variant to <code>Expr</code> and
+                one case to the switch</p></li>
+            </ul>
+          </section>
 
-</section>
-<section id="industry-case-studies-1" class="frame">
-<h2>Industry case studies</h2>
-</section>
-<section id="how-companies-pick-languages-a-realistic-rubric"
-class="frame">
-<h2>How companies pick languages (a realistic rubric)</h2>
-<p>A rubric that maps to budgets:</p>
-<ul>
-<li><p>Build/CI time and developer iteration speed</p></li>
-<li><p>Operational cost: debugging, profiling, incident
-response</p></li>
-<li><p>Reliability: safety properties and failure modes</p></li>
-<li><p>Ecosystem: libraries, frameworks, hiring pool</p></li>
-<li><p>Deployment: artifacts, runtime footprint, cross-platform
-needs</p></li>
-<li><p>Migration cost: interop and incremental adoption</p></li>
-</ul>
-<p>Most “debates” become clear when you name the constraints.</p>
-</section>
-<section id="go-vs-java-vs-rust-vs-typescript-one-slide-summary"
-class="frame">
-<h2>Synthesis from Modules 11-12: Go vs Java vs Rust vs TypeScript</h2>
-<p>Typical strengths:</p>
-<ul>
-<li><p>Go: simplicity, tooling, deployment, concurrency
-ergonomics</p></li>
-<li><p>Java: ecosystem, mature runtime, observability tooling,
-portability</p></li>
-<li><p>Rust: memory safety without GC, performance, correctness under
-concurrency</p></li>
-<li><p>TypeScript: ecosystem reach (JS), IDE support, gradual adoption,
-API modeling</p></li>
-</ul>
-<p>Typical risks:</p>
-<ul>
-<li><p>Go: less expressive typing, GC trade-offs for some latency
-profiles</p></li>
-<li><p>Java: footprint/warmup, complexity via large frameworks if
-uncontrolled</p></li>
-<li><p>Rust: learning curve, slower early velocity without
-mentorship</p></li>
-<li><p>TypeScript: types erased at runtime, complexity if type design is
-undisciplined</p></li>
-</ul>
-</section>
-<section id="why-js-rightarrow-ts-worked-design-lesson" class="frame">
-<h2>Why JS <span class="math inline">\(\rightarrow\)</span> TS worked
-(design lesson)</h2>
-<p>TypeScript’s key design move:</p>
-<ul>
-<li><p><strong>gradual typing</strong> and <strong>structural
-typing</strong> that matches JS reality</p></li>
-<li><p>adoption can be incremental (file-by-file, any/unknown escape
-hatches)</p></li>
-<li><p>huge payoff through tooling: refactoring, navigation,
-autocomplete</p></li>
-</ul>
-<p>Language design lesson:</p>
-<ul>
-<li><p>migration paths can matter more than theoretical
-elegance</p></li>
-</ul>
-</section>
-<section id="jvmclr-ecosystems-design-lesson" class="frame">
-<h2>Synthesis: JVM/CLR ecosystems (design lesson)</h2>
-<p>VM ecosystems change the calculus:</p>
-<ul>
-<li><p>shared runtime services: GC, JIT, profiling hooks</p></li>
-<li><p>mature libraries and frameworks reduce time-to-market</p></li>
-<li><p>interoperability within the ecosystem can beat language
-purity</p></li>
-</ul>
-<p>Lesson:</p>
-<ul>
-<li><p>language choice is often an ecosystem choice</p></li>
-</ul>
-</section>
-<section id="practice-5-choose-a-language-with-explicit-constraints"
-class="frame">
-<h2>Practice 5: choose a language with explicit constraints</h2>
-<p>Scenario A: internal developer CLI.</p>
-<ul>
-<li><p>quick iteration, good parsing libraries</p></li>
-<li><p>startup time matters a bit</p></li>
-<li><p>deployment must be simple across OSes</p></li>
-</ul>
-<p>Scenario B: low-latency edge proxy.</p>
-<ul>
-<li><p>p99 latency is critical</p></li>
-<li><p>memory safety bugs are unacceptable</p></li>
-<li><p>team can invest in training</p></li>
-</ul>
-<p>Task:</p>
-<ul>
-<li><p>pick a likely language for A and B</p></li>
-<li><p>justify by naming the top constraints you used</p></li>
-</ul>
-</section>
-<section
-id="practice-5-answer-choose-a-language-with-explicit-constraints"
-class="frame">
-<h2>Practice 5 Answer: choose a language with explicit constraints</h2>
-<p>Scenario A:</p>
-<ul>
-<li><p>TypeScript/Node or Python: fast iteration + libraries</p></li>
-<li><p>Go: strong option if you want single binaries and consistent
-deployment</p></li>
-</ul>
-<p>Scenario B:</p>
-<ul>
-<li><p>Rust: memory safety + predictable performance without GC
-pauses</p></li>
-<li><p>Go/Java can work depending on latency tolerance and operational
-maturity</p></li>
-</ul>
-<p>Key point:</p>
-<ul>
-<li><p>your justification should map features to constraints, not
-preferences</p></li>
-</ul>
-</section></section>
-<section class="slide level2">
-<section id="bridge-industry-cases-to-capstone" class="frame">
-<h2>Bridge: industry case logic to capstone scope</h2>
-<p>The same rubric used for language choice should drive project scope:</p>
-<ul>
-<li><p>state constraints first</p></li>
-<li><p>choose explicit non-goals to control complexity</p></li>
-<li><p>define safety/runtime boundaries before implementation</p></li>
-</ul>
-</section>
-</section>
-<section>
-<section id="capstone-tie-in" class="title-slide slide level1">
-<h1>Capstone tie-in</h1>
+          <section id="semantic-checks-catch-mistakes-before-runtime" class="frame">
+            <h2>Semantic checks: catch mistakes before runtime</h2>
+            <p>Examples of static checks:</p>
+            <ul>
+              <li><p>unknown variable names (typos)</p></li>
+              <li><p>type mismatch in operators (string &lt; number)</p></li>
+              <li><p>rule condition must be boolean</p></li>
+              <li><p>unreachable rules (if conditions are contradictory)</p></li>
+            </ul>
+            <p>Why this matters:</p>
+            <ul>
+              <li><p>DSL authors may not have a debugger</p></li>
+              <li><p>production evaluation should be predictable and safe</p></li>
+            </ul>
+          </section>
 
-</section>
-<section id="capstone-tie-in-1" class="frame">
-<h2>Capstone tie-in</h2>
-</section>
-<section id="capstone-expectation-aligned-with-prior-weeks"
-class="frame">
-<h2>Capstone expectation (aligned with prior weeks)</h2>
-<p>Your capstone DSL should emphasize:</p>
-<ul>
-<li><p>clear domain story (who uses it, what decisions it
-controls)</p></li>
-<li><p>crisp scope (features) and non-goals (what it cannot do)</p></li>
-<li><p>semantics: evaluation model and error behavior</p></li>
-<li><p>validation: static checks where possible</p></li>
-<li><p>tests: golden inputs and expected outputs/errors</p></li>
-</ul>
-<p>Parsing and AST are necessary, but the differentiator is:
-<strong>usability and correctness</strong>.</p>
-</section>
-<section id="a-good-non-goals-slide-saves-projects" class="frame">
-<h2>A good “non-goals” slide (saves projects)</h2>
-<p>Example non-goals you can explicitly write:</p>
-<ul>
-<li><p>no loops, recursion, or unbounded computation</p></li>
-<li><p>no file/network access, no host-language eval</p></li>
-<li><p>no user-defined functions (unless your domain truly needs
-them)</p></li>
-<li><p>no implicit type coercions</p></li>
-</ul>
-<p>These reduce feature creep and clarify your safety boundary.</p>
-</section>
-<section id="practice-6-write-a-dsl-spec-snippet" class="frame">
-<h2>Practice 6: write a DSL spec snippet</h2>
-<p>Pick a domain (one):</p>
-<ul>
-<li><p>alerting rules</p></li>
-<li><p>access-control policies</p></li>
-<li><p>feature flag targeting</p></li>
-</ul>
-<p>Task:</p>
-<ul>
-<li><p>Write 3 semantics bullets (order, determinism, error
-handling)</p></li>
-<li><p>Write 2 non-goals</p></li>
-</ul>
-</section>
-<section id="practice-6-answer-example-feature-flags" class="frame">
-<h2>Practice 6 Answer: example (feature flags)</h2>
-<p>Semantics bullets:</p>
-<ul>
-<li><p>Rules execute top-to-bottom; first-match stops
-evaluation</p></li>
-<li><p>Conditions are pure: no time/random/network; deterministic for
-same inputs</p></li>
-<li><p>On error (unknown var/type mismatch), evaluation fails closed and
-returns an error report</p></li>
-</ul>
-<p>Non-goals:</p>
-<ul>
-<li><p>No loops or user-defined functions</p></li>
-<li><p>No side effects beyond returning a decision and an explanation
-log</p></li>
-</ul>
-</section></section>
-<section>
-<section id="review" class="title-slide slide level1">
-<h1>Review</h1>
 
-</section>
-<section id="review-1" class="frame">
-<h2>Review</h2>
-</section>
-<section id="summary-what-to-remember" class="frame">
-<h2>Summary: what to remember</h2>
-<ul>
-<li><p>Language design in industry is constraint-driven
-decision-making</p></li>
-<li><p>DSLs succeed when scope is narrow and semantics are
-explicit</p></li>
-<li><p>The hard parts are usability: errors, tooling, tests, versioning,
-governance</p></li>
-<li><p>“Config vs DSL vs code” is a recurring architecture
-choice</p></li>
-<li><p>Migration paths (like JS <span
-class="math inline">\(\rightarrow\)</span> TS) can matter more than
-purity</p></li>
-<li><p>Ecosystems (JVM/CLR, JS) strongly influence long-term cost and
-hiring</p></li>
-<li><p>Capstone DSLs should prioritize semantics + validation + tests
-over feature count</p></li>
-</ul>
-</section>
-<section id="review-questions" class="frame">
-<h2>Review questions</h2>
-<ul>
-<li><p>Name three constraints that dominate language decisions in
-industry</p></li>
-<li><p>When is a DSL a better fit than config or code</p></li>
-<li><p>What is one DSL failure mode and how do you prevent it</p></li>
-<li><p>Why does versioning matter even for “small” DSLs</p></li>
-<li><p>What design choice made TypeScript adoption feasible for JS
-codebases</p></li>
-<li><p>How do JVM/CLR ecosystems change language selection
-trade-offs</p></li>
-</ul>
-</section></section>
+        </section>
+
+        <!-- =========================================================
+        SECTION: Industry case studies
+
+        ========================================================= -->
+        <section>
+          <section id="industry-case-studies" class="title-slide slide level1">
+            <h1>Industry case studies</h1>
+
+          </section>
+
+          <section id="how-companies-pick-languages" class="frame">
+            <h2>How companies pick languages</h2>
+            <p>Beyond technical constraints, organizations weigh:</p>
+            <ul>
+              <li><p>Hiring pool: engineer availability and salary band</p></li>
+              <li><p>Onboarding time: weeks to productivity for a new hire</p></li>
+              <li><p>Ecosystem lock-in: vendor and framework dependency accepted</p></li>
+              <li><p>Incremental adoption: migrate one service at a time, or all-or-nothing</p></li>
+              <li><p>Long-term governance: who owns the toolchain if it stalls</p></li>
+            </ul>
+            <p>Name both the technical and organizational constraints, and most "language debates" resolve cleanly. The next four case studies show this in action.</p>
+          </section>
+
+          <section id="case-study-go-at-google" class="frame">
+            <h2>Case study: Go at Google</h2>
+            <p>Situation:</p>
+            <ul>
+              <li><p>Massive C++ and Java monorepos</p></li>
+              <li><p>C++ compile times destroying developer velocity</p></li>
+              <li><p>Network services needed safe concurrency</p></li>
+              <li><p>Large rotating teams needed fast onboarding</p></li>
+            </ul>
+            <p>Key constraints:</p>
+            <ul>
+              <li><p>Build speed and iteration time</p></li>
+              <li><p>Safe, built-in concurrency for network services</p></li>
+              <li><p>Simple enough for large teams to review and onboard</p></li>
+              <li><p>Single-binary deployment, no runtime dependency</p></li>
+            </ul>
+            <p>Decisions made:</p>
+            <ul>
+              <li><p>Garbage collected (accept GC pauses, remove memory burden)</p></li>
+              <li><p>Goroutines and channels built into the language</p></li>
+              <li><p>No inheritance, no operator overloading (composition only)</p></li>
+              <li><p>One enforced style via <code>gofmt</code>; no code-review debates</p></li>
+              <li><p>No generics until 1.18 (simplicity first, expressiveness later)</p></li>
+            </ul>
+            <p>Outcome:</p>
+            <ul>
+              <li><p>Docker, Kubernetes, Terraform, most cloud-native tooling written in Go</p></li>
+            </ul>
+            <p>Lesson: simplicity has organizational multipliers that technical benchmarks do not measure.</p>
+          </section>
+
+          <section id="case-study-typescript-at-microsoft" class="frame">
+            <h2>Case study: TypeScript at Microsoft</h2>
+            <p>Situation:</p>
+            <ul>
+              <li><p>Building VS Code, Office 365 web apps, TypeScript compiler itself</p></li>
+              <li><p>All large JavaScript codebases</p></li>
+              <li><p>Unsafe to refactor, hard to navigate</p></li>
+            </ul>
+            <p>Key constraints:</p>
+            <ul>
+              <li><p>Cannot break the JS ecosystem or require rewrites</p></li>
+              <li><p>IDE tooling (autocomplete, safe rename) must pay off immediately</p></li>
+              <li><p>Must support gradual, file-by-file adoption</p></li>
+            </ul>
+            <p>Decisions made:</p>
+            <ul>
+              <li><p>Structural typing (matches JS duck-typing; no nominal class tags)</p></li>
+              <li><p><code>any</code> escape hatch lowers cost of starting</p></li>
+              <li><p>Types fully erased at runtime (no overhead, runs wherever JS does)</p></li>
+              <li><p>Compiles to plain JS (100% npm compatibility from day one)</p></li>
+            </ul>
+            <p>Outcome:</p>
+            <ul>
+              <li><p>Most top npm packages now ship TypeScript types</p></li>
+            </ul>
+            <p>Lesson: migration path and tooling payoff drove adoption more than correctness arguments did.</p>
+          </section>
+
+          <section id="case-study-rust-in-systems-software" class="frame">
+            <h2>Case study: Rust in systems software</h2>
+            <p>Situation:</p>
+            <ul>
+              <li><p>Many severe vulnerabilities in memory-unsafe codebases come from memory safety bugs</p></li>
+              <li><p>Use-after-free and buffer overflow remain common risks in C and C++</p></li>
+              <li><p>Garbage collection is not always acceptable in low-level or latency-sensitive systems</p></li>
+            </ul>
+            <p>Key constraints:</p>
+            <ul>
+              <li><p>No GC: latency predictability and embedded targets may require it</p></li>
+              <li><p>Memory safety must be statically guaranteed, not just audited</p></li>
+              <li><p>Performance must stay close to C/C++</p></li>
+            </ul>
+            <p>Decisions made:</p>
+            <ul>
+              <li><p>Ownership and borrow checker at compile time, zero runtime cost</p></li>
+              <li><p>No null by default; errors modeled as <code>Result</code></p></li>
+              <li><p>Steep learning curve accepted as a trade-off</p></li>
+            </ul>
+            <p>Outcome:</p>
+            <ul>
+              <li><p>Rust support merged into the Linux kernel in 6.1</p></li>
+              <li><p>Adoption is strongest where teams will pay training cost for stronger safety guarantees</p></li>
+            </ul>
+            <p>Lesson: high training cost can be worth paying when the alternative is security vulnerabilities at scale.</p>
+          </section>
+
+          <section id="case-study-java-in-enterprise-systems" class="frame">
+            <h2>Case study: Java in enterprise systems</h2>
+            <p>Situation:</p>
+            <ul>
+              <li><p>Large organizations needed portable server software across many operating systems</p></li>
+              <li><p>Teams were building long-lived systems that had to survive staff turnover and platform changes</p></li>
+              <li><p>They needed libraries, frameworks, and tooling that could scale with many teams</p></li>
+            </ul>
+            <p>Key constraints:</p>
+            <ul>
+              <li><p>Cross-platform deployment mattered more than squeezing out every last bit of performance</p></li>
+              <li><p>Backward compatibility and maintainability mattered for systems expected to live for years</p></li>
+              <li><p>Organizations wanted standardized tooling and a deep hiring pool</p></li>
+            </ul>
+            <p>Decisions made:</p>
+            <ul>
+              <li><p>Compile to JVM bytecode so the same program can run across platforms</p></li>
+              <li><p>Use garbage collection to reduce manual memory-management burden</p></li>
+              <li><p>Invest in strong tooling, libraries, and compatibility over time</p></li>
+            </ul>
+            <p>Outcome:</p>
+            <ul>
+              <li><p>Java became a long-term default for enterprise backends and large business systems</p></li>
+              <li><p>The JVM ecosystem became a major adoption advantage, not just the language syntax</p></li>
+            </ul>
+            <p>Lesson: portability, tooling, and compatibility can outweigh language elegance when organizations optimize for longevity.</p>
+          </section>
+
+          <section id="case-study-synthesis" class="frame">
+            <h2>Comparing Case Studies</h2>
+            <ul>
+              <li><p><strong>Go</strong>: optimize for simplicity, onboarding, build speed, and operational clarity</p></li>
+              <li><p><strong>TypeScript</strong>: optimize for migration path, IDE support, and ecosystem compatibility</p></li>
+              <li><p><strong>Rust</strong>: optimize for safety and performance, even with higher training cost</p></li>
+              <li><p><strong>Java</strong>: optimize for portability, tooling maturity, backward compatibility, and long-lived maintenance</p></li>
+            </ul>
+            <p>General lesson: language choice is rarely about a single &quot;best&quot; language; it is about the best fit under real constraints.</p>
+          </section>
+
+
+        </section>
+
+        <!-- =========================================================
+        SECTION: Review
+
+        ========================================================= -->
+        <section>
+          <section id="review" class="title-slide slide level1">
+            <h1>Review</h1>
+
+          </section>
+
+          <section id="summary-what-to-remember" class="frame">
+            <h2>Summary: what to remember</h2>
+            <ul>
+              <li><p>Language design = constraints first</p></li>
+              <li><p>DSLs work best when narrow</p></li>
+              <li><p>Non-goals and semantics must be explicit</p></li>
+              <li><p>The hard part is usability: errors, tooling, tests, versioning</p></li>
+              <li><p>DSLs reuse the same pipeline: parse, type-check, evaluate</p></li>
+              <li><p>Go: simplicity helps teams scale</p></li>
+              <li><p>TypeScript: gradual adoption drove success</p></li>
+              <li><p>Rust: safety can justify complexity</p></li>
+              <li><p>Java: portability and compatibility drive longevity</p></li>
+            </ul>
+          </section>
+
+          <section id="review-questions" class="frame">
+            <h2>Review questions</h2>
+            <ul>
+              <li><p>Name three constraints that dominate language decisions in
+                industry</p></li>
+              <li><p>When is a DSL a better fit than config or code</p></li>
+              <li><p>Why are non-goals important in DSL design</p></li>
+              <li><p>What is one DSL failure mode and how do you prevent it</p></li>
+              <li><p>Why does versioning matter even for "small" DSLs</p></li>
+              <li><p>What does a tree-walking evaluator do and why is it safe to add
+                casts after type-checking</p></li>
+              <li><p>What design choice made TypeScript adoption feasible for JS
+                codebases</p></li>
+              <li><p>How do runtime and ecosystem change language selection
+                trade-offs</p></li>
+            </ul>
+          </section>
+
+        </section>
+
+      </div>
     </div>
-  </div>
 
-  <script src="../_static/revealjs/dist/reveal.js"></script>
-    
-    
-      <script src="../_static/revealjs/plugin/notes/notes.js"></script>
-      <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
-      <script src="../_static/revealjs/plugin/math/math.js"></script>
-      
-    
+    <script src="../_static/revealjs/dist/reveal.js"></script>
+
+    <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+    <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+    <script src="../_static/revealjs/plugin/math/math.js"></script>
+
     <script>
-        var revealjsConfig = new Object();
-        Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
-        
-        
-        
-          revealjsConfig.plugins = [
-            RevealNotes,RevealHighlight,RevealMath,
-          ];
-        
-        // More info https://github.com/hakimel/reveal.js#configuration
-        Reveal.initialize(revealjsConfig);
-    </script>
+      var revealjsConfig = new Object();
+      Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
+
+      revealjsConfig.plugins = [
+      RevealNotes,RevealHighlight,RevealMath,
+      ];
+
+      // More info https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize(revealjsConfig);
+      </script>
 
   </body>
 </html>

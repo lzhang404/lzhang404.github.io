@@ -447,7 +447,7 @@ D: [A, C]</code></pre>
               </ul>
             </li>
             <li><p>Step 4: Repeat from Step 2 until the queue is empty</p></li>
-            <li><p>Key invariant: when a vertex is popd, all vertices at a smaller distance from the start have already been visited</p></li>
+            <li><p>Key invariant: when a vertex is poped, all vertices at a smaller distance from the start have already been visited</p></li>
           </ul>
         </section>
 
@@ -841,8 +841,8 @@ void dfs(const Graph& g, int start) {
                 <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
                 <tbody>
                   <tr><td>A</td><td><strong>0 ✓</strong></td><td>–</td></tr>
-                  <tr><td>B</td><td><strong>4</strong></td><td>A</td></tr>
-                  <tr><td>C</td><td><strong>2</strong></td><td>A</td></tr>
+                  <tr><td>B</td><td><strong>∞ &rightarrow; 4</strong></td><td>A</td></tr>
+                  <tr><td>C</td><td><strong>∞ &rightarrow; 2</strong></td><td>A</td></tr>
                   <tr><td>D</td><td>∞</td><td>–</td></tr>
                   <tr><td>E</td><td>∞</td><td>–</td></tr>
                   <tr><td>F</td><td>∞</td><td>–</td></tr>
@@ -863,6 +863,7 @@ void dfs(const Graph& g, int start) {
           <div class="two-col">
             <div class="text-col">
               <ul>
+                <li>Starting PQ: [(2,C), (4,B)]</li>
                 <li><p>Pop <code class="inline">(2, C)</code>. Process C's neighbors:</p>
                   <ul>
                     <li><p>E: 2+3=5 &lt; ∞ &rightarrow; dist[E]=5, prev=C. Push (5,E)</p></li>
@@ -877,7 +878,7 @@ void dfs(const Graph& g, int start) {
                   <tr><td>B</td><td>4</td><td>A</td></tr>
                   <tr><td>C</td><td><strong>2 ✓</strong></td><td>A</td></tr>
                   <tr><td>D</td><td>∞</td><td>–</td></tr>
-                  <tr><td>E</td><td><strong>5</strong></td><td>C</td></tr>
+                  <tr><td>E</td><td><strong>∞ &rightarrow; 5</strong></td><td>C</td></tr>
                   <tr><td>F</td><td>∞</td><td>–</td></tr>
                 </tbody>
               </table>
@@ -896,10 +897,11 @@ void dfs(const Graph& g, int start) {
           <div class="two-col">
             <div class="text-col">
               <ul>
+                <li>Starting PQ: [(4,B), (5,E)]</li>
                 <li><p>Pop <code class="inline">(4, B)</code>. Process B's neighbors:</p>
                   <ul>
-                    <li><p>D: 4+10=14 &lt; ∞ &rightarrow; dist[D]=14, prev=B. Push (14,D)</p></li>
                     <li><p>C: 4+5=9 &gt; dist[C]=2 &rightarrow; no update</p></li>
+                    <li><p>D: 4+10=14 &lt; ∞ &rightarrow; dist[D]=14, prev=B. Push (14,D)</p></li>
                   </ul>
                 </li>
                 <li><p>PQ: [(5,E), (14,D)]</p></li>
@@ -910,7 +912,7 @@ void dfs(const Graph& g, int start) {
                   <tr><td>A</td><td>0 ✓</td><td>–</td></tr>
                   <tr><td>B</td><td><strong>4 ✓</strong></td><td>A</td></tr>
                   <tr><td>C</td><td>2 ✓</td><td>A</td></tr>
-                  <tr><td>D</td><td><strong>14</strong></td><td>B</td></tr>
+                  <tr><td>D</td><td><strong>∞ &rightarrow; 14</strong></td><td>B</td></tr>
                   <tr><td>E</td><td>5</td><td>C</td></tr>
                   <tr><td>F</td><td>∞</td><td>–</td></tr>
                 </tbody>
@@ -926,21 +928,64 @@ void dfs(const Graph& g, int start) {
         </section>
 
         <section class="frame">
-          <h2>Dijkstra's example: step 4 — process E</h2>
+          <h2>Dijkstra's example: step 4 — process E, F</h2>
           <div class="two-col">
             <div class="text-col">
               <ul>
+                <li>Starting PQ: [(5,E), (14,D)]</li>
                 <li><p>Pop <code class="inline">(5, E)</code>. Process E's neighbors:</p>
                   <ul>
-                    <li><p>F: 5+2=7 &lt; ∞ &rightarrow; dist[F]=7, prev=E. Push (7,F)</p></li>
                     <li><p>D: 5+4=9 &lt; 14 &rightarrow; dist[D]=9, prev=E. Push (9,D)</p></li>
+                    <li><p>F: 5+2=7 &lt; ∞ &rightarrow; dist[F]=7, prev=E. Push (7,F)</p></li>
                   </ul>
                 </li>
                 <li><p>PQ: [(7,F), (9,D), (14,D stale)]</p></li>
                 <li><p>Pop (7,F): F has no outgoing edges</p></li>
-                <li><p>Pop (9,D): D&rightarrow;F: 9+11=20 &gt; 7 &rightarrow; no update</p></li>
+                <li><p>PQ: [(9,D), (14,D stale)]</p></li>
+              </ul>
+              <table>
+                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
+                <tbody>
+                  <tr><td>A</td><td>0 ✓</td><td>–</td></tr>
+                  <tr><td>B</td><td><strong>4 ✓</strong></td><td>A</td></tr>
+                  <tr><td>C</td><td>2 ✓</td><td>A</td></tr>
+                  <tr><td>D</td><td><strong>14 &rightarrow; 9</strong></td><td>B</td></tr>
+                  <tr><td>E</td><td>5 ✓</td><td>C</td></tr>
+                  <tr><td>F</td><td><strong>∞ &rightarrow; 7 ✓</strong></td><td>E</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="media-col tight">
+              <img
+                src="../_static/images/graph/dijkstra.png"
+                alt="Weighted directed graph"
+              />
+              
+            </div>
+          </div>
+        </section>
+
+                <section class="frame">
+          <h2>Dijkstra's example: step 4 — D</h2>
+          <div class="two-col">
+            <div class="text-col">
+              <ul>
+                <li>Starting PQ: [(9,D), (14,D stale)]</li>
+                <li><p>Pop <code class="inline">(9, D)</code>. Process D's neighbors:</p>
+                  <ul><li><p>F: 9+11=20 &gt; 7 &rightarrow; no update</p></li></ul>
                 <li><p>Pop (14,D): stale, dist[D]=9 &rightarrow; skip. Done</p></li>
               </ul>
+            <table>
+                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
+                <tbody>
+                  <tr><td>A</td><td>0 ✓</td><td>–</td></tr>
+                  <tr><td>B</td><td>4 ✓</td><td>A</td></tr>
+                  <tr><td>C</td><td>2 ✓</td><td>A</td></tr>
+                  <tr><td>D</td><td>9 ✓</td><td>B</td></tr>
+                  <tr><td>E</td><td>5 ✓</td><td>C</td></tr>
+                  <tr><td>F</td><td>7 ✓</td><td>E</td></tr>
+                </tbody>
+              </table>
             </div>
             <div class="media-col tight">
               <img
@@ -970,6 +1015,36 @@ void dfs(const Graph& g, int start) {
           <ul>
             <li><p>D is reached via E (cost 9), not directly via B (cost 14)</p></li>
           </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Dijkstra Practice</h2>
+          <div class="two-col">
+            <div class="text-col">
+              <ul>
+                <li>Use a prioty queue to find the shortest path from vertice A to other vertices</li>
+                <li>Keep track of the PQ content</li>
+                <li>Fill in the table: </p>
+              </ul>
+            <table>
+                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
+                <tbody>
+                  <tr><td>A</td><td>-</td><td>–</td></tr>
+                  <tr><td>B</td><td>-</td><td>-</td></tr>
+                  <tr><td>C</td><td>-</td><td>-</td></tr>
+                  <tr><td>D</td><td>-</td><td>-</td></tr>
+                  <tr><td>E</td><td>-</td><td>-</td></tr>
+                  <tr><td>F</td><td>-</td><td>-</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="media-col tight">
+              <img
+                src="../_static/images/graph/dijkstra_practice.png"
+                alt="Weighted directed graph"
+              />
+            </div>
+          </div>
         </section>
 
         <section class="frame">
