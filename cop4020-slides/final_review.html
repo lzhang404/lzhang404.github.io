@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+<title>COP4020 Final Review</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- =========================================================
+           Title
+      ========================================================== -->
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>COP4020 Final Review</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Modules 1&ndash;13</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+
+        <section id="review-midterm-overview" class="frame">
+          <h2>Final Overview</h2>
+          <ul>
+            <li><p>Covers module 1-13 </p></li>
+            <li>Most of the questions come from module 10 - 13</li>
+            <li><p>150 mins, requires lock down browser</p></li>
+            <li><p>Exam format: multiple choice, fill in blanks, and short answer questions</p></li>
+            <li><p>Open book/note</p></li>
+            <li><p>In person section should take the exam in the classroom 438</p></li>
+            <li><p>No phones or smart devices are allowed during the exam. If a device is seen at any time, it will be treated as cheating.</p></li>
+            
+          </ul>
+        </section>
+      </section>
+
+      
+      <!-- =========================================================
+           Section 1: The Compiler Pipeline (M1, M2, M3)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>The Compiler Pipeline</h1>
+          <p>Modules 1, 2, 3</p>
+        </section>
+
+        <section>
+          <h2>What Is a Programming Language?</h2>
+          <ul class="simple">
+            <li>
+              <p>A programming language defines two things:</p>
+              <ul>
+                <li><p><strong>Syntax</strong>: what programs look like (rules for valid text)</p></li>
+                <li><p><strong>Semantics</strong>: what programs mean (what they do when run)</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>A program is a contract between programmer, language, and machine</p>
+              <ul>
+                <li><p>The language promises what a legal program must do</p></li>
+                <li><p>The programmer relies on those promises</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Languages cluster into <strong>paradigms</strong>: imperative, object-oriented, functional, logic</p>
+              <ul>
+                <li><p>Most real languages blend multiple paradigms</p></li>
+                <li><p>Paradigms shape how you decompose and reason about problems</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Lexical Analysis: Characters to Tokens</h2>
+          <ul class="simple">
+            <li>
+              <p>The <strong>lexer</strong> (scanner) is the first phase of a compiler or interpreter</p>
+              <ul>
+                <li><p>Input: raw stream of characters</p></li>
+                <li><p>Output: stream of <em>tokens</em> (keyword, identifier, literal, operator, separator)</p></li>
+                <li><p>Whitespace and comments are recognized and discarded</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Regular expressions</strong> specify token patterns; <strong>finite automata</strong> (DFA) implement them</p>
+              <ul>
+                <li><p>Every regex has an equivalent DFA; a DFA can be executed in linear time</p></li>
+                <li><p>Scanners can be hand-written or generated from regex specifications</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Key vocabulary: <em>character</em>, <em>lexeme</em>, <em>token type</em>, <em>attribute</em></p>
+              <ul>
+                <li><p>Token: a pair &lt;token-type, attribute&gt;</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-text">let total = a + 10;
+  →  [LET_KW,"let"]  [IDENT,"total"]  [ASSIGN,"="]
+     [IDENT,"a"]     [PLUS,"+"]       [INT_LIT,10]  [SEMI,";"]</code></pre>
+        </section>
+
+        <section>
+          <h2>Grammars and Parsing</h2>
+          <ul class="simple">
+            <li>
+              <p>A <strong>context-free grammar (CFG)</strong> describes valid token sequences</p>
+              <ul>
+                <li><p>Terminals: tokens from the lexer</p></li>
+                <li><p>Nonterminals: syntactic categories (e.g., <code>Expr</code>, <code>Stmt</code>)</p></li>
+                <li><p>Productions: rules that expand nonterminals</p></li>
+                <li><p>Start symbol: represents a complete program</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Ambiguity</strong> is a problem: one token sequence has two parse trees</p>
+              <ul>
+                <li><p>Fixed by stratifying the grammar (precedence levels) or rewriting rules</p></li>
+                <li><p>Classic example: the dangling else problem</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Parsers build an <strong>Abstract Syntax Tree (AST)</strong></p>
+              <ul>
+                <li><p>AST removes grammar bookkeeping; keeps semantic structure</p></li>
+                <li><p>Later passes (type checking, code generation) operate on the AST</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-text">&lt;expr&gt;   ::= &lt;expr&gt; "+" &lt;term&gt; | &lt;term&gt;
+&lt;term&gt;   ::= &lt;term&gt; "*" &lt;factor&gt; | &lt;factor&gt;
+&lt;factor&gt; ::= "(" &lt;expr&gt; ")" | NUM</code></pre>
+        </section>
+
+        <section>
+          <h2>The Full Pipeline</h2>
+          <ul class="simple">
+            <li>
+              <p>Every language implementation follows essentially the same pipeline:</p>
+              <ul>
+                <li><p>Source text &rarr; <strong>Lexer</strong> &rarr; token stream</p></li>
+                <li><p>Token stream &rarr; <strong>Parser</strong> &rarr; AST</p></li>
+                <li><p>AST &rarr; <strong>Type checker / semantic analysis</strong></p></li>
+                <li><p>AST &rarr; <strong>Code generation or interpreter</strong></p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Connections to later modules:</p>
+              <ul>
+                <li><p>The type checker builds a <em>symbol table</em> (Module 4) and checks type rules (Module 5)</p></li>
+                <li><p>Evaluation order in the interpreter relates to expression semantics (Module 6)</p></li>
+                <li><p>Module 13 shows how this exact pipeline is reused for DSLs</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 2: Names, Bindings, Scope, and Lifetime (M4)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Names, Bindings, Scope, and Lifetime</h1>
+          <p>Module 4</p>
+        </section>
+
+        <section>
+          <h2>Names, Locations, and Binding Times</h2>
+          <ul class="simple">
+            <li>
+              <p>A name in source code refers to a <em>location</em> that holds a <em>value</em></p>
+              <ul>
+                <li><p>A <strong>binding</strong> connects a name to a type, a storage location, or a value</p></li>
+                <li><p>The <strong>environment</strong> is the set of active bindings at a point in execution</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Binding time</strong>: when a binding is established</p>
+              <ul>
+                <li><p>Language design time: keywords and built-in types</p></li>
+                <li><p>Compile time: many type decisions, stack layout</p></li>
+                <li><p>Link/load time: addresses of globals</p></li>
+                <li><p>Runtime: parameter values, heap objects, dynamic dispatch</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Earlier binding &rarr; more optimization and safety checks</p>
+            </li>
+            <li>
+              <p>Later binding &rarr; more flexibility and dynamism</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Scope: Where Names Are Visible</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Lexical (static) scope</strong>: a name is resolved based on where it appears in the source text</p>
+              <ul>
+                <li><p>Used by C, Java, Python, JavaScript/TypeScript</p></li>
+                <li><p>Python uses the LEGB rule: Local &rarr; Enclosing &rarr; Global &rarr; Built-in</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Dynamic scope</strong>: a name is resolved based on the call stack at runtime</p>
+              <ul>
+                <li><p>Easier to implement; harder to reason about</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Closures</strong>: a function that captures bindings from its enclosing lexical scope</p>
+              <ul>
+                <li><p>The captured environment is retained as long as the closure lives</p></li>
+                <li><p>Classic bug: <code>var</code> in a loop captures the same binding; <code>let</code> creates a fresh one per iteration</p></li>
+                <li><p>Closures reappear in Module 7 (callbacks), Module 9 (functional style), and Module 11 (async/await)</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">for (var i = 0; i &lt; 3; i++) {
+  setTimeout(() =&gt; console.log(i), 0);  // prints: 3 3 3
+}
+for (let i = 0; i &lt; 3; i++) {
+  setTimeout(() =&gt; console.log(i), 0);  // prints: 0 1 2
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Lifetime and Storage Duration</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Scope</strong> is a source-level concept (where a name is visible)</p>
+            </li>
+            <li>
+              <p><strong>Lifetime</strong> is a runtime concept (how long storage exists)</p>
+            </li>
+            <li>
+              <p>Storage duration categories:</p>
+              <ul>
+                <li><p><em>Static</em>: exists for the entire program run (global variables, static locals in C)</p></li>
+                <li><p><em>Stack (automatic)</em>: allocated on entry to a scope, freed on exit</p></li>
+                <li><p><em>Heap (dynamic)</em>: explicitly allocated; freed manually, by GC, or by ownership rules</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Closures extend lifetime: a captured variable on the heap outlives the frame that created it</p>
+            </li>
+            <li>
+              <p>This distinction is central to Module 12 (memory management) and Module 11 (task lifetimes)</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 3: Types and Type Systems (M5)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Types and Type Systems</h1>
+          <p>Module 5</p>
+        </section>
+
+        <section>
+          <h2>Why Types? Two Axes of Classification</h2>
+          <ul class="simple">
+            <li>
+              <p>A <strong>type system</strong> prevents programs from using values in ways they were not intended for</p>
+            </li>
+            <li>
+              <p>First axis: <em>when</em> checks happen</p>
+              <ul>
+                <li><p><strong>Static typing</strong>: checks at compile time (C, Java, Rust, TypeScript)</p></li>
+                <li><p><strong>Dynamic typing</strong>: checks at runtime when the path executes (Python, JavaScript)</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Second axis: <em>how strict</em> coercions are</p>
+              <ul>
+                <li><p><strong>Strong typing</strong>: few implicit conversions; type mismatches tend to error (Python, Java)</p></li>
+                <li><p><strong>Weak typing</strong>: more implicit coercions; mixing types can "succeed" but surprise (JavaScript, C)</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>These axes are independent: Python is dynamic and strong; C is static and weaker</p>
+            </li>
+            <li>
+              <p>TypeScript adds a static layer on top of JavaScript without changing the runtime</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">// TypeScript (static): caught before the program runs
+let n: number = 10;
+n = "hello";      // type error from the TypeScript checker
+
+// JavaScript implicit coercion (weak): no error, surprising result
+1 + "2"    // "12"  (number coerced to string)
+"3" * "4"  // 12    (strings coerced to numbers)</code></pre>
+        </section>
+
+        <section>
+          <h2>Primitive and Composite Types</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Primitive types</strong>: integers, floats, booleans, characters</p>
+              <ul>
+                <li><p>Overflow is silent in many languages (C, Java integers wrap); Rust panics in debug mode</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Composite types</strong> combine simpler types:</p>
+              <ul>
+                <li><p><em>Arrays / tuples</em>: ordered, positionally accessed</p></li>
+                <li><p><em>Records / structs / objects</em>: named fields</p></li>
+                <li><p><em>Maps / dictionaries</em>: key-value associations</p></li>
+                <li><p><em>Unions</em>: a value is one of several alternatives</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Tagged unions</strong> (discriminated unions) associate a tag with each variant</p>
+              <ul>
+                <li><p>Pattern matching over tags is safe: the tag tells you which fields exist</p></li>
+                <li><p>TypeScript union types + narrowing implement this pattern</p></li>
+                <li><p>In Module 9, algebraic data types formalize the same idea</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">type Result =
+  | { kind: "ok";    value: number  }
+  | { kind: "error"; message: string };
+
+function unwrap(r: Result): number {
+  if (r.kind === "ok") {
+    return r.value;           // TypeScript knows r.value exists here
+  } else {
+    throw new Error(r.message);
+  }
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Subtyping and Structural vs Nominal Typing</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Nominal typing</strong>: two types are compatible only if they have the same name or an explicit relationship</p>
+              <ul>
+                <li><p>Java and C++ use nominal typing: you must declare <code>implements</code> or <code>extends</code></p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Structural typing</strong>: two types are compatible if they have the same shape (same fields and methods)</p>
+              <ul>
+                <li><p>TypeScript and Go use structural typing</p></li>
+                <li><p>A type automatically satisfies an interface if it has the right members</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Subtyping underpins the Liskov Substitution Principle in Module 8</p>
+            </li>
+            <li>
+              <p>TypeScript&apos;s <code>any</code> bypasses all type checking; <code>unknown</code> forces you to narrow before use</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 4: Expressions, Control Flow, and Subprograms (M6, M7)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Expressions, Control Flow, and Subprograms</h1>
+          <p>Modules 6, 7</p>
+        </section>
+
+        <section>
+          <h2>Expressions: Precedence vs Evaluation Order</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Operator precedence</strong>: a parse-time concept that determines grouping</p>
+              <ul>
+                <li><p><code>1 + 2 * 3</code> groups as <code>1 + (2 * 3)</code> due to precedence rules</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Evaluation order</strong>: a runtime concept that determines what executes first</p>
+              <ul>
+                <li><p>TypeScript and Python specify left-to-right evaluation of arguments</p></li>
+                <li><p>C often does <em>not</em> specify subexpression evaluation order</p></li>
+                <li><p>Order matters only when subexpressions have side effects</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Short-circuit evaluation</strong>: <code>&amp;&amp;</code> and <code>||</code> skip the right operand when the answer is known</p>
+              <ul>
+                <li><p>Used as a safety guard: <code>obj != null &amp;&amp; obj.value &gt; 0</code></p></li>
+                <li><p>In JS/TS and Python, <code>||</code> and <code>&amp;&amp;</code> return an operand, not a boolean</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Pattern matching</strong> (Rust <code>match</code>, Python <code>match/case</code>) makes control flow over types exhaustive and explicit</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">type User = { name: string } | null;
+
+function greet(u: User) {
+  if (u !== null &amp;&amp; u.name.length &gt; 0) {
+    console.log("Hello,", u.name);  // safe: u is not null here
+  }
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Subprograms and Contracts</h2>
+          <ul class="simple">
+            <li>
+              <p>A <strong>contract</strong> is the behavior a caller can rely on without reading the body</p>
+              <ul>
+                <li><p>Inputs (parameter types), outputs (return type), effects (mutation, I/O), errors, and timing</p></li>
+                <li><p>A signature only specifies types; a contract includes effects and guarantees</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>At runtime, each call creates an <strong>activation record</strong> (stack frame)</p>
+              <ul>
+                <li><p>Frame holds: parameters, local variables, return address, saved registers</p></li>
+                <li><p>Recursion works because each call gets fresh bindings on a fresh frame</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Frames are allocated on call and popped on return; exceptions may unwind multiple frames (Module 12)</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Parameter Passing</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Call-by-value</strong>: a copy of the argument is passed; the callee cannot affect the caller&apos;s variable</p>
+            </li>
+            <li>
+              <p><strong>Call-by-reference</strong>: the callee gets an alias for the caller&apos;s variable; assignments in the callee change it</p>
+            </li>
+            <li>
+              <p><strong>Call-by-sharing</strong> (most OO and scripting languages): the reference is passed by value</p>
+              <ul>
+                <li><p>Reassigning the parameter does not affect the caller</p></li>
+                <li><p>Mutating the object the parameter points to does affect the caller</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Aliasing</strong>: two different names refer to the same location; a write through one name affects the other</p>
+            </li>
+            <li>
+              <p>First-class functions and higher-order functions connect directly to Module 9 (functional programming)</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">function rebind(obj: { v: number }) { obj = { v: 99 }; }  // local only
+function mutate(obj: { v: number }) { obj.v = 99; }       // shared object
+
+const a = { v: 1 };
+rebind(a);  console.log(a.v); // 1  -- caller's variable unchanged
+mutate(a);  console.log(a.v); // 99 -- shared object was mutated</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 5: Object-Oriented Programming (M8)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Object-Oriented Programming</h1>
+          <p>Module 8</p>
+        </section>
+
+        <section>
+          <h2>Encapsulation, Inheritance, and Composition</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Encapsulation</strong>: bundle state and behavior; expose only a stable interface</p>
+              <ul>
+                <li><p>Protects class invariants by preventing external code from writing raw fields</p></li>
+                <li><p>Access modifiers (<code>private</code>, <code>protected</code>, <code>public</code>) enforce boundaries at compile time</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Inheritance</strong> (is-a): a subclass inherits fields and methods from a superclass</p>
+              <ul>
+                <li><p>Enables code reuse but creates tight coupling</p></li>
+                <li><p>C++ requires <code>virtual</code> to opt in to dynamic dispatch; Java uses it by default</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Composition</strong> (has-a): an object holds references to other objects and delegates</p>
+              <ul>
+                <li><p>Looser coupling; behavior can be changed at runtime by swapping the delegate</p></li>
+                <li><p>Prefer composition over inheritance when the relationship is not a true is-a</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-java">class Account {
+  private int balanceCents;         // hidden; enforces invariant
+  public Account(int initial) {
+    if (initial &lt; 0) throw new IllegalArgumentException();
+    balanceCents = initial;
+  }
+  public void deposit(int cents) {
+    if (cents &lt;= 0) throw new IllegalArgumentException();
+    balanceCents += cents;
+  }
+  public int getBalanceCents() { return balanceCents; }
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Dynamic Dispatch and Polymorphism</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Dynamic dispatch</strong>: the method body executed is selected at runtime based on the receiver object&apos;s actual class</p>
+              <ul>
+                <li><p>The static type determines which methods exist; the dynamic type determines which body runs</p></li>
+                <li><p>Implemented via virtual method tables (vtables) in C++ and Java</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Three "one name, many behaviors" mechanisms:</p>
+              <ul>
+                <li><p><em>Overriding</em> (subtype polymorphism): subclass replaces a superclass method; dispatch is dynamic</p></li>
+                <li><p><em>Overloading</em> (ad-hoc polymorphism): same name, different parameter types; resolved at compile time</p></li>
+                <li><p><em>Generics / templates</em> (parametric polymorphism): code written for a type parameter, instantiated per type</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Liskov Substitution Principle</strong>: a subtype must honor every contract of its supertype</p>
+              <ul>
+                <li><p>Subtypes must not strengthen preconditions or weaken postconditions</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-java">DataSource a = new FileSource(); // static: DataSource, dynamic: FileSource
+DataSource b = new ApiSource();  // static: DataSource, dynamic: ApiSource
+load(a);  // prints "file data" -- FileSource.read() called
+load(b);  // prints "api data"  -- ApiSource.read() called</code></pre>
+        </section>
+
+        <section>
+          <h2>RAII: Resource Safety via Object Lifetime</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>RAII</strong> (Resource Acquisition Is Initialization): a C++ pattern that ties resource lifetimes to object lifetimes</p>
+              <ul>
+                <li><p>Acquire the resource in the constructor; release it in the destructor</p></li>
+                <li><p>The destructor runs deterministically when the object leaves scope</p></li>
+                <li><p>File handles, mutex locks, and network connections are common examples</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>The same idea appears throughout the course:</p>
+              <ul>
+                <li><p>Python <code>with</code> statement and Java <code>try-with-resources</code> (Module 12)</p></li>
+                <li><p>Rust ownership model: the borrow checker enforces RAII-like guarantees statically (Module 12)</p></li>
+                <li><p>Structured concurrency: task lifetimes tied to a scope (Module 11)</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-cpp">#include &lt;mutex&gt;
+
+void safe_update(std::mutex&amp; m, int&amp; x) {
+  std::lock_guard&lt;std::mutex&gt; guard(m); // acquires lock
+  x += 1;
+} // destructor releases lock -- even if an exception is thrown</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 6: Functional Programming (M9)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Functional Programming</h1>
+          <p>Module 9</p>
+        </section>
+
+        <section>
+          <h2>Purity, Immutability, and Referential Transparency</h2>
+          <ul class="simple">
+            <li>
+              <p>Functional programming focuses on computing <em>values</em> rather than changing state</p>
+            </li>
+            <li>
+              <p><strong>Pure function</strong>: returns the same result for the same inputs; no observable side effects</p>
+            </li>
+            <li>
+              <p><strong>Referential transparency</strong>: an expression can be replaced by its value without changing program behavior</p>
+              <ul>
+                <li><p>Enables equational reasoning and confident refactoring</p></li>
+                <li><p>Mutation, I/O, and time all break referential transparency</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Immutability</strong>: values are not updated in place; new values are computed</p>
+              <ul>
+                <li><p>Persistent data structures share structure across versions (not full copies)</p></li>
+                <li><p>Immutability eliminates one major source of concurrency bugs: shared mutable state (Module 11)</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>FP does not eliminate effects; it keeps the core pure and pushes effects to the boundary</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">// Impure: mutates shared state
+function addItem(cart: Cart, price: number): void {
+  cart.items.push(price);
+  cart.total += price;         // side effect on caller's object
+}
+
+// Pure: returns a new value
+function addItemPure(cart: Cart, price: number): Cart {
+  return { items: [...cart.items, price], total: cart.total + price };
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Higher-Order Functions and Composition</h2>
+          <ul class="simple">
+            <li>
+              <p>Functions are <strong>first-class values</strong>: they can be stored, passed as arguments, and returned</p>
+            </li>
+            <li>
+              <p><strong>Higher-order functions</strong> take or return other functions</p>
+              <ul>
+                <li><p><code>map</code>: apply a function to every element of a list</p></li>
+                <li><p><code>filter</code>: keep elements satisfying a predicate</p></li>
+                <li><p><code>reduce</code> / <code>fold</code>: combine a list into a single value using an accumulator</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Function composition</strong>: build complex behavior by chaining small pure functions</p>
+            </li>
+            <li>
+              <p><strong>Currying</strong>: transform a function of N arguments into a chain of N single-argument functions</p>
+            </li>
+            <li>
+              <p><strong>Partial application</strong>: fix some arguments and return a function expecting the rest</p>
+            </li>
+            <li>
+              <p>These ideas connect back to closures (Module 4 and 7) and forward to async callbacks (Module 11)</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">const xs = [1, 2, 3, 4, 5, 6];
+const result = xs.map(x =&gt; x * 2).filter(x =&gt; x &gt; 5).reduce((acc, x) =&gt; acc + x, 0);
+// map: [2,4,6,8,10,12]  filter: [6,8,10,12]  reduce: 36
+
+const add = (x: number) =&gt; (y: number) =&gt; x + y;  // curried
+const add10 = add(10);    // partial application
+add10(5);                 // 15</code></pre>
+        </section>
+
+        <section>
+          <h2>Algebraic Data Types, Pattern Matching, and Folds</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Algebraic data types (ADTs)</strong>: a type that is either a product (record-like) or a sum (union-like)</p>
+              <ul>
+                <li><p>Example: a tree is either a <code>Leaf</code> or a <code>Node(value, left, right)</code></p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Pattern matching</strong> over ADTs is exhaustive: the compiler can verify all cases are handled</p>
+              <ul>
+                <li><p>More powerful and safer than a chain of <code>instanceof</code> checks</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Structural recursion</strong>: recurse on the structure of the data type</p>
+              <ul>
+                <li><p>Base case: the constructor with no recursive fields</p></li>
+                <li><p>Inductive case: reduce to a smaller structure</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>A <strong>fold</strong> captures the recursion pattern itself as a higher-order function</p>
+            </li>
+            <li>
+              <p><strong>Lazy evaluation</strong>: expressions are not evaluated until their value is needed</p>
+              <ul>
+                <li><p>Enables infinite sequences; Haskell uses lazy evaluation by default</p></li>
+                <li><p>JavaScript/TypeScript generators model demand-driven computation</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">type Result&lt;T&gt; =
+  | { tag: "ok";  value: T }
+  | { tag: "err"; message: string };
+
+function safeDiv(x: number, y: number): Result&lt;number&gt; {
+  return y === 0 ? { tag: "err", message: "divide by zero" }
+                 : { tag: "ok",  value: x / y };
+}</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 7: Logic Programming (M10)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Logic Programming and Declarative Paradigms</h1>
+          <p>Module 10</p>
+        </section>
+
+        <section>
+          <h2>Declarative vs Imperative Thinking</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Imperative</strong>: describe the steps; order matters; you manage control flow</p>
+            </li>
+            <li>
+              <p><strong>Declarative</strong>: describe what must be true of the answer; a solver chooses strategy</p>
+              <ul>
+                <li><p>SQL, regular expressions, build systems, policy engines, and constraint solvers all use declarative ideas</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Logic programming is the most fully declarative mainstream paradigm</p>
+              <ul>
+                <li><p>You write <em>facts</em> (ground truths) and <em>rules</em> (implications)</p></li>
+                <li><p>A query asks whether something can be made true</p></li>
+                <li><p>The runtime searches for a proof via <strong>resolution</strong> and <strong>backtracking</strong></p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Declarative does not mean "no control": clause order, goal order, and cut all affect search behavior</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Prolog: Unification and Resolution</h2>
+          <ul class="simple">
+            <li>
+              <p>Prolog programs are sets of <strong>Horn clauses</strong>: facts and rules of the form <code>head :- body</code></p>
+            </li>
+            <li>
+              <p><strong>Unification</strong>: matching terms by finding substitutions for variables</p>
+              <ul>
+                <li><p>Two terms unify if they can be made identical by binding variables</p></li>
+                <li><p>Unification is the engine that drives both argument passing and pattern matching in Prolog</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Resolution</strong>: prove a goal by finding a clause whose head unifies with it, then proving the body</p>
+            </li>
+            <li>
+              <p>Prolog uses <strong>depth-first search with backtracking</strong></p>
+              <ul>
+                <li><p>Choice points are created when multiple clauses could match</p></li>
+                <li><p>On failure, control returns to the most recent choice point</p></li>
+                <li><p>Left-recursive rules cause infinite loops; clause order matters</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-prolog">parent(alice, bob).
+parent(bob,   carol).
+grandparent(X, Z) :- parent(X, Y), parent(Y, Z).
+
+?- grandparent(alice, Z).
+% Prolog unifies X=alice, finds Y=bob, then finds Z=carol
+% Z = carol.</code></pre>
+        </section>
+
+        <section>
+          <h2>Negation as Failure and the Cut</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Negation as failure</strong> (<code>\+</code>): <code>\+ Goal</code> succeeds if Prolog <em>cannot</em> prove <code>Goal</code></p>
+              <ul>
+                <li><p>Based on the <strong>closed-world assumption</strong>: anything not provable is false</p></li>
+                <li><p>This is not classical logical negation; it is an operational notion</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Groundness</strong> before negation: all variables in a negated goal must be bound first</p>
+              <ul>
+                <li><p>Applying <code>\+</code> to an unbound variable gives unsafe, counterintuitive results</p></li>
+                <li><p>Always ground variables using positive goals before calling <code>\+</code></p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Cut</strong> (<code>!</code>): commits to the current clause; removes remaining choice points up to the enclosing predicate</p>
+              <ul>
+                <li><p>Used for determinism and to implement if-then-else-like control</p></li>
+                <li><p>Overuse of cut makes programs harder to reason about declaratively</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-prolog">bird(tweety).
+penguin(pingu).
+bird(X) :- penguin(X).          % every penguin is also a bird
+
+% X can fly if X is a bird AND X is not provably a penguin
+can_fly(X) :- bird(X), \+ penguin(X).
+
+?- can_fly(tweety).  % true  (bird, not a penguin)
+?- can_fly(pingu).   % false (penguin, \+ fails)</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 8: Concurrency Models (M11)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Concurrency Models</h1>
+          <p>Module 11</p>
+        </section>
+
+        <section>
+          <h2>Shared Memory Threads and Race Conditions</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Concurrency</strong>: structuring a program to handle multiple tasks in progress (possible on one core)</p>
+            </li>
+            <li>
+              <p><strong>Parallelism</strong>: tasks execute at the same time on multiple cores</p>
+            </li>
+            <li>
+              <p><strong>Race condition</strong>: behavior depends on the interleaving of threads accessing shared state</p>
+              <ul>
+                <li><p>Lost update: two threads read, modify, and write the same variable; one write is overwritten</p></li>
+                <li><p>Hard to reproduce because timing varies across runs</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Synchronization primitives:</p>
+              <ul>
+                <li><p><em>Mutex / lock</em>: one thread at a time in the critical section</p></li>
+                <li><p><em>Semaphore</em>: limit how many threads may proceed (generalized counter)</p></li>
+                <li><p><em>Monitor / condition variable</em>: lock plus a way to wait for a predicate; always check the predicate in a <code>while</code> loop</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-java">// Unsynchronized: two threads calling inc() lose updates
+class Counter { int value = 0; void inc() { value = value + 1; } }
+// Expected: 2,000,000.  Actual: often less.
+
+// Fix: synchronized makes the critical section mutually exclusive
+class Counter { int value = 0; synchronized void inc() { value = value + 1; } }</code></pre>
+        </section>
+
+        <section>
+          <h2>Deadlocks and Avoidance</h2>
+          <ul class="simple">
+            <li>
+              <p>The four <strong>Coffman conditions</strong> for deadlock (all must hold simultaneously):</p>
+              <ul>
+                <li><p>Mutual exclusion: at least one resource is non-shareable</p></li>
+                <li><p>Hold and wait: a thread holds at least one resource and waits for more</p></li>
+                <li><p>No preemption: resources cannot be taken away; a thread must release voluntarily</p></li>
+                <li><p>Circular wait: a cycle exists in the resource-dependency graph</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Breaking any one condition prevents deadlock</p>
+              <ul>
+                <li><p>Most practical strategy: impose a <strong>global lock ordering</strong> (always acquire A before B)</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Related hazards: <em>livelock</em> (threads keep changing state but make no progress) and <em>starvation</em> (a thread is perpetually denied access)</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Message Passing: Go Goroutines and Channels</h2>
+          <ul class="simple">
+            <li>
+              <p>Go&apos;s model: <em>"Do not communicate by sharing memory; share memory by communicating"</em></p>
+            </li>
+            <li>
+              <p><strong>Goroutines</strong>: lightweight threads managed by the Go runtime; cheap to create</p>
+            </li>
+            <li>
+              <p><strong>Channels</strong>: typed conduits for goroutines to send and receive values</p>
+              <ul>
+                <li><p><em>Unbuffered</em>: sender blocks until receiver is ready (synchronous rendezvous)</p></li>
+                <li><p><em>Buffered</em>: sender only blocks when the buffer is full</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Sending on a channel with no receiver (and no buffer space) causes a goroutine to block forever</p>
+            </li>
+            <li>
+              <p>The <strong>actor model</strong> generalizes message passing: each actor has a mailbox and processes one message at a time</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-go">ch := make(chan int)   // unbuffered
+
+go func() { ch &lt;- 42 }()  // goroutine 1: blocks until goroutine 2 receives
+x := &lt;-ch                 // goroutine 2: both sync at this rendezvous point
+
+ch2 := make(chan int, 3)   // buffered: sender can run ahead by up to 3</code></pre>
+        </section>
+
+        <section>
+          <h2>Async/Await, Futures, and Structured Concurrency</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Futures / Promises</strong>: represent a value that will be available later</p>
+              <ul>
+                <li><p>States: pending, fulfilled, rejected</p></li>
+                <li><p><code>Promise.all</code>, <code>Promise.race</code>, <code>Promise.allSettled</code> are combinators for multiple futures</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Async/await</strong>: syntax sugar over Promises that makes asynchronous code look sequential</p>
+              <ul>
+                <li><p><code>await</code> suspends the function and yields the event loop; execution resumes when the Promise settles</p></li>
+                <li><p>An <code>async</code> function always returns a Promise; errors propagate as rejections</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Event loop model</strong>: a single thread processes one callback at a time from a queue; no blocking I/O</p>
+            </li>
+            <li>
+              <p><strong>Structured concurrency</strong>: tasks are scoped to a block; the block does not complete until all child tasks finish</p>
+              <ul>
+                <li><p>Prevents orphaned background tasks and leaked work</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Rust</strong>: the ownership and borrow checker prevents data races at compile time; no shared mutable state by default</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">// Promise chain
+fetchUser(id).then(user =&gt; fetchOrders(user))
+             .then(orders =&gt; fetchInvoice(orders[0]))
+             .catch(err  =&gt; console.error(err));
+
+// Async/await equivalent -- same semantics, sequential-looking
+async function load(id: string) {
+  const user    = await fetchUser(id);
+  const orders  = await fetchOrders(user);
+  const invoice = await fetchInvoice(orders[0]);
+}</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 9: Runtime Systems and Memory (M12)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Runtime Systems and Memory Management</h1>
+          <p>Module 12</p>
+        </section>
+
+        <section>
+          <h2>Error Handling Models</h2>
+          <ul class="simple">
+            <li>
+              <p>Three common models for recoverable failures:</p>
+              <ul>
+                <li><p><strong>Error codes</strong>: caller checks a return value; explicit but easy to ignore; boilerplate-heavy</p></li>
+                <li><p><strong>Exceptions</strong>: automatic propagation; hides control flow; cleanup must be structured</p></li>
+                <li><p><strong>Typed results</strong> (<code>Result&lt;T, E&gt;</code>): encode failure in the return type; compiler forces handling</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Java distinguishes <em>checked</em> (must handle or declare) from <em>unchecked</em> (runtime) exceptions</p>
+            </li>
+            <li>
+              <p><strong>Stack unwinding</strong>: when an exception propagates, frames are popped and cleanup code runs</p>
+              <ul>
+                <li><p><code>finally</code> in Java/TypeScript always runs on both normal and exceptional exit</p></li>
+                <li><p>C++ uses RAII (destructors) for cleanup; no <code>finally</code></p></li>
+                <li><p>Python uses <code>with</code>; Java uses <code>try-with-resources</code></p></li>
+              </ul>
+            </li>
+            <li>
+              <p>In async code, exceptions surface as rejected Promises; <code>try/catch</code> inside <code>async</code> functions handles them</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">// TypeScript: throw on invalid input; caller decides how to handle
+function parsePort(s: string): number {
+  const n = Number(s);
+  if (!Number.isInteger(n) || n &lt;= 0) throw new Error("invalid port: " + s);
+  return n;
+}</code></pre>
+          <pre><code data-trim data-noescape class="language-java">// Java: try-with-resources guarantees cleanup on all exit paths
+static String readFirstLine(String path) throws IOException {
+  try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+    return br.readLine();  // br.close() called on normal exit AND on exception
+  }
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Memory Management Strategies</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Manual</strong> (C/C++): programmer calls <code>malloc</code>/<code>free</code> or <code>new</code>/<code>delete</code></p>
+              <ul>
+                <li><p>Full control; risks: use-after-free, double-free, memory leaks</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Reference counting</strong> (Python, Swift, Rust <code>Rc</code>): each object tracks how many references point to it; freed when count reaches zero</p>
+              <ul>
+                <li><p>Problem: cycles prevent the count from reaching zero; requires weak references to break cycles</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Tracing GC</strong> (Java, Go, JavaScript): a collector periodically finds all live objects and reclaims the rest</p>
+              <ul>
+                <li><p>GC does not prevent <em>all</em> leaks: a live reference that is never cleared keeps an object alive</p></li>
+                <li><p>Generational GC: most objects die young; optimize collection for the young generation</p></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Rust ownership</strong>: one owner at a time; borrows are checked at compile time; no GC needed</p>
+              <ul>
+                <li><p><code>Result&lt;T, E&gt;</code> and <code>?</code> operator for propagating errors without exceptions</p></li>
+              </ul>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-rust">fn main() {
+  let s = String::from("hi");
+  let t = s;           // ownership moved to t
+  // println!("{}", s); // compile error: value moved
+  println!("{}", t);
+}
+
+fn read_all(path: &amp;str) -&gt; Result&lt;String, io::Error&gt; {
+  let mut f = File::open(path)?;   // ? propagates the error on failure
+  let mut s = String::new();
+  f.read_to_string(&amp;mut s)?;
+  Ok(s)
+}</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 10: Language Design (M13)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Language Design and DSLs</h1>
+          <p>Module 13</p>
+        </section>
+
+        <section>
+          <h2>Language Decisions Are Product Decisions</h2>
+          <ul class="simple">
+            <li>
+              <p>Every language embodies answers to three questions:</p>
+              <ul>
+                <li><p>What mistakes do we want to make <em>impossible</em>?</p></li>
+                <li><p>What do we want to make <em>easy and frequent</em>?</p></li>
+                <li><p>What do we want to make <em>hard or forbidden</em>?</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Constraints that actually drive design: runtime performance, safety guarantees, team size, hiring pool, migration cost, build speed</p>
+            </li>
+            <li>
+              <p>Case study contrasts:</p>
+              <ul>
+                <li><p><strong>Go</strong>: simplicity first; goroutines built-in; GC accepted; no inheritance</p></li>
+                <li><p><strong>TypeScript</strong>: gradual typing; structural types; layered over JavaScript ecosystem</p></li>
+                <li><p><strong>Rust</strong>: ownership eliminates data races and GC pauses; steep learning curve accepted</p></li>
+                <li><p><strong>Java</strong>: checked exceptions; nominal types; strong tooling; enterprise stability</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>DSLs: When and Why</h2>
+          <ul class="simple">
+            <li>
+              <p>A <strong>domain-specific language</strong> targets a narrow domain; the common case is easy, the dangerous case is hard</p>
+            </li>
+            <li>
+              <p>Two forms:</p>
+              <ul>
+                <li><p><em>External DSL</em>: its own syntax (SQL, HCL, policy languages)</p></li>
+                <li><p><em>Embedded DSL</em>: fluent API inside a host language; gains tooling, loses readability for non-engineers</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>DSLs succeed when the domain is stable, static validation is valuable, and tooling is invested in</p>
+            </li>
+            <li>
+              <p>DSLs fail when: error messages are poor, versioning is neglected, or feature creep turns them into weak general-purpose languages</p>
+            </li>
+            <li>
+              <p>Building a DSL reuses the full compiler pipeline: parse &rarr; type-check &rarr; evaluate (Module 3)</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-text">// External DSL: its own syntax; readable by non-engineers
+policy "admin_access" when user.role == "admin" and resource.sensitivity &lt;= 2 {
+  allow;
+}</code></pre>
+          <pre><code data-trim data-noescape class="language-typescript">// Embedded DSL: fluent API; gains TypeScript types and tooling
+rule("free_shipping")
+  .when(and(eq(varOf("tier"), str("gold")), gte(varOf("total"), num(50))))
+  .do(setVar("shipping", num(0)))</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 11: Cross-Cutting Themes
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Cross-Cutting Themes</h1>
+          <p>How the modules connect</p>
+        </section>
+
+        <section>
+          <h2>Binding Time: The Earliest-Is-Safest Principle</h2>
+          <ul class="simple">
+            <li>
+              <p>The earlier a decision is bound, the more the language can verify and optimize it:</p>
+              <ul>
+                <li><p><strong>Static types</strong> (Module 5): type errors caught before execution, not at an unlikely runtime path</p></li>
+                <li><p><strong>Lexical scope</strong> (Module 4): name resolution at compile time enables closures and dead-code analysis</p></li>
+                <li><p><strong>Ownership</strong> (Module 12): memory and aliasing rules enforced at compile time in Rust</p></li>
+                <li><p><strong>Data-race freedom</strong> (Module 11): Rust catches concurrent aliasing at compile time</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Later binding gives flexibility at a cost:</p>
+              <ul>
+                <li><p>Dynamic dispatch (Module 8): body chosen at runtime; enables polymorphism but precludes some inlining</p></li>
+                <li><p>Dynamic typing (Module 5): errors surface only on executed paths</p></li>
+                <li><p>Lazy evaluation (Module 9): work deferred until demanded; harder to reason about space/time</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Immutability as a Unifying Thread</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Module 4</strong>: <code>const</code> prevents rebinding; closures over immutable values are safe to share</p>
+            </li>
+            <li>
+              <p><strong>Module 6</strong>: aliasing bugs require mutable state; immutable values cannot alias dangerously</p>
+            </li>
+            <li>
+              <p><strong>Module 9</strong>: functional programming uses immutability to achieve referential transparency and safe composition</p>
+            </li>
+            <li>
+              <p><strong>Module 11</strong>: immutable values can be freely shared across threads with no synchronization needed</p>
+            </li>
+            <li>
+              <p><strong>Module 12</strong>: Rust&apos;s borrow checker enforces that mutable references are exclusive; no simultaneous mutable aliasing</p>
+            </li>
+            <li>
+              <p>Takeaway: immutability is not just a style preference; it is a correctness guarantee that the type system can enforce</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Closures Across the Course</h2>
+          <ul class="simple">
+            <li>
+              <p>A closure = a function + captured bindings from its lexical environment</p>
+            </li>
+            <li>
+              <p><strong>Module 4</strong>: closures are introduced; <code>var</code> vs <code>let</code> in loops; closure bug with hoisting</p>
+            </li>
+            <li>
+              <p><strong>Module 7</strong>: closures implement callbacks; timing of capture matters for async code</p>
+            </li>
+            <li>
+              <p><strong>Module 9</strong>: closures enable partial application, currying, and reusable higher-order functions</p>
+            </li>
+            <li>
+              <p><strong>Module 11</strong>: <code>async</code> functions are suspended closures; each <code>await</code> point is a resumption boundary</p>
+            </li>
+            <li>
+              <p><strong>Module 12</strong>: closures on the heap extend variable lifetime beyond the creating stack frame</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">// count lives on the heap; the returned function closes over it
+function makeCounter() {
+  let count = 0;
+  return () =&gt; { count += 1; return count; };
+}
+const c = makeCounter();
+c();  // 1 -- count is captured; it outlives makeCounter's frame
+c();  // 2 -- same binding, incremented again</code></pre>
+        </section>
+
+        <section>
+          <h2>Type Systems Across the Paradigms</h2>
+          <ul class="simple">
+            <li>
+              <p><strong>Module 5</strong>: foundational concepts (static/dynamic, strong/weak, unions, inference)</p>
+            </li>
+            <li>
+              <p><strong>Module 8</strong>: subtype polymorphism; nominal vs structural typing; LSP</p>
+            </li>
+            <li>
+              <p><strong>Module 9</strong>: algebraic data types; pattern matching enforced by type; <code>Option</code>/<code>Result</code> encode absence and error</p>
+            </li>
+            <li>
+              <p><strong>Module 11</strong>: Go channels are typed; Rust&apos;s <code>Send</code> and <code>Sync</code> traits control what can cross thread boundaries</p>
+            </li>
+            <li>
+              <p><strong>Module 12</strong>: Rust&apos;s ownership is enforced through its type system; <code>Result&lt;T, E&gt;</code> makes error handling a type-level concern</p>
+            </li>
+            <li>
+              <p>Trend: modern languages push more correctness guarantees into the type system rather than relying on runtime checks or programmer discipline</p>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>The Declarative Spectrum</h2>
+          <ul class="simple">
+            <li>
+              <p>The course traces a spectrum from fully imperative to fully declarative:</p>
+              <ul>
+                <li><p><strong>Module 6</strong>: imperative control flow; every step specified by the programmer</p></li>
+                <li><p><strong>Module 8</strong>: OOP encapsulates state behind interfaces; caller sees a contract, not steps</p></li>
+                <li><p><strong>Module 9</strong>: functional programming replaces loops and mutation with transformations and recursion</p></li>
+                <li><p><strong>Module 10</strong>: logic programming; the programmer writes only what is true; the engine finds how</p></li>
+                <li><p><strong>Module 13</strong>: DSLs capture the declarative endpoint for a specific domain</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>No paradigm is universally best; good engineers choose the right tool for the problem</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-typescript">// Imperative (M6): explicit steps
+const out = [];
+for (const x of xs) { if (x % 2 === 0) out.push(x * 2); }
+
+// Functional (M9): describe the transformation
+const out = xs.filter(x =&gt; x % 2 === 0).map(x =&gt; x * 2);</code></pre>
+          <pre><code data-trim data-noescape class="language-prolog">% Logic (M10): declare what is true; engine searches
+doubled_even(X, D) :- member(X, Xs), 0 is X mod 2, D is X * 2.</code></pre>
+        </section>
+
+        <section>
+          <h2>Resource Safety: A Recurring Problem</h2>
+          <ul class="simple">
+            <li>
+              <p>"Resources" include memory, file handles, network connections, mutex locks, and spawned tasks</p>
+            </li>
+            <li>
+              <p>The same fundamental pattern appears in different forms across the course:</p>
+              <ul>
+                <li><p><strong>Module 8 (RAII)</strong>: constructors acquire; destructors release; scope drives lifetime in C++</p></li>
+                <li><p><strong>Module 12 (cleanup)</strong>: <code>finally</code>, <code>try-with-resources</code>, and <code>with</code> ensure cleanup on all exit paths</p></li>
+                <li><p><strong>Module 12 (memory)</strong>: manual, reference counting, tracing GC, and Rust ownership are four answers to "who frees this?"</p></li>
+                <li><p><strong>Module 11 (structured concurrency)</strong>: tasks as resources; scope-bounded lifetimes prevent orphaned work</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>Rust unifies all of these: the ownership model is one mechanism that handles memory, locks, file handles, and tasks uniformly</p>
+            </li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-python"># Python with (M12): cleanup guaranteed on all exit paths
+with open("data.txt") as f:
+    contents = f.read()
+# f.close() called here, even if an exception was raised</code></pre>
+          <pre><code data-trim data-noescape class="language-typescript">// Structured concurrency (M11): tasks scoped like resources
+async function loadDashboard(id: string) {
+  const [user, orders] = await Promise.all([fetchUser(id), fetchOrders(id)]);
+  return { user, orders };
+  // function does not return until BOTH child tasks are settled
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Summary: The Big Picture</h2>
+          <ul class="simple">
+            <li>
+              <p>Languages are designed artifacts, not natural facts</p>
+              <ul>
+                <li><p>Every design choice trades off expressiveness, safety, performance, and usability</p></li>
+              </ul>
+            </li>
+            <li>
+              <p>The compiler pipeline (Modules 1&ndash;3) explains how text becomes meaning</p>
+            </li>
+            <li>
+              <p>Names, types, scope, and lifetime (Modules 4&ndash;5) explain how programs refer to values safely</p>
+            </li>
+            <li>
+              <p>Expressions, subprograms, OOP, FP, and logic (Modules 6&ndash;10) are different answers to "how do we organize computation?"</p>
+            </li>
+            <li>
+              <p>Concurrency and runtime systems (Modules 11&ndash;12) explain what happens at scale in production</p>
+            </li>
+            <li>
+              <p>Language design (Module 13) closes the loop: you now have the vocabulary to evaluate and build languages</p>
+            </li>
+            <li>
+              <p>The thread connecting everything: <em>binding time</em>, <em>immutability</em>, and <em>type discipline</em> determine how much the language can guarantee before the program runs</p>
+            </li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true, "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 800, "height": 540 });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    // More info https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>
