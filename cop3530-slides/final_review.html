@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Final Exam Review</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    table { border-collapse: collapse; width: 100%; font-size: 0.80em; margin: 0.4em 0; }
+    table th, table td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
+    table th { background: #e8eaf6; font-weight: 600; }
+    table tr:nth-child(even) td { background: #f5f5f5; }
+    .two-col { display:flex; gap:0.6em; align-items:flex-start; margin-top:0.4em; }
+    .text-col { flex:1; min-width:0; }
+    .code-col { flex:0 0 50%; min-width:0; }
+  </style>
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Final Exam Review</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Topics covered</h2>
+          <ul>
+            <li><p><strong>Modular development</strong>: drivers, modules, header guards, build pipeline, testing</p></li>
+            <li><p><strong>Memory management</strong>: stack vs heap, pointers, dynamic allocation, Rule of Three</p></li>
+            <li><p><strong>Algorithm analysis</strong>: Big-O/Omega/Theta, cases, loop counting, recursion tree</p></li>
+            <li><p><strong>Templates</strong>: function and class templates, header-only convention</p></li>
+            <li><p><strong>List ADT</strong>: singly/doubly linked list, operations, complexities</p></li>
+            <li><p><strong>Stack, queue, deque</strong>: LIFO/FIFO, linked-list and array implementations</p></li>
+            <li><p><strong>Sorting</strong>: insertion sort, quicksort, merge sort, radix sort</p></li>
+            <li><p><strong>Hashing</strong>: hash maps, chaining, open addressing</p></li>
+            <li><p><strong>BST</strong>: search, insert, delete, traversals, height, efficiency</p></li>
+            <li><p><strong>Heaps</strong>: insert, remove, array representation, heapify, heapsort</p></li>
+            <li><p><strong>Brute force and backtracking</strong>: permutations, subsets, pruning</p></li>
+            <li><p><strong>Graphs</strong>: types, representations, BFS, DFS, Dijkstra's</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Modular Development -->
+      <section>
+        <section class="title-slide slide level1"><h1>Modular Development</h1></section>
+
+        <section class="frame">
+          <h2>Drivers vs modules</h2>
+          <ul>
+            <li><p><strong>Driver</strong>: has <code>main</code>; produces an executable; one per program or per test</p></li>
+            <li><p><strong>Module</strong>: reusable code with no <code>main</code>; consists of a header (<code>.hpp</code>) and implementation (<code>.cpp</code>)</p></li>
+            <li><p>Header: declares the interface (class declarations, function prototypes)</p></li>
+            <li><p>Source: defines the implementation and <code>#include</code>s its own header</p></li>
+            <li><p>Templates are <strong>header-only</strong>: declaration and definition both in <code>.hpp</code>; no separate <code>.cpp</code></p></li>
+            <li><p>When reading a test file, identify the exact header filename to <code>#include</code>, the exact class name (case-sensitive), and every method called on objects of that class</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Header guards</h2>
+          <ul>
+            <li><p>Prevent a header from being included more than once in the same translation unit</p></li>
+            <li><p>Without them, multiple <code>#include</code>s cause redefinition errors</p></li>
+            <li><p>Three-keyword pattern: <code>#ifndef</code>, <code>#define</code>, and <code>#endif</code></p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">#ifndef MY_HPP    // if the macro is not yet defined ...
+#define MY_HPP    // define it now
+
+// class declarations, templates, function prototypes
+
+#endif            // end of guard</code></pre>
+          <ul>
+            <li><p>Know which keyword goes where: <code>#ifndef</code> first (the "if not defined" check), <code>#define</code> second, <code>#endif</code> last</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>C++ build pipeline and testing</h2>
+          <ul>
+            <li><p><strong>Preprocessing</strong>: expands macros and <code>#include</code> directives; produces one translation unit</p></li>
+            <li><p><strong>Compiling</strong>: translates to an object file (<code>.o</code>); flag: <code>-c</code></p></li>
+            <li><p><strong>Linking</strong>: combines object files, resolves references, produces the executable</p></li>
+            
+            <li><p><strong>assert</strong>: halts with an error message if the condition is false</p></li>
+            <li><p><strong>Framework style (Catch2-like)</strong>: uses <code>REQUIRE</code> / <code>CHECK</code>; test run continues after a failure</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Memory Management -->
+      <section>
+        <section class="title-slide slide level1"><h1>Memory Management</h1></section>
+
+        <section class="frame">
+          <h2>Memory regions</h2>
+          <ul>
+            <li><p><strong>Code (text)</strong>: compiled instructions; read-only at runtime</p></li>
+            <li><p><strong>Global / static</strong>: global and <code>static</code> variables; allocated at program start</p></li>
+            <li><p><strong>Stack</strong>: local variables and function frames; managed automatically; limited size</p></li>
+            <li><p><strong>Heap</strong>: objects allocated with <code>new</code>; managed manually; large but can fragment</p></li>
+            <li><p>Stack grows toward the heap; when they meet you get a stack overflow (e.g., infinite recursion with no base case)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Dynamic allocation: new and delete</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">// single object
+MyClass* p = new MyClass();
+delete p;            // correct
+
+// array
+int* a = new int[10];
+delete[] a;          // correct: brackets required
+
+// WRONG: delete a;  // undefined behavior: missing []</code></pre>
+          <ul>
+            <li><p>Always match form to form: <code>new[]</code> must be released with <code>delete[]</code>; omitting the brackets compiles silently but is undefined behavior</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Rule of Three</h2>
+          <ul>
+            <li><p>Any class that owns a raw pointer member needs all three of:</p>
+              <ul>
+                <li><p><strong>Destructor</strong>: release the resource when the object is destroyed</p></li>
+                <li><p><strong>Copy constructor</strong>: deep-copy when initializing from another object</p></li>
+                <li><p><strong>Copy assignment operator</strong>: deep-copy on <code>=</code></p></li>
+              </ul>
+            </li>
+            <li><p>Without these, compiler-generated defaults do <strong>shallow copies</strong>: two objects share the same pointer, causing double-free or use-after-free</p></li>
+            <li><p><strong>Rule of Five</strong> adds: move constructor and move assignment operator (C++11)</p></li>
+            <li><p>If a class has a raw pointer member but only a constructor, the missing pieces are: destructor, copy constructor, and copy assignment operator</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Algorithm Analysis -->
+      <section>
+        <section class="title-slide slide level1"><h1>Algorithm Analysis</h1></section>
+
+        <section class="frame">
+          <h2>T(N): counting basic steps</h2>
+          <ul>
+            <li><p>T(N) counts the number of basic operations as a function of input size N</p></li>
+            <li><p>A <code>for (int i = 0; i &lt; N; i++)</code> loop: init runs once, condition runs <strong>N+1</strong> times, update runs N times, body runs N times</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">int positives = 0;             // 1 step
+for (int i = 0; i &lt; n; i++)   // condition: n+1, update: n
+    if (array[i] &gt; 0)          // n comparisons
+        positives += 1;        // 0 to n increments (depends on data)</code></pre>
+          <ul>
+            <li><p>Whether the <code>if</code>-body runs on every iteration determines best vs worst case; rewrite to a while loop if it helps you count more clearly</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Big-O, Big-Omega, Big-Theta</h2>
+          <ul>
+            <li><p><strong>O(f(n))</strong>: upper bound; runs at most this fast</p></li>
+            <li><p><strong>Omega(f(n))</strong>: lower bound; takes at least this long</p></li>
+            <li><p><strong>Theta(f(n))</strong>: tight bound; both upper and lower match; the most precise characterization</p></li>
+            <li><p>Rules: drop constants, drop lower-order terms, keep the dominant term</p></li>
+            <li><p>For T(n) = 3.5n + n² + 1, the dominant term is n²: Theta(n²) is the tightest bound; O(n²) is a valid upper bound; O(n) alone is <strong>not</strong> a valid bound because n² grows faster than n</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common growth classes and worst-case comparisons</h2>
+          <table>
+            <thead>
+              <tr><th>Class</th><th>Name</th><th>Example</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>O(1)</td><td>Constant</td><td>Array index, hash lookup (avg)</td></tr>
+              <tr><td>O(log n)</td><td>Logarithmic</td><td>Binary search, balanced BST, heap insert</td></tr>
+              <tr><td>O(n)</td><td>Linear</td><td>Linear search, BFS/DFS</td></tr>
+              <tr><td>O(n log n)</td><td>Linearithmic</td><td>Merge sort, heapsort, quicksort (avg)</td></tr>
+              <tr><td>O(n²)</td><td>Quadratic</td><td>Insertion, selection, bubble sort</td></tr>
+              <tr><td>O(2ⁿ)</td><td>Exponential</td><td>Subsets brute force</td></tr>
+              <tr><td>O(n!)</td><td>Factorial</td><td>Permutations brute force</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>The <strong>best case</strong> is the least useful scenario when comparing two algorithms; it only describes the most favorable input and does not reflect general behavior</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Recursion tree analysis</h2>
+          <ul>
+            <li><p>The recursion tree visualizes how work is distributed across recursive calls</p></li>
+            <li><p>Total cost = (work per level) × (number of levels)</p></li>
+            <li><p>Key: identify the depth and the total work done across all nodes at each level</p></li>
+            <li><p>A tree with <strong>log₂(N) levels</strong> and <strong>N total work per level</strong> costs Theta(N log N); this is the recursion tree for <strong>merge sort</strong></p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Templates -->
+      <section>
+        <section class="title-slide slide level1"><h1>Templates</h1></section>
+
+        <section class="frame">
+          <h2>Function templates</h2>
+          <ul>
+            <li><p>Purpose: <strong>code reuse for different data types</strong> without duplicating the algorithm</p></li>
+            <li><p>The compiler instantiates a concrete version for each type used at a call site</p></li>
+            <li><p>Templates exist for <strong>code reuse across different data types</strong>, not to reduce the number of unit tests or to avoid compiler errors in general</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">template &lt;typename T&gt;
+T tripleMin(T a, T b, T c) {
+    T m = a;
+    if (b &lt; m) m = b;
+    if (c &lt; m) m = c;
+    return m;
+}
+
+tripleMin(3, 1, 2);        // T = int
+tripleMin(3.0, 1.5, 2.7);  // T = double</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Class templates and header-only rule</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">template &lt;typename T&gt;
+class TripleItem {
+private:
+    T first, second, third;
+public:
+    TripleItem(T a, T b, T c) : first(a), second(b), third(c) {}
+    T getMin() const { /* ... */ }
+};
+
+TripleItem&lt;int&gt;    ti(3, 1, 2);
+TripleItem&lt;string&gt; ts("a", "b", "c");</code></pre>
+          <ul>
+            <li><p>Templates are <strong>header-only</strong></p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- List ADT -->
+      <section>
+        <section class="title-slide slide level1"><h1>List ADT and Linked Lists</h1></section>
+
+        <section class="frame">
+          <h2>ADT vs implementation</h2>
+          <ul>
+            <li><p>An <strong>ADT</strong> defines what operations exist and what they mean, without specifying storage</p></li>
+            <li><p>A <strong>linked list</strong> is one concrete implementation of the List ADT using nodes and pointers</p></li>
+            <li><p>Common operations: Append, Prepend, InsertAfter, RemoveAfter, Remove(value), Contains</p></li>
+            <li><p>A hash table is a <strong>data structure</strong>, not an ADT: it specifies concrete storage details (array, hash function, collision resolution) and is not abstract</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Singly-linked list: complexities</h2>
+          <table>
+            <thead>
+              <tr><th>Operation</th><th>Complexity</th><th>Note</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Prepend</td><td>O(1)</td><td>Update head pointer</td></tr>
+              <tr><td>Append</td><td>O(1) with tail</td><td>O(n) without tail pointer</td></tr>
+              <tr><td>InsertAfter (given node)</td><td>O(1)</td><td>Already have the position</td></tr>
+              <tr><td>RemoveAfter (given node)</td><td>O(1)</td><td>Already have the position</td></tr>
+              <tr><td>Search / Contains</td><td>O(n)</td><td>Must scan from head</td></tr>
+              <tr><td>Remove(value)</td><td>O(n)</td><td>Must find the node first</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>A <code>tail</code> pointer enables O(1) append and is also the key addition that makes O(1) enqueue possible when implementing a queue on a linked list</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Stack, Queue, Deque -->
+      <section>
+        <section class="title-slide slide level1"><h1>Stack, Queue, and Deque</h1></section>
+
+        <section class="frame">
+          <h2>Stack ADT: LIFO</h2>
+          <ul>
+            <li><p>Insertion and removal both happen at the <strong>same end</strong> (the top)</p></li>
+            <li><p><strong>LIFO</strong>: Last-In, First-Out</p></li>
+            <li><p>Core operations: <code>push(x)</code>, <code>pop()</code>, <code>peek()</code>, <code>isEmpty()</code></p></li>
+            <li><p>Applications: function call stack, undo/redo, iterative DFS, expression evaluation</p></li>
+            <li><p>A class that provides <code>push_back</code>, <code>pop_back</code>, and <code>back</code> can implement a Stack, because all three operations act on the same end</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Queue ADT: FIFO</h2>
+          <ul>
+            <li><p>Insert at the <strong>rear</strong>; remove from the <strong>front</strong>: add and remove at <strong>different ends</strong></p></li>
+            <li><p><strong>FIFO</strong>: First-In, First-Out</p></li>
+            <li><p>Core operations: <code>enqueue(x)</code>, <code>dequeue()</code>, <code>peek()</code>, <code>isEmpty()</code></p></li>
+            <li><p>Applications: BFS traversal, CPU scheduling, print queues</p></li>
+            <li><p>To convert a singly-linked Stack (head pointer only) into a Queue efficiently, add a <code>Node* tail</code> pointer; without it, enqueue must traverse the entire list to reach the end</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Array-based vs linked-list implementation</h2>
+          <table>
+            <thead>
+              <tr><th>Aspect</th><th>Array-based</th><th>Linked-list</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>push / enqueue</td><td>O(1) amortized</td><td>O(1)</td></tr>
+              <tr><td>pop / dequeue</td><td>O(1)</td><td>O(1)</td></tr>
+              <tr><td>Memory</td><td>May have unused slots</td><td>Extra pointer per node</td></tr>
+              <tr><td>Cache locality</td><td>Excellent</td><td>Weaker</td></tr>
+              <tr><td>Resize cost</td><td>O(n) occasionally</td><td>None</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p><strong>Deque</strong>: allows push/pop at both ends; generalizes stack and queue</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Sorting -->
+      <section>
+        <section class="title-slide slide level1"><h1>Sorting</h1></section>
+
+        <section class="frame">
+          <h2>Sorting complexity overview</h2>
+          <table>
+            <thead>
+              <tr><th>Algorithm</th><th>Best</th><th>Average</th><th>Worst</th><th>Space</th><th>Stable?</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Insertion sort</td><td>O(n)</td><td>Theta(n²)</td><td>Theta(n²)</td><td>O(1)</td><td>Yes</td></tr>
+              <tr><td>Selection sort</td><td>Theta(n²)</td><td>Theta(n²)</td><td>Theta(n²)</td><td>O(1)</td><td>No</td></tr>
+              <tr><td>Merge sort</td><td>Theta(n log n)</td><td>Theta(n log n)</td><td>Theta(n log n)</td><td>O(n)</td><td>Yes</td></tr>
+              <tr><td>Quicksort</td><td>Theta(n log n)</td><td>Theta(n log n)</td><td>Theta(n²)</td><td>O(log n)</td><td>No</td></tr>
+              <tr><td>Heap sort</td><td>Theta(n log n)</td><td>Theta(n log n)</td><td>Theta(n log n)</td><td>O(1)</td><td>No</td></tr>
+              <tr><td>Radix sort</td><td>Theta(nk)</td><td>Theta(nk)</td><td>Theta(nk)</td><td>O(n+k)</td><td>Yes</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Quicksort: Hoare's partition scheme</h2>
+          <ul>
+            <li><p>Pick the <strong>middle element</strong> as the pivot value</p></li>
+            <li><p>Set cursors <code>i = low</code> and <code>j = high</code> (both ends of the range)</p></li>
+            <li><p>Move <code>i</code> right while <code>arr[i] &lt; pivot</code>; move <code>j</code> left while <code>arr[j] &gt; pivot</code></p></li>
+            <li><p>If <code>i &lt;= j</code>: swap <code>arr[i]</code> and <code>arr[j]</code>, then advance both cursors</p></li>
+            <li><p>Repeat until <code>i &gt; j</code>; return <code>j</code> as the partition boundary</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Merge sort and linked lists</h2>
+          <ul>
+            <li><p>Merge sort: divide in half, sort each half recursively, merge. Always Theta(n log n)</p></li>
+            <li><p>Merge sort is the <strong>preferred sort for linked lists</strong>: splitting and merging work naturally on links; no random access is needed</p></li>
+            <li><p>For arrays, quicksort or a hybrid typically wins due to better cache behavior</p></li>
+          </ul>
+          <table>
+            <thead>
+              <tr><th>Case</th><th>Array</th><th>Linked list</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Small input</td><td>Insertion sort</td><td>Insertion sort</td></tr>
+              <tr><td>Large input</td><td>Quicksort &gt; Merge sort</td><td>Merge sort (preferred)</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Radix sort</h2>
+          <ul>
+            <li><p>Not comparison-based; sorts by digit position using a stable sort at each pass</p></li>
+            <li><p><strong>LSD</strong>: process from the rightmost digit to the leftmost</p></li>
+            <li><p>Complexity: <strong>Theta(nk)</strong>, where n is the number of elements and k is the number of digit positions</p></li>
+            <li><p>The number of rounds (collection passes) equals the number of digits in the <strong>maximum value</strong>; a 4-digit maximum means exactly 4 rounds regardless of how many elements there are</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Hashing -->
+      <section>
+        <section class="title-slide slide level1"><h1>Hashing</h1></section>
+
+        <section class="frame">
+          <h2>Map ADT and hash tables</h2>
+          <ul>
+            <li><p>A <strong>map</strong> associates each unique key with a value</p></li>
+            <li><p>Core operations: <code>insert(key, value)</code>, <code>get(key)</code>, <code>remove(key)</code>, <code>contains(key)</code></p></li>
+            <li><p>A <strong>hash table</strong> is a concrete data structure implementing the map (or set) ADT</p></li>
+            <li><p>Pipeline: key → hash function → hash code → compression → table index</p></li>
+            <li><p>Average-case operations: <strong>O(1)</strong></p></li>
+            <li><p>A hash table is <strong>not an ADT</strong>: it specifies concrete storage (array + hash function + collision resolution) and therefore has implementation details baked in</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Collision handling: chaining</h2>
+          <ul>
+            <li><p>Each table slot holds a linked list of all items that hash to that index</p></li>
+            <li><p>Easy to represent; the table never becomes "full"</p></li>
+            <li><p>Degrades to O(n) if one bucket grows very long</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-text">h(x) = x,  table size = 10
+
+table[0] -> (10,"item1") -> (20,"item2")
+table[6] -> (16,"item3") -> (86,"item4")
+table[9] -> ( 9,"item5")</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Open addressing: probing strategies</h2>
+          <table>
+            <thead>
+              <tr><th>Strategy</th><th>Probe formula</th><th>Problem</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Linear probing</td><td>(h(k) + i) % m</td><td>Primary clustering</td></tr>
+              <tr><td>Quadratic probing</td><td>(h(k) + i²) % m</td><td>Secondary clustering</td></tr>
+              <tr><td>Double hashing</td><td>(h1(k) + i·h2(k)) % m</td><td>Fewest clusters</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>For quadratic probing, trace each probe one by one: start at i=0, then i=1, i=2, etc.; apply modulo the table size at every step; stop at the first empty slot</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- BST -->
+      <section>
+        <section class="title-slide slide level1"><h1>Binary Search Tree (BST)</h1></section>
+
+        <section class="frame">
+          <h2>BST property and search</h2>
+          <ul>
+            <li><p><strong>BST property</strong>: for every node, all values in its left subtree are smaller; all in its right subtree are larger</p></li>
+            <li><p>Search: compare key with current node; go left if smaller, right if larger; stop when found or null</p></li>
+            <li><p>BST search runs in O(h); the height is <strong>not always log n</strong>: it is O(log n) only for a balanced tree, and O(n) for a skewed tree</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">Node* search(Node* root, int key) {
+    if (root == NULL || root-&gt;data == key)
+        return root;
+    if (key &lt; root-&gt;data)
+        return search(root-&gt;left, key);
+    else
+        return search(root-&gt;right, key);
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>BST insertion</h2>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">Node* insert(Node* root, int key) {
+    if (root == NULL) return new Node(key);
+    if (key &lt; root-&gt;data)
+        root-&gt;left = insert(root-&gt;left, key);
+    else if (key &gt; root-&gt;data)
+        root-&gt;right = insert(root-&gt;right, key);
+    return root;
+}</code></pre>
+          <ul>
+            <li><p>When tracing an insert, list <strong>every node visited</strong> from root to insertion point; at each node compare and go left or right; when the child is null, that is where the new node goes</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>BST deletion</h2>
+          <ul>
+            <li><p><strong>No child</strong>: remove node directly</p></li>
+            <li><p><strong>One child</strong>: bypass node, connect parent directly to that child</p></li>
+            <li><p><strong>Two children</strong>: replace with the <strong>inorder successor</strong> (smallest value in the right subtree), then delete the successor</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>BST traversals</h2>
+          <div class="two-col">
+            <div class="text-col">
+              <ul>
+                <li><p><strong>Inorder</strong> (left, root, right): visits nodes in <strong>ascending sorted order</strong></p></li>
+                <li><p><strong>Preorder</strong> (root, left, right): useful for copying or serializing the structure</p></li>
+                <li><p><strong>Postorder</strong> (left, right, root): useful for freeing or deleting all nodes</p></li>
+                <li><p><strong>Level order</strong>: breadth-first; uses a queue; visits level by level</p></li>
+              </ul>
+            </div>
+            <div class="code-col">
+              <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+                   data-fontsize="\small" data-tabsize="2"><code class="language-cpp">void inorder(Node* root) {
+    if (root == NULL) return;
+    inorder(root-&gt;left);
+    visit(root);        // middle
+    inorder(root-&gt;right);
+}
+void preorder(Node* root) {
+    if (root == NULL) return;
+    visit(root);        // first
+    preorder(root-&gt;left);
+    preorder(root-&gt;right);
+}</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>BST height and efficiency</h2>
+          <ul>
+            <li><p>All BST operations: O(h), where h is the height</p></li>
+            <li><p>Balanced: h = O(log n), so O(log n) per operation</p></li>
+            <li><p>Skewed: h = O(n), so O(n) per operation</p></li>
+            <li><p>Solutions: AVL, Red-Black, B-tree maintain balance automatically</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-text">Insert 1, 2, 3, 4, 5 in sorted order:
+1
+ \
+  2
+   \
+    3    <- height = n - 1; search is O(n), not O(log n)</code></pre>
+        </section>
+      </section>
+
+      <!-- Heaps -->
+      <section>
+        <section class="title-slide slide level1"><h1>Heaps</h1></section>
+
+        <section class="frame">
+          <h2>Heap properties and storage</h2>
+          <ul>
+            <li><p>Logically a <strong>complete binary tree</strong>: all levels full except possibly the last, filled left to right</p></li>
+            <li><p><strong>Max-heap</strong>: every parent &ge; its children; root holds the maximum</p></li>
+            <li><p><strong>Physically stored as a flat array</strong>; navigation by arithmetic, not pointers</p></li>
+            <li><p>Index formulas (0-based): left child = 2i+1, right child = 2i+2, parent = floor((i-1)/2)</p></li>
+            <li><p>A common misconception: the heap is a complete binary tree <em>logically</em>, but is <em>physically stored as a flat array</em>; there are no pointer fields, only index arithmetic</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Heap insert and remove</h2>
+          <ul>
+            <li><p><strong>Insert</strong>: add new value at the next open leaf; sift <strong>up</strong> (swap with parent) until heap property is restored</p></li>
+            <li><p><strong>Remove (max/min)</strong>: save root value; move last leaf to root; sift <strong>down</strong> (swap with larger child) until restored</p></li>
+            <li><p>Both cost at most one swap per level: <strong>O(log N)</strong></p></li>
+            <li><p>Insert is O(log N) because a complete binary tree with N nodes <strong>always</strong> has height exactly floor(log₂N); the complete-tree shape guarantees this, unlike a BST</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Heapify and heapsort</h2>
+          <ul>
+            <li><p><strong>Heapify</strong>: convert an unsorted array into a valid heap in-place</p>
+              <ul>
+                <li><p>Skip leaf nodes (indices floor(N/2) through N-1); they are already valid</p></li>
+                <li><p>Sift-down every internal node from index floor(N/2)-1 (the last internal node) down to 0</p></li>
+                <li><p>Tip: draw the tree from the array, locate where the heap property is violated, and fix bottom-up</p></li>
+                <li><p>Total cost: <strong>O(N)</strong>, cheaper than N separate inserts</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Heapsort</strong>: heapify (O(N)) + N-1 extract-max steps (O(N log N)) = <strong>O(N log N)</strong> total, in-place, not stable</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Brute Force and Backtracking -->
+      <section>
+        <section class="title-slide slide level1"><h1>Brute Force and Backtracking</h1></section>
+
+        <section class="frame">
+          <h2>Brute force and the decision tree</h2>
+          <ul>
+            <li><p>Generate and test every possible candidate; correct but slow</p></li>
+            <li><p>Decision tree: each level represents one choice; each root-to-leaf path is one complete candidate</p></li>
+          </ul>
+          <table>
+            <thead>
+              <tr><th>Problem type</th><th>Candidates</th><th>Time complexity</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Permutations (order matters)</td><td>n!</td><td>O(n · n!)</td></tr>
+              <tr><td>Subsets (order doesn't matter)</td><td>2ⁿ</td><td>O(n · 2ⁿ)</td></tr>
+              <tr><td>Combinations C(n,k)</td><td>C(n,k)</td><td>O(k · C(n,k))</td></tr>
+              <tr><td>N-Queens (brute force)</td><td>Nⁿ</td><td>O(Nⁿ)</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Backtracking</h2>
+          <ul>
+            <li><p>Brute force with <strong>early termination</strong>: prune a branch as soon as a constraint is violated</p></li>
+            <li><p>Does not visit every leaf; avoids entire subtrees of invalid candidates</p></li>
+          </ul>
+          <table>
+            <thead>
+              <tr><th>Aspect</th><th>Brute force</th><th>Backtracking</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Visits all candidates?</td><td>Yes</td><td>No (prunes early)</td></tr>
+              <tr><td>Uses constraints?</td><td>Only at leaves</td><td>At every step</td></tr>
+              <tr><td>Can be faster?</td><td>No</td><td>Yes, often much faster</td></tr>
+              <tr><td>Worst-case complexity</td><td>Same</td><td>Same (when no pruning possible)</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- Graphs -->
+      <section>
+        <section class="title-slide slide level1"><h1>Graphs</h1></section>
+
+        <section class="frame">
+          <h2>Graph terminology and types</h2>
+          <ul>
+            <li><p><strong>Vertex</strong>: an entity; <strong>Edge</strong>: a connection; <strong>Degree</strong>: number of edges at a vertex</p></li>
+            <li><p><strong>Trees are a special case of graphs</strong>: connected, undirected, and acyclic</p></li>
+            <li><p>Graph properties are independent; a single graph can be directed AND weighted AND cyclic simultaneously; check each property independently and select all that apply:</p>
+              <ul>
+                <li><p><strong>Directed</strong> or <strong>Undirected</strong></p></li>
+                <li><p><strong>Weighted</strong> or <strong>Unweighted</strong></p></li>
+                <li><p><strong>Cyclic</strong> or <strong>Acyclic</strong></p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Adjacency list vs adjacency matrix</h2>
+          <table>
+            <thead>
+              <tr><th>Aspect</th><th>Adjacency list</th><th>Adjacency matrix</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Space</td><td>O(V + E)</td><td>O(V²)</td></tr>
+              <tr><td>Check edge (u, v)</td><td>O(degree of u)</td><td>O(1)</td></tr>
+              <tr><td>List neighbors of u</td><td>O(degree of u)</td><td>O(V)</td></tr>
+              <tr><td>Best for</td><td>Sparse graphs</td><td>Dense graphs</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>For sparse graphs, the adjacency list has better <strong>time and space complexity</strong>: the matrix stores O(V²) entries even when most edges are absent, while the list uses only O(V+E)</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>BFS: breadth-first search</h2>
+          <ul>
+            <li><p>Uses a <strong>queue</strong> (FIFO): process closer vertices before farther ones</p></li>
+            <li><p>Mark vertices visited <strong>when enqueued</strong>, not when dequeued, to prevent a vertex from being pushed multiple times</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">void bfs(const Graph&amp; g, int start) {
+    queue&lt;int&gt; q;
+    vector&lt;bool&gt; visited(g.size(), false);
+    visited[start] = true;   // mark on enqueue
+    q.push(start);
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        for (int v : g.adj[u])
+            if (!visited[v]) {
+                visited[v] = true;  // mark on enqueue
+                q.push(v);
+            }
+    }
+}</code></pre>
+          <ul><li><p>Time complexity: O(V + E)</p></li></ul>
+        </section>
+
+        <section class="frame">
+          <h2>DFS: depth-first search</h2>
+          <ul>
+            <li><p>Uses a <strong>stack</strong> (LIFO): dive deep along one path before backtracking</p></li>
+            <li><p>Can also be implemented <strong>recursively</strong>, using the call stack implicitly</p></li>
+            <li><p>The best-fit ADT for iterative DFS is a <strong>Stack</strong>; when tracing with lexical order, push unvisited neighbors in <strong>reverse alphabetical order</strong> so the smallest letter pops first</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">void dfs(const Graph&amp; g, int u, vector&lt;bool&gt;&amp; visited) {
+    visited[u] = true;
+    for (int v : g.adj[u])
+        if (!visited[v])
+            dfs(g, v, visited);
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Dijkstra's algorithm</h2>
+          <ul>
+            <li><p>Finds shortest path distances from a source in a <strong>weighted graph with non-negative weights</strong></p></li>
+            <li><p>Uses a <strong>min-heap priority queue</strong> storing (distance, vertex) pairs</p></li>
+            <li><p>Steps: init all distances to infinity except source = 0; repeatedly EXTRACT-MIN; relax neighbors; push updated pairs</p></li>
+            <li><p>Vertices are extracted in order of their final shortest distance</p></li>
+            <li><p>When answering a trace question, track two things separately: (1) the vertex extract-min order, and (2) the relaxed distance values after each extraction</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>BFS vs DFS: summary comparison</h2>
+          <table>
+            <thead>
+              <tr><th>Aspect</th><th>BFS</th><th>DFS</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Data structure</td><td>Queue (FIFO)</td><td>Stack (LIFO) or recursion</td></tr>
+              <tr><td>Visit order</td><td>Level by level</td><td>Deep path first</td></tr>
+              <tr><td>Mark visited</td><td>On enqueue</td><td>On pop (iterative) / on entry (recursive)</td></tr>
+              <tr><td>Finds shortest path?</td><td>Yes (unweighted)</td><td>Not in general</td></tr>
+              <tr><td>Complexity</td><td>O(V + E)</td><td>O(V + E)</td></tr>
+              <tr><td>Application</td><td>Shortest path, level order</td><td>Cycle detection, topological sort</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- Quick Reference -->
+      <section>
+        <section class="title-slide slide level1"><h1>Quick Reference</h1></section>
+
+        <section class="frame">
+          <h2>Complexity summary</h2>
+          <table>
+            <thead>
+              <tr><th>Operation</th><th>Complexity</th><th>Key condition</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Array index</td><td>O(1)</td><td>Random access</td></tr>
+              <tr><td>Linked-list prepend</td><td>O(1)</td><td>Update head</td></tr>
+              <tr><td>Linked-list search</td><td>O(n)</td><td>Scan from head</td></tr>
+              <tr><td>Binary search</td><td>O(log n)</td><td>Array must be sorted</td></tr>
+              <tr><td>BST operations</td><td>O(h)</td><td>O(log n) balanced only; O(n) if skewed</td></tr>
+              <tr><td>Heap insert / remove</td><td>O(log n)</td><td>Always; complete tree guarantees height = floor(log n)</td></tr>
+              <tr><td>Heapify</td><td>O(n)</td><td>Bottom-up sift-down</td></tr>
+              <tr><td>Hash table lookup (avg)</td><td>O(1)</td><td>Good hash function, low load</td></tr>
+              <tr><td>BFS / DFS</td><td>O(V + E)</td><td>Adjacency list</td></tr>
+              <tr><td>Merge sort</td><td>Theta(n log n)</td><td>All cases; O(n) extra space</td></tr>
+              <tr><td>Radix sort</td><td>Theta(nk)</td><td>k = digits in the max value = number of rounds</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Common misconceptions to watch out for</h2>
+          <ul>
+            <li><p><strong>BST search is NOT always O(log n)</strong>: only O(log n) for balanced trees; O(n) for skewed</p></li>
+            <li><p><strong>Heap is NOT physically a tree</strong>: logically a complete binary tree, physically a flat array</p></li>
+            <li><p><strong>Hash table is NOT an ADT</strong>: it is a concrete data structure implementing the Map/Set ADT</p></li>
+            <li><p><strong>Binary search requires a sorted array</strong>: it does not work on an unsorted array</p></li>
+            <li><p><strong>BFS marks visited on enqueue, not dequeue</strong>: marking on dequeue causes a vertex to be pushed multiple times</p></li>
+            <li><p><strong>delete vs delete[]</strong>: using <code>delete</code> without brackets on an array is undefined behavior</p></li>
+            <li><p><strong>Trees are special graphs</strong>: connected, undirected, and acyclic</p></li>
+            <li><p><strong>Templates are header-only</strong>: no separate <code>.cpp</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Which ADT / data structure for what purpose?</h2>
+          <ul>
+            <li><p><strong>BFS traversal</strong>: Queue (FIFO, level-by-level)</p></li>
+            <li><p><strong>DFS traversal (iterative)</strong>: Stack (LIFO, deep-path)</p></li>
+            <li><p><strong>Always retrieve min or max efficiently</strong>: Heap / Priority Queue</p></li>
+            <li><p><strong>O(1) average key-value lookup</strong>: Hash table</p></li>
+            <li><p><strong>Sorted access and range queries</strong>: Balanced BST</p></li>
+            <li><p><strong>Sorting a linked list</strong>: Merge sort (no random access needed)</p></li>
+            <li><p><strong>Class with push_back / pop_back / back: which ADT?</strong>: Stack (add and remove at the same end)</p></li>
+            <li><p><strong>Stack to Queue conversion: what to add?</strong>: A <code>tail</code> pointer for O(1) access to both ends</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
