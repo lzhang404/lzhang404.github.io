@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+<title>COP2253 Programing Using Java</title>
+    <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+    <section>
+      <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+      <h1>Programing Using Java</h1>
+      <div class="subtitle docutils container">
+      <p><strong>Module 1</strong></p>
+      <p>Liting Zhang</p>
+      </div>
+      </section>
+    </section>
+
+    <section>
+
+      <section id="overview-and-goals" class="title-slide slide level1">
+          <h1>Course Overview</h1>
+      </section>
+
+      <section id="course-overview" class="frame">
+        <h2>Course Overview</h2>
+        <ul>
+        <li><p>Online Asynchronous</p></li>
+        <li><p>Instructor:</p>
+        <ul>
+        <li><p>Dr. Liting Zhang</p></li>
+        <li><p>lzhang@uwf.edu</p></li>
+        <li><p>By appointment only</p></li>
+        </ul></li>
+        <li><p>TA: Zaaferah Hamid. Email: zh34@students.uwf.edu</p></li>
+        </ul>
+      </section>
+
+      <section id="communication-policy" class="frame">
+        <h2>Communication Policy</h2>
+        <ul>
+          <li><p>Course information and updates are sent via Canvas
+          announcements</p></li>
+          <li><p>Email is the preferred method of communication</p></li>
+          <li><p>Use subject line format:
+          <code>COP2253: [Your Topic Here]</code></p></li>
+          <li><p>Example: <code>COP2253: Project 2 Questions</code></p></li>
+          <li><p>Expect a response within 1–2 business days</p></li>
+          <li><p>Avoid:</p></li>
+          <ul>
+          <li><p>Canvas/Navigation messages</p></li>
+          <li><p>Sending only error screenshots without your code/context</p></li>
+          </ul>
+        </ul>
+      </section>
+
+      
+      <section id="late-policy" class="frame">
+        <h2>Late Policy</h2>
+        <ul>
+        <li><p>Zybook activities: due before midterm and final (no late submission)</p></li>
+        <li><p>Zybook zylab: due weekly (no late submission)</p></li>
+        <li><p>Projects:</p>
+          <ul>
+          <li><p>accepted up to 48 hours after deadline; after that, 0 without
+          approved extension</p></li>
+          <li><p>no late submission for the last project</p></li>
+          <li><p>penalty (applied once to earned score):</p>
+          <ul>
+          <li><p><span class="math inline">\(\le\)</span> 24 hours late: <span
+          class="math inline">\(-10\%\)</span></p></li>
+          <li><p>24–48 hours late: <span
+          class="math inline">\(-20\%\)</span></p></li>
+          </ul></li>
+          <li><p>extension: request before the deadline when possible</p></li>
+          </ul></li>
+        </ul>
+      </section>
+
+      <section id="excused-absences-policy" class="frame">
+        <h2>Excused Absences Policy</h2>
+        <ul>
+          <li><p>Accepted reasons (with documentation):</p>
+          <ul>
+          <li><p>illness, family death/crisis</p></li>
+          <li><p>military/jury duty, religious holy days</p></li>
+          <li><p>official University events</p></li>
+          <li><p>serious illness of dependent children</p></li>
+          </ul></li>
+          <li><p>Notify instructor ASAP for any excused absence affecting graded
+          work</p></li>
+          <li><p>Make-up tests:</p>
+          <ul>
+          <li><p>allowed with medical notice or approved emergency</p></li>
+          <li><p>non-medical/emergency reasons require advance approval</p></li>
+          <li><p>if absent without prior approval, notify within 48 hours</p></li>
+          <li><p>make up within 2 weeks (unless long-term illness)</p></li>
+          </ul></li>
+        </ul>
+      </section>
+
+      <section class="frame">
+        <h2>Textbook Info (zyBooks)</h2>
+        <ul>
+          <li><p>Go to zyBooks website and create a new account</p></li>
+          <li><p>Enter zyBook code: <code>UWFCOP2253ZhangSummer2026</code></p></li>
+          <li><p>Subscribe</p></li>
+          <li><p>Participation/Challenges activities grading: finish &gt; 80% for full credit; graded after due date; counts toward final grade</p></li>
+        </ul>
+      </section>
+    </section>
+
+          <!-- Overview -->
+      <section>
+        <section class="frame">
+          <h2>Today's Roadmap</h2>
+
+          <p>Today is about learning the basic Java workflow.</p>
+          <ul>
+            <li><p>What a program is, and why computers need exact instructions</p></li>
+            <li><p>How Java source code becomes a running program</p></li>
+            <li><p>What a small Java program looks like</p></li>
+            <li><p>How output, simple input, comments, and whitespace work</p></li>
+            <li><p>How to recognize common beginner errors</p></li>
+          </ul>
+          <p><em>Reading: Sections 1.1-1.10</em></p>
+        </section>
+        <section class="frame">
+          <h2>What You Should Be Able To Do</h2>
+
+          <ul>
+            <li><p>Explain what a program is in plain English</p></li>
+            <li><p>Describe the difference between source code, bytecode, and a running program</p></li>
+            <li><p>Read a small Java class with a <code>main</code> method</p></li>
+            <li><p>Use <code>System.out.print</code> and <code>System.out.println</code> correctly</p></li>
+            <li><p>Read very simple keyboard input with <code>Scanner</code></p></li>
+            <li><p>Use compiler messages and output differences as debugging clues</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Why Programming -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Why Programming?</h1>
+        </section>
+        <section class="frame">
+          <h2>Why Learn Programming?</h2>
+
+          <p>Programming is a way to give a computer exact instructions.</p>
+          <ul>
+            <li><p><strong>Computers are fast</strong>, but they do not guess what we meant</p></li>
+            <li><p><strong>Programs are precise</strong>: small differences can change the result</p></li>
+            <li><p><strong>Programming is problem solving</strong>: understand, plan, implement, test, improve</p></li>
+            <li><p><strong>Java is general purpose</strong>: apps, tools, backend systems, Android, and education</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Human Instructions vs Program Instructions</h2>
+
+          <p>A human can fill in missing details. A computer needs every detail stated clearly.</p>
+          <table>
+            <thead><tr><th>Human instruction</th><th>Computer needs</th></tr></thead>
+            <tbody>
+              <tr><td>"Print the name nicely"</td><td>Exact words, spaces, punctuation, and newline</td></tr>
+              <tr><td>"If the value is high"</td><td>The exact cutoff for "high"</td></tr>
+              <tr><td>"Repeat until done"</td><td>The exact condition that means done</td></tr>
+              <tr><td>"Read a number"</td><td>Where the number comes from and what type it is</td></tr>
+            </tbody>
+          </table>
+          <p>In programming, vague ideas must become exact steps.</p>
+        </section>
+        <section class="frame">
+          <h2>Problem Solving Before Coding</h2>
+
+          <p>Do not start with Java syntax. Start with the problem.</p>
+          <ul>
+            <li><p><strong>Input</strong>: What information is provided?</p></li>
+            <li><p><strong>Output</strong>: What exactly should be printed?</p></li>
+            <li><p><strong>Hand example</strong>: What should happen for one sample input?</p></li>
+            <li><p><strong>Algorithm</strong>: What steps solve the problem?</p></li>
+            <li><p><strong>Java code</strong>: Translate the steps after the plan is clear</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Algorithm Example: Married-Couple Names</h2>
+
+          <p>Problem: read two first names and one shared last name. Print the couple name on one line.</p>
+          <table>
+            <thead><tr><th>Step</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Read the first person's first name</td></tr>
+              <tr><td>2</td><td>Read the second person's first name</td></tr>
+              <tr><td>3</td><td>Read the shared last name</td></tr>
+              <tr><td>4</td><td>Print: first name, " and ", second name, space, last name</td></tr>
+            </tbody>
+          </table>
+          <p>Algorithm first. Java syntax second.</p>
+        </section>
+      </section>
+
+      <!-- Computers and Java -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Computers and Programs</h1>
+        </section>
+        <section class="frame">
+          <h2>What Is a Program?</h2>
+
+          <p>A program is a sequence of instructions that a computer can run.</p>
+          <ul>
+            <li><p><strong>Source code</strong>: code written by humans in a <code>.java</code> file</p></li>
+            <li><p><strong>Compiler</strong>: checks source code and translates it</p></li>
+            <li><p><strong>Bytecode</strong>: <code>.class</code> output produced by the Java compiler</p></li>
+            <li><p><strong>Java Virtual Machine</strong>: runs the bytecode on your computer</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Java's Two-Step Translation Model</h2>
+
+          <p>Java uses a source-code → bytecode → run model.</p>
+          <table>
+            <thead><tr><th>Step</th><th>Tool</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><code>javac</code></td><td>Checks <code>.java</code> source code and produces <code>.class</code> bytecode</td></tr>
+              <tr><td>2</td><td><code>java</code></td><td>Asks the JVM to run the compiled class</td></tr>
+              <tr><td>3</td><td>Program execution</td><td>Statements inside <code>main</code> run and output appears</td></tr>
+            </tbody>
+          </table>
+          <p>This model matters because the compiler can catch many mistakes before the program runs.</p>
+        </section>
+        <section class="frame">
+          <h2>Java Workflow From File to Output</h2>
+
+          <div style="display:flex;gap:0.8em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;">
+              <ul>
+                <li><p>Write source code in a <code>.java</code> file</p></li>
+                <li><p>Compile the file</p></li>
+                <li><p>Fix syntax errors if compilation fails</p></li>
+                <li><p>Run the compiled class</p></li>
+                <li><p>Compare actual output with expected output</p></li>
+              </ul>
+              <p><strong>example:</strong> <code>FirstJava.java</code></p>
+            </div>
+            <div style="flex:1;min-width:0;">
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">.java source file
+      |
+      v
+compiler checks code
+      |
+      v
+.class bytecode file
+      |
+      v
+JVM runs program
+      |
+      v
+terminal output</code></pre>            </div>
+          </div>
+        </section>
+        <section class="frame">
+          <h2>IDE vs Command Line</h2>
+
+          <p>An IDE can make writing code easier, but the same basic workflow still happens.</p>
+          <table>
+            <thead><tr><th>Tool</th><th>What it helps with</th><th>What to remember</th></tr></thead>
+            <tbody>
+              <tr><td>Editor / IDE</td><td>Typing, highlighting, organizing files</td><td>It does not fix incorrect logic</td></tr>
+              <tr><td>Compile button</td><td>Runs the compiler for you</td><td>You still need to read compiler errors</td></tr>
+              <tr><td>Run button</td><td>Starts the program</td><td>The output still needs to match the expected result</td></tr>
+              <tr><td>Terminal</td><td>Shows the underlying process</td><td>Useful when you need to know what is really happening</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Java Installation and Verification</h2>
+
+          <p>For setup, use the official Oracle Java SE 21 JDK Installation Guide.</p>
+          <ul>
+            <li><p><a href="https://docs.oracle.com/en/java/javase/21/install/">Oracle Java SE 21 JDK Installation Guide</a></p></li>
+            <li><p>Use it to install the <strong>JDK</strong>, not only a runtime</p></li>
+            <li><p>After installation, verify that both <code>java</code> and <code>javac</code> are available</p></li>
+            <li><p>If <code>java</code> works but <code>javac</code> does not, the JDK or PATH setup is probably incomplete</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>The File Name Rule</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class FirstJava {
+    public static void main(String[] args) {
+        System.out.println(&quot;My first Java program!&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p>If the class is <code>public</code>, the file name must match the class name</p></li>
+            <li><p>This program belongs in a file named <code>FirstJava.java</code></p></li>
+            <li><p>Java is case-sensitive: <code>FirstJava</code> and <code>firstjava</code> are different names</p></li>
+            <li><p><strong>example:</strong> <code>FirstJava.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- A Small Java Program -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>A Small Java Program</h1>
+        </section>
+        <section class="frame">
+          <h2>First Java Program</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class FirstJava {
+    public static void main(String[] args) {
+        System.out.println(&quot;My first Java program!&quot;);
+        System.out.println(&quot;Hello everyone!&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p><code>public class FirstJava</code> defines the class</p></li>
+            <li><p><code>main</code> is where this Java application starts</p></li>
+            <li><p><code>System.out.println</code> prints text and then moves to a new line</p></li>
+            <li><p><strong>example:</strong> <code>FirstJava.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>The main Method</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class MainMethodDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;Java starts here.&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p>For now, treat <code>public static void main(String[] args)</code> as the required start line</p></li>
+            <li><p>The opening brace starts the method body</p></li>
+            <li><p>The statements inside the body run when the program starts</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Statements Run From Top to Bottom</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class PrintOrder {
+    public static void main(String[] args) {
+        System.out.println(&quot;Step 1&quot;);
+        System.out.println(&quot;Step 2&quot;);
+        System.out.println(&quot;Step 3&quot;);
+    }
+}</code></pre>
+          <table>
+            <thead><tr><th>Execution order</th><th>Statement</th><th>Output</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><code>println("Step 1")</code></td><td><code>Step 1</code></td></tr>
+              <tr><td>2</td><td><code>println("Step 2")</code></td><td><code>Step 2</code></td></tr>
+              <tr><td>3</td><td><code>println("Step 3")</code></td><td><code>Step 3</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Braces Define Blocks</h2>
+
+          <p>Braces group statements together.</p>
+          <table>
+            <thead><tr><th>Brace</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>{</code></td><td>Start a block</td></tr>
+              <tr><td><code>}</code></td><td>End a block</td></tr>
+              <tr><td>Class block</td><td>Contains the program's methods</td></tr>
+              <tr><td>Method block</td><td>Contains statements that run</td></tr>
+            </tbody>
+          </table>
+          <p>If a brace is missing, the compiler may complain later than you expect.</p>
+        </section>
+        <section class="frame">
+          <h2>Semicolons End Statements</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class SemicolonDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;This statement ends with a semicolon.&quot;);
+        System.out.println(&quot;So does this one.&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Most Java statements end with a semicolon</p></li>
+            <li><p>Missing semicolons are one of the first syntax errors students see</p></li>
+            <li><p>Class headers and method headers do not end with semicolons</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Output Basics -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Output Basics</h1>
+        </section>
+        <section class="frame">
+          <h2>print vs println</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class PrintBasics {
+    public static void main(String[] args) {
+        System.out.print(&quot;A&quot;);
+        System.out.print(&quot;B&quot;);
+        System.out.println(&quot;C&quot;);
+        System.out.println(&quot;D&quot;);
+    }
+}</code></pre>
+          <table>
+            <thead><tr><th>Statement</th><th>Effect</th></tr></thead>
+            <tbody>
+              <tr><td><code>print</code></td><td>Prints text and stays on the same line</td></tr>
+              <tr><td><code>println</code></td><td>Prints text and then moves to the next line</td></tr>
+            </tbody>
+          </table>
+          <p><strong>example:</strong> <code>PrintBasics.java</code></p>
+        </section>
+        <section class="frame">
+          <h2>String Literals</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class StringLiteralDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;Java&quot;);
+        System.out.println(&quot;Java &quot;);
+        System.out.println(&quot;Java Programming&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p>A string literal is text inside double quotes</p></li>
+            <li><p>Spaces inside quotes are part of the string</p></li>
+            <li><p>Capitalization matters: <code>Java</code> and <code>java</code> are different output</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Exact Output Matters</h2>
+
+          <p>For programming assignments, output is often compared exactly.</p>
+          <table>
+            <thead><tr><th>Expected</th><th>Actual</th><th>Problem</th></tr></thead>
+            <tbody>
+              <tr><td><code>Distance: 5</code></td><td><code>distance: 5</code></td><td>Capitalization</td></tr>
+              <tr><td><code>Hello</code></td><td><code>Hello </code></td><td>Trailing space</td></tr>
+              <tr><td><code>Done</code></td><td><code>Result: Done</code></td><td>Extra text</td></tr>
+              <tr><td><code>A</code><br><code>B</code></td><td><code>AB</code></td><td>Missing newline</td></tr>
+            </tbody>
+          </table>
+          <p><strong>example:</strong> <code>OutputFormatDemo.java</code></p>
+        </section>
+      </section>
+
+      <!-- Basic Input -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Basic Input</h1>
+        </section>
+        <section class="frame">
+          <h2>Reading Keyboard Input With Scanner</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">import java.util.Scanner;
+
+public class ReadOneNumber {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+        int value = scnr.nextInt();
+        System.out.println(value);
+    }
+}</code></pre>
+          <ul>
+            <li><p><code>Scanner</code> lets a program read keyboard input</p></li>
+            <li><p><code>new Scanner(System.in)</code> connects the scanner to standard input</p></li>
+            <li><p><code>nextInt()</code> reads the next integer token</p></li>
+            <li><p><strong>example:</strong> <code>ReadOneNumber.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Scanner Reads Tokens</h2>
+
+          <p>A token is a chunk of input separated by whitespace.</p>
+          <table>
+            <thead><tr><th>Input</th><th>First token</th><th>Second token</th><th>Third token</th></tr></thead>
+            <tbody>
+              <tr><td><code>Pat Morgan Lee</code></td><td><code>Pat</code></td><td><code>Morgan</code></td><td><code>Lee</code></td></tr>
+              <tr><td><code>42 17 9</code></td><td><code>42</code></td><td><code>17</code></td><td><code>9</code></td></tr>
+              <tr><td><code>Hello
+World</code></td><td><code>Hello</code></td><td><code>World</code></td><td></td></tr>
+            </tbody>
+          </table>
+          <p><code>next()</code> reads one string token. <code>nextInt()</code> reads one integer token.</p>
+        </section>
+        <section class="frame">
+          <h2>Input + Output Example: Married-Couple Names</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">import java.util.Scanner;
+
+public class MarriedCoupleNames {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+
+        String firstName1 = scnr.next();
+        String firstName2 = scnr.next();
+        String lastName = scnr.next();
+
+        System.out.println(firstName1 + &quot; and &quot; + firstName2 + &quot; &quot; + lastName);
+    }
+}</code></pre>
+          <ul>
+            <li><p>The three <code>next()</code> calls read three tokens</p></li>
+            <li><p>The last line builds the exact output text</p></li>
+            <li><p><strong>example:</strong> <code>MarriedCoupleNames.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Comments, Whitespace, and Style -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Comments and Whitespace</h1>
+        </section>
+        <section class="frame">
+          <h2>Comments Explain Code to Humans</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class CommentDemo {
+    public static void main(String[] args) {
+        // This line prints one message.
+        System.out.println(&quot;Comments are ignored by Java.&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p>A line comment starts with <code>//</code></p></li>
+            <li><p>Java ignores comments when the program runs</p></li>
+            <li><p>Good comments explain purpose, not every obvious detail</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Whitespace in Source Code</h2>
+
+          <p>Java usually ignores extra spaces in source code, but people do not.</p>
+          <div style="display:flex;gap:0.8em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;">
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class GoodStyle {
+    public static void main(String[] args) {
+        System.out.println(&quot;Readable&quot;);
+    }
+}</code></pre>            </div>
+            <div style="flex:1;min-width:0;">
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class HardToRead {
+    public static void main(String[] args) { System.out.println(&quot;Works, but hard to read&quot;); }
+}</code></pre>            </div>
+          </div>
+          <p>Readable formatting helps you find mistakes faster.</p>
+        </section>
+        <section class="frame">
+          <h2>Whitespace in Output</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class WhitespaceDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello World&quot;);
+        System.out.println(&quot;Hello  World&quot;);
+        System.out.print(&quot;Hello&quot;);
+        System.out.println(&quot;World&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Spaces inside quotes are printed</p></li>
+            <li><p><code>print</code> and <code>println</code> change line breaks</p></li>
+            <li><p>Whitespace in output can decide whether an answer is accepted</p></li>
+            <li><p><strong>example:</strong> <code>WhitespaceDemo.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- Errors and Debugging -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Errors and Debugging</h1>
+        </section>
+        <section class="frame">
+          <h2>Four Common Problem Types</h2>
+
+          <table>
+            <thead><tr><th>Problem type</th><th>When found</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td>Syntax error</td><td>Compiler</td><td>Missing semicolon, missing brace, misspelled keyword</td></tr>
+              <tr><td>Runtime error</td><td>While program is running</td><td>Program crashes because input is not what the program expected</td></tr>
+              <tr><td>Logic error</td><td>Program runs but behavior is wrong</td><td>Statements are in the wrong order</td></tr>
+              <tr><td>Output-format error</td><td>When comparing output</td><td>Extra prompt, missing newline, wrong capitalization</td></tr>
+            </tbody>
+          </table>
+          <p>Different error types require different debugging strategies.</p>
+        </section>
+        <section class="frame">
+          <h2>Syntax Error Example</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class BaseballBroken {
+    public static void main(String[] args) {
+        int runs = 7
+        System.out.println(&quot;Runs: &quot; + runs);
+    }
+}</code></pre>
+          <ul>
+            <li><p>This program is missing a semicolon after <code>7</code></p></li>
+            <li><p>The compiler may point near the next line because it was still reading the statement</p></li>
+            <li><p>Fix the first compiler error first</p></li>
+            <li><p><strong>example:</strong> <code>BaseballBroken.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Logic Error Example</h2>
+
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class LogicErrorDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;Step 2: Mix ingredients&quot;);
+        System.out.println(&quot;Step 1: Add water&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p>This program compiles and runs</p></li>
+            <li><p>The output is still wrong because the steps are in the wrong order</p></li>
+            <li><p>The compiler checks syntax, not whether your instructions make sense</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Output-Format Error Example</h2>
+
+          <p>The program can do the right idea but print the wrong exact text.</p>
+          <table>
+            <thead><tr><th>Expected</th><th>Actual</th><th>Problem</th></tr></thead>
+            <tbody>
+              <tr><td><code>Distance: 5</code></td><td><code>distance: 5</code></td><td>Capitalization</td></tr>
+              <tr><td><code>Hello</code></td><td><code>Hello </code></td><td>Trailing space</td></tr>
+              <tr><td><code>A</code><br><code>B</code></td><td><code>AB</code></td><td>Missing newline</td></tr>
+            </tbody>
+          </table>
+          <p><strong>example:</strong> <code>OutputFormatDemo.java</code></p>
+        </section>
+        <section class="frame">
+          <h2>A Practical Debugging Loop</h2>
+
+          <table>
+            <thead><tr><th>Step</th><th>Question to ask</th></tr></thead>
+            <tbody>
+              <tr><td>1. Compile</td><td>What is the first compiler error?</td></tr>
+              <tr><td>2. Run one simple input</td><td>Did the program crash?</td></tr>
+              <tr><td>3. Compare output</td><td>What is different from expected output?</td></tr>
+              <tr><td>4. Trace the steps</td><td>What statement runs first, second, third?</td></tr>
+              <tr><td>5. Change one thing</td><td>Did this specific change improve the result?</td></tr>
+            </tbody>
+          </table>
+          <p>Do not randomly change code. Use evidence from errors and output.</p>
+        </section>
+      </section>
+
+      <!-- Summary -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+
+          <ul>
+            <li><p>Programming means turning an idea into exact steps</p></li>
+            <li><p>A Java application starts in <code>main</code></p></li>
+            <li><p>The compiler checks source code before the JVM runs bytecode</p></li>
+            <li><p><code>print</code> stays on the same line; <code>println</code> moves to a new line</p></li>
+            <li><p><code>Scanner</code> can read simple input tokens</p></li>
+            <li><p>Comments and formatting help humans read code</p></li>
+            <li><p>Syntax errors, runtime errors, logic errors, and output-format errors are different problems</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Before Next Class</h2>
+
+          <ul>
+            <li><p>Make sure Java is installed and your editor is ready</p></li>
+            <li><p>Practice running <code>FirstJava.java</code> and <code>PrintBasics.java</code></p></li>
+            <li><p>Review the idea of variables before the next lecture</p></li>
+            <li><p>Bring one question about an error message or output difference you saw</p></li>
+          </ul>
+        </section>
+      </section>
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+    
+    
+      <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+      <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+      <script src="../_static/revealjs/plugin/math/math.js"></script>
+      
+    
+    <script>
+        var revealjsConfig = new Object();
+        Object.assign(revealjsConfig, { "disableLayout": true,"controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 960, "height": 540});
+        
+        
+        
+          revealjsConfig.plugins = [
+            RevealNotes,RevealHighlight,RevealMath,
+          ];
+        
+        // More info https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize(revealjsConfig);
+    </script>
+
+  </body>
+</html>

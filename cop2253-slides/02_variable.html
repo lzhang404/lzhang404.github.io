@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Variables / Assignments</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- Title -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Variables / Assignments</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- Overview -->
+      <section>
+        <section class="frame">
+          <h2>Today's Roadmap</h2>
+
+          <p>Chapter 2 is where Java starts to become useful: programs remember values, compute with them, read input, and format output.</p>
+          <ul>
+            <li><p>Variables as named memory locations</p></li>
+            <li><p>Identifiers, Java naming rules, and readable style</p></li>
+            <li><p>Numeric types: <code>int</code>, <code>double</code>, constants, overflow, and conversions</p></li>
+            <li><p>Expressions: precedence, division, modulo, math methods, and random numbers</p></li>
+            <li><p>Characters and strings: indexing, methods, and replacement</p></li>
+            <li><p>Input with <code>Scanner</code> and output with <code>printf</code></p></li>
+            <li><p>Debugging variables by tracing values one line at a time</p></li>
+            <li><p><strong>example:</strong> <code>VariableBasics.java</code></p></li>
+          </ul>
+          <p><em>Reading: Sections 2.1-2.33</em></p>
+        </section>
+
+        <section class="frame">
+          <h2>What You Should Be Able To Do</h2>
+
+          <ul>
+            <li><p>Declare and initialize variables using appropriate data types</p></li>
+            <li><p>Predict how assignment statements change values in memory</p></li>
+            <li><p>Write arithmetic expressions with correct operator precedence</p></li>
+            <li><p>Use integer division and modulo for common tasks such as time and money breakdowns</p></li>
+            <li><p>Convert between numeric types intentionally instead of accidentally</p></li>
+            <li><p>Read simple input and format output to match an exact specification</p></li>
+            <li><p>Use simple <code>String</code> and <code>char</code> operations safely</p></li>
+          </ul>
+          <p>The important skill is not memorizing every method. The important skill is tracing what value each variable has after each statement.</p>
+        </section>
+
+      </section>
+
+      <!-- Variables and Memory -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Variables and Memory</h1>
+        </section>
+
+        <section class="frame">
+          <h2>What Is a Variable?</h2>
+
+          <p>A variable is a named memory location used to store data while a program runs.</p>
+          <ul>
+            <li><p>The variable name lets the programmer refer to the value later</p></li>
+            <li><p>The data type tells Java what kind of value can be stored there</p></li>
+            <li><p>The assignment operator <code>=</code> stores a value into the variable</p></li>
+            <li><p>A variable's value can change as the program executes</p></li>
+          </ul>
+          <table>
+            <thead><tr><th>Statement</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>int userAge;</code></td><td>Declare an integer variable named <code>userAge</code></td></tr>
+              <tr><td><code>userAge = 19;</code></td><td>Store the value <code>19</code> in that variable</td></tr>
+              <tr><td><code>userAge = userAge + 1;</code></td><td>Read the old value, add 1, store the new value</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Declaration, Initialization, Assignment</h2>
+
+          <p>These three words are easy to mix up. They describe different moments in a variable's life.</p>
+          <table>
+            <thead><tr><th>Term</th><th>Example</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td>Declaration</td><td><code>int score;</code></td><td>Create the variable name and type</td></tr>
+              <tr><td>Initialization</td><td><code>int score = 0;</code></td><td>Give the variable its first value</td></tr>
+              <tr><td>Assignment</td><td><code>score = 95;</code></td><td>Store a new value later</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Good habit: initialize local variables when practical, especially when a later expression depends on them.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Variable Basics: Complete Program</h2>
+
+          <p>The same variable can be read, used in an expression, and assigned a new value.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class VariableBasics {
+    public static void main(String[] args) {
+        int userAge = 19;
+        int graduationYear = 2028;
+        double accountBalance = 125.75;
+
+        System.out.println(&quot;Age: &quot; + userAge);
+        System.out.println(&quot;Graduation year: &quot; + graduationYear);
+        System.out.println(&quot;Balance: &quot; + accountBalance);
+
+        userAge = userAge + 1;
+        accountBalance = accountBalance - 20.00;
+
+        System.out.println(&quot;Next birthday age: &quot; + userAge);
+        System.out.println(&quot;Balance after purchase: &quot; + accountBalance);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Trace the variables <code>userAge</code> and <code>accountBalance</code> before and after reassignment</p></li>
+            <li><p><strong>example:</strong> <code>VariableBasics.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Trace Table: Variable Updates</h2>
+
+          <p>A trace table records the value of each important variable after each statement executes.</p>
+          <table>
+            <thead><tr><th>Statement</th><th>userAge</th><th>accountBalance</th></tr></thead>
+            <tbody>
+              <tr><td>start</td><td>not created</td><td>not created</td></tr>
+              <tr><td><code>int userAge = 19;</code></td><td>19</td><td>not created</td></tr>
+              <tr><td><code>double accountBalance = 125.75;</code></td><td>19</td><td>125.75</td></tr>
+              <tr><td><code>userAge = userAge + 1;</code></td><td>20</td><td>125.75</td></tr>
+              <tr><td><code>accountBalance = accountBalance - 20.00;</code></td><td>20</td><td>105.75</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>When debugging, do not guess. Trace the values.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common Error: Uninitialized Local Variable</h2>
+
+          <p>Java does not allow a local variable to be read before the compiler can prove the variable has a value.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class UninitializedVariableBroken {
+    public static void main(String[] args) {
+        int userAge;
+        System.out.println(userAge);
+    }
+}</code></pre>
+          <ul>
+            <li><p>This is an intentional compiler-error example.</p></li>
+            <li><p>Expected result: <code>variable userAge might not have been initialized</code></p></li>
+            <li><p><strong>example:</strong> <code>UninitializedVariableBroken.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Multiple Variables in One Statement?</h2>
+
+          <p>Java allows several variables of the same type to be declared in one statement.</p>
+          <div style="display:flex;gap:0.8em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;">
+              <p><strong>Allowed, but easy to overlook</strong></p>
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">int numProtons, numNeutrons, numElectrons;
+double width, height;</code></pre>
+              <ul>
+                <li><p>All variables in the same statement have the same type.</p></li>
+                <li><p>Without an initializer, each local variable still needs a value before it can be read.</p></li>
+              </ul>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <p><strong>Clearer for beginner code</strong></p>
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">int numProtons = 0;
+int numNeutrons = 0;
+int numElectrons = 0;
+
+double width = 0.0;
+double height = 0.0;</code></pre>
+              <ul>
+                <li><p>One variable per line makes tracing and debugging easier.</p></li>
+                <li><p>This style also makes later changes safer.</p></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Identifiers and Style -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Identifiers and Style</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Program Terminology</h2>
+
+          <p>An identifier is the name of something defined in a program: a variable, class, method, or constant.</p>
+          <table>
+            <thead><tr><th>Kind of identifier</th><th>Example</th><th>Used for</th></tr></thead>
+            <tbody>
+              <tr><td>Class</td><td><code>SalaryCalculation</code></td><td>The program or a custom type</td></tr>
+              <tr><td>Variable</td><td><code>hourlyWage</code></td><td>A value stored during execution</td></tr>
+              <tr><td>Method</td><td><code>main</code></td><td>A named block of behavior</td></tr>
+              <tr><td>Constant</td><td><code>TAX_RATE</code></td><td>A value that should not change</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Identifier Rules</h2>
+
+          <p>Java identifiers must follow syntax rules before the program can compile.</p>
+          <table>
+            <thead><tr><th>Rule</th><th>Valid</th><th>Invalid</th></tr></thead>
+            <tbody>
+              <tr><td>Cannot start with a digit</td><td><code>score1</code></td><td><code>1score</code></td></tr>
+              <tr><td>Letters, digits, underscore, dollar sign</td><td><code>total_score</code></td><td><code>total-score</code></td></tr>
+              <tr><td>Case-sensitive</td><td><code>rate</code> and <code>Rate</code> are different</td><td>using both for different values</td></tr>
+              <tr><td>Cannot be a Java keyword</td><td><code>className</code></td><td><code>class</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>The compiler catches invalid identifiers, but it cannot make unclear names readable.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Keywords vs Predefined Identifiers</h2>
+
+          <p>A keyword has a fixed meaning in Java. A predefined identifier comes from the Java libraries.</p>
+          <table>
+            <thead><tr><th>Category</th><th>Examples</th><th>Can you use it as a variable name?</th></tr></thead>
+            <tbody>
+              <tr><td>Keywords</td><td><code>public</code>, <code>class</code>, <code>static</code>, <code>void</code>, <code>int</code></td><td>No</td></tr>
+              <tr><td>Predefined identifiers</td><td><code>System</code>, <code>String</code>, <code>Scanner</code>, <code>Math</code></td><td>Technically possible in some contexts, but do not do it</td></tr>
+              <tr><td>Your identifiers</td><td><code>userAge</code>, <code>totalCost</code></td><td>Yes, if they follow the rules</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Avoid names that conflict with standard Java names. It makes code harder to understand.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Naming Conventions</h2>
+
+          <p>Conventions are not always required by the compiler, but they are expected in readable Java code.</p>
+          <table>
+            <thead><tr><th>Item</th><th>Convention</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td>Class</td><td>UpperCamelCase</td><td><code>SalaryCalculation</code></td></tr>
+              <tr><td>Variable</td><td>lowerCamelCase</td><td><code>hourlyWage</code></td></tr>
+              <tr><td>Constant</td><td>UPPER_SNAKE_CASE</td><td><code>MAX_SCORE</code></td></tr>
+              <tr><td>Method</td><td>lowerCamelCase</td><td><code>calculatePay</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Readable names reduce maintenance time. Most code is read and modified many more times than it is first written.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Constants with final</h2>
+
+          <p>A constant is a named value that should not change after initialization.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class ConstantExample {
+    public static void main(String[] args) {
+        final double TAX_RATE = 0.12;
+        double grossPay = 750.00;
+        double taxes = grossPay * TAX_RATE;
+
+        System.out.println(&quot;Taxes: &quot; + taxes);
+    }
+}</code></pre>
+          <ul>
+            <li><p>The keyword <code>final</code> prevents accidental reassignment.</p></li>
+            <li><p>Use constants for values with meaning: tax rates, limits, conversion factors, and fixed labels.</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Numeric Types -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Numeric Types</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Java Is Strongly Typed</h2>
+
+          <p>Every variable has a type, and that type controls what values can be stored and what operations make sense.</p>
+          <table>
+            <thead><tr><th>Type</th><th>Typical use</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td><code>int</code></td><td>Whole numbers</td><td><code>int age = 19;</code></td></tr>
+              <tr><td><code>double</code></td><td>Decimal numbers</td><td><code>double gpa = 3.75;</code></td></tr>
+              <tr><td><code>char</code></td><td>One character</td><td><code>char grade = 'A';</code></td></tr>
+              <tr><td><code>String</code></td><td>Text</td><td><code>String name = "Ava";</code></td></tr>
+              <tr><td><code>boolean</code></td><td>True/false</td><td><code>boolean done = false;</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Choose the type based on the data and the operations you need.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Integer Types</h2>
+
+          <p>In this course, <code>int</code> is the usual whole-number type unless there is a specific reason to use something else.</p>
+          <table>
+            <thead><tr><th>Type</th><th>Size idea</th><th>Typical beginner use</th></tr></thead>
+            <tbody>
+              <tr><td><code>byte</code></td><td>very small integer</td><td>rare in this class</td></tr>
+              <tr><td><code>short</code></td><td>small integer</td><td>rare in this class</td></tr>
+              <tr><td><code>int</code></td><td>standard integer</td><td>counts, indexes, menu choices</td></tr>
+              <tr><td><code>long</code></td><td>larger integer</td><td>large counts, timestamps</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>The type is not only about decimal vs whole number. It also affects range and overflow.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Floating-Point Numbers: double</h2>
+
+          <p>Use <code>double</code> for values that may have a fractional part.</p>
+          <table>
+            <thead><tr><th>Expression</th><th>Result type</th><th>Reason</th></tr></thead>
+            <tbody>
+              <tr><td><code>15 / 2</code></td><td><code>int</code></td><td>Both operands are integers</td></tr>
+              <tr><td><code>15.0 / 2</code></td><td><code>double</code></td><td>At least one operand is floating point</td></tr>
+              <tr><td><code>15 / 2.0</code></td><td><code>double</code></td><td>At least one operand is floating point</td></tr>
+              <tr><td><code>15.0 / 2.0</code></td><td><code>double</code></td><td>Both operands are floating point</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Important warning: floating-point values are approximate. Do not use simple <code>double</code> math for money in real financial software.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Scientific Notation Literals</h2>
+
+          <p>Scientific notation is useful for very large or very small double values.</p>
+          <table>
+            <thead><tr><th>Literal</th><th>Meaning</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td><code>1.2e3</code></td><td>1.2 × 10³</td><td>1200.0</td></tr>
+              <tr><td><code>5.0e-2</code></td><td>5.0 × 10⁻²</td><td>0.05</td></tr>
+              <tr><td><code>6.022e23</code></td><td>6.022 × 10²³</td><td>large scientific value</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>The <code>e</code> means "times ten to the power of".</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Assignment Compatibility</h2>
+
+          <p>Some assignments are safe automatically. Others require an explicit cast because information may be lost.</p>
+          <table>
+            <thead><tr><th>Assignment</th><th>Allowed?</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td><code>double amount = 5;</code></td><td>Yes</td><td>An <code>int</code> can be widened to a <code>double</code></td></tr>
+              <tr><td><code>int count = 5.7;</code></td><td>No</td><td>The decimal part would be lost</td></tr>
+              <tr><td><code>int count = (int) 5.7;</code></td><td>Yes</td><td>Explicit cast says truncation is intentional</td></tr>
+              <tr><td><code>double ratio = 17 / 20;</code></td><td>Yes, but wrong value</td><td>Integer division happens before assignment</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Type Conversion: Complete Program</h2>
+
+          <p>Casting changes how Java treats a value in an expression. It does not magically fix an expression after integer division already happened.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class TypeConversionDemo {
+    public static void main(String[] args) {
+        int pointsEarned = 17;
+        int pointsPossible = 20;
+
+        double automaticConversion = pointsEarned;
+        double wrongPercent = pointsEarned / pointsPossible * 100.0;
+        double correctPercent = (double) pointsEarned / pointsPossible * 100.0;
+
+        System.out.println(&quot;Automatic int-to-double: &quot; + automaticConversion);
+        System.out.println(&quot;Wrong percent: &quot; + wrongPercent);
+        System.out.println(&quot;Correct percent: &quot; + correctPercent);
+
+        double temperature = 98.9;
+        int truncatedTemperature = (int) temperature;
+        System.out.println(&quot;Truncated temperature: &quot; + truncatedTemperature);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Watch the difference between <code>pointsEarned / pointsPossible</code> and <code>(double) pointsEarned / pointsPossible</code></p></li>
+            <li><p><strong>example:</strong> <code>TypeConversionDemo.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Integer Overflow</h2>
+
+          <p>An integer type has a limited range. If an operation goes past the range, the result can wrap around.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class OverflowExample {
+    public static void main(String[] args) {
+        int maxValue = Integer.MAX_VALUE;
+        System.out.println(&quot;maxValue: &quot; + maxValue);
+        System.out.println(&quot;maxValue + 1: &quot; + (maxValue + 1));
+    }
+}</code></pre>
+          <ul>
+            <li><p>This program compiles and runs, but the second value is not mathematically correct.</p></li>
+            <li><p>Overflow is a logic problem, not a syntax problem.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Floating-Point Rounding Pitfall</h2>
+
+          <p>Floating-point numbers are stored in binary, so some decimal values cannot be represented exactly.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class FloatingPointPitfall {
+    public static void main(String[] args) {
+        double total = 0.1 + 0.2;
+        System.out.println(total);
+        System.out.printf(&quot;%.2f%n&quot;, total);
+    }
+}</code></pre>
+          <ul>
+            <li><p>The first output may show a long approximation.</p></li>
+            <li><p>The formatted output hides extra digits, but it does not change how the value is stored.</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Expressions -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Expressions</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Arithmetic Operators</h2>
+
+          <p>Expressions combine variables, literals, and operators to produce a value.</p>
+          <table>
+            <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td><code>+</code></td><td>addition</td><td><code>x + y</code></td></tr>
+              <tr><td><code>-</code></td><td>subtraction</td><td><code>x - y</code></td></tr>
+              <tr><td><code>*</code></td><td>multiplication</td><td><code>x * y</code></td></tr>
+              <tr><td><code>/</code></td><td>division</td><td><code>x / y</code></td></tr>
+              <tr><td><code>%</code></td><td>modulo / remainder</td><td><code>x % y</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>The type of the operands affects the type of the result.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Precedence and Parentheses</h2>
+
+          <p>Java follows operator precedence. Parentheses make the programmer's intent obvious.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class ArithmeticExpressions {
+    public static void main(String[] args) {
+        int x = 7;
+        int y = 4;
+        int z = 2;
+
+        int result1 = x + y * z;
+        int result2 = (x + y) * z;
+        double result3 = x + y / 2.0;
+
+        System.out.println(&quot;x + y * z = &quot; + result1);
+        System.out.println(&quot;(x + y) * z = &quot; + result2);
+        System.out.println(&quot;x + y / 2.0 = &quot; + result3);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Multiplication and division happen before addition and subtraction unless parentheses change the order.</p></li>
+            <li><p><strong>example:</strong> <code>ArithmeticExpressions.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Trace Table: Precedence</h2>
+
+          <table>
+            <thead><tr><th>Expression</th><th>Step</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td><code>7 + 4 * 2</code></td><td>multiply first: <code>4 * 2</code></td><td>15</td></tr>
+              <tr><td><code>(7 + 4) * 2</code></td><td>parentheses first: <code>7 + 4</code></td><td>22</td></tr>
+              <tr><td><code>7 + 4 / 2.0</code></td><td>floating division first: <code>4 / 2.0</code></td><td>9.0</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>When in doubt, use parentheses. They help both the compiler and the human reader.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Shorthand Assignment Statements</h2>
+
+          <p>Shorthand assignment updates a variable by using its old value.</p>
+          <table>
+            <thead><tr><th>Statement</th><th>Equivalent</th></tr></thead>
+            <tbody>
+              <tr><td><code>count += 2;</code></td><td><code>count = count + 2;</code></td></tr>
+              <tr><td><code>sum -= discount;</code></td><td><code>sum = sum - discount;</code></td></tr>
+              <tr><td><code>bonus *= 2;</code></td><td><code>bonus = bonus * 2;</code></td></tr>
+              <tr><td><code>time /= rushFactor;</code></td><td><code>time = time / rushFactor;</code></td></tr>
+              <tr><td><code>change %= 100;</code></td><td><code>change = change % 100;</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Use shorthand only after you understand the long version.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Integer Division and Modulo</h2>
+
+          <p>Integer division gives the quotient. Modulo gives the remainder.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class DivisionModuloDemo {
+    public static void main(String[] args) {
+        int totalMinutes = 135;
+        int hours = totalMinutes / 60;
+        int minutes = totalMinutes % 60;
+
+        System.out.println(totalMinutes + &quot; minutes is:&quot;);
+        System.out.println(hours + &quot; hour(s)&quot;);
+        System.out.println(minutes + &quot; minute(s)&quot;);
+
+        int cents = 287;
+        int dollars = cents / 100;
+        int leftoverCents = cents % 100;
+        System.out.println(cents + &quot; cents = $&quot; + dollars + &quot; and &quot; + leftoverCents + &quot; cents&quot;);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Use <code>/</code> when you need whole groups; use <code>%</code> when you need what is left over.</p></li>
+            <li><p><strong>example:</strong> <code>DivisionModuloDemo.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Modulo Patterns</h2>
+
+          <p>Modulo is one of the most useful beginner operators because it answers "what is left over?"</p>
+          <table>
+            <thead><tr><th>Task</th><th>Expression</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td>Check even number</td><td><code>num % 2 == 0</code></td><td>No remainder after dividing by 2</td></tr>
+              <tr><td>Get last digit</td><td><code>num % 10</code></td><td>Remainder after dividing by 10</td></tr>
+              <tr><td>Convert cents</td><td><code>cents % 100</code></td><td>Cents after whole dollars</td></tr>
+              <tr><td>Wrap around a range</td><td><code>index % size</code></td><td>Cycle back to the beginning</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Modulo becomes even more important in loops and arrays later.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Math Methods and Random Numbers</h2>
+
+          <p>Java's standard library provides methods for common math operations and pseudorandom values.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">import java.util.Random;
+
+public class MathRandomDemo {
+    public static void main(String[] args) {
+        double radius = 3.0;
+        double area = Math.PI * Math.pow(radius, 2.0);
+        double diagonal = Math.sqrt(3 * 3 + 4 * 4);
+
+        Random rand = new Random(7);
+        int dieRoll = rand.nextInt(6) + 1;
+        int randomScore = rand.nextInt(101);
+
+        System.out.println(&quot;Circle area: &quot; + area);
+        System.out.println(&quot;3-4-5 diagonal: &quot; + diagonal);
+        System.out.println(&quot;Die roll: &quot; + dieRoll);
+        System.out.println(&quot;Random score: &quot; + randomScore);
+    }
+}</code></pre>
+          <ul>
+            <li><p>A fixed seed makes the random sequence repeatable, which is helpful for demos and testing.</p></li>
+            <li><p><strong>example:</strong> <code>MathRandomDemo.java</code></p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Characters and Strings -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Characters and Strings</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Characters</h2>
+
+          <p>A <code>char</code> stores one character and uses single quotes.</p>
+          <table>
+            <thead><tr><th>Value</th><th>Type</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><code>'A'</code></td><td><code>char</code></td><td>one character</td></tr>
+              <tr><td><code>'7'</code></td><td><code>char</code></td><td>character digit, not integer 7</td></tr>
+              <tr><td><code>' '</code></td><td><code>char</code></td><td>space character</td></tr>
+              <tr><td><code>"A"</code></td><td><code>String</code></td><td>text containing one character</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Single quotes mean <code>char</code>. Double quotes mean <code>String</code>.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Strings</h2>
+
+          <p>A <code>String</code> stores text. Strings are objects, not primitive values.</p>
+          <table>
+            <thead><tr><th>Operation</th><th>Example</th><th>Result idea</th></tr></thead>
+            <tbody>
+              <tr><td>Concatenate</td><td><code>first + " " + last</code></td><td>join text together</td></tr>
+              <tr><td>Length</td><td><code>name.length()</code></td><td>number of characters</td></tr>
+              <tr><td>Character access</td><td><code>name.charAt(0)</code></td><td>first character</td></tr>
+              <tr><td>Find text</td><td><code>name.indexOf("a")</code></td><td>index of first match or -1</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>String indexes start at 0, not 1.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Characters and Strings: Complete Program</h2>
+
+          <p>This program combines <code>char</code>, <code>String</code>, indexing, searching, and uppercase conversion.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class StringsCharactersDemo {
+    public static void main(String[] args) {
+        char firstInitial = &#x27;A&#x27;;
+        String firstName = &quot;Ava&quot;;
+        String lastName = &quot;Nguyen&quot;;
+        String fullName = firstName + &quot; &quot; + lastName;
+
+        System.out.println(&quot;Initial: &quot; + firstInitial);
+        System.out.println(&quot;Full name: &quot; + fullName);
+        System.out.println(&quot;Length: &quot; + fullName.length());
+        System.out.println(&quot;First character: &quot; + fullName.charAt(0));
+        System.out.println(&quot;Last name starts at index: &quot; + fullName.indexOf(lastName));
+        System.out.println(&quot;Uppercase: &quot; + fullName.toUpperCase());
+        System.out.println(&quot;Original still unchanged: &quot; + fullName);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Notice that <code>toUpperCase()</code> returns a new string; the original string is unchanged.</p></li>
+            <li><p><strong>example:</strong> <code>StringsCharactersDemo.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>String Access: Index Diagram</h2>
+
+          <p>For <code>String fullName = "Ava Nguyen";</code>, each character has an index.</p>
+          <table>
+            <thead><tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr></thead>
+            <tbody>
+              <tr><td>Character</td><td>A</td><td>v</td><td>a</td><td>space</td><td>N</td><td>g</td><td>u</td><td>y</td><td>e</td><td>n</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p><code>fullName.charAt(0)</code> is <code>'A'</code></p></li>
+            <li><p><code>fullName.charAt(4)</code> is <code>'N'</code></p></li>
+            <li><p><code>fullName.charAt(fullName.length() - 1)</code> is the last character</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Finding and Replacing Text</h2>
+
+          <p>String methods let you search, extract, and create modified versions of text.</p>
+          <table>
+            <thead><tr><th>Method</th><th>Example</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>indexOf</code></td><td><code>email.indexOf('@')</code></td><td>find a character or substring</td></tr>
+              <tr><td><code>substring</code></td><td><code>email.substring(0, atIndex)</code></td><td>extract part of a string</td></tr>
+              <tr><td><code>replace</code></td><td><code>text.replace(' ', '_')</code></td><td>create a modified string</td></tr>
+              <tr><td><code>equals</code></td><td><code>word.equals("yes")</code></td><td>compare string contents</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Most string methods do not modify the original string. They return a new value.</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Input and Output -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Input and Output</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Output Streams</h2>
+
+          <p><code>System.out</code> is Java's standard output stream. It sends text to the terminal.</p>
+          <table>
+            <thead><tr><th>Method</th><th>Behavior</th></tr></thead>
+            <tbody>
+              <tr><td><code>System.out.print(...)</code></td><td>print without moving to a new line</td></tr>
+              <tr><td><code>System.out.println(...)</code></td><td>print and then move to a new line</td></tr>
+              <tr><td><code>System.out.printf(...)</code></td><td>print using a format string</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Exact output matters: spaces, punctuation, decimal digits, and newlines all count.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Input with Scanner</h2>
+
+          <p><code>Scanner</code> reads tokens from standard input. A token is usually separated by whitespace.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">import java.util.Scanner;
+
+public class ScannerInputDemo {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+
+        String name = scnr.next();
+        int age = scnr.nextInt();
+        double gpa = scnr.nextDouble();
+
+        System.out.println(&quot;Name: &quot; + name);
+        System.out.println(&quot;Age next year: &quot; + (age + 1));
+        System.out.println(&quot;GPA: &quot; + gpa);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Sample input: <code>Morgan 18 3.75</code></p></li>
+            <li><p><strong>example:</strong> <code>ScannerInputDemo.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Scanner Token Flow</h2>
+
+          <p>Scanner reads the next available token based on the method you call.</p>
+          <table>
+            <thead><tr><th>Input</th><th>Call</th><th>Value read</th><th>Remaining input</th></tr></thead>
+            <tbody>
+              <tr><td><code>Morgan 18 3.75</code></td><td><code>next()</code></td><td><code>"Morgan"</code></td><td><code>18 3.75</code></td></tr>
+              <tr><td><code>18 3.75</code></td><td><code>nextInt()</code></td><td><code>18</code></td><td><code>3.75</code></td></tr>
+              <tr><td><code>3.75</code></td><td><code>nextDouble()</code></td><td><code>3.75</code></td><td>empty</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>If the next token does not match the method, the program throws an input mismatch error.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Formatted Output with printf</h2>
+
+          <p>Formatted output is important when expected output requires a fixed number of decimal places or aligned columns.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class FormattedOutputDemo {
+    public static void main(String[] args) {
+        String item = &quot;Notebook&quot;;
+        int quantity = 3;
+        double price = 2.5;
+        double total = quantity * price;
+
+        System.out.println(&quot;Unformatted total: &quot; + total);
+        System.out.printf(&quot;%-12s %5s %8s%n&quot;, &quot;Item&quot;, &quot;Qty&quot;, &quot;Total&quot;);
+        System.out.printf(&quot;%-12s %5d $%7.2f%n&quot;, item, quantity, total);
+    }
+}</code></pre>
+          <ul>
+            <li><p><code>%.2f</code> prints a floating-point value with two digits after the decimal point.</p></li>
+            <li><p><strong>example:</strong> <code>FormattedOutputDemo.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common Format Specifiers</h2>
+
+          <table>
+            <thead><tr><th>Specifier</th><th>Use</th><th>Example result</th></tr></thead>
+            <tbody>
+              <tr><td><code>%d</code></td><td>integer</td><td><code>42</code></td></tr>
+              <tr><td><code>%f</code></td><td>floating-point</td><td><code>3.141593</code></td></tr>
+              <tr><td><code>%.2f</code></td><td>floating-point with 2 decimals</td><td><code>3.14</code></td></tr>
+              <tr><td><code>%s</code></td><td>string</td><td><code>Notebook</code></td></tr>
+              <tr><td><code>%n</code></td><td>platform-independent newline</td><td>moves to next line</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>For this course, <code>%.2f</code> and <code>%n</code> are the most common beginner formatting tools.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Exact Output Mindset</h2>
+
+          <p>A program can calculate the correct value and still fail if the output format does not match the requested format.</p>
+          <table>
+            <thead><tr><th>Expected</th><th>Actual</th><th>Problem</th></tr></thead>
+            <tbody>
+              <tr><td><code>Total: $7.50</code></td><td><code>Total:$7.50</code></td><td>missing space</td></tr>
+              <tr><td><code>7.50</code></td><td><code>7.5</code></td><td>wrong decimal formatting</td></tr>
+              <tr><td>two lines</td><td>one line</td><td>missing newline</td></tr>
+              <tr><td><code>Name: Ava</code></td><td><code>name: Ava</code></td><td>capitalization mismatch</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>When testing, compare actual output character by character.</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Extended Example and Debugging -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Extended Example</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Salary Calculation Problem</h2>
+
+          <p>Problem: read hourly wage and hours worked. Compute gross pay, taxes, and net pay.</p>
+          <table>
+            <thead><tr><th>Input</th><th>Computation</th><th>Output</th></tr></thead>
+            <tbody>
+              <tr><td>hourly wage</td><td><code>grossPay = hourlyWage * hoursWorked</code></td><td>gross pay</td></tr>
+              <tr><td>hours worked</td><td><code>taxes = grossPay * TAX_RATE</code></td><td>taxes</td></tr>
+              <tr><td>fixed tax rate</td><td><code>netPay = grossPay - taxes</code></td><td>net pay</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>This combines variables, input, arithmetic, constants, and formatted output.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Salary Calculation: Complete Program</h2>
+
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">import java.util.Scanner;
+
+public class SalaryCalculation {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+
+        double hourlyWage = scnr.nextDouble();
+        int hoursWorked = scnr.nextInt();
+        double grossPay = hourlyWage * hoursWorked;
+        double taxRate = 0.12;
+        double taxes = grossPay * taxRate;
+        double netPay = grossPay - taxes;
+
+        System.out.printf(&quot;Gross pay: $%.2f%n&quot;, grossPay);
+        System.out.printf(&quot;Taxes: $%.2f%n&quot;, taxes);
+        System.out.printf(&quot;Net pay: $%.2f%n&quot;, netPay);
+    }
+}</code></pre>
+          <ul>
+            <li><p>Sample input: <code>18.75 40</code></p></li>
+            <li><p><strong>live coding:</strong> <code>SalaryCalculation.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Salary Calculation Trace</h2>
+
+          <p>For input <code>18.75 40</code>:</p>
+          <table>
+            <thead><tr><th>Statement</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td><code>hourlyWage = 18.75</code></td><td>read from input</td></tr>
+              <tr><td><code>hoursWorked = 40</code></td><td>read from input</td></tr>
+              <tr><td><code>grossPay = hourlyWage * hoursWorked</code></td><td>750.00</td></tr>
+              <tr><td><code>taxes = grossPay * 0.12</code></td><td>90.00</td></tr>
+              <tr><td><code>netPay = grossPay - taxes</code></td><td>660.00</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>This table is also a debugging tool. If the output is wrong, find the first value that becomes wrong.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Reading API Documentation</h2>
+
+          <p>API documentation explains what library classes and methods do.</p>
+          <table>
+            <thead><tr><th>Question</th><th>Where to look</th></tr></thead>
+            <tbody>
+              <tr><td>What does <code>Math.pow</code> return?</td><td><code>Math</code> class documentation</td></tr>
+              <tr><td>What does <code>String.indexOf</code> return if not found?</td><td><code>String</code> class documentation</td></tr>
+              <tr><td>What does <code>Scanner.nextInt</code> expect?</td><td><code>Scanner</code> class documentation</td></tr>
+              <tr><td>What format specifier prints two decimals?</td><td>Formatter / printf documentation</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Do not memorize every method. Learn how to find the method contract: parameters, return value, and examples.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Debugging Variables and Expressions</h2>
+
+          <p>Most beginner bugs in this chapter come from values not being what the programmer thought they were.</p>
+          <ul>
+            <li><p>Print intermediate values temporarily</p></li>
+            <li><p>Trace variables with a table before running the program</p></li>
+            <li><p>Check integer division before assigning to <code>double</code></p></li>
+            <li><p>Check whether the input order matches the <code>Scanner</code> calls</p></li>
+            <li><p>Check output formatting last, after the calculation is correct</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-java">public class DebugPrintExample {
+    public static void main(String[] args) {
+        int pointsEarned = 17;
+        int pointsPossible = 20;
+        double percent = (double) pointsEarned / pointsPossible * 100.0;
+
+        System.out.println(&quot;DEBUG percent = &quot; + percent);
+        System.out.printf(&quot;Final score: %.1f%%%n&quot;, percent);
+    }
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Style Guidelines for Chapter 2</h2>
+
+          <ul>
+            <li><p>Use meaningful names: <code>hourlyWage</code>, not <code>x</code></p></li>
+            <li><p>Initialize variables close to where they are declared</p></li>
+            <li><p>Use constants for values with meaning: <code>TAX_RATE</code>, <code>MINUTES_PER_HOUR</code></p></li>
+            <li><p>Add spaces around operators: <code>grossPay = wage * hours;</code></p></li>
+            <li><p>Use parentheses when they make an expression easier to read</p></li>
+            <li><p>Keep output statements separate enough that exact formatting is easy to inspect</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <!-- Summary -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+
+          <ul>
+            <li><p>A variable is a named memory location with a type and a value</p></li>
+            <li><p>Initialization gives a variable its first value; assignment changes a value later</p></li>
+            <li><p>Java identifiers are case-sensitive and should follow naming conventions</p></li>
+            <li><p>Arithmetic expressions depend on operator precedence and operand types</p></li>
+            <li><p>Integer division truncates; modulo gives the remainder</p></li>
+            <li><p>Casting must happen before integer division if the goal is a decimal result</p></li>
+            <li><p>Strings use zero-based indexing and many methods return new strings</p></li>
+            <li><p>Scanner input and formatted output require exact order and exact format</p></li>
+          </ul>
+        </section>
+
+        
+
+        <section class="frame">
+          <h2>Next Time</h2>
+
+          <ul>
+            <li><p>Use Boolean expressions to make decisions</p></li>
+            <li><p>Write <code>if</code>, <code>if-else</code>, and multi-branch logic</p></li>
+            <li><p>Compare numbers and strings correctly</p></li>
+            <li><p>Trace which branch runs for a given input</p></li>
+          </ul>
+          <p>Next chapter: Branches.</p>
+        </section>
+
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
