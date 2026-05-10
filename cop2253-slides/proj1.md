@@ -14,8 +14,6 @@ This project is designed to practice:
 - `if / else if / else` branches
 - exact output formatting
 
-You do **not** need to create a graphical interface. This is a console program.
-
 ---
 
 ## File and class name
@@ -62,11 +60,7 @@ name age weeklyExerciseMinutes monthlyBudget
 
 ### Input value descriptions
 
-`name`
-
-The user’s name.
-
-The name will be one word only.
+`name` The user’s name. The name will be one word only.
 
 Examples:
 
@@ -76,9 +70,7 @@ Ben
 Maria
 ```
 
-`age`
-
-The user’s age as an integer.
+`age` The user’s age as an integer.
 
 Examples:
 
@@ -88,9 +80,7 @@ Examples:
 70
 ```
 
-`weeklyExerciseMinutes`
-
-The number of minutes the user exercises in one week.
+`weeklyExerciseMinutes` The number of minutes the user exercises in one week.
 
 This will be an integer.
 
@@ -102,9 +92,7 @@ Examples:
 180
 ```
 
-`monthlyBudget`
-
-The amount of money the user has available for one month.
+`monthlyBudget` The amount of money the user has available for one month.
 
 This will be a decimal number.
 
@@ -265,9 +253,7 @@ Recommendation: recommendation sentence
 ```
 
 Do not print extra prompts.
-
 Do not print:
-
 ```text
 Enter name:
 Enter age:
@@ -332,8 +318,6 @@ Your program must use:
 - `if / else if / else` branches
 - `System.out.printf()` for the daily budget
 - at least one meaningful comment
-
-Your program does **not** need to use a loop.
 
 ---
 
@@ -401,19 +385,12 @@ daily budget: $15.00
 ## Restrictions
 
 Do not use loops.
-
 Do not use arrays.
-
 Do not use custom methods.
-
 Do not use classes other than `DecisionHelper`.
-
 Do not use file input.
-
 Do not print extra prompts.
-
 Do not ask the user questions.
-
 Do not hard-code the sample output.
 
 Your program must work for different valid inputs, not only the sample input.
