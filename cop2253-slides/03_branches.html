@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Branches</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- Title -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Branches</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- Overview -->
+      <section>
+        <section class="frame">
+          <h2>Today's Roadmap</h2>
+          <p>Chapter 3 is about making programs choose different paths.</p>
+          <ul>
+            <li><p>Boolean expressions: values that are either <code>true</code> or <code>false</code></p></li>
+            <li><p>Relational and equality operators: <code>&lt;</code>, <code>&gt;</code>, <code>==</code>, <code>!=</code>, and friends</p></li>
+            <li><p>Logical operators: <code>&amp;&amp;</code>, <code>||</code>, and <code>!</code></p></li>
+            <li><p>Branching patterns: simple <code>if</code>, <code>if/else</code>, <code>if/else-if/else</code>, and nested branches</p></li>
+            <li><p>Correct range checks, String comparisons, floating-point comparisons, and switch statements</p></li>
+            <li><p>Common beginner errors and how to debug them with trace tables</p></li>
+          </ul>
+          <p><em>Reading focus: Chapter 3, Branches</em></p>
+        </section>
+        <section class="frame">
+          <h2>What You Should Be Able To Do</h2>
+          <ul>
+            <li><p>Write a condition that evaluates to <code>true</code> or <code>false</code></p></li>
+            <li><p>Use braces and indentation to make branch structure clear</p></li>
+            <li><p>Choose independent <code>if</code> statements only when multiple branches may run</p></li>
+            <li><p>Choose <code>if / else-if / else</code> when exactly one branch should run</p></li>
+            <li><p>Write range checks like <code>(age &gt;= 16) &amp;&amp; (age &lt; 25)</code></p></li>
+            <li><p>Predict output by tracing branch conditions in order</p></li>
+            <li><p>Test boundary cases, not just the most obvious input</p></li>
+          </ul>
+          <p>The main habit: before running code, ask which condition is checked first, which branch executes, and which branches are skipped.</p>
+        </section>
+      </section>
+      <!-- Boolean Expressions -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Boolean Expressions</h1>
+        </section>
+        <section class="frame">
+          <h2>Boolean Data Type</h2>
+          <p>A <code>boolean</code> variable stores one of exactly two values: <code>true</code> or <code>false</code>.</p>
+          <ul>
+            <li><p>Branch conditions must evaluate to boolean</p></li>
+            <li><p>Comparison expressions also evaluate to boolean</p></li>
+            <li><p>A boolean variable can give a condition a meaningful name</p></li>
+          </ul>
+          <table>
+            <thead><tr><th>Expression</th><th>Possible result</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>age &gt;= 18</code></td><td><code>true</code> or <code>false</code></td><td>Is the person an adult?</td></tr>
+              <tr><td><code>score &gt;= 70</code></td><td><code>true</code> or <code>false</code></td><td>Is the grade passing?</td></tr>
+              <tr><td><code>choice != 0</code></td><td><code>true</code> or <code>false</code></td><td>Did the user choose something other than 0?</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Boolean Basics: Complete Program</h2>
+          <p>This program stores comparison results in boolean variables, then prints them.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class BooleanBasics {
+    public static void main(String[] args) {
+        int age = 19;
+        int score = 84;
+
+        boolean isAdult = age &gt;= 18;
+        boolean isPassing = score &gt;= 70;
+        boolean hasPerfectScore = score == 100;
+
+        System.out.println("Age: " + age);
+        System.out.println("Score: " + score);
+        System.out.println("Adult? " + isAdult);
+        System.out.println("Passing? " + isPassing);
+        System.out.println("Perfect score? " + hasPerfectScore);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Trace each boolean assignment before looking at the output.</p></li>
+            <li><p><strong>example:</strong> <code>BooleanBasics.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Relational and Equality Operators</h2>
+          <table>
+            <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th><th>Result type</th></tr></thead>
+            <tbody>
+              <tr><td><code>==</code></td><td>equal to</td><td><code>age == 18</code></td><td><code>boolean</code></td></tr>
+              <tr><td><code>!=</code></td><td>not equal to</td><td><code>choice != 0</code></td><td><code>boolean</code></td></tr>
+              <tr><td><code>&lt;</code></td><td>less than</td><td><code>score &lt; 70</code></td><td><code>boolean</code></td></tr>
+              <tr><td><code>&gt;</code></td><td>greater than</td><td><code>score &gt; 90</code></td><td><code>boolean</code></td></tr>
+              <tr><td><code>&lt;=</code></td><td>less than or equal</td><td><code>age &lt;= 25</code></td><td><code>boolean</code></td></tr>
+              <tr><td><code>&gt;=</code></td><td>greater than or equal</td><td><code>salary &gt;= 10000</code></td><td><code>boolean</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Two-character operators must be written exactly: <code>&lt;=</code> and <code>&gt;=</code> are valid, but <code>=&lt;</code> and <code>=&gt;</code> are not.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Assignment vs. Equality</h2>
+          <p>Beginners often confuse <code>=</code> with <code>==</code>. They do completely different jobs.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.52em;"><code class="language-java">public class EqualityDemo {
+    public static void main(String[] args) {
+        int age = 18;            // assignment: store 18 in age
+        int requiredAge = 18;
+
+        if (age == requiredAge) { // equality test: compare two values
+            System.out.println("Exactly old enough");
+        }
+        else {
+            System.out.println("Not the required age");
+        }
+
+        System.out.println("age is still " + age);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p><code>=</code> stores a value in a variable.</p></li>
+            <li><p><code>==</code> compares two primitive values.</p></li>
+            <li><p><strong>example:</strong> <code>EqualityDemo.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Trace Table: Equality Demo</h2>
+          <p>Trace tables help students slow down and separate assignment from comparison.</p>
+          <table>
+            <thead><tr><th>Line / action</th><th><code>age</code></th><th><code>requiredAge</code></th><th>Condition result</th><th>Output</th></tr></thead>
+            <tbody>
+              <tr><td><code>int age = 18;</code></td><td>18</td><td>not created</td><td></td><td></td></tr>
+              <tr><td><code>int requiredAge = 18;</code></td><td>18</td><td>18</td><td></td><td></td></tr>
+              <tr><td><code>age == requiredAge</code></td><td>18</td><td>18</td><td><code>true</code></td><td></td></tr>
+              <tr><td>execute if branch</td><td>18</td><td>18</td><td></td><td><code>Exactly old enough</code></td></tr>
+              <tr><td>after branch</td><td>18</td><td>18</td><td></td><td><code>age is still 18</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Operator Precedence</h2>
+          <p>Java has an order of evaluation. Parentheses make your intention clearer.</p>
+          <table>
+            <thead><tr><th>Priority</th><th>Operators</th><th>Example idea</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><code>( )</code></td><td>Innermost parentheses first</td></tr>
+              <tr><td>2</td><td><code>!</code></td><td>Logical negation</td></tr>
+              <tr><td>3</td><td><code>* / %</code>, then <code>+ -</code></td><td>Arithmetic before comparison</td></tr>
+              <tr><td>4</td><td><code>&lt; &lt;= &gt; &gt;=</code></td><td>Relational comparison</td></tr>
+              <tr><td>5</td><td><code>== !=</code></td><td>Equality comparison</td></tr>
+              <tr><td>6</td><td><code>&amp;&amp;</code></td><td>Logical AND</td></tr>
+              <tr><td>7</td><td><code>||</code></td><td>Logical OR</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>For lecture and lab code, use parentheses when a condition has more than one logical part.</p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- Logical Operators -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Logical Operators</h1>
+        </section>
+        <section class="frame">
+          <h2>AND, OR, NOT</h2>
+          <p>Logical operators combine or negate boolean expressions.</p>
+          <table>
+            <thead><tr><th>Operator</th><th>Name</th><th>True when...</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td><code>&amp;&amp;</code></td><td>AND</td><td>All conditions are true</td><td><code>(age &gt;= 18) &amp;&amp; hasTicket</code></td></tr>
+              <tr><td><code>||</code></td><td>OR</td><td>At least one condition is true</td><td><code>(age &lt; 18) || (age &gt;= 60)</code></td></tr>
+              <tr><td><code>!</code></td><td>NOT</td><td>The condition is false</td><td><code>!isReady</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Common error: write <code>&amp;&amp;</code>, not <code>&amp;</code>; write <code>||</code>, not <code>|</code>, when you want normal logical operators.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Truth Table for AND / OR</h2>
+          <table>
+            <thead><tr><th>A</th><th>B</th><th><code>A &amp;&amp; B</code></th><th><code>A || B</code></th></tr></thead>
+            <tbody>
+              <tr><td><code>false</code></td><td><code>false</code></td><td><code>false</code></td><td><code>false</code></td></tr>
+              <tr><td><code>false</code></td><td><code>true</code></td><td><code>false</code></td><td><code>true</code></td></tr>
+              <tr><td><code>true</code></td><td><code>false</code></td><td><code>false</code></td><td><code>true</code></td></tr>
+              <tr><td><code>true</code></td><td><code>true</code></td><td><code>true</code></td><td><code>true</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>AND is stricter: one false value makes the whole expression false.</p></li>
+            <li><p>OR is more flexible: one true value makes the whole expression true.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Logical Operators: Complete Program</h2>
+          <p>This example names three different conditions and prints their results.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class LogicalOperatorsDemo {
+    public static void main(String[] args) {
+        int age = 20;
+        boolean hasTicket = true;
+        boolean hasCoupon = false;
+
+        boolean canEnter = (age &gt;= 18) &amp;&amp; hasTicket;
+        boolean getsDiscount = (age &lt; 18) || (age &gt;= 60) || hasCoupon;
+        boolean needsHelp = !hasTicket;
+
+        System.out.println("Can enter? " + canEnter);
+        System.out.println("Gets discount? " + getsDiscount);
+        System.out.println("Needs help? " + needsHelp);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Ask students to predict <code>canEnter</code>, <code>getsDiscount</code>, and <code>needsHelp</code> before running.</p></li>
+            <li><p><strong>example:</strong> <code>LogicalOperatorsDemo.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Range Checks: Java Is Not Algebra</h2>
+          <p>A math-style chained comparison does not work in Java.</p>
+          <table>
+            <thead><tr><th>Goal</th><th>Do not write</th><th>Write this instead</th></tr></thead>
+            <tbody>
+              <tr><td>Age from 16 through 24</td><td><code>16 &lt;= age &lt; 25</code></td><td><code>(age &gt;= 16) &amp;&amp; (age &lt; 25)</code></td></tr>
+              <tr><td>Score from 70 through 89</td><td><code>70 &lt;= score &lt; 90</code></td><td><code>(score &gt;= 70) &amp;&amp; (score &lt; 90)</code></td></tr>
+              <tr><td>Outside 0 through 100</td><td><code>score &lt; 0 &gt; 100</code></td><td><code>(score &lt; 0) || (score &gt; 100)</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Every comparison must have a left operand and a right operand.</p></li>
+            <li><p>Use AND when a value must satisfy two limits at the same time.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Short-Circuit Evaluation</h2>
+          <p><code>&amp;&amp;</code> and <code>||</code> may stop early once the final result is already known.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class ShortCircuitDemo {
+    public static void main(String[] args) {
+        int count = 0;
+        int sum = 100;
+
+        if ((count != 0) &amp;&amp; (sum / count &gt; 10)) {
+            System.out.println("Average is high");
+        }
+        else {
+            System.out.println("No average can be computed safely");
+        }
+
+        boolean isTeacher = true;
+        boolean hasAccessCode = false;
+        if (isTeacher || hasAccessCode) {
+            System.out.println("Access granted");
+        }
+    }
+}
+</code></pre>
+          <ul>
+            <li><p><code>&amp;&amp;</code> stops early when the left side is false.</p></li>
+            <li><p><code>||</code> stops early when the left side is true.</p></li>
+            <li><p><strong>example:</strong> <code>ShortCircuitDemo.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Why Short-Circuiting Matters</h2>
+          <p>The first condition can protect the second condition from a runtime error.</p>
+          <table>
+            <thead><tr><th>Expression</th><th>What happens when <code>count == 0</code>?</th></tr></thead>
+            <tbody>
+              <tr><td><code>(count != 0) &amp;&amp; (sum / count &gt; 10)</code></td><td>Safe. The right side is skipped.</td></tr>
+              <tr><td><code>(sum / count &gt; 10) &amp;&amp; (count != 0)</code></td><td>Unsafe. Division happens before the safety check.</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Put safety checks first: nonzero denominator, non-null object, valid index, or nonempty string.</p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- Branch Patterns -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Branch Patterns</h1>
+        </section>
+        <section class="frame">
+          <h2>Simple if</h2>
+          <p>A branch is a program path taken only when a condition is true.</p>
+          <table>
+            <thead><tr><th>Pattern</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>if (condition) { ... }</code></td><td>Run the body only if the condition is true</td></tr>
+              <tr><td>condition false</td><td>Skip the body and continue after the branch</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Example situation: print a senior discount message only when <code>age &gt;= 60</code>.</p></li>
+            <li><p>Use braces even for one statement. It prevents mistakes when adding a second line later.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>if and if/else: Complete Program</h2>
+          <p>This example shows both a simple <code>if</code> and a two-way <code>if/else</code>.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.48em;"><code class="language-java">import java.util.Scanner;
+
+public class ConditionalExecutionDemo {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+
+        System.out.print("Enter age: ");
+        int age = scnr.nextInt();
+
+        if (age &gt;= 60) {
+            System.out.println("Eligible for a senior discount");
+        }
+
+        System.out.print("Enter an integer: ");
+        int number = scnr.nextInt();
+
+        if (number % 2 == 0) {
+            System.out.println(number + " is even");
+        }
+        else {
+            System.out.println(number + " is odd");
+        }
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Sample input: <code>65 7</code></p></li>
+            <li><p><strong>live coding:</strong> <code>ConditionalExecutionDemo.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Trace: Conditional Execution</h2>
+          <p>For input <code>65 7</code>, the first branch executes and the odd/even branch chooses <code>else</code>.</p>
+          <table>
+            <thead><tr><th>Step</th><th>Value</th><th>Condition checked</th><th>Result</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>Read age</td><td><code>65</code></td><td></td><td></td><td>store in <code>age</code></td></tr>
+              <tr><td>Senior check</td><td><code>age = 65</code></td><td><code>age &gt;= 60</code></td><td><code>true</code></td><td>print discount message</td></tr>
+              <tr><td>Read number</td><td><code>7</code></td><td></td><td></td><td>store in <code>number</code></td></tr>
+              <tr><td>Even check</td><td><code>number = 7</code></td><td><code>number % 2 == 0</code></td><td><code>false</code></td><td>execute <code>else</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Independent if Statements vs. else-if Chain</h2>
+          <p>These two patterns look similar but mean different things.</p>
+          <table>
+            <thead><tr><th>Pattern</th><th>How many branches can run?</th><th>Use when...</th></tr></thead>
+            <tbody>
+              <tr><td>Several separate <code>if</code> statements</td><td>Zero, one, or many</td><td>Conditions are independent</td></tr>
+              <tr><td><code>if / else-if / else</code></td><td>Exactly one branch in the chain</td><td>Choices are mutually exclusive</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Common mistake: use separate <code>if</code> statements for categories where only one category should be chosen.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Branch Pattern Demo</h2>
+          <p>This program intentionally uses a boundary value to show the difference between independent <code>if</code> statements and an <code>else-if</code> chain.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.46em;"><code class="language-java">public class BranchPatternDemo {
+    public static void main(String[] args) {
+        double salary = 10000.00;
+
+        System.out.println("Independent if statements:");
+        if (salary &lt;= 10000.00) {
+            System.out.println("Bracket A message printed");
+        }
+        if (salary &gt;= 10000.00) {
+            System.out.println("Bracket B message printed");
+        }
+
+        System.out.println();
+        System.out.println("if / else-if chain:");
+        if (salary &lt;= 10000.00) {
+            System.out.println("Bracket A message printed");
+        }
+        else if (salary &gt;= 10000.00) {
+            System.out.println("Bracket B message printed");
+        }
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>The salary is exactly <code>10000.00</code>, so the independent checks both become true.</p></li>
+            <li><p><strong>example:</strong> <code>BranchPatternDemo.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Multi-Branch if / else-if / else</h2>
+          <p>Use a multi-branch chain when the program should choose one category from several possibilities.</p>
+          <table>
+            <thead><tr><th>Salary range</th><th>Branch</th><th>Condition</th></tr></thead>
+            <tbody>
+              <tr><td>up to 10000</td><td>Bracket A</td><td><code>salary &lt;= 10000.00</code></td></tr>
+              <tr><td>10000.01 to 20000</td><td>Bracket B</td><td><code>salary &lt;= 20000.00</code></td></tr>
+              <tr><td>20000.01 to 30000</td><td>Bracket C</td><td><code>salary &lt;= 30000.00</code></td></tr>
+              <tr><td>above 30000</td><td>Bracket D</td><td><code>else</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Once one branch is true, Java skips the rest of that chain.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Nested Branches</h2>
+          <p>A branch body can contain another branch. This is called nesting.</p>
+          <ul>
+            <li><p>Nested code can express requirements like: salary is low, age is high enough, and month is December.</p></li>
+            <li><p>Deep nesting is sometimes clear for a first example, but can become hard to read.</p></li>
+            <li><p>Often, a nested structure can be rewritten as one condition using <code>&amp;&amp;</code>.</p></li>
+          </ul>
+          <table>
+            <thead><tr><th>Nested idea</th><th>Equivalent combined condition</th></tr></thead>
+            <tbody>
+              <tr><td>if salary ok, then if age ok, then if month ok</td><td><code>(salary &lt; 10000.00) &amp;&amp; (age &gt;= 60) &amp;&amp; (month == 12)</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Nested Bonus Demo</h2>
+          <p>This program mirrors the nested bonus example from lecture notes.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.48em;"><code class="language-java">public class NestedBonusDemo {
+    public static void main(String[] args) {
+        int month = 12;
+        int age = 64;
+        double salary = 9500.00;
+        double bonus = 0.00;
+
+        if (salary &lt; 10000.00) {
+            if (age &gt;= 60) {
+                if (month == 12) {
+                    bonus = 0.20 * salary;
+                    salary = salary + bonus;
+                }
+            }
+        }
+
+        System.out.printf("Bonus: $%.2f%n", bonus);
+        System.out.printf("New salary: $%.2f%n", salary);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Ask students which condition would stop the bonus if changed.</p></li>
+            <li><p><strong>live coding:</strong> <code>NestedBonusDemo.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Boundary Testing</h2>
+          <p>Branch programs fail most often at the edges of a range.</p>
+          <table>
+            <thead><tr><th>Condition</th><th>Test below</th><th>Test boundary</th><th>Test above</th></tr></thead>
+            <tbody>
+              <tr><td><code>age &gt;= 60</code></td><td>59</td><td>60</td><td>61</td></tr>
+              <tr><td><code>score &gt;= 70</code></td><td>69</td><td>70</td><td>71</td></tr>
+              <tr><td><code>salary &lt;= 10000</code></td><td>9999.99</td><td>10000.00</td><td>10000.01</td></tr>
+              <tr><td><code>month == 12</code></td><td>11</td><td>12</td><td>13</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>When debugging a branch, test the exact boundary and one value on each side.</p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- Comparing Values Safely -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Comparing Values Safely</h1>
+        </section>
+        <section class="frame">
+          <h2>String Comparisons</h2>
+          <p>Strings are objects. Use methods to compare their text.</p>
+          <table>
+            <thead><tr><th>Comparison</th><th>What it checks</th><th>Beginner rule</th></tr></thead>
+            <tbody>
+              <tr><td><code>name == otherName</code></td><td>Whether two references point to the same object</td><td>Avoid for text comparison</td></tr>
+              <tr><td><code>name.equals(otherName)</code></td><td>Whether the text contents match exactly</td><td>Use this for exact text</td></tr>
+              <tr><td><code>name.equalsIgnoreCase(otherName)</code></td><td>Whether text matches ignoring capitalization</td><td>Useful for user input</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>String Comparison Demo</h2>
+          <p>This program shows why <code>equals()</code> is the safe beginner habit for Strings.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class StringComparisonDemo {
+    public static void main(String[] args) {
+        String storedPassword = "java123";
+        String userInput = new String("java123");
+
+        if (storedPassword == userInput) {
+            System.out.println("== says the strings are the same object");
+        }
+        else {
+            System.out.println("== says the references are different");
+        }
+
+        if (storedPassword.equals(userInput)) {
+            System.out.println("equals() says the text matches");
+        }
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Point out that the text matches even though the two object references are different.</p></li>
+            <li><p><strong>example:</strong> <code>StringComparisonDemo.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Floating-Point Comparisons</h2>
+          <p>Floating-point values are approximate, so equality can surprise you.</p>
+          <ul>
+            <li><p>Computers store many decimal values as approximations.</p></li>
+            <li><p>Do not depend on <code>==</code> for most <code>double</code> calculations.</p></li>
+            <li><p>Use a small tolerance called an epsilon when checking whether two results are close enough.</p></li>
+          </ul>
+          <table>
+            <thead><tr><th>Idea</th><th>Expression</th></tr></thead>
+            <tbody>
+              <tr><td>Exact equality</td><td><code>total == expected</code></td></tr>
+              <tr><td>Close enough</td><td><code>Math.abs(total - expected) &lt; epsilon</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Floating-Point Comparison Demo</h2>
+          <p>This example uses <code>0.1 + 0.2</code>, a classic floating-point surprise.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class FloatingPointComparisonDemo {
+    public static void main(String[] args) {
+        double total = 0.1 + 0.2;
+        double expected = 0.3;
+        double epsilon = 0.000001;
+
+        System.out.println("total: " + total);
+        System.out.println("expected: " + expected);
+        System.out.println("Using == : " + (total == expected));
+        System.out.println("Using epsilon: " + (Math.abs(total - expected) &lt; epsilon));
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>The epsilon approach checks whether two values are close enough for the program's purpose.</p></li>
+            <li><p><strong>example:</strong> <code>FloatingPointComparisonDemo.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- Switch Statements -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Switch Statements</h1>
+        </section>
+        <section class="frame">
+          <h2>When switch Is Useful</h2>
+          <p>A <code>switch</code> statement is useful when one expression is compared against several exact constant values.</p>
+          <table>
+            <thead><tr><th>Good fit for switch</th><th>Usually better with if/else</th></tr></thead>
+            <tbody>
+              <tr><td>menu option 1, 2, 3, 4</td><td>ranges such as <code>score &gt;= 90</code></td></tr>
+              <tr><td>letter grade <code>'A'</code>, <code>'B'</code>, <code>'C'</code></td><td>compound conditions using <code>&amp;&amp;</code> or <code>||</code></td></tr>
+              <tr><td>day name, command word, enum value</td><td>floating-point comparisons</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Remember <code>break</code> unless you intentionally want fall-through behavior.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Switch Demo</h2>
+          <p>This example maps a letter grade to a message.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.48em;"><code class="language-java">public class SwitchDemo {
+    public static void main(String[] args) {
+        char letterGrade = 'B';
+        String message;
+
+        switch (letterGrade) {
+            case 'A':
+                message = "Excellent";
+                break;
+            case 'B':
+                message = "Good work";
+                break;
+            case 'C':
+                message = "Satisfactory";
+                break;
+            default:
+                message = "Meet with the instructor";
+                break;
+        }
+
+        System.out.println(message);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Change <code>letterGrade</code> to <code>'A'</code>, <code>'C'</code>, or <code>'F'</code> and predict the message.</p></li>
+            <li><p><strong>example:</strong> <code>SwitchDemo.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Conditional Expression</h2>
+          <p>A conditional expression chooses between two values.</p>
+          <table>
+            <thead><tr><th>Form</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>condition ? valueIfTrue : valueIfFalse</code></td><td>Evaluate the condition, then choose one of two values</td></tr>
+              <tr><td><code>(score &gt;= 70) ? "Pass" : "Fail"</code></td><td>Choose a short label based on the score</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Use it for short value selection, not for complicated multi-line decisions.</p></li>
+            <li><p>For beginners, <code>if/else</code> is usually clearer when there are several statements.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Enumerations: Preview</h2>
+          <p>An enumeration defines a small set of named constants.</p>
+          <ul>
+            <li><p>Examples: days of the week, directions, menu states, card suits, or user roles</p></li>
+            <li><p>Enums reduce mistakes caused by misspelled string values</p></li>
+            <li><p>Enums often work well with <code>switch</code></p></li>
+          </ul>
+          <table>
+            <thead><tr><th>Instead of many strings...</th><th>Use a fixed set of names</th></tr></thead>
+            <tbody>
+              <tr><td><code>"MONDAY"</code>, <code>"Monady"</code>, <code>"monday"</code></td><td><code>MONDAY</code>, <code>TUESDAY</code>, <code>WEDNESDAY</code></td></tr>
+            </tbody>
+          </table>
+          <p>This is a preview idea. The main exam skill here is knowing when a fixed list of choices exists.</p>
+        </section>
+      </section>
+      <!-- Common Branching Errors -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Common Branching Errors</h1>
+        </section>
+        <section class="frame">
+          <h2>Intentional Compiler Errors</h2>
+          <p>These examples show two common mistakes that beginners make in branch conditions. They are useful because the compiler points directly to the problem.</p>
+          <p>Read the error message, then look back at the condition and ask: Does this expression produce a boolean value?</p>
+          <div style="display:flex;gap:0.55em;align-items:flex-start;margin-top:0.35em;">
+            <div style="flex:1;min-width:0;">
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.40em;"><code class="language-java">public class AssignmentInIfBroken {
+    public static void main(String[] args) {
+        int age = 18;
+
+        if (age = 18) {
+            System.out.println("Exactly 18");
+        }
+    }
+}
+</code></pre>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.40em;"><code class="language-java">public class ChainedComparisonBroken {
+    public static void main(String[] args) {
+        int age = 20;
+
+        if (16 &lt; age &lt; 25) {
+            System.out.println("Age is in range");
+        }
+    }
+}
+</code></pre>
+            </div>
+          </div>
+          <ul>
+            <li><p><strong>example:</strong> <code>AssignmentInIfBroken.java</code>, <code>ChainedComparisonBroken.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Common Logic Errors</h2>
+          <table>
+            <thead><tr><th>Error pattern</th><th>Why it fails</th><th>Fix</th></tr></thead>
+            <tbody>
+              <tr><td>Wrong boundary</td><td><code>&gt;</code> excludes the boundary, <code>&gt;=</code> includes it</td><td>Test one value below, at, and above the boundary</td></tr>
+              <tr><td>Wrong branch order</td><td>A broad condition catches values before a specific condition can run</td><td>Put the most specific condition first</td></tr>
+              <tr><td>Separate <code>if</code> statements</td><td>More than one branch may execute</td><td>Use <code>else-if</code> for mutually exclusive categories</td></tr>
+              <tr><td>String compared with <code>==</code></td><td>Checks reference identity, not text content</td><td>Use <code>.equals()</code></td></tr>
+              <tr><td>Floating-point compared with <code>==</code></td><td>Approximation can make exact equality false</td><td>Use an epsilon tolerance</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Debugging Branches Incrementally</h2>
+          <p>When a branch program does not work, debug the decision process before rewriting the whole program.</p>
+          <ol>
+            <li><p>Print the input values that the program actually read.</p></li>
+            <li><p>Print the boolean condition result before the branch.</p></li>
+            <li><p>Test a boundary table: below, at, and above each cutoff.</p></li>
+            <li><p>Check whether the branch structure should be independent <code>if</code> statements or one <code>else-if</code> chain.</p></li>
+            <li><p>Remove temporary debugging output after the logic is correct.</p></li>
+          </ol>
+        </section>
+        <section class="frame">
+          <h2>Exam-Style Tracing Question</h2>
+          <p>Given <code>score = 85</code>, which branch executes?</p>
+          <table>
+            <thead><tr><th>Branch checked</th><th>Condition</th><th>Result</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><code>score &gt;= 90</code></td><td><code>false</code></td><td>skip</td></tr>
+              <tr><td>2</td><td><code>score &gt;= 80</code></td><td><code>true</code></td><td>execute this branch</td></tr>
+              <tr><td>3</td><td><code>score &gt;= 70</code></td><td>not checked</td><td>skipped because branch 2 already executed</td></tr>
+              <tr><td>else</td><td>none</td><td>not checked</td><td>skipped</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>The answer is not based on every true condition. It is based on the first true condition in the chain.</p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- Summary -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+          <ul>
+            <li><p>Every branch condition must evaluate to <code>true</code> or <code>false</code>.</p></li>
+            <li><p><code>=</code> assigns; <code>==</code> compares primitive values.</p></li>
+            <li><p>Use <code>&amp;&amp;</code> for conditions that must all be true; use <code>||</code> when at least one condition is enough.</p></li>
+            <li><p>Write ranges as two complete comparisons, such as <code>(age &gt;= 16) &amp;&amp; (age &lt; 25)</code>.</p></li>
+            <li><p>Use independent <code>if</code> statements only when multiple branches may run.</p></li>
+            <li><p>Use an <code>if / else-if / else</code> chain when exactly one category should be chosen.</p></li>
+            <li><p>Use <code>.equals()</code> for String text comparison and epsilon for most floating-point equality checks.</p></li>
+            <li><p>Debug branch programs with trace tables and boundary tests.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Before Next Class</h2>
+          <ul>
+            <li><p>Practice tracing branch conditions before running the code.</p></li>
+            <li><p>Review how <code>&amp;&amp;</code> and <code>||</code> short-circuit.</p></li>
+            <li><p>Try modifying the example values and predicting which output changes.</p></li>
+            <li><p>For programming practice, focus on exact boundaries and exact output formatting.</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
