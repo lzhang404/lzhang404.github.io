@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Project 1&colon; Console Decision Helper</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="project-1-console-decision-helper">Project 1: Console Decision Helper</h1>
+<h2 id="overview">Overview</h2>
+<p>In this project, you will write a Java console program that reads information about <strong>one user</strong> and prints a short personalized summary for that user.</p>
+<p>This project is designed to practice:</p>
+<ul>
+<li>variables</li>
+<li>keyboard input with <code>Scanner</code></li>
+<li>arithmetic calculations</li>
+<li>formatted output</li>
+<li><code>String</code> values</li>
+<li><code>if / else if / else</code> branches</li>
+<li>exact output formatting</li>
+</ul>
+<hr>
+<h2 id="file-and-class-name">File and class name</h2>
+<p>Submit one Java file:</p>
+<pre><code class="language-text">DecisionHelper.java
+</code></pre>
+<p>Your public class must be named:</p>
+<pre><code class="language-java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">DecisionHelper</span>
+</code></pre>
+<p>Your program must contain a <code>main()</code> method.</p>
+<hr>
+<h2 id="program-behavior">Program behavior</h2>
+<p>Your program will read <strong>one user record</strong> from standard input.</p>
+<p>The user record contains four values:</p>
+<pre><code class="language-text">name age weeklyExerciseMinutes monthlyBudget
+</code></pre>
+<p>After reading the four values, the program should calculate the required information and print the required output once.</p>
+<p>The program should not use a loop.</p>
+<hr>
+<h2 id="input-format">Input format</h2>
+<p>The input has this format:</p>
+<pre><code class="language-text">name age weeklyExerciseMinutes monthlyBudget
+</code></pre>
+<h3 id="input-value-descriptions">Input value descriptions</h3>
+<p><code>name</code> The user’s name. The name will be one word only.</p>
+<p>Examples:</p>
+<pre><code class="language-text">Ava
+Ben
+Maria
+</code></pre>
+<p><code>age</code> The user’s age as an integer.</p>
+<p>Examples:</p>
+<pre><code class="language-text">17
+25
+70
+</code></pre>
+<p><code>weeklyExerciseMinutes</code> The number of minutes the user exercises in one week.</p>
+<p>This will be an integer.</p>
+<p>Examples:</p>
+<pre><code class="language-text">45
+120
+180
+</code></pre>
+<p><code>monthlyBudget</code> The amount of money the user has available for one month.</p>
+<p>This will be a decimal number.</p>
+<p>Examples:</p>
+<pre><code class="language-text">300
+450.00
+725.50
+</code></pre>
+<hr>
+<h2 id="example-input">Example input</h2>
+<pre><code class="language-text">Ava 19 180 450
+</code></pre>
+<p>The program should process Ava and then stop.</p>
+<hr>
+<h2 id="required-calculations-and-classifications">Required calculations and classifications</h2>
+<p>For the user, your program must determine:</p>
+<ol>
+<li>the age group</li>
+<li>the exercise category</li>
+<li>the daily budget</li>
+<li>one recommendation sentence</li>
+</ol>
+<hr>
+<h2 id="age-group-rules">Age group rules</h2>
+<p>Use the user’s age to determine the age group.</p>
+<p>Use these exact category names:</p>
+<pre><code class="language-text">minor
+adult
+senior
+</code></pre>
+<p>Rules:</p>
+<pre><code class="language-text">age less than 18          -&gt; minor
+age from 18 through 64    -&gt; adult
+age 65 or older           -&gt; senior
+</code></pre>
+<p>Boundary examples:</p>
+<pre><code class="language-text">17 -&gt; minor
+18 -&gt; adult
+64 -&gt; adult
+65 -&gt; senior
+</code></pre>
+<hr>
+<h2 id="exercise-category-rules">Exercise category rules</h2>
+<p>Use the user’s weekly exercise minutes to determine the exercise category.</p>
+<p>Use these exact category names:</p>
+<pre><code class="language-text">low exercise
+moderate exercise
+high exercise
+</code></pre>
+<p>Rules:</p>
+<pre><code class="language-text">less than 75 minutes       -&gt; low exercise
+75 through 149 minutes     -&gt; moderate exercise
+150 minutes or more        -&gt; high exercise
+</code></pre>
+<p>Boundary examples:</p>
+<pre><code class="language-text">74  -&gt; low exercise
+75  -&gt; moderate exercise
+149 -&gt; moderate exercise
+150 -&gt; high exercise
+</code></pre>
+<hr>
+<h2 id="daily-budget-calculation">Daily budget calculation</h2>
+<p>Calculate the user’s daily budget using:</p>
+<pre><code class="language-text">dailyBudget = monthlyBudget / 30.0
+</code></pre>
+<p>The daily budget must be printed with exactly two digits after the decimal point.</p>
+<p>For example:</p>
+<pre><code class="language-text">monthlyBudget = 450
+dailyBudget = 15.00
+</code></pre>
+<hr>
+<h2 id="recommendation-rules">Recommendation rules</h2>
+<p>Your program must print one recommendation sentence for the user.</p>
+<p>The recommendation should be based on the exercise category.</p>
+<p>Use these exact sentences:</p>
+<p>For <code>low exercise</code>:</p>
+<pre><code class="language-text">Recommendation: start with a small weekly goal.
+</code></pre>
+<p>For <code>moderate exercise</code>:</p>
+<pre><code class="language-text">Recommendation: keep building consistency.
+</code></pre>
+<p>For <code>high exercise</code>:</p>
+<pre><code class="language-text">Recommendation: maintain healthy habits.
+</code></pre>
+<hr>
+<h2 id="required-output-format">Required output format</h2>
+<p>Print exactly two lines.</p>
+<p>Line 1 format:</p>
+<pre><code class="language-text">name: ageGroup, exerciseCategory, daily budget $dailyBudget
+</code></pre>
+<p>Line 2 format:</p>
+<pre><code class="language-text">Recommendation: recommendation sentence
+</code></pre>
+<p>Do not print extra prompts.
+Do not print:</p>
+<pre><code class="language-text">Enter name:
+Enter age:
+</code></pre>
+<p>The output must only contain the required result lines.</p>
+<hr>
+<h2 id="sample-input-1">Sample input 1</h2>
+<pre><code class="language-text">Ava 19 180 450
+</code></pre>
+<h2 id="sample-output-1">Sample output 1</h2>
+<pre><code class="language-text">Ava: adult, high exercise, daily budget $15.00
+Recommendation: maintain healthy habits.
+</code></pre>
+<hr>
+<h2 id="sample-input-2">Sample input 2</h2>
+<pre><code class="language-text">Liam 17 75 150
+</code></pre>
+<h2 id="sample-output-2">Sample output 2</h2>
+<pre><code class="language-text">Liam: minor, moderate exercise, daily budget $5.00
+Recommendation: keep building consistency.
+</code></pre>
+<hr>
+<h2 id="sample-input-3">Sample input 3</h2>
+<pre><code class="language-text">Noah 65 150 900
+</code></pre>
+<h2 id="sample-output-3">Sample output 3</h2>
+<pre><code class="language-text">Noah: senior, high exercise, daily budget $30.00
+Recommendation: maintain healthy habits.
+</code></pre>
+<hr>
+<h2 id="required-programming-features">Required programming features</h2>
+<p>Your program must use:</p>
+<ul>
+<li><code>Scanner</code> for input</li>
+<li>variables with appropriate data types</li>
+<li>arithmetic expressions</li>
+<li><code>if / else if / else</code> branches</li>
+<li><code>System.out.printf()</code> for the daily budget</li>
+<li>at least one meaningful comment</li>
+</ul>
+<hr>
+<h2 id="suggested-program-structure">Suggested program structure</h2>
+<p>Your program should follow this general structure:</p>
+<pre><code class="language-text">create Scanner
+
+read name
+read age
+read weeklyExerciseMinutes
+read monthlyBudget
+
+determine age group
+determine exercise category
+calculate daily budget
+determine recommendation
+
+print summary line
+print recommendation line
+</code></pre>
+<hr>
+<h2 id="important-output-notes">Important output notes</h2>
+<p>The output is graded exactly.</p>
+<p>This means spacing, spelling, punctuation, capitalization, and decimal formatting matter.</p>
+<p>Make sure your output uses:</p>
+<pre><code class="language-text">adult
+minor
+senior
+low exercise
+moderate exercise
+high exercise
+daily budget $
+Recommendation:
+</code></pre>
+<p>Use exactly two digits after the decimal point for money.</p>
+<p>Correct:</p>
+<pre><code class="language-text">daily budget $15.00
+</code></pre>
+<p>Incorrect:</p>
+<pre><code class="language-text">daily budget $15
+daily budget $15.0
+Daily Budget $15.00
+daily budget: $15.00
+</code></pre>
+<hr>
+<h2 id="restrictions">Restrictions</h2>
+<p>Do not use loops.
+Do not use arrays.
+Do not use custom methods.
+Do not use classes other than <code>DecisionHelper</code>.
+Do not use file input.
+Do not print extra prompts.
+Do not ask the user questions.
+Do not hard-code the sample output.</p>
+<p>Your program must work for different valid inputs, not only the sample input.</p>
+<hr>
+<h2 id="grading-rubric">Grading rubric</h2>
+<p>Total: 100 points</p>
+<h3 id="input-parsing-15-points">Input parsing: 15 points</h3>
+<p>The program correctly reads the name.</p>
+<p>The program correctly reads age, exercise minutes, and monthly budget.</p>
+<p>The program reads exactly one user record.</p>
+<p>The program uses the correct data types for each input value.</p>
+<h3 id="calculations-and-logic-30-points">Calculations and logic: 30 points</h3>
+<p>The program correctly calculates daily budget.</p>
+<p>The program correctly determines age group.</p>
+<p>The program correctly determines exercise category.</p>
+<p>The program correctly selects the recommendation sentence.</p>
+<p>Boundary cases are handled correctly.</p>
+<h3 id="required-design-20-points">Required design: 20 points</h3>
+<p>The program uses branch statements correctly.</p>
+<p>The program uses appropriate variable types.</p>
+<p>The program is organized clearly.</p>
+<p>The program avoids unnecessary repeated code.</p>
+<p>The program does not use a loop.</p>
+<h3 id="output-format-20-points">Output format: 20 points</h3>
+<p>The output format matches the required format.</p>
+<p>The daily budget is formatted to two decimal places.</p>
+<p>There are no extra prompts.</p>
+<p>There are no extra labels.</p>
+<p>Spelling and capitalization match the examples.</p>
+<h3 id="edge-cases-10-points">Edge cases: 10 points</h3>
+<p>The program handles minor/adult/senior boundaries.</p>
+<p>The program handles exercise category boundaries.</p>
+<p>The program handles decimal monthly budgets.</p>
+<h3 id="style-5-points">Style: 5 points</h3>
+<p>The code is readable.</p>
+<p>Variable names are meaningful.</p>
+<p>Indentation is consistent.</p>
+<p>The program includes at least one useful comment.</p>
+
+            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            
+        </body>
+        </html>
