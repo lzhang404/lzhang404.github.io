@@ -111,10 +111,10 @@
         </section>
 
         <section class="frame">
-          <h2>Variable Basics: Complete Program</h2>
+          <h2>Variable Basics</h2>
 
           <p>The same variable can be read, used in an expression, and assigned a new value.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class VariableBasics {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class VariableBasics {
     public static void main(String[] args) {
         int userAge = 19;
         int graduationYear = 2028;
@@ -160,7 +160,7 @@
           <h2>Common Error: Uninitialized Local Variable</h2>
 
           <p>Java does not allow a local variable to be read before the compiler can prove the variable has a value.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class UninitializedVariableBroken {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class UninitializedVariableBroken {
     public static void main(String[] args) {
         int userAge;
         System.out.println(userAge);
@@ -180,7 +180,7 @@
           <div style="display:flex;gap:0.8em;align-items:flex-start;margin-top:0.4em;">
             <div style="flex:1;min-width:0;">
               <p><strong>Allowed, but easy to overlook</strong></p>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">int numProtons, numNeutrons, numElectrons;
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">int numProtons, numNeutrons, numElectrons;
 double width, height;</code></pre>
               <ul>
                 <li><p>All variables in the same statement have the same type.</p></li>
@@ -189,7 +189,7 @@ double width, height;</code></pre>
             </div>
             <div style="flex:1;min-width:0;">
               <p><strong>Clearer for beginner code</strong></p>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">int numProtons = 0;
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">int numProtons = 0;
 int numNeutrons = 0;
 int numElectrons = 0;
 
@@ -299,6 +299,69 @@ double height = 0.0;</code></pre>
         </section>
 
       </section>
+      <section class="frame">
+  <h2>Primitive Types</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align: left;">Type name</th>
+        <th style="text-align: left;">Kind of value</th>
+        <th style="text-align: left;">Memory used</th>
+        <th style="text-align: left;">Size range</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="text-align: left;"><code>boolean</code></td>
+        <td style="text-align: left;"><code>true</code> or <code>false</code></td>
+        <td style="text-align: left;">1 byte</td>
+        <td style="text-align: left;">not applicable</td>
+      </tr>
+      <tr>
+        <td style="text-align: left;"><code>char</code></td>
+        <td style="text-align: left;">single character (Unicode)</td>
+        <td style="text-align: left;">2 bytes</td>
+        <td style="text-align: left;">all Unicode characters</td>
+      </tr>
+      <tr>
+        <td style="text-align: left;"><code>byte</code></td>
+        <td style="text-align: left;">integer</td>
+        <td style="text-align: left;">1 byte</td>
+        <td style="text-align: left;">&#8722;128 to 127</td>
+      </tr>
+      <tr>
+        <td style="text-align: left;"><code>short</code></td>
+        <td style="text-align: left;">integer</td>
+        <td style="text-align: left;">2 bytes</td>
+        <td style="text-align: left;">&#8722;32768 to 32767</td>
+      </tr>
+      <tr>
+        <td style="text-align: left;"><code>int</code></td>
+        <td style="text-align: left;">integer</td>
+        <td style="text-align: left;">4 bytes</td>
+        <td style="text-align: left;">&#8722;2147483648 to 2147483647</td>
+      </tr>
+      <tr>
+        <td style="text-align: left;"><code>long</code></td>
+        <td style="text-align: left;">integer</td>
+        <td style="text-align: left;">8 bytes</td>
+        <td style="text-align: left;">&#8722;9223372036854775808 to 9223372036854775807</td>
+      </tr>
+      <tr>
+        <td style="text-align: left;"><code>float</code></td>
+        <td style="text-align: left;">floating point number</td>
+        <td style="text-align: left;">4 bytes</td>
+        <td style="text-align: left;">&#8722;3.40282347 &times; 10<sup>+38</sup> to &#8722;1.40239846 &times; 10<sup>&#8722;45</sup></td>
+      </tr>
+      <tr>
+        <td style="text-align: left;"><code>double</code></td>
+        <td style="text-align: left;">floating point number</td>
+        <td style="text-align: left;">8 bytes</td>
+        <td style="text-align: left;">&plusmn;1.7976931348623157 &times; 10<sup>+308</sup> to &plusmn;4.9406564584124654 &times; 10<sup>&#8722;324</sup></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 
       <!-- Numeric Types -->
       <section>
@@ -394,10 +457,10 @@ double height = 0.0;</code></pre>
         </section>
 
         <section class="frame">
-          <h2>Type Conversion: Complete Program</h2>
+          <h2>Type Conversion</h2>
 
           <p>Casting changes how Java treats a value in an expression. It does not magically fix an expression after integer division already happened.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class TypeConversionDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class TypeConversionDemo {
     public static void main(String[] args) {
         int pointsEarned = 17;
         int pointsPossible = 20;
@@ -486,7 +549,7 @@ double height = 0.0;</code></pre>
           <h2>Precedence and Parentheses</h2>
 
           <p>Java follows operator precedence. Parentheses make the programmer's intent obvious.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class ArithmeticExpressions {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class ArithmeticExpressions {
     public static void main(String[] args) {
         int x = 7;
         int y = 4;
@@ -546,7 +609,7 @@ double height = 0.0;</code></pre>
           <h2>Integer Division and Modulo</h2>
 
           <p>Integer division gives the quotient. Modulo gives the remainder.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class DivisionModuloDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class DivisionModuloDemo {
     public static void main(String[] args) {
         int totalMinutes = 135;
         int hours = totalMinutes / 60;
@@ -590,7 +653,7 @@ double height = 0.0;</code></pre>
           <h2>Math Methods and Random Numbers</h2>
 
           <p>Java's standard library provides methods for common math operations and pseudorandom values.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">import java.util.Random;
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">import java.util.Random;
 
 public class MathRandomDemo {
     public static void main(String[] args) {
@@ -659,10 +722,10 @@ public class MathRandomDemo {
         </section>
 
         <section class="frame">
-          <h2>Characters and Strings: Complete Program</h2>
+          <h2>Characters and Strings</h2>
 
           <p>This program combines <code>char</code>, <code>String</code>, indexing, searching, and uppercase conversion.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class StringsCharactersDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class StringsCharactersDemo {
     public static void main(String[] args) {
         char firstInitial = &#x27;A&#x27;;
         String firstName = &quot;Ava&quot;;
@@ -728,27 +791,10 @@ public class MathRandomDemo {
         </section>
 
         <section class="frame">
-          <h2>Output Streams</h2>
-
-          <p><code>System.out</code> is Java's standard output stream. It sends text to the terminal.</p>
-          <table>
-            <thead><tr><th>Method</th><th>Behavior</th></tr></thead>
-            <tbody>
-              <tr><td><code>System.out.print(...)</code></td><td>print without moving to a new line</td></tr>
-              <tr><td><code>System.out.println(...)</code></td><td>print and then move to a new line</td></tr>
-              <tr><td><code>System.out.printf(...)</code></td><td>print using a format string</td></tr>
-            </tbody>
-          </table>
-          <ul>
-            <li><p>Exact output matters: spaces, punctuation, decimal digits, and newlines all count.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
           <h2>Input with Scanner</h2>
 
           <p><code>Scanner</code> reads tokens from standard input. A token is usually separated by whitespace.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">import java.util.Scanner;
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">import java.util.Scanner;
 
 public class ScannerInputDemo {
     public static void main(String[] args) {
@@ -785,12 +831,28 @@ public class ScannerInputDemo {
             <li><p>If the next token does not match the method, the program throws an input mismatch error.</p></li>
           </ul>
         </section>
+        <section class="frame">
+          <h2>Output Streams</h2>
+
+          <p><code>System.out</code> is Java's standard output stream. It sends text to the terminal.</p>
+          <table>
+            <thead><tr><th>Method</th><th>Behavior</th></tr></thead>
+            <tbody>
+              <tr><td><code>System.out.print(...)</code></td><td>print without moving to a new line</td></tr>
+              <tr><td><code>System.out.println(...)</code></td><td>print and then move to a new line</td></tr>
+              <tr><td><code>System.out.printf(...)</code></td><td>print using a format string</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Exact output matters: spaces, punctuation, decimal digits, and newlines all count.</p></li>
+          </ul>
+        </section>
 
         <section class="frame">
           <h2>Formatted Output with printf</h2>
 
           <p>Formatted output is important when expected output requires a fixed number of decimal places or aligned columns.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">public class FormattedOutputDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class FormattedOutputDemo {
     public static void main(String[] args) {
         String item = &quot;Notebook&quot;;
         int quantity = 3;
@@ -870,9 +932,9 @@ public class ScannerInputDemo {
         </section>
 
         <section class="frame">
-          <h2>Salary Calculation: Complete Program</h2>
+          <h2>Salary Calculation</h2>
 
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize"><code class="language-java">import java.util.Scanner;
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">import java.util.Scanner;
 
 public class SalaryCalculation {
     public static void main(String[] args) {

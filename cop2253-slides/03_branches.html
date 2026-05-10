@@ -84,9 +84,9 @@
           </table>
         </section>
         <section class="frame">
-          <h2>Boolean Basics: Complete Program</h2>
+          <h2>Boolean Basics</h2>
           <p>This program stores comparison results in boolean variables, then prints them.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class BooleanBasics {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class BooleanBasics {
     public static void main(String[] args) {
         int age = 19;
         int score = 84;
@@ -128,7 +128,7 @@
         <section class="frame">
           <h2>Assignment vs. Equality</h2>
           <p>Beginners often confuse <code>=</code> with <code>==</code>. They do completely different jobs.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.52em;"><code class="language-java">public class EqualityDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class Equality {
     public static void main(String[] args) {
         int age = 18;            // assignment: store 18 in age
         int requiredAge = 18;
@@ -141,29 +141,15 @@
         }
 
         System.out.println("age is still " + age);
-    }
-}
+    }}
 </code></pre>
           <ul>
             <li><p><code>=</code> stores a value in a variable.</p></li>
             <li><p><code>==</code> compares two primitive values.</p></li>
-            <li><p><strong>example:</strong> <code>EqualityDemo.java</code></p></li>
+            <li><p><strong>example:</strong> <code>Equality.java</code></p></li>
           </ul>
         </section>
-        <section class="frame">
-          <h2>Trace Table: Equality Demo</h2>
-          <p>Trace tables help students slow down and separate assignment from comparison.</p>
-          <table>
-            <thead><tr><th>Line / action</th><th><code>age</code></th><th><code>requiredAge</code></th><th>Condition result</th><th>Output</th></tr></thead>
-            <tbody>
-              <tr><td><code>int age = 18;</code></td><td>18</td><td>not created</td><td></td><td></td></tr>
-              <tr><td><code>int requiredAge = 18;</code></td><td>18</td><td>18</td><td></td><td></td></tr>
-              <tr><td><code>age == requiredAge</code></td><td>18</td><td>18</td><td><code>true</code></td><td></td></tr>
-              <tr><td>execute if branch</td><td>18</td><td>18</td><td></td><td><code>Exactly old enough</code></td></tr>
-              <tr><td>after branch</td><td>18</td><td>18</td><td></td><td><code>age is still 18</code></td></tr>
-            </tbody>
-          </table>
-        </section>
+
         <section class="frame">
           <h2>Operator Precedence</h2>
           <p>Java has an order of evaluation. Parentheses make your intention clearer.</p>
@@ -221,9 +207,9 @@
           </ul>
         </section>
         <section class="frame">
-          <h2>Logical Operators: Complete Program</h2>
+          <h2>Logical Operators</h2>
           <p>This example names three different conditions and prints their results.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class LogicalOperatorsDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class LogicalOperators {
     public static void main(String[] args) {
         int age = 20;
         boolean hasTicket = true;
@@ -240,8 +226,7 @@
 }
 </code></pre>
           <ul>
-            <li><p>Ask students to predict <code>canEnter</code>, <code>getsDiscount</code>, and <code>needsHelp</code> before running.</p></li>
-            <li><p><strong>example:</strong> <code>LogicalOperatorsDemo.java</code></p></li>
+            <li><p><strong>example:</strong> <code>LogicalOperators.java</code></p></li>
           </ul>
         </section>
         <section class="frame">
@@ -263,7 +248,7 @@
         <section class="frame">
           <h2>Short-Circuit Evaluation</h2>
           <p><code>&amp;&amp;</code> and <code>||</code> may stop early once the final result is already known.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class ShortCircuitDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class ShortCircuit {
     public static void main(String[] args) {
         int count = 0;
         int sum = 100;
@@ -286,7 +271,7 @@
           <ul>
             <li><p><code>&amp;&amp;</code> stops early when the left side is false.</p></li>
             <li><p><code>||</code> stops early when the left side is true.</p></li>
-            <li><p><strong>example:</strong> <code>ShortCircuitDemo.java</code></p></li>
+            <li><p><strong>example:</strong> <code>ShortCircuit.java</code></p></li>
           </ul>
         </section>
         <section class="frame">
@@ -325,11 +310,11 @@
           </ul>
         </section>
         <section class="frame">
-          <h2>if and if/else: Complete Program</h2>
+          <h2>if and if/else</h2>
           <p>This example shows both a simple <code>if</code> and a two-way <code>if/else</code>.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.48em;"><code class="language-java">import java.util.Scanner;
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">import java.util.Scanner;
 
-public class ConditionalExecutionDemo {
+public class ConditionalExecution {
     public static void main(String[] args) {
         Scanner scnr = new Scanner(System.in);
 
@@ -354,7 +339,7 @@ public class ConditionalExecutionDemo {
 </code></pre>
           <ul>
             <li><p>Sample input: <code>65 7</code></p></li>
-            <li><p><strong>live coding:</strong> <code>ConditionalExecutionDemo.java</code></p></li>
+            <li><p><strong>live coding:</strong> <code>ConditionalExecution.java</code></p></li>
           </ul>
         </section>
         <section class="frame">
@@ -385,9 +370,9 @@ public class ConditionalExecutionDemo {
           </ul>
         </section>
         <section class="frame">
-          <h2>Branch Pattern Demo</h2>
+          <h2>Branch Pattern </h2>
           <p>This program intentionally uses a boundary value to show the difference between independent <code>if</code> statements and an <code>else-if</code> chain.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.46em;"><code class="language-java">public class BranchPatternDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class BranchPattern {
     public static void main(String[] args) {
         double salary = 10000.00;
 
@@ -412,7 +397,7 @@ public class ConditionalExecutionDemo {
 </code></pre>
           <ul>
             <li><p>The salary is exactly <code>10000.00</code>, so the independent checks both become true.</p></li>
-            <li><p><strong>example:</strong> <code>BranchPatternDemo.java</code></p></li>
+            <li><p><strong>example:</strong> <code>BranchPattern.java</code></p></li>
           </ul>
         </section>
         <section class="frame">
@@ -447,9 +432,9 @@ public class ConditionalExecutionDemo {
           </table>
         </section>
         <section class="frame">
-          <h2>Nested Bonus Demo</h2>
+          <h2>Nested Bonus </h2>
           <p>This program mirrors the nested bonus example from lecture notes.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.48em;"><code class="language-java">public class NestedBonusDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class NestedBonus {
     public static void main(String[] args) {
         int month = 12;
         int age = 64;
@@ -471,8 +456,8 @@ public class ConditionalExecutionDemo {
 }
 </code></pre>
           <ul>
-            <li><p>Ask students which condition would stop the bonus if changed.</p></li>
-            <li><p><strong>live coding:</strong> <code>NestedBonusDemo.java</code></p></li>
+            <li><p>Which condition would stop the bonus if changed.</p></li>
+            <li><p><strong>live coding:</strong> <code>NestedBonus.java</code></p></li>
           </ul>
         </section>
         <section class="frame">
@@ -510,9 +495,9 @@ public class ConditionalExecutionDemo {
           </table>
         </section>
         <section class="frame">
-          <h2>String Comparison Demo</h2>
+          <h2>String Comparison </h2>
           <p>This program shows why <code>equals()</code> is the safe beginner habit for Strings.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class StringComparisonDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class StringComparison {
     public static void main(String[] args) {
         String storedPassword = "java123";
         String userInput = new String("java123");
@@ -532,7 +517,7 @@ public class ConditionalExecutionDemo {
 </code></pre>
           <ul>
             <li><p>Point out that the text matches even though the two object references are different.</p></li>
-            <li><p><strong>example:</strong> <code>StringComparisonDemo.java</code></p></li>
+            <li><p><strong>example:</strong> <code>StringComparison.java</code></p></li>
           </ul>
         </section>
         <section class="frame">
@@ -552,9 +537,9 @@ public class ConditionalExecutionDemo {
           </table>
         </section>
         <section class="frame">
-          <h2>Floating-Point Comparison Demo</h2>
+          <h2>Floating-Point Comparison </h2>
           <p>This example uses <code>0.1 + 0.2</code>, a classic floating-point surprise.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class FloatingPointComparisonDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class FloatingPointComparison {
     public static void main(String[] args) {
         double total = 0.1 + 0.2;
         double expected = 0.3;
@@ -569,7 +554,7 @@ public class ConditionalExecutionDemo {
 </code></pre>
           <ul>
             <li><p>The epsilon approach checks whether two values are close enough for the program's purpose.</p></li>
-            <li><p><strong>example:</strong> <code>FloatingPointComparisonDemo.java</code></p></li>
+            <li><p><strong>example:</strong> <code>FloatingPointComparison.java</code></p></li>
           </ul>
         </section>
       </section>
@@ -594,9 +579,9 @@ public class ConditionalExecutionDemo {
           </ul>
         </section>
         <section class="frame">
-          <h2>Switch Demo</h2>
+          <h2>Switch </h2>
           <p>This example maps a letter grade to a message.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.48em;"><code class="language-java">public class SwitchDemo {
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class Switch {
     public static void main(String[] args) {
         char letterGrade = 'B';
         String message;
@@ -622,7 +607,7 @@ public class ConditionalExecutionDemo {
 </code></pre>
           <ul>
             <li><p>Change <code>letterGrade</code> to <code>'A'</code>, <code>'C'</code>, or <code>'F'</code> and predict the message.</p></li>
-            <li><p><strong>example:</strong> <code>SwitchDemo.java</code></p></li>
+            <li><p><strong>example:</strong> <code>Switch.java</code></p></li>
           </ul>
         </section>
         <section class="frame">
@@ -664,11 +649,12 @@ public class ConditionalExecutionDemo {
         </section>
         <section class="frame">
           <h2>Intentional Compiler Errors</h2>
-          <p>These examples show two common mistakes that beginners make in branch conditions. They are useful because the compiler points directly to the problem.</p>
-          <p>Read the error message, then look back at the condition and ask: Does this expression produce a boolean value?</p>
-          <div style="display:flex;gap:0.55em;align-items:flex-start;margin-top:0.35em;">
-            <div style="flex:1;min-width:0;">
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.40em;"><code class="language-java">public class AssignmentInIfBroken {
+          <ul>
+            <li>Read the error message</li>
+            <li>Does this expression produce a boolean value?</li>
+          </ul>
+
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class AssignmentInIfBroken {
     public static void main(String[] args) {
         int age = 18;
 
@@ -678,9 +664,8 @@ public class ConditionalExecutionDemo {
     }
 }
 </code></pre>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.40em;"><code class="language-java">public class ChainedComparisonBroken {
+
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small" ><code class="language-java">public class ChainedComparisonBroken {
     public static void main(String[] args) {
         int age = 20;
 
@@ -690,8 +675,7 @@ public class ConditionalExecutionDemo {
     }
 }
 </code></pre>
-            </div>
-          </div>
+
           <ul>
             <li><p><strong>example:</strong> <code>AssignmentInIfBroken.java</code>, <code>ChainedComparisonBroken.java</code></p></li>
           </ul>
