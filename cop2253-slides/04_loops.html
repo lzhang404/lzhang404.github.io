@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Loops</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <!-- Title -->
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Loops</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+      <!-- Overview -->
+      <section>
+        <section class="frame">
+          <h2>Today's Roadmap</h2>
+          <p>Chapter 4 is about repeating work without copying and pasting code.</p>
+          <ul>
+            <li><p>Why loops are useful and how one iteration works</p></li>
+            <li><p><code>while</code> loops for unknown repetition</p></li>
+            <li><p>Sentinel-controlled loops for processing input until a stop value appears</p></li>
+            <li><p><code>for</code> loops for count-controlled repetition</p></li>
+            <li><p>Increment and decrement operators</p></li>
+            <li><p>Loops with Strings and characters</p></li>
+            <li><p>Nested loops for grids, tables, and repeated patterns</p></li>
+            <li><p><code>break</code>, <code>continue</code>, and common loop bugs</p></li>
+          </ul>
+          <p><em>Reading focus: Chapter 4, Loops</em></p>
+        </section>
+        <section class="frame">
+          <h2>What You Should Be Able To Do</h2>
+          <ul>
+            <li><p>Choose a <code>while</code> loop when the number of repetitions is not known in advance</p></li>
+            <li><p>Choose a <code>for</code> loop when the loop is based on a counter</p></li>
+            <li><p>Trace the initialization, condition, body, and update of a loop</p></li>
+            <li><p>Use a sentinel value to stop input processing</p></li>
+            <li><p>Use <code>String.length()</code> and <code>charAt()</code> to process text one character at a time</p></li>
+            <li><p>Recognize off-by-one errors and infinite loops</p></li>
+            <li><p>Build loop programs incrementally instead of writing everything at once</p></li>
+          </ul>
+          <p>The main habit: before running a loop, predict how the loop starts, when it repeats, and when it stops.</p>
+        </section>
+      </section>
+      <!-- Loop Concepts -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Loop Concepts</h1>
+        </section>
+        <section class="frame">
+          <h2>Why Loops?</h2>
+          <p>A loop repeats a group of statements while a condition is true.</p>
+          <table>
+            <thead><tr><th>Without a loop</th><th>With a loop</th></tr></thead>
+            <tbody>
+              <tr><td>Copy the same print statement many times</td><td>Write the print statement once</td></tr>
+              <tr><td>Hard to change later</td><td>Change one loop body</td></tr>
+              <tr><td>Works only for a fixed small number</td><td>Can repeat 5 times, 500 times, or until input says stop</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Each trip through the loop body is called an <strong>iteration</strong>.</p></li>
+            <li><p>A loop must eventually make its condition become false.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>The Four Questions for Any Loop</h2>
+          <p>Every loop should answer the same four questions.</p>
+          <table>
+            <thead><tr><th>Question</th><th>Example answer</th></tr></thead>
+            <tbody>
+              <tr><td>Where does the loop start?</td><td><code>count = 1</code></td></tr>
+              <tr><td>When does the loop continue?</td><td><code>count &lt;= 5</code></td></tr>
+              <tr><td>What happens each iteration?</td><td>print the current count</td></tr>
+              <tr><td>How does the loop move forward?</td><td><code>count++</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>If one of these four pieces is missing, the loop will probably be wrong.</p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- While Loops -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>While Loops</h1>
+        </section>
+        <section class="frame">
+          <h2>while Loop Pattern</h2>
+          <p>A <code>while</code> loop checks the condition before each iteration.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.56em;"><code class="language-java">int count = 1;
+
+while (count &lt;= 5) {
+    System.out.println("Count: " + count);
+    count++;
+}
+</code></pre>
+          <ul>
+            <li><p>If the condition is false at the start, the body runs zero times.</p></li>
+            <li><p>A <code>while</code> loop is useful when we do not know the number of iterations ahead of time.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>While Counter: Complete Program</h2>
+          <p>This program repeats a simple print statement five times.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class WhileCounter {
+    public static void main(String[] args) {
+        int count = 1;
+
+        while (count &lt;= 5) {
+            System.out.println("Count: " + count);
+            count++;
+        }
+
+        System.out.println("Done");
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Trace the value of <code>count</code> before each condition check.</p></li>
+            <li><p><strong>example:</strong> <code>WhileCounter.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Trace Table: While Counter</h2>
+          <p>The condition is checked one extra time after the last printed value.</p>
+          <table>
+            <thead><tr><th>Condition check</th><th><code>count</code></th><th><code>count &lt;= 5</code></th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>1</td><td><code>true</code></td><td>print Count: 1, then update to 2</td></tr>
+              <tr><td>2</td><td>2</td><td><code>true</code></td><td>print Count: 2, then update to 3</td></tr>
+              <tr><td>3</td><td>3</td><td><code>true</code></td><td>print Count: 3, then update to 4</td></tr>
+              <tr><td>4</td><td>4</td><td><code>true</code></td><td>print Count: 4, then update to 5</td></tr>
+              <tr><td>5</td><td>5</td><td><code>true</code></td><td>print Count: 5, then update to 6</td></tr>
+              <tr><td>6</td><td>6</td><td><code>false</code></td><td>exit loop</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Infinite Loops</h2>
+          <p>An infinite loop never reaches a false condition.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.56em;"><code class="language-java">int count = 1;
+
+while (count &lt;= 5) {
+    System.out.println("Count: " + count);
+    // missing count++
+}
+</code></pre>
+          <ul>
+            <li><p>This loop keeps printing <code>Count: 1</code>.</p></li>
+            <li><p>When a loop does not stop, check the update statement first.</p></li>
+            <li><p><strong>example:</strong> <code>MissingUpdateLoopWarning.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Sentinel-Controlled Loops</h2>
+          <p>A sentinel value is a special input value that means “stop.”</p>
+          <table>
+            <thead><tr><th>Input list</th><th>Sentinel</th><th>Values processed</th></tr></thead>
+            <tbody>
+              <tr><td><code>10 1 6 3 0</code></td><td><code>0</code></td><td><code>10, 1, 6, 3</code></td></tr>
+              <tr><td><code>9 23 35 -1</code></td><td>negative number</td><td><code>9, 23, 35</code></td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>The sentinel tells the loop to stop, but the sentinel itself is not part of the calculation.</p></li>
+            <li><p>Sentinel loops are common when the amount of input is not known ahead of time.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Sentinel Average</h2>
+          <p>This program averages positive integers and stops when the user enters <code>0</code>.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.43em;"><code class="language-java">import java.util.Scanner;
+
+public class SentinelAverage {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+        int currValue = scnr.nextInt();
+        int valuesSum = 0;
+        int numValues = 0;
+
+        while (currValue &gt; 0) {
+            valuesSum = valuesSum + currValue;
+            numValues = numValues + 1;
+            currValue = scnr.nextInt();
+        }
+
+        System.out.println("Average: " + (valuesSum / numValues));
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Sample input: <code>10 1 6 3 0</code></p></li>
+            <li><p><strong>live coding:</strong> <code>SentinelAverage.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>do-while Loop</h2>
+          <p>A <code>do-while</code> loop checks the condition after the body.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.55em;"><code class="language-java">int choice;
+
+do {
+    System.out.println("1. Continue");
+    System.out.println("0. Quit");
+    choice = scnr.nextInt();
+} while (choice != 0);
+</code></pre>
+          <ul>
+            <li><p>The body always runs at least once.</p></li>
+            <li><p>This pattern is useful for menus and repeated prompts.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Menu Loop: Complete Program</h2>
+          <p>This program keeps showing a menu until the user enters <code>0</code>.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.43em;"><code class="language-java">import java.util.Scanner;
+
+public class MenuLoop {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+        int choice;
+
+        do {
+            System.out.println("1. Print greeting");
+            System.out.println("0. Quit");
+            System.out.print("Choice: ");
+            choice = scnr.nextInt();
+
+            if (choice == 1) {
+                System.out.println("Hello!");
+            }
+        } while (choice != 0);
+
+        System.out.println("Goodbye");
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Sample input: <code>1 1 0</code></p></li>
+            <li><p><strong>example:</strong> <code>MenuLoop.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- For Loops -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>For Loops</h1>
+        </section>
+        <section class="frame">
+          <h2>for Loop Pattern</h2>
+          <p>A <code>for</code> loop places the counter setup, condition, and update in one line.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.60em;"><code class="language-java">for (int count = 1; count &lt;= 5; count++) {
+    System.out.println("Count: " + count);
+}
+</code></pre>
+          <table>
+            <thead><tr><th>Part</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>int count = 1</code></td><td>start the counter</td></tr>
+              <tr><td><code>count &lt;= 5</code></td><td>decide whether to keep looping</td></tr>
+              <tr><td><code>count++</code></td><td>move to the next value</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>For Loop: Execution Order</h2>
+          <p>The parts of a <code>for</code> loop do not run left-to-right every time.</p>
+          <table>
+            <thead><tr><th>Step</th><th>What Java does</th><th>When it happens</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>initialize counter</td><td>once, before the first condition check</td></tr>
+              <tr><td>2</td><td>check condition</td><td>before every iteration</td></tr>
+              <tr><td>3</td><td>run loop body</td><td>when condition is true</td></tr>
+              <tr><td>4</td><td>update counter</td><td>after each loop body</td></tr>
+              <tr><td>5</td><td>check condition again</td><td>repeat until false</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>For Loop Trace: Complete Program</h2>
+          <p>This program prints the first five multiples of a base number.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class ForLoopTrace {
+    public static void main(String[] args) {
+        int base = 5;
+
+        for (int multiplier = 1; multiplier &lt;= 5; multiplier++) {
+            int product = base * multiplier;
+            System.out.println(base + " x " + multiplier + " = " + product);
+        }
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Trace <code>multiplier</code> from 1 through 5.</p></li>
+            <li><p><strong>example:</strong> <code>ForLoopTrace.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Increment and Decrement Operators</h2>
+          <p>The operators <code>++</code> and <code>--</code> change a variable by one.</p>
+          <table>
+            <thead><tr><th>Statement</th><th>Equivalent idea</th><th>Common use</th></tr></thead>
+            <tbody>
+              <tr><td><code>count++</code></td><td><code>count = count + 1</code></td><td>move a loop counter forward</td></tr>
+              <tr><td><code>++count</code></td><td><code>count = count + 1</code></td><td>also increments by one</td></tr>
+              <tr><td><code>count--</code></td><td><code>count = count - 1</code></td><td>count down</td></tr>
+              <tr><td><code>--count</code></td><td><code>count = count - 1</code></td><td>also decrements by one</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>In a loop update section, <code>count++</code> and <code>++count</code> are usually equivalent.</p></li>
+            <li><p>Inside a larger expression, pre-increment and post-increment can produce different results.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Pre and Post Increment: Complete Program</h2>
+          <p>This example shows why pre-increment and post-increment can differ inside a print statement.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class IncrementOperators {
+    public static void main(String[] args) {
+        int num = 5;
+
+        System.out.println("Start: " + num);
+        System.out.println("With ++num: " + ++num);
+        System.out.println("After ++num: " + num);
+        System.out.println("With num++: " + num++);
+        System.out.println("After num++: " + num);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p><code>++num</code> increments before the value is used.</p></li>
+            <li><p><code>num++</code> uses the value first, then increments.</p></li>
+            <li><p><strong>example:</strong> <code>IncrementOperators.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- Loops and Strings -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Loops and Strings</h1>
+        </section>
+        <section class="frame">
+          <h2>Processing a String One Character at a Time</h2>
+          <p>A string has a length, and each character has an index starting at 0.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.56em;"><code class="language-java">String word = "Java";
+
+for (int i = 0; i &lt; word.length(); i++) {
+    char current = word.charAt(i);
+    System.out.println(i + ": " + current);
+}
+</code></pre>
+          <table>
+            <thead><tr><th>Index</th><th>Character</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td><code>J</code></td></tr>
+              <tr><td>1</td><td><code>a</code></td></tr>
+              <tr><td>2</td><td><code>v</code></td></tr>
+              <tr><td>3</td><td><code>a</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Counting Letters in a String</h2>
+          <p>This program counts only alphabetic characters in a word.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.43em;"><code class="language-java">import java.util.Scanner;
+
+public class CountLetters {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+        String inputWord = scnr.next();
+        int numLetters = 0;
+
+        for (int i = 0; i &lt; inputWord.length(); i++) {
+            if (Character.isLetter(inputWord.charAt(i))) {
+                numLetters++;
+            }
+        }
+
+        System.out.println("Number of letters: " + numLetters);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Sample input: <code>123abc...xyz</code></p></li>
+            <li><p><strong>live coding:</strong> <code>CountLetters.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Trace: Counting Letters</h2>
+          <p>For input <code>Hey!!</code>, only the letters are counted.</p>
+          <table>
+            <thead><tr><th><code>i</code></th><th><code>inputWord.charAt(i)</code></th><th><code>Character.isLetter(...)</code></th><th><code>numLetters</code> after step</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td><code>H</code></td><td><code>true</code></td><td>1</td></tr>
+              <tr><td>1</td><td><code>e</code></td><td><code>true</code></td><td>2</td></tr>
+              <tr><td>2</td><td><code>y</code></td><td><code>true</code></td><td>3</td></tr>
+              <tr><td>3</td><td><code>!</code></td><td><code>false</code></td><td>3</td></tr>
+              <tr><td>4</td><td><code>!</code></td><td><code>false</code></td><td>3</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Build a New String in a Loop</h2>
+          <p>Sometimes the loop reads one character at a time and builds a cleaned result.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.48em;"><code class="language-java">public class RemoveNonAlpha {
+    public static void main(String[] args) {
+        String text = "Java 101!";
+        String lettersOnly = "";
+
+        for (int i = 0; i &lt; text.length(); i++) {
+            char current = text.charAt(i);
+            if (Character.isLetter(current)) {
+                lettersOnly = lettersOnly + current;
+            }
+        }
+
+        System.out.println(lettersOnly);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>The result grows only when the current character is a letter.</p></li>
+            <li><p><strong>example:</strong> <code>RemoveNonAlpha.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Replacing Until Done</h2>
+          <p>A <code>while</code> loop is useful when the program should continue until no matching text remains.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class SingleSpaces {
+    public static void main(String[] args) {
+        String userText = "Java    is   fun";
+
+        while (userText.indexOf("  ") != -1) {
+            userText = userText.replace("  ", " ");
+        }
+
+        System.out.println(userText);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>The loop stops when there are no double spaces left.</p></li>
+            <li><p><strong>example:</strong> <code>SingleSpaces.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- Nested Loops -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Nested Loops</h1>
+        </section>
+        <section class="frame">
+          <h2>Nested Loop Idea</h2>
+          <p>A nested loop is a loop inside another loop.</p>
+          <table>
+            <thead><tr><th>Loop</th><th>Role</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td>Outer loop</td><td>Controls the larger repetition</td><td>rows in a table</td></tr>
+              <tr><td>Inner loop</td><td>Runs completely for each outer iteration</td><td>columns in one row</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>If the outer loop runs 3 times and the inner loop runs 4 times each time, the inner body runs 12 times.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Nested Loop: Multiplication Table</h2>
+          <p>This program prints products for rows 1 through 3 and columns 1 through 4.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.48em;"><code class="language-java">public class NestedLoopTable {
+    public static void main(String[] args) {
+        for (int row = 1; row &lt;= 3; row++) {
+            for (int col = 1; col &lt;= 4; col++) {
+                System.out.print((row * col) + "	");
+            }
+            System.out.println();
+        }
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>The inner loop finishes one whole row before the outer loop moves to the next row.</p></li>
+            <li><p><strong>live coding:</strong> <code>NestedLoopTable.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Trace: Nested Loop Table</h2>
+          <p>The inner loop resets each time the outer loop begins a new row.</p>
+          <table>
+            <thead><tr><th>Outer <code>row</code></th><th>Inner <code>col</code> values</th><th>Printed row</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>1, 2, 3, 4</td><td><code>1 2 3 4</code></td></tr>
+              <tr><td>2</td><td>1, 2, 3, 4</td><td><code>2 4 6 8</code></td></tr>
+              <tr><td>3</td><td>1, 2, 3, 4</td><td><code>3 6 9 12</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Histogram with an Inner Loop</h2>
+          <p>This example uses a loop to print one line of stars for each input value.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.42em;"><code class="language-java">import java.util.Scanner;
+
+public class Histogram {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+        int numAsterisks = scnr.nextInt();
+
+        while (numAsterisks &gt;= 0) {
+            for (int i = 0; i &lt; numAsterisks; i++) {
+                System.out.print("*");
+            }
+            System.out.println();
+            numAsterisks = scnr.nextInt();
+        }
+
+        System.out.println("Goodbye");
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Sample input: <code>3 5 2 -1</code></p></li>
+            <li><p><strong>example:</strong> <code>Histogram.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+      <!-- Break Continue and Debugging -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Break, Continue, and Debugging</h1>
+        </section>
+        <section class="frame">
+          <h2>break Statement</h2>
+          <p>A <code>break</code> statement exits the nearest loop immediately.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.56em;"><code class="language-java">for (int count = 1; count &lt;= 10; count++) {
+    if (count == 7) {
+        break;
+    }
+    System.out.print(count + " ");
+}
+System.out.println();
+</code></pre>
+          <ul>
+            <li><p>This prints <code>1 2 3 4 5 6</code>.</p></li>
+            <li><p>The loop stops before printing 7.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>continue Statement</h2>
+          <p>A <code>continue</code> statement skips the rest of the current iteration.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.56em;"><code class="language-java">for (int count = 1; count &lt;= 10; count++) {
+    if (count == 5) {
+        continue;
+    }
+    System.out.print(count + " ");
+}
+System.out.println();
+</code></pre>
+          <ul>
+            <li><p>This prints every number from 1 to 10 except 5.</p></li>
+            <li><p>The loop does not stop. It only skips one iteration.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Break and Continue: Complete Program</h2>
+          <p>This program shows <code>continue</code> and <code>break</code> in the same loop.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.50em;"><code class="language-java">public class BreakContinue {
+    public static void main(String[] args) {
+        for (int count = 1; count &lt;= 10; count++) {
+            if (count == 5) {
+                continue;
+            }
+            if (count == 8) {
+                break;
+            }
+            System.out.print(count + " ");
+        }
+        System.out.println();
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>Predict which numbers appear before running the program.</p></li>
+            <li><p><strong>example:</strong> <code>BreakContinue.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Develop Loops Incrementally</h2>
+          <p>Loop programs are easier when built in small steps.</p>
+          <ol>
+            <li><p>First, read one input value and print it back.</p></li>
+            <li><p>Then, write the loop condition and make sure the loop stops.</p></li>
+            <li><p>Next, add the calculation inside the loop.</p></li>
+            <li><p>Then, add formatting and final output.</p></li>
+            <li><p>Finally, test boundary cases and unusual input.</p></li>
+          </ol>
+          <p>Do not write a long loop and debug everything at once.</p>
+        </section>
+        <section class="frame">
+          <h2>Domain Name Validation</h2>
+          <p>This example checks a domain name one character at a time.</p>
+          <ul>
+            <li><p>Allowed: letters, digits, periods, and hyphens.</p></li>
+            <li><p>Any other character makes the domain invalid.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.43em;"><code class="language-java">public class DomainNameValidation {
+    public static void main(String[] args) {
+        String domain = "uwf.edu";
+        boolean isValid = true;
+
+        for (int i = 0; i &lt; domain.length(); i++) {
+            char ch = domain.charAt(i);
+            boolean allowed =
+                Character.isLetterOrDigit(ch) ||
+                ch == '.' ||
+                ch == '-';
+            if (!allowed) {
+                isValid = false;
+            }
+        }
+
+        System.out.println(domain + " valid? " + isValid);
+    }
+}
+</code></pre>
+          <ul>
+            <li><p><strong>example:</strong> <code>DomainNameValidation.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Common Loop Errors</h2>
+          <table>
+            <thead><tr><th>Error pattern</th><th>What goes wrong</th><th>Check this</th></tr></thead>
+            <tbody>
+              <tr><td>Missing update</td><td>Loop never stops</td><td>Does the loop variable change?</td></tr>
+              <tr><td>Wrong boundary</td><td>One too many or one too few iterations</td><td>Should the condition use <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, or <code>&gt;=</code>?</td></tr>
+              <tr><td>Wrong starting value</td><td>First iteration is incorrect</td><td>Should the counter start at 0 or 1?</td></tr>
+              <tr><td>Sentinel included in calculation</td><td>Average or sum is wrong</td><td>Is the sentinel processed before stopping?</td></tr>
+              <tr><td><code>=</code> instead of <code>==</code></td><td>Compiler error in loop condition</td><td>Are you assigning or comparing?</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>Intentional Compiler Error</h2>
+          <p>This example shows a common loop-condition mistake.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\scriptsize" style="font-size:0.46em;"><code class="language-java">import java.util.Scanner;
+
+public class AssignmentInWhileBroken {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+        char userChoice = 'y';
+
+        while (userChoice = 'y') {
+            System.out.println("Repeat");
+            userChoice = scnr.next().charAt(0);
+        }
+    }
+}
+</code></pre>
+          <ul>
+            <li><p>The condition must be boolean. Use <code>userChoice == 'y'</code> for comparison.</p></li>
+            <li><p><strong>example:</strong> <code>AssignmentInWhileBroken.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Exam-Style Tracing Question</h2>
+          <p>Given this loop, what is printed?</p>
+          <table>
+            <thead><tr><th>Code</th><th>Trace</th></tr></thead>
+            <tbody>
+              <tr><td><code>int i = 1;</code></td><td><code>i</code> starts at 1</td></tr>
+              <tr><td><code>while (i &lt; 5)</code></td><td>loop continues for <code>i = 1, 2, 3, 4</code></td></tr>
+              <tr><td><code>System.out.print(i + " ");</code></td><td>prints current value</td></tr>
+              <tr><td><code>i = i + 2;</code></td><td>updates to 3, then 5</td></tr>
+            </tbody>
+          </table>
+          <p>Answer: <code>1 3</code></p>
+        </section>
+      </section>
+      <!-- Summary -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+          <ul>
+            <li><p>A loop repeats while its condition is true.</p></li>
+            <li><p>Every loop needs a start, condition, body, and update.</p></li>
+            <li><p>Use <code>while</code> for unknown repetition and sentinel-controlled input.</p></li>
+            <li><p>Use <code>for</code> for counter-controlled repetition.</p></li>
+            <li><p>Use <code>String.length()</code> and <code>charAt()</code> to process text in a loop.</p></li>
+            <li><p>Nested loops are useful for tables, grids, combinations, and repeated patterns.</p></li>
+            <li><p><code>break</code> exits a loop; <code>continue</code> skips to the next iteration.</p></li>
+            <li><p>Most loop bugs are off-by-one errors, missing updates, or incorrect stop conditions.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Before Next Class</h2>
+          <ul>
+            <li><p>Practice tracing loops before running them.</p></li>
+            <li><p>For each loop, write down the first value, last value, and stopping condition.</p></li>
+            <li><p>Test loops with small input first.</p></li>
+            <li><p>When processing input, check whether the sentinel is accidentally included.</p></li>
+            <li><p>When processing strings, remember the last valid index is <code>length() - 1</code>.</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
