@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>User-Defined Methods</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>User-Defined Methods</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+      <section>
+        <section class="frame">
+          <h2>Today's Roadmap</h2>
+          <p>Chapter 5 introduces methods that we write ourselves.</p>
+<ul>
+<li><p>Method definitions: method header, method body, method call, parameters, and return type.</p></li>
+<li><p><code>void</code> methods for actions, such as printing output.</p></li>
+<li><p>Value-returning methods for calculations and decisions.</p></li>
+<li><p>How method calls work, including arguments and primitive parameter copies.</p></li>
+<li><p>Methods with branches, loops, parameter checks, and Scanner parameters.</p></li>
+<li><p>Scope, <code>public</code>, <code>private</code>, <code>static</code>, overloading, documentation, testing, and common errors.</p></li>
+</ul>          <p><em>Reading focus: Chapter 5, User-Defined Methods</em></p>
+        </section>
+        <section class="frame">
+          <h2>What You Should Be Able To Do</h2>
+<ul>
+<li><p>Read a method header and identify the modifiers, return type, method name, and parameter list.</p></li>
+<li><p>Call a method with the correct number and type of arguments.</p></li>
+<li><p>Tell the difference between a <code>void</code> method and a value-returning method.</p></li>
+<li><p>Use parameters to send information into a method.</p></li>
+<li><p>Use <code>return</code> to send one value back to the caller.</p></li>
+<li><p>Explain local variables, parameters, class-level variables, and basic method modifiers.</p></li>
+<li><p>Recognize common method mistakes, especially a missing return statement.</p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Method Definitions</h1>
+        </section>
+        <section class="frame">
+          <h2>Method Vocabulary</h2>
+          <p>A method is a named block of code that performs one clear task.</p>
+<ul>
+<li><strong>method definition:</strong> the complete method, including the header and the body. </li> 
+<li><p><strong>method header:</strong> the first line of the method definition. It gives the access, <code>static</code> keyword if used, return type, method name, and parameter list. </p></li>
+<li><p><strong>method call:</strong> a statement or expression that runs the method. </p></li>
+<li><p><strong>parameter:</strong> a variable in the method header that receives a value when the method is called. </p></li>
+<li><p><strong>argument:</strong> the actual value sent into the method call.</p></li>
+<li><p><strong>return type:</strong> the type of value the method sends back, or <code>void</code> if it sends back nothing. </p></li>
+<li><p><strong>method body:</strong> the statements inside the braces that tell the method what to do.</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Method Header Syntax</h2>
+          <p>The method header is the first line of a method definition.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static double circleArea(double radius)</code></pre><ul>
+<li><p><code>public</code>: other code is allowed to call this method.</p></li>
+<li><p><code>static</code>: this method belongs to the class. In this chapter, that lets <code>main</code> call it directly.</p></li>
+<li><p><code>double</code>: this method returns a <code>double</code> value.</p></li>
+<li><p><code>circleArea</code>: this is the method name.</p></li>
+<li><p><code>double radius</code>: this method receives one <code>double</code> value.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Reading Method Headers</h2>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static void printHeader(String title)
+public static double circleArea(double radius)
+public static boolean isValidScore(double score)
+private static double weeklySalary(double hourlyRate, double hours)</code></pre><ul>
+<li><p><code>printHeader</code> performs an action and returns nothing.</p></li>
+<li><p><code>circleArea</code> receives one number and returns one number.</p></li>
+<li><p><code>isValidScore</code> returns <code>true</code> or <code>false</code>.</p></li>
+<li><p><code>weeklySalary</code> receives two numbers and returns one number.</p></li>
+<li><p><code>private</code> means this method is intended for use inside the same class.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Method Definition vs. Method Call</h2>
+          <p>The definition creates the method. The call runs it.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static void printCourseName(String courseName){...}
+
+printCourseName(&quot;COP 2253&quot;);</code></pre><ul>
+<li><p>The first line is a method header from a method definition.</p></li>
+<li><p><code>String courseName</code> is the parameter.</p></li>
+<li><p>The second line is a method call.</p></li>
+<li><p><code>"COP 2253"</code> is the argument sent into the parameter.</p></li>
+<li><p>The argument type must match the parameter type.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Example: Simple Method Calls</h2>
+          <p>This example uses two small helper methods and one <code>main</code> method.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class MethodBasics {
+    public static void printGreeting() {
+        System.out.println(&quot;Welcome to Java methods.&quot;);
+    }
+
+    public static void printCourseName(String courseName) {
+        System.out.println(&quot;Course: &quot; + courseName);
+    }
+
+    public static void main(String[] args) {
+        printGreeting();
+        printCourseName(&quot;COP 2253&quot;);
+        printGreeting();
+    }
+}</code></pre><ul>
+<li><p><code>printGreeting()</code> has no parameters.</p></li>
+<li><p><code>printCourseName(...)</code> receives one <code>String</code>.</p></li>
+<li><p><code>main</code> calls both helper methods.</p></li>
+<li><p><strong>example:</strong> <code>MethodBasics.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Void Methods and Value-Returning Methods</h1>
+        </section>
+        <section class="frame">
+          <h2>Void Methods Perform Actions</h2>
+          <p>A <code>void</code> method performs an action but does not send a value back.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static void printLine()
+public static void printHeader(String title)
+public static void printReceipt(double total)</code></pre><ul>
+<li><p>The return type is <code>void</code>.</p></li>
+<li><p>The method may print output or update something.</p></li>
+<li><p>The method call is usually written as its own statement.</p></li>
+<li><p>A <code>void</code> method cannot be used where a value is needed.</p></li>
+<li><p><strong>example:</strong> <code>PrintMethods.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Value-Returning Methods Produce One Result</h2>
+          <p>A value-returning method computes a result and sends it back with <code>return</code>.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static double circleArea(double radius)
+public static int maxOfThree(int first, int second, int third)
+public static boolean isVowel(char ch)</code></pre><ul>
+<li><p>The return type is not <code>void</code>.</p></li>
+<li><p>The method must return a compatible value.</p></li>
+<li><p>The caller can store the returned value in a variable.</p></li>
+<li><p>The caller can use the returned value inside a larger expression.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Return Statement</h2>
+          <p>The <code>return</code> statement finishes the method and sends one value back.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static double circleArea(double radius) {
+    return Math.PI * radius * radius;
+}
+
+double area = circleArea(3.0);</code></pre><ul>
+<li><p>The expression after <code>return</code> must match the method return type.</p></li>
+<li><p>Here the returned value is a <code>double</code>.</p></li>
+<li><p>The variable <code>area</code> receives the result.</p></li>
+<li><p><strong>example:</strong> <code>MathMethods.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Incorrect Method Example: Missing Return</h2>
+          <p>This method promises to return a <code>double</code>, but it ends without returning one.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class MissingReturnBroken {
+    public static double celsiusToFahrenheit(double celsius) {
+        double fahrenheit = (9.0 / 5.0) * celsius + 32.0;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(celsiusToFahrenheit(50.0));
+    }
+}</code></pre><ul>
+<li><p>The header says the method returns <code>double</code>.</p></li>
+<li><p>The calculation creates a local variable named <code>fahrenheit</code>.</p></li>
+<li><p>The method needs <code>return fahrenheit;</code> before it ends.</p></li>
+<li><p><strong>example:</strong> <code>MissingReturnBroken.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Corrected Method Example</h2>
+          <p>The corrected version sends the computed value back to the caller.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static double celsiusToFahrenheit(double celsius) {
+    double fahrenheit = (9.0 / 5.0) * celsius + 32.0;
+    return fahrenheit;
+}</code></pre><ul>
+<li><p>The return type is <code>double</code>.</p></li>
+<li><p>The returned expression is a <code>double</code> value.</p></li>
+<li><p>The caller can print, store, or use the returned value.</p></li>
+<li><p><strong>example:</strong> <code>CelsiusConversion.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Method Calls and Parameters</h1>
+        </section>
+        <section class="frame">
+          <h2>Arguments and Parameters</h2>
+          <p>The caller sends arguments. The method receives those values in parameters.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">printCourseName(&quot;COP 2253&quot;);
+
+public static void printCourseName(String courseName)</code></pre><ul>
+<li><p><code>"COP 2253"</code> is the argument.</p></li>
+<li><p><code>courseName</code> is the parameter.</p></li>
+<li><p>The parameter is a local variable inside the method.</p></li>
+<li><p>The argument type must match the parameter type.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Method Call Flow</h2>
+          <p>When Java reaches a method call, execution temporarily jumps to that method.</p>
+<ul>
+<li><p>Java evaluates the arguments in the method call.</p></li>
+<li><p>Java copies the argument values into the parameters.</p></li>
+<li><p>The method body runs from top to bottom.</p></li>
+<li><p>For a value-returning method, <code>return</code> sends one value back.</p></li>
+<li><p>Execution continues after the original method call.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Primitive Parameters Are Copies</h2>
+          <p>When an <code>int</code>, <code>double</code>, <code>char</code>, or <code>boolean</code> is passed to a method, the method receives a copy.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static void swap(int first, int second)</code></pre><ul>
+<li><p><code>first</code> and <code>second</code> are local copies inside the method.</p></li>
+<li><p>Changing the copies does not change the original variables in <code>main</code>.</p></li>
+<li><p>This is why a basic swap method does not swap two <code>int</code> variables in the caller.</p></li>
+<li><p><strong>example:</strong> <code>SwapAttempt.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Methods with Decisions, Loops, and Input</h1>
+        </section>
+        <section class="frame">
+          <h2>Methods with Branches</h2>
+          <p>A method can contain an <code>if</code> statement when the task includes a decision.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static double calculateShipping(double orderTotal)</code></pre><ul>
+<li><p>The method receives the order total.</p></li>
+<li><p>The method decides which shipping cost applies.</p></li>
+<li><p>The method returns one shipping cost.</p></li>
+<li><p>The branch belongs in the method because the decision is part of the shipping calculation.</p></li>
+<li><p><strong>example:</strong> <code>ShippingCost.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Methods with Loops</h2>
+          <p>A method can contain a loop when the task must repeat.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static int countVowels(String text)</code></pre><ul>
+<li><p>The method receives a <code>String</code>.</p></li>
+<li><p>The loop visits each character in the string.</p></li>
+<li><p>The method counts characters that are vowels.</p></li>
+<li><p>The method returns the final count.</p></li>
+<li><p><strong>example:</strong> <code>CountVowels.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Parameter Error Checking</h2>
+          <p>A method should check parameter values before doing risky work.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static double averageScore(int totalPoints, int numberOfScores)
+public static boolean isValidPercentage(double percentage)</code></pre><ul>
+<li><p><code>averageScore</code> should not divide by zero.</p></li>
+<li><p><code>isValidPercentage</code> checks whether a score is between 0 and 100.</p></li>
+<li><p>Put simple error checks near the beginning of the method.</p></li>
+<li><p><strong>example:</strong> <code>ParameterCheck.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Using Scanner in Methods</h2>
+          <p>Use one <code>Scanner</code> for <code>System.in</code>, then pass that Scanner to helper methods.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static int readPositiveInt(Scanner scnr, String prompt)</code></pre><ul>
+<li><p>The caller creates the Scanner.</p></li>
+<li><p>The method receives the Scanner as a parameter.</p></li>
+<li><p>The method can read one valid value and return it.</p></li>
+<li><p>Avoid creating many Scanners for <code>System.in</code> in one program.</p></li>
+<li><p><strong>example:</strong> <code>ScannerMethod.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Scope, Access, and Static Members</h1>
+        </section>
+        <section class="frame">
+          <h2>Variable Scope</h2>
+          <p>Scope means where a name can be used in a program.</p>
+<ul>
+<li><p>A local variable is declared inside a method or block.</p></li>
+<li><p>A parameter is local to the method that receives it.</p></li>
+<li><p>A class-level variable is declared inside the class but outside any method.</p></li>
+<li><p>A local variable stops existing when its method or block finishes.</p></li>
+<li><p>Use the smallest reasonable scope so the program is easier to read.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Method Definition Scope</h2>
+          <p>In this course, method definitions belong inside the class, not inside another method.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class MethodLayout {
+    public static void main(String[] args) {
+        helperMethod();
+    }
+
+    public static void helperMethod() {
+        System.out.println(&quot;Helper method&quot;);
+    }
+}</code></pre><ul>
+<li><p><code>main</code> is one method.</p></li>
+<li><p><code>helperMethod</code> is another method in the same class.</p></li>
+<li><p>Do not define one method inside another method.</p></li>
+<li><p>Both method definitions are class members.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>public and private</h2>
+          <p><code>public</code> and <code>private</code> control access.</p>
+<ul>
+<li><p><code>public</code> means other code is allowed to call the method.</p></li>
+<li><p><code>private</code> means only code inside the same class is allowed to call the method.</p></li>
+<li><p>A helper method is often <code>private</code> because it supports the class internally.</p></li>
+<li><p>A method that the outside program needs to use is usually <code>public</code>.</p></li>
+<li><p>Access control keeps the program organized and protects implementation details.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>static Members</h2>
+          <p><code>static</code> means the member belongs to the class itself.</p>
+<ul>
+<li><p>A <code>static</code> method can be called through the class, without creating an object.</p></li>
+<li><p>A <code>static</code> field is shared by all objects of the class.</p></li>
+<li><p>Anything declared <code>static</code> is class-level, not object-level.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Scope Example</h2>
+          <p>This example uses a class constant, parameters, and a local variable.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class ScopeExample {
+    public static final int INCHES_PER_FOOT = 12;
+
+    public static double heightToCentimeters(int feet, int inches) {
+        int totalInches = feet * INCHES_PER_FOOT + inches;
+        return totalInches * 2.54;
+    }
+}</code></pre><ul>
+<li><p><code>INCHES_PER_FOOT</code> is a class-level constant.</p></li>
+<li><p><code>feet</code> and <code>inches</code> are parameters.</p></li>
+<li><p><code>totalInches</code> is a local variable inside the method.</p></li>
+<li><p><strong>example:</strong> <code>ScopeExample.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Overloading, Documentation, and Testing</h1>
+        </section>
+        <section class="frame">
+          <h2>Method Overloading</h2>
+          <p>Overloading means using the same method name with different parameter lists.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public static int square(int value)
+public static double square(double value)
+public static int square(int value, int times)</code></pre><ul>
+<li><p>The method name is the same.</p></li>
+<li><p>The parameter lists are different.</p></li>
+<li><p>Java chooses the method by matching the arguments in the call.</p></li>
+<li><p>Use overloading only when the methods represent the same basic idea.</p></li>
+<li><p><strong>example:</strong> <code>OverloadMethods.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Java Documentation for Methods</h2>
+          <p>A method comment explains the method from the caller&apos;s point of view.</p>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">/**
+ * Returns the largest of three integer values.
+ * @param first the first value
+ * @param second the second value
+ * @param third the third value
+ * @return the largest value
+ */
+public static int maxOfThree(int first, int second, int third)</code></pre><ul>
+<li><p><code>@param</code> explains each parameter.</p></li>
+<li><p><code>@return</code> explains the value sent back.</p></li>
+<li><p>The comment should describe behavior, not just repeat the code.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Unit Testing Methods</h2>
+          <p>Unit testing means checking one method with small, specific test cases.</p>
+<ul>
+<li><p>Test normal cases first.</p></li>
+<li><p>Then test edge cases, such as zero, negative numbers, or equal values.</p></li>
+<li><p>A value-returning method is easy to test because the result can be compared to an expected value.</p></li>
+<li><p>When the method changes, run the tests again.</p></li>
+<li><p><strong>example:</strong> <code>UnitTesting.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Common Method Errors</h2>
+          <p>Method errors often come from a mismatch between the header, the body, and the call.</p>
+<ul>
+<li><p>Wrong number of arguments.</p></li>
+<li><p>Wrong argument type.</p></li>
+<li><p>Using a <code>void</code> method as if it returned a value.</p></li>
+<li><p>Forgetting to return a value from a value-returning method.</p></li>
+<li><p>Returning a value whose type does not match the method header.</p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+<ul>
+<li><p>A method is a named block of code that performs one task.</p></li>
+<li><p>A method header tells Java how the method can be called.</p></li>
+<li><p>Arguments are sent by the caller; parameters receive those values inside the method.</p></li>
+<li><p>A <code>void</code> method does not return a value.</p></li>
+<li><p>A value-returning method must return a compatible value.</p></li>
+<li><p>Scope controls where names can be used.</p></li>
+<li><p><code>public</code> and <code>private</code> control access.</p></li>
+<li><p><code>static</code> means the member belongs to the class, not one individual object.</p></li>
+<li><p>Testing small methods makes larger programs easier to debug.</p></li>
+</ul>
+        </section>
+      </section>
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
