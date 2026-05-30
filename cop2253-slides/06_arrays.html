@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Arrays</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+<!-- Title -->
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%">
+<h1>Arrays</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+<section>
+<section class="frame">
+<h2>Today's Roadmap</h2>
+<p>Chapter 6 is about storing and processing groups of values.</p>
+<ul>
+<li><p>Array concept: one name, many related elements</p></li>
+<li><p>Array declaration, allocation, indexing, and <code>.length</code></p></li>
+<li><p>Iteration patterns for sum, max, counting, printing, modifying, and copying</p></li>
+<li><p>Enhanced <code>for</code> loops for read-only traversal</p></li>
+<li><p>Methods with array parameters and methods that return arrays</p></li>
+<li><p>Perfect size arrays, oversize arrays, two-dimensional arrays, and <code>ArrayList</code></p></li>
+<li><p>Common errors: invalid index, wrong loop bound, and confusing capacity with used size</p></li>
+</ul> <p><em>Reading: Sections 6.1-6.17</em></p>
+</section>
+<section class="frame">
+<h2>What You Should Be Able To Do</h2>
+<ul>
+<li><p>Create an array with the right type and size</p></li>
+<li><p>Access and update elements using valid indexes</p></li>
+<li><p>Use a loop to visit every element exactly once</p></li>
+<li><p>Compute quantities such as sum, average, maximum, and count</p></li>
+<li><p>Modify array elements safely inside a loop</p></li>
+<li><p>Pass an array to a method and explain why the original elements can change</p></li>
+<li><p>Choose between a perfect size array, an oversize array, and an <code>ArrayList</code></p></li>
+</ul> <p>Key check: identify the index, the valid range, and the loop stopping condition before running the code.</p>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Array Concept</h1>
+</section>
+<section class="frame">
+<h2>What an Array Is</h2>
+<p>A normal variable stores one data item. An array stores a list of data items of the same type.</p>
+<p><strong>Common problems arrays help solve:</strong></p>
+<ul>
+<li><p>A basketball program may need points for four quarters.</p></li>
+<li><p>A gradebook may need many quiz scores.</p></li>
+<li><p>A roster may need many names.</p></li>
+<li><p>Declaring one variable for each item does not scale.</p></li>
+</ul>
+<p><strong>What an array gives us:</strong></p>
+<ul>
+<li><p>One name for the whole group.</p></li>
+<li><p>One index for each item in the group.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Array Vocabulary: Definitions and Examples</h2>
+<p>Use these words carefully. They appear in code, compiler messages, and exam questions.</p>
+<ul>
+<li><p><strong>array:</strong> one variable name that refers to a sequence of elements.</p></li>
+<li><p><strong>element:</strong> one value stored inside the array.</p></li>
+<li><p><strong>index:</strong> the position number used to access one element.</p></li>
+<li><p><strong>length:</strong> the number of elements allocated in the array.</p></li>
+<li><p><strong>last valid index:</strong> one less than the length.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int[] pointsPerQuarter = new int[4];
+pointsPerQuarter[0] = 22;
+pointsPerQuarter[3] = 28;</code></pre></section>
+<section class="frame">
+<h2>Array Declaration and Allocation</h2>
+<p>An array variable is a reference. The <code>new</code> operator creates the actual array object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int[] gameScores = new int[4];
+String[] names = new String[3];
+double[] temperatures = new double[7];</code></pre><ul>
+<li><p>The brackets <code>[]</code> mean this variable refers to an array</p></li>
+<li><p>The value inside <code>new int[4]</code> is the number of elements</p></li>
+<li><p>Default values are assigned when the array is created</p></li>
+<li><p>For <code>int</code> and <code>double</code>, the default value is zero</p></li>
+<li><p>For <code>boolean</code>, the default value is <code>false</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Array Basics</h2>
+<p>This program creates an array, stores values, and prints selected elements.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class ArrayBasics {
+    public static void main(String[] args) {
+        int[] pointsPerQuarter = new int[4];
+
+        pointsPerQuarter[0] = 22;
+        pointsPerQuarter[1] = 19;
+        pointsPerQuarter[2] = 12;
+        pointsPerQuarter[3] = 28;
+
+        System.out.println("Q1 points: " + pointsPerQuarter[0]);
+        System.out.println("Q4 points: " + pointsPerQuarter[3]);
+        System.out.println("Number of quarters: " + pointsPerQuarter.length);
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>ArrayBasics.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Array Index Boundaries</h2>
+<p>For an array with length <code>4</code>, the valid indexes are <code>0</code>, <code>1</code>, <code>2</code>, and <code>3</code>.</p>
+<ul>
+<li><p>The first element is at index <code>0</code></p></li>
+<li><p>The last element is at index <code>array.length - 1</code></p></li>
+<li><p>Index <code>array.length</code> is already one step too far</p></li>
+<li><p>An out-of-range array access usually causes an <code>ArrayIndexOutOfBoundsException</code> at runtime</p></li>
+</ul><pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class ArrayOutOfBoundsBroken {
+    public static void main(String[] args) {
+        int[] userWeights = new int[3];
+        userWeights[0] = 122;
+        userWeights[1] = 119;
+        userWeights[2] = 117;
+
+        System.out.println(userWeights[3]);
+    }
+}</code></pre><ul>
+<li><p>This program compiles, but it fails when it runs because the index is invalid</p></li>
+<li><p><strong>example:</strong> <code>ArrayOutOfBoundsBroken.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Array Initialization</h2>
+<p>When the values are already known, an initializer is shorter and clearer.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int[] highTemps = {93, 80, 62, 75, 74, 89, 97};
+char[] vowels = {'a', 'e', 'i', 'o', 'u'};
+String[] days = {"Mon", "Tue", "Wed", "Thu", "Fri"};</code></pre><ul>
+<li><p>The array length is determined by the number of values</p></li>
+<li><p>This style creates a perfect size array</p></li>
+<li><p>You cannot later add one more element to the same array object</p></li>
+<li><p>To change the size, create a new array or use <code>ArrayList</code></p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Iterating Through Arrays</h1>
+</section>
+<section class="frame">
+<h2>The Standard Array Loop</h2>
+<p>Most array work uses a loop that starts at index <code>0</code> and stops before <code>array.length</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">for (int i = 0; i &lt; myArray.length; ++i) {
+    // use myArray[i]
+}</code></pre><ul>
+<li><p>Start with <code>i = 0</code> because the first index is 0</p></li>
+<li><p>Use <code>i &lt; myArray.length</code>, not <code>i &lt;= myArray.length</code></p></li>
+<li><p>Use <code>myArray[i]</code> inside the loop body</p></li>
+<li><p>This pattern works even when the array size changes</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Array Example: Read and Print Values</h2>
+<p>This program reads eight values into an array, then prints the values back out.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.util.Scanner;
+
+public class ArrayPrinter {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+        final int NUM_ELEMENTS = 8;
+        int[] userVals = new int[NUM_ELEMENTS];
+
+        System.out.println("Enter " + NUM_ELEMENTS + " integer values...");
+        for (int i = 0; i &lt; userVals.length; ++i) {
+            System.out.print("Value: ");
+            userVals[i] = scnr.nextInt();
+        }
+
+        System.out.print("You entered: ");
+        for (int i = 0; i &lt; userVals.length; ++i) {
+            System.out.print(userVals[i] + " ");
+        }
+        System.out.println();
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>ArrayPrinter.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Array Example: Sum, Average, and Max</h2>
+<p>Many array problems follow the same structure: initialize an answer, visit every element, and update the answer.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class ArraySumMax {
+    public static void main(String[] args) {
+        int[] scores = {83, 92, 76, 95, 88};
+        int sum = 0;
+        int max = scores[0];
+
+        for (int i = 0; i &lt; scores.length; ++i) {
+            sum += scores[i];
+            if (scores[i] &gt; max) {
+                max = scores[i];
+            }
+        }
+
+        double average = (double) sum / scores.length;
+        System.out.println("Sum: " + sum);
+        System.out.println("Average: " + average);
+        System.out.println("Max: " + max);
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>ArraySumMax.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Enhanced for Loop for Reading Values</h2>
+<p>An enhanced <code>for</code> loop visits each element directly.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class EnhancedFor {
+    public static void main(String[] args) {
+        String[] teamRoster = {"Mike", "Scottie", "Toni"};
+
+        System.out.println("Current roster:");
+        for (String playerName : teamRoster) {
+            System.out.println(playerName);
+        }
+    }
+}</code></pre><ul>
+<li><p>The loop variable receives one element value at a time</p></li>
+<li><p>It is clean when you only need to read or print elements</p></li>
+<li><p>It does not give you the index number</p></li>
+<li><p>Use a regular indexed loop when you need to update elements by position</p></li>
+<li><p><strong>example:</strong> <code>EnhancedFor.java</code></p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Modifying and Copying Arrays</h1>
+</section>
+<section class="frame">
+<h2>Array Example: Modify Elements</h2>
+<p>When you need to change elements, use an indexed loop.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class ModifyArray {
+    public static void main(String[] args) {
+        int[] userVals = {5, 67, -5, -4, 5, 6, 6, 4};
+
+        for (int i = 0; i &lt; userVals.length; ++i) {
+            if (userVals[i] &lt; 0) {
+                userVals[i] = 0;
+            }
+        }
+
+        System.out.print("New numbers: ");
+        for (int i = 0; i &lt; userVals.length; ++i) {
+            System.out.print(userVals[i] + " ");
+        }
+        System.out.println();
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>ModifyArray.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Array References and True Copies</h2>
+<p>Assigning one array reference to another does not copy all elements.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int[] oldVals = {10, 20, 30};
+int[] aliasVals = oldVals;      // same array object
+int[] copyVals = new int[oldVals.length];
+
+for (int i = 0; i &lt; oldVals.length; ++i) {
+    copyVals[i] = oldVals[i];
+}</code></pre><ul>
+<li><p><code>aliasVals</code> and <code>oldVals</code> refer to the same array</p></li>
+<li><p>Changing <code>aliasVals[0]</code> also changes <code>oldVals[0]</code></p></li>
+<li><p>To make a separate copy, create a new array and copy each element</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Array Example: Reverse Values</h2>
+<p>Reversing an array means swapping pairs from the outside toward the middle.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class ReverseArray {
+    public static void main(String[] args) {
+        int[] values = {10, 20, 30, 40, 50, 60, 70, 80};
+
+        for (int i = 0; i &lt; values.length / 2; ++i) {
+            int oppositeIndex = values.length - 1 - i;
+            int temp = values[i];
+            values[i] = values[oppositeIndex];
+            values[oppositeIndex] = temp;
+        }
+
+        System.out.print("Reversed: ");
+        for (int i = 0; i &lt; values.length; ++i) {
+            System.out.print(values[i] + " ");
+        }
+        System.out.println();
+    }
+}</code></pre><ul>
+<li><p>Index <code>0</code> swaps with the last index</p></li>
+<li><p>Index <code>1</code> swaps with the second-to-last index</p></li>
+<li><p>A temporary variable prevents one value from being overwritten</p></li>
+<li><p>The loop stops halfway through the array</p></li>
+<li><p><strong>example:</strong> <code>ReverseArray.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Common Array Loop Errors</h2>
+<ul>
+<li><p>Using <code>i &lt;= array.length</code> instead of <code>i &lt; array.length</code></p></li>
+<li><p>Starting at index <code>1</code> and accidentally skipping the first element</p></li>
+<li><p>Using a fixed number like <code>8</code> instead of <code>array.length</code></p></li>
+<li><p>Initializing max to <code>0</code> when the array might contain only negative values</p></li>
+<li><p>Changing a loop variable but forgetting to use that variable as the index</p></li>
+<li><p>Copying values in one direction during a reverse operation without saving a temporary value</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Arrays and Methods</h1>
+</section>
+<section class="frame">
+<h2>Primitive Parameters vs Array Parameters</h2>
+<p>Primitive values and array references behave differently when passed to methods.</p>
+<ul>
+<li><p>A primitive argument passes a copy of the value</p></li>
+<li><p>Changing the primitive parameter does not change the original variable</p></li>
+<li><p>An array argument passes a copy of the reference</p></li>
+<li><p>The method can use that reference to change the original array elements</p></li>
+<li><p>Reassigning the parameter itself does not change the caller's array variable</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Method Example: Array Parameter</h2>
+<p>This method receives an array reference and fills every element.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class ArrayParameter {
+    public static void fill(int[] arrayRef, int value) {
+        for (int i = 0; i &lt; arrayRef.length; ++i) {
+            arrayRef[i] = value;
+        }
+    }
+
+    public static void reassign(int[] arrayRef) {
+        arrayRef = new int[2];       // only changes the local parameter
+        arrayRef[0] = 99;            // does not change cookiesBaked
+    }
+
+    public static void main(String[] args) {
+        int[] cookiesBaked = new int[3];
+        fill(cookiesBaked, 10);
+        reassign(cookiesBaked);
+
+        for (int i = 0; i &lt; cookiesBaked.length; ++i) {
+            System.out.println("Day " + i + ": " + cookiesBaked[i]);
+        }
+    }
+}</code></pre>
+<ul>
+<li><p><code>arrayRef[i] = value;</code> changes the original array elements.</p></li>
+<li><p><code>arrayRef = new int[2];</code> only reassigns the local parameter.</p></li>
+<li><p>Reassigning the parameter does not change the caller's array variable.</p></li>
+<li><p><strong>example:</strong> <code>ArrayParameter.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Method Example: Return an Array</h2>
+<p>A method can create a new array and return the array reference.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class ReturnArray {
+    public static int[] initializeArray(int value, int size) {
+        int[] result = new int[size];
+        for (int i = 0; i &lt; result.length; ++i) {
+            result[i] = value;
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        int[] dataArray = initializeArray(5, 7);
+
+        for (int i = 0; i &lt; dataArray.length; ++i) {
+            System.out.print(dataArray[i] + " ");
+        }
+        System.out.println();
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>ReturnArray.java</code></p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Array Sizes</h1>
+</section>
+<section class="frame">
+<h2>Perfect Size Arrays</h2>
+<p>A perfect size array is completely full. The number of used elements equals the array length.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int[] highTemps = {93, 80, 62, 75, 74, 89, 97};
+System.out.println(highTemps.length);</code></pre><ul>
+<li><p>Use this when the number of items is fixed by the problem</p></li>
+<li><p>Seven days in a week is a good example</p></li>
+<li><p>Five vowels is a good example</p></li>
+<li><p>The array length and the number of used elements are the same</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Oversize Arrays</h2>
+<p>An oversize array has extra capacity. A separate size variable tracks how many elements are actually used.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class OversizeList {
+    public static void main(String[] args) {
+        String[] shoppingList = new String[5];
+        int shoppingListSize = 0;
+
+        shoppingList[shoppingListSize] = "Milk";
+        ++shoppingListSize;
+        shoppingList[shoppingListSize] = "Oranges";
+        ++shoppingListSize;
+        shoppingList[shoppingListSize] = "Apples";
+        ++shoppingListSize;
+
+        System.out.println("Items used: " + shoppingListSize);
+        for (int i = 0; i &lt; shoppingListSize; ++i) {
+            System.out.println(shoppingList[i]);
+        }
+    }
+}</code></pre><ul>
+<li><p><code>shoppingList.length</code> is the capacity</p></li>
+<li><p><code>shoppingListSize</code> is the number of used elements</p></li>
+<li><p>Loops should usually stop at <code>shoppingListSize</code>, not <code>shoppingList.length</code></p></li>
+<li><p>Oversize arrays are useful when the final number of items is not known in advance</p></li>
+<li><p><strong>example:</strong> <code>OversizeList.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Perfect Size vs Oversize</h2>
+<ul>
+<li><p>Use a perfect size array when the number of values is fixed and known</p></li>
+<li><p>Use an oversize array when the list may grow up to a maximum capacity</p></li>
+<li><p>A perfect size array has no unused slots</p></li>
+<li><p>An oversize array may contain unused default values after the used portion</p></li>
+<li><p>Always name the size variable clearly, such as <code>numItems</code>, <code>scoresSize</code>, or <code>shoppingListSize</code></p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Two-Dimensional Arrays</h1>
+</section>
+<section class="frame">
+<h2>Two-Dimensional Array Concept</h2>
+<p>A two-dimensional array is often used like a table with rows and columns.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int[][] table = new int[2][3];
+table[0][0] = 55;
+table[1][2] = 99;</code></pre><ul>
+<li><p>The first index chooses the row</p></li>
+<li><p>The second index chooses the column</p></li>
+<li><p><code>table.length</code> is the number of rows</p></li>
+<li><p><code>table[0].length</code> is the number of columns in row 0</p></li>
+<li><p>A 2 by 3 integer array has 6 integer elements</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>2D Array Example: Quiz Score Table</h2>
+<p>This program stores quiz scores in a small table.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class TwoDimensionalArray {
+    public static void main(String[] args) {
+        int[][] quizScores = {
+            {90, 85, 88},       // row 0: student 0 scores
+            {76, 92, 81}        // row 1: student 1 scores
+        };
+
+        System.out.println("Student 0, quiz 1: " + quizScores[0][1]);
+        System.out.println("Rows: " + quizScores.length);
+        System.out.println("Columns in row 0: " + quizScores[0].length);
+
+        for (int row = 0; row &lt; quizScores.length; ++row) {          // visit each row
+            for (int col = 0; col &lt; quizScores[row].length; ++col) { // visit columns in that row
+                System.out.print(quizScores[row][col] + " ");
+            }
+            System.out.println();
+        }
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>TwoDimensionalArray.java</code></p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>ArrayList</h1>
+</section>
+<section class="frame">
+<h2>What an ArrayList Adds</h2>
+<p>An <code>ArrayList</code> is a resizable list from Java's standard library.</p>
+<ul>
+<li><p>Use an array when the size is fixed or when the assignment asks for arrays</p></li>
+<li><p>Use <code>ArrayList</code> when the list needs to grow or shrink more naturally</p></li>
+<li><p>An <code>ArrayList</code> stores reference types, such as <code>String</code> or <code>Integer</code></p></li>
+<li><p>Use <code>ArrayList&lt;Integer&gt;</code>, not <code>ArrayList&lt;int&gt;</code></p></li>
+<li><p>Import it with <code>import java.util.ArrayList;</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Common ArrayList Methods</h2>
+<p>The syntax is different from arrays, but the indexing idea is similar.</p>
+<ul>
+<li><p><code>add(element)</code> appends an element to the end</p></li>
+<li><p><code>get(index)</code> returns the element at an index</p></li>
+<li><p><code>set(index, element)</code> replaces an element</p></li>
+<li><p><code>size()</code> returns the number of elements currently in the list</p></li>
+<li><p>Array indexes use <code>[]</code>; <code>ArrayList</code> access uses methods</p></li>
+</ul><pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ArrayList&lt;Integer&gt; valsList = new ArrayList&lt;Integer&gt;();
+valsList.add(31);
+int firstVal = valsList.get(0);
+valsList.set(0, 119);
+int usedSize = valsList.size();</code></pre>
+</section>
+<section class="frame">
+<h2>ArrayList Example: Add, Get, Set, and Size</h2>
+<p>This program creates an <code>ArrayList</code>, changes one element, and prints the list.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.util.ArrayList;
+
+public class ArrayListBasics {
+    public static void main(String[] args) {
+        ArrayList&lt;Integer&gt; valsList = new ArrayList&lt;Integer&gt;();
+
+        valsList.add(31);       // add appends a value and increases size
+        valsList.add(41);
+        valsList.add(59);
+
+        System.out.println("First value: " + valsList.get(0));
+        valsList.set(1, 119);   // set replaces an existing value
+
+        System.out.println("List size: " + valsList.size());
+        for (int i = 0; i &lt; valsList.size(); ++i) {  // ArrayList uses size(), not length
+            System.out.println(valsList.get(i));     // get reads a value by index
+        }
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>ArrayListBasics.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>ArrayList Example: Incorrect Element Type</h2>
+<p>This example uses the wrong type argument because <code>ArrayList</code> cannot use a primitive type name.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.util.ArrayList;
+
+public class ArrayListPrimitiveBroken {
+    public static void main(String[] args) {
+        ArrayList&lt;int&gt; scores = new ArrayList&lt;int&gt;();
+        scores.add(90);
+        System.out.println(scores.get(0));
+    }
+}</code></pre><ul>
+<li><p>Use <code>ArrayList&lt;Integer&gt;</code> instead of <code>ArrayList&lt;int&gt;</code></p></li>
+<li><p>Use <code>ArrayList&lt;Double&gt;</code> instead of <code>ArrayList&lt;double&gt;</code></p></li>
+<li><p>Use <code>ArrayList&lt;Character&gt;</code> instead of <code>ArrayList&lt;char&gt;</code></p></li>
+<li><p><strong>example:</strong> <code>ArrayListPrimitiveBroken.java</code></p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>Arrays store many elements under one name</p></li>
+<li><p>Array indexes start at <code>0</code> and end at <code>array.length - 1</code></p></li>
+<li><p>The standard array loop is <code>for (int i = 0; i &lt; array.length; ++i)</code></p></li>
+<li><p>Use indexed loops when you need the index or need to change elements</p></li>
+<li><p>Use enhanced <code>for</code> loops when you only need to read each element</p></li>
+<li><p>Array parameters let methods modify the original array elements</p></li>
+<li><p>Perfect size arrays are full; oversize arrays need a separate used-size variable</p></li>
+<li><p>Use <code>ArrayList</code> when a list needs to grow more naturally</p></li>
+</ul>
+</section>
+
+</section>
+</div>
+</div>
+<!-- Reveal -->
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
