@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 2: Course Gradebook Analyzer</title>
+  <style>
+:root {
+  --text: #24292f;
+  --muted: #57606a;
+  --border: #d0d7de;
+  --bg: #ffffff;
+  --code-bg: #f6f8fa;
+  --accent: #0969da;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 36px 32px 72px;
+}
+h1, h2, h3 {
+  line-height: 1.25;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  font-weight: 650;
+}
+h1 {
+  font-size: 2.1rem;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--border);
+  margin-top: 0;
+}
+h2 {
+  font-size: 1.45rem;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; }
+p { margin: 0.75em 0; }
+ul, ol { padding-left: 1.6em; }
+li { margin: 0.25em 0; }
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 28px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+  background: var(--code-bg);
+  padding: 0.15em 0.35em;
+  border-radius: 6px;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+blockquote {
+  margin: 1em 0;
+  padding-left: 1em;
+  color: var(--muted);
+  border-left: 4px solid var(--border);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  vertical-align: top;
+}
+th { background: var(--code-bg); }
+a { color: var(--accent); }
+@media print {
+  main { max-width: none; padding: 24px; }
+  pre { white-space: pre-wrap; }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Project 2: Course Gradebook Analyzer</h1>
+<h2>Overview</h2>
+<p>In this project, you will write a Java program that analyzes a small course gradebook.</p>
+<p>Each student has:</p>
+<ul>
+<li>a name</li>
+<li>a lab score</li>
+<li>an exam score</li>
+<li>a calculated final score</li>
+<li>a letter grade</li>
+</ul>
+<p>The project is designed to practice:</p>
+<ul>
+<li>loops</li>
+<li>arrays</li>
+<li>methods</li>
+<li>formatted output</li>
+</ul>
+<p>The topic is one unified gradebook problem. Every array stores information about the same students.</p>
+<hr />
+
+<h2>File and class name</h2>
+<p>Submit one Java file:</p>
+<pre><code class="language-text">CourseGradebookAnalyzer.java
+</code></pre>
+<p>Your public class must be named:<pre><code class="language-java">public class CourseGradebookAnalyzer
+</code></pre></p>
+<p>Your program must contain a <code>main()</code> method.</p>
+<hr />
+<h2>Program idea</h2>
+<p>Your program reads several students.</p>
+<p>For each student, the input gives:</p>
+<pre><code class="language-text">studentName labScore examScore
+</code></pre>
+<p>The program calculates each student's final score using this formula:</p>
+<pre><code class="language-text">final score = lab score * 0.40 + exam score * 0.60
+</code></pre>
+<p>Then the program prints:</p>
+<ul>
+<li>each student's final score and letter grade</li>
+<li>the class average</li>
+<li>the student with the highest final score</li>
+<li>the number of passing students</li>
+<li>the number of students below the class average</li>
+</ul>
+<hr />
+<h2>Program input</h2>
+<p>The first input value is the number of students.</p>
+<p>Then each student has one name, one lab score, and one exam score.</p>
+<pre><code class="language-text">numberOfStudents
+name1 labScore1 examScore1
+name2 labScore2 examScore2
+name3 labScore3 examScore3
+...
+</code></pre>
+<p>The input may also appear on one line. Since <code>Scanner</code> reads tokens, both formats should work.</p>
+<hr />
+<h2>Input value descriptions</h2>
+<p><code>numberOfStudents</code>: The number of students in the gradebook. This value will be at least 1</p>
+<p><code>name</code>: The student's name. The name will be one token with no spaces. </p>
+<p><code>labScore</code>: The student's lab score. This value will be an integer from 0 through 100.</p>
+<p><code>examScore</code>: The student's exam score. This value will be an integer from 0 through 100.</p>
+<hr />
+<h2>Required arrays</h2>
+<p>Your program must use these arrays:</p>
+<pre><code class="language-java">String[] names
+int[] labScores
+int[] examScores
+double[] finalScores
+</code></pre>
+<p>These are parallel arrays.</p>
+<p>That means the same index refers to the same student in every array.</p>
+<p>Example:</p>
+<pre><code class="language-text">names[2]       -&gt; the third student's name
+labScores[2]   -&gt; the third student's lab score
+examScores[2]  -&gt; the third student's exam score
+finalScores[2] -&gt; the third student's final score
+</code></pre>
+<hr />
+
+<h2>Letter grade rules</h2>
+<p>Use the final score to assign a letter grade.</p>
+<pre><code class="language-text">A: score &gt;= 90
+B: score &gt;= 80 and score &lt; 90
+C: score &gt;= 70 and score &lt; 80
+D: score &gt;= 60 and score &lt; 70
+F: score &lt; 60
+</code></pre>
+<p>A student is passing if the final score is at least 60.00.</p>
+<hr />
+
+<h2>Required methods</h2>
+<p>Your program must include all of the following methods with exactly these method headers.</p>
+<pre><code class="language-java">public static double calculateFinalScore(int labScore, int examScore)
+</code></pre>
+<p>This method calculates and returns one student's final score with this formula: <code class="language-text">final = labScore * 0.40 + examScore * 0.60</code></p>
+<p>This method should not read input.</p>
+<p>This method should not print output.</p>
+<hr />
+
+<pre><code class="language-java">public static void fillFinalScores(int[] labScores, int[] examScores, double[] finalScores)
+</code></pre>
+<p>This method fills the <code>finalScores</code> array.</p>
+<p>Use a loop.</p>
+<p>For each index, calculate the final score from the matching lab score and exam score.</p>
+<p>Example idea:</p>
+<pre><code class="language-text">finalScores[i] stores the final score for student i
+</code></pre>
+<p>This method should call <code>calculateFinalScore()</code>.</p>
+<p>This method should not read input.</p>
+<p>This method should not print output.</p>
+<hr />
+<pre><code class="language-java">public static double average(double[] values)
+</code></pre>
+<p>This method returns the average of all values in the array.</p>
+<p>Formula:</p>
+<pre><code class="language-text">average = sum of values / number of values
+</code></pre>
+<p>Use a loop.</p>
+<p>This method should not print output.</p>
+<hr />
+<pre><code class="language-java">public static int indexOfHighest(double[] values)
+</code></pre>
+<p>This method returns the index of the largest value in the array.</p>
+<p>If more than one value is tied for highest, return the first highest index.</p>
+<p>Example:</p>
+<pre><code class="language-text">values = {87.0, 97.0, 97.0, 75.0}
+</code></pre>
+<p>The method returns:</p>
+<pre><code class="language-text">1
+</code></pre>
+<p>The first <code>97.0</code> is at index 1.</p>
+<hr />
+<pre><code class="language-java">public static int countPassing(double[] values)
+</code></pre>
+<p>This method returns how many final scores are at least 60.00.</p>
+<p>Use a loop.</p>
+<hr />
+<pre><code class="language-java">public static int countBelowAverage(double[] values)
+</code></pre>
+<p>This method returns how many values are strictly less than the average of the whole array.</p>
+<p>This method may call <code>average(values)</code>.</p>
+<p>Use a loop.</p>
+<hr />
+<pre><code class="language-java">public static char letterGrade(double score)
+</code></pre>
+<p>This method returns the letter grade for one final score.</p>
+<p>Return one of these characters:</p>
+<pre><code class="language-text">'A'
+'B'
+'C'
+'D'
+'F'
+</code></pre>
+<p>Use branches.</p>
+<hr />
+
+<h2>Suggested program structure</h2>
+<p>Your <code>main()</code> method should:</p>
+<pre><code class="language-text">create Scanner
+read numberOfStudents
+create names array
+create labScores array
+create examScores array
+create finalScores array
+
+use a loop to read each student's name, lab score, and exam score
+call fillFinalScores(labScores, examScores, finalScores)
+
+use a loop to print each student's result
+call average(finalScores)
+call indexOfHighest(finalScores)
+call countPassing(finalScores)
+call countBelowAverage(finalScores)
+print the summary results
+</code></pre>
+<hr />
+<h2>Output format</h2>
+<p>Your program must print the report in this order:</p>
+<pre><code class="language-text">Student Report
+studentName1: finalScore letterGrade
+studentName2: finalScore letterGrade
+...
+Class average: averageValue
+Highest student: studentName finalScore
+Passing students: count
+Below average: count
+</code></pre>
+<p>All final scores and averages must show exactly two digits after the decimal point.</p>
+<p>Use <code>System.out.printf()</code> for values that need two decimal places.</p>
+<p>Do not print prompts.</p>
+<p>Do not print extra blank lines.</p>
+<p>Do not print other not required message.</p>
+<hr />
+
+<h2>Restrictions</h2>
+<p>Do not use <code>ArrayList</code>.</p>
+<p>Do not use file input.</p>
+<p>Do not use sorting methods.</p>
+<p>Do not use advanced library methods to replace the required logic.</p>
+<p>Do not print inside the required methods.</p>
+<p>Do not hard-code the sample answers.</p>
+<p>Your program must work for different valid inputs.</p>
+<hr />
+
+<h2>Common mistakes to avoid</h2>
+<p>Do not calculate the average score with integer division.</p>
+<p>Do not mix the array indexes</p>
+<p>Do not return the highest score from <code>indexOfHighest()</code>.</p>
+<ul>
+  <li><p>That method should return the index of the highest score.</p></li>
+  <li><p>The index lets you print both the student's name and final score.</p></li>
+</ul>
+<hr />
+
+<h2>Sample Tests</h2>
+<h3>Test 1: Normal mixed scores</h3>
+<p>Input:</p>
+<pre><code class="language-text">4 Ava 90 85 Ben 70 75 Mia 100 95 Noah 60 65
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-text">Student Report
+Ava: 87.00 B
+Ben: 73.00 C
+Mia: 97.00 A
+Noah: 63.00 D
+Class average: 80.00
+Highest student: Mia 97.00
+Passing students: 4
+Below average: 2
+</code></pre>
+
+<h3>Test 2: One student</h3>
+<p>Input:</p>
+<pre><code class="language-text">1 Solo 80 90
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-text">Student Report
+Solo: 86.00 B
+Class average: 86.00
+Highest student: Solo 86.00
+Passing students: 1
+Below average: 0
+</code></pre>
+
+<h3>Test 3: Tie for highest score</h3>
+<p>Input:</p>
+<pre><code class="language-text">3 Alex 100 90 Jordan 90 100 Taylor 80 80
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-text">Student Report
+Alex: 94.00 A
+Jordan: 96.00 A
+Taylor: 80.00 B
+Class average: 90.00
+Highest student: Jordan 96.00
+Passing students: 3
+Below average: 1
+</code></pre>
+
+<h3>Test 4: Failing and below-average cases</h3>
+<p>Input:</p>
+<pre><code class="language-text">5 Liam 100 100 Emma 88 92 Olivia 75 70 Noah 60 55 Ava 40 50
+</code></pre>
+<p>Expected output:</p>
+<pre><code class="language-text">Student Report
+Liam: 100.00 A
+Emma: 90.40 A
+Olivia: 72.00 C
+Noah: 57.00 F
+Ava: 46.00 F
+Class average: 73.08
+Highest student: Liam 100.00
+Passing students: 3
+Below average: 3
+</code></pre>
+<hr />
+
+<h2>Grading rubric</h2>
+<p>Total: 100 points</p>
+<h3>Input parsing and arrays: 20 points</h3>
+<p>The program correctly reads the number of students.</p>
+<p>The program correctly creates all required arrays.</p>
+<p>The program correctly fills the parallel arrays.</p>
+<p>The program keeps each student's data at the same index across all arrays.</p>
+<p>The program works when input values are on the same line or different lines.</p>
+
+
+<h3>Required method design: 50 points</h3>
+<p>All seven required methods are present.</p>
+<p>The method headers match exactly.</p>
+<p>The methods use parameters correctly.</p>
+<p>The methods return values correctly.</p>
+<p>The required methods do not read input.</p>
+<p>The required methods do not print output.</p>
+<p>The program uses array parameters correctly.</p>
+
+<h3>Output format: 15 points</h3>
+<p>The output labels match exactly.</p>
+<p>The output appears in the required order.</p>
+<p>All scores and averages show two digits after the decimal point.</p>
+<p>There are no prompts.</p>
+<p>There are no extra blank lines.</p>
+
+<h3>Style: 15 points</h3>
+<p>The code is readable.</p>
+<p>Indentation is consistent.</p>
+<p>Variable names are meaningful.</p>
+<p>Use java document and comments explain important parts of the logic.</p>
+
+</main>
+</body>
+</html>
