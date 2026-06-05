@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Objects and Classes</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Objects and Classes</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+      <section>
+        <section class="frame">
+          <h2>Today's Roadmap</h2>
+
+          <p>Chapter 7 moves from writing one program to designing our own types.</p>
+          <ul>
+<li><p>Objects group related data and behavior into one idea.</p></li>
+<li><p>A class is the blueprint used to create objects.</p></li>
+<li><p>Private fields protect object data from careless outside changes.</p></li>
+<li><p>Public methods give the safe actions other code can use.</p></li>
+<li><p>Constructors initialize new objects.</p></li>
+<li><p>References explain why two variables may point to the same object.</p></li>
+<li><p>Static members, packages, Javadocs, unit tests, wrappers, and ArrayLists complete the class workflow.</p></li>
+</ul>
+          <p><em>Reading focus: Chapter 7, Objects and Classes</em></p>
+        </section>
+        <section class="frame">
+          <h2>What You Should Be Able To Do</h2>
+
+          <ul>
+<li><p>Explain the difference between a class and an object.</p></li>
+<li><p>Create objects with <code>new</code> and call methods using dot notation.</p></li>
+<li><p>Write a small class with private fields, mutators, accessors, and constructors.</p></li>
+<li><p>Decide when to use instance fields, static fields, and local variables.</p></li>
+<li><p>Explain why references can create aliasing.</p></li>
+<li><p>Pass objects to methods and understand what can be modified.</p></li>
+<li><p>Write simple class tests before relying on the class in a larger program.</p></li>
+</ul>
+          <p>Use this question while designing: what data does this object store, and what actions should it provide?</p>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Objects and Abstraction</h1>
+        </section>
+        <section class="frame">
+          <h2>Objects Group Data and Behavior</h2>
+
+          <p>Real programs become easier to understand when related information is grouped together.</p>
+          <ul>
+<li><p>A restaurant has a name, rating, phone number, and address.</p></li>
+<li><p>A runner has a time, distance, and speed.</p></li>
+<li><p>A car has a model year, purchase price, and current value.</p></li>
+<li><p>A class lets us group those related values with the actions that use them.</p></li>
+</ul>
+          <p>Instead of managing many separate variables, we can work with one object that represents one thing.</p>
+        </section>
+        <section class="frame">
+          <h2>Class Vocabulary: Definitions and Examples</h2>
+
+          <p>Use these words carefully. They appear in code, compiler messages, and class diagrams.</p>
+          <ul>
+<li><p><strong>class:</strong> a new type definition used to create objects. Example: <code>Restaurant</code></p></li>
+<li><p><strong>object:</strong> one instance created from a class. Example: <code>lunchPlace</code></p></li>
+<li><p><strong>field:</strong> data stored inside each object. Example: <code>name</code>, <code>rating</code></p></li>
+<li><p><strong>method:</strong> an action an object can perform. Example: <code>setRating()</code>, <code>print()</code></p></li>
+<li><p><strong>constructor:</strong> special code that initializes a new object. Example: <code>new Restaurant()</code></p></li>
+<li><p><strong>reference variable:</strong> a variable that refers to an object. Example: <code>Restaurant lunchPlace</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Access and Static Keywords</h2>
+
+          <p>These keywords control where a member can be used and what it belongs to.</p>
+          <ul>
+<li><p><strong>public:</strong> code outside the class is allowed to use it. Example: <code>public void print()</code></p></li>
+<li><p><strong>private:</strong> only code inside the same class can use it. Example: <code>private int rating</code></p></li>
+<li><p><strong>static:</strong> the member belongs to the class, not to one object. Example: <code>private static int nextId</code></p></li>
+<li><p><code>static</code> does not mean constant. It means shared at the class level.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Abstraction and Information Hiding</h2>
+
+          <p>Abstraction means using an object without needing to know every internal detail.</p>
+          <ul>
+<li><p>A user of an oven turns a knob. The user does not touch the flame directly.</p></li>
+<li><p>A user of a <code>Restaurant</code> object calls <code>setRating()</code>. The user should not directly edit private fields.</p></li>
+<li><p>Information hiding keeps object data safe and gives the class control over how the data changes.</p></li>
+</ul>
+          <p>This is why we usually make fields <code>private</code> and methods <code>public</code>.</p>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Defining a Class</h1>
+        </section>
+        <section class="frame">
+          <h2>Class Definition: Fields and Methods</h2>
+
+          <p>A class definition lists the data each object stores and the methods each object provides.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class Restaurant {
+    private String name;  // field: each object has its own name
+    private int rating;   // field: each object has its own rating
+
+    public void setName(String restaurantName) { // public method
+        name = restaurantName;
+    }
+
+    public void setRating(int userRating) {
+        rating = userRating;
+    }
+
+    public void print() {
+        System.out.println(name + &quot; -- &quot; + rating);
+    }
+}</code></pre>
+          <ul>
+<li><p><strong>example:</strong> <code>Restaurant.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Private Fields Protect Object Data</h2>
+
+          <p>Private fields cannot be accessed directly from outside the class. The class itself is fine; the incorrect part is the outside access.</p>
+          <ul>
+<li><p>This protects the object from invalid or accidental changes.</p></li>
+<li><p>The class controls changes through its public methods.</p></li>
+<li><p>A class user should not need to know the exact field layout.</p></li>
+</ul><pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">class Restaurant {
+    private String name;
+
+    public Restaurant() {
+        name = &quot;NoName&quot;;
+    }
+}
+
+public class PrivateFieldAccessBroken {
+    public static void main(String[] args) {
+        Restaurant place = new Restaurant();
+        place.name = &quot;Central Deli&quot;;
+    }
+}</code></pre>
+          <ul>
+<li><p><strong>example:</strong> <code>PrivateFieldAccessBroken.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Mutators/Setters, Accessors/Getters, and Output Methods</h2>
+
+          <p>These method names help readers understand the job of each method.</p>
+          <ul>
+<li><p><strong>mutator/setter:</strong> a method that changes a field value. Example: <code>setName(...)</code></p></li>
+<li><p><strong>accessor/getter:</strong> a method that returns a field value. Example: <code>getName()</code></p></li>
+<li><p><strong>output method:</strong> a method that displays object information. Example: <code>print()</code></p></li>
+<li><p>These public methods form the class interface.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Private Helper Methods</h2>
+
+          <p>A private helper method supports the public methods but is not meant to be called by class users.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class Employee {
+    private String name;
+    private double hourlySalary;
+    private double hoursPerWeek;
+
+    private double weeklySalaryCalc() { // helper used only inside Employee
+        return hourlySalary * hoursPerWeek;
+    }
+
+    public void printPayslip() { // public method used by other code
+        System.out.println(&quot;Name: &quot; + name);
+        System.out.printf(&quot;Weekly salary: $%.2f%n&quot;, weeklySalaryCalc());
+    }
+}</code></pre>
+          <ul>
+<li><p><strong>example:</strong> <code>Employee.java</code>, <code>EmployeeTester.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Initialization and Constructors</h1>
+        </section>
+        <section class="frame">
+          <h2>Constructors Initialize Objects</h2>
+
+          <p>A constructor runs when a new object is created.</p>
+          <ul>
+<li><p>It has the same name as the class.</p></li>
+<li><p>It has no return type, not even <code>void</code>.</p></li>
+<li><p>It usually initializes fields so the object starts in a valid state.</p></li>
+<li><p>If you write no constructor, Java provides a default no-argument constructor.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Constructors in Restaurant</h2>
+
+          <p>One constructor creates a default object. Another constructor accepts starting values.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class Restaurant {
+    private String name;
+    private int rating;
+
+    public Restaurant() { // no-argument constructor
+        name = &quot;NoName&quot;;
+        rating = -1;
+    }
+
+    public Restaurant(String initName, int initRating) { // overloaded constructor
+        name = initName;
+        rating = initRating;
+    }
+}</code></pre>
+          <ul>
+<li><p><strong>example:</strong> <code>Restaurant.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Constructor Overloading</h2>
+
+          <p>Constructor overloading means a class has more than one constructor with different parameter lists.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class Pet {
+    private String name;
+    private int age;
+
+    public Pet() { // no starting values
+        name = &quot;NoName&quot;;
+        age = -1;
+    }
+
+    public Pet(String initName) { // name only
+        name = initName;
+        age = 0;
+    }
+
+    public Pet(String initName, int initAge) { // name and age
+        name = initName;
+        age = initAge;
+    }
+}</code></pre>
+          <ul>
+<li><p>Java chooses the constructor by matching the arguments.</p></li>
+<li><p><strong>example:</strong> <code>Pet.java</code>, <code>PetRunner.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Object Creation and Method Calls</h2>
+
+          <p>To use a class, create an object and call public methods on that object.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class RestaurantFavorites {
+    public static void main(String[] args) {
+        Restaurant lunchPlace = new Restaurant();              // default constructor
+        Restaurant dinnerPlace = new Restaurant(&quot;Friends Cafe&quot;, 5); // overloaded constructor
+
+        lunchPlace.setName(&quot;Central Deli&quot;);  // call a method on lunchPlace
+        lunchPlace.setRating(4);
+
+        System.out.println(&quot;My favorite restaurants:&quot;);
+        lunchPlace.print();   // each object prints its own fields
+        dinnerPlace.print();
+    }
+}</code></pre>
+          <ul>
+<li><p><strong>example:</strong> <code>Restaurant.java</code>, <code>RestaurantFavorites.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Dot Notation Calls Methods on Objects</h2>
+
+          <p>Dot notation means: use this object, then call this method.</p>
+          <ul>
+<li><p>The object is on the left of the dot.</p></li>
+<li><p>The method is on the right of the dot.</p></li>
+<li><p>Arguments go inside the parentheses.</p></li>
+<li><p>Each object keeps its own field values.</p></li>
+</ul>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">lunchPlace.setName("Central Deli");
+lunchPlace.setRating(4);
+lunchPlace.print();</code></pre>
+        </section>
+        <section class="frame">
+          <h2>Incorrect Example: Missing No-Argument Constructor</h2>
+
+          <p>If you define a constructor with arguments, Java no longer creates a no-argument constructor automatically.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class MissingNoArgConstructorBroken {
+    static class PetBroken {
+        private String name;
+
+        public PetBroken(String initName) {
+            name = initName;
+        }
+    }
+
+    public static void main(String[] args) {
+        PetBroken pet = new PetBroken();
+    }
+}</code></pre>
+          <ul>
+<li><p>This incorrect example shows code that the compiler rejects.</p></li>
+<li><p>Fix it by adding <code>public PetBroken()</code> or by passing a String argument.</p></li>
+<li><p><strong>example:</strong> <code>MissingNoArgConstructorBroken.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Objects and References</h1>
+        </section>
+        <section class="frame">
+          <h2>Reference Variables Point to Objects</h2>
+
+          <p>A variable of a class type stores a reference to an object, not the whole object directly.</p>
+          <ul>
+<li><p><code>Restaurant lunchPlace;</code> declares a reference variable.</p></li>
+<li><p><code>new Restaurant()</code> creates an object.</p></li>
+<li><p><code>lunchPlace = new Restaurant();</code> stores the object reference in the variable.</p></li>
+<li><p>The reference lets Java find the object later.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Aliasing: Multiple References to One Object</h2>
+
+          <p>Two reference variables can point to the same object. This is called aliasing.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class ReferenceAliasing {
+    static class RunRecord {
+        private int seconds;
+        private double miles;
+
+        public void setRun(int runSeconds, double runMiles) {
+            seconds = runSeconds;
+            miles = runMiles;
+        }
+
+        public double getSpeedMph() {
+            return miles / (seconds / 3600.0);
+        }
+    }
+
+    public static void main(String[] args) {
+        RunRecord lastRun = new RunRecord();
+        RunRecord currentRun = lastRun; // copy the reference, not the object
+
+        currentRun.setRun(300, 1.5);    // changes the one shared object
+        System.out.printf(&quot;Last speed: %.1f%n&quot;, lastRun.getSpeedMph());
+    }
+}</code></pre>
+          <ul>
+<li><p>Changing the object through <code>currentRun</code> also affects what <code>lastRun</code> sees.</p></li>
+<li><p>There is one object, but two references to it.</p></li>
+<li><p><strong>example:</strong> <code>ReferenceAliasing.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Primitive and Reference Variables Store Different Things</h2>
+
+          <p>Primitive variables directly store their values. Reference variables store a way to find an object.</p>
+          <ul>
+<li><p><strong>primitive variable:</strong> stores the actual value. Example: <code>int count = 3;</code></p></li>
+<li><p><strong>reference variable:</strong> stores a reference to an object. Example: <code>Restaurant lunchPlace;</code></p></li>
+<li><p>Common primitive types include <code>int</code>, <code>double</code>, <code>boolean</code>, and <code>char</code>.</p></li>
+<li><p>Common reference types include <code>String</code>, arrays, objects, and <code>ArrayList</code>.</p></li>
+<li><p>This difference explains many beginner surprises.</p></li>
+<li><p>The biggest surprise is what happens when variables are passed to methods.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Parameters: Primitive vs. Object</h2>
+
+          <p>A primitive argument gives the method a copy of the value. An object reference lets the method reach the same object.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class TimeConverter {
+    public static void convertPrimitive(int totalMinutes, int hours, int minutes) {
+        hours = totalMinutes / 60;
+        minutes = totalMinutes % 60;
+    }
+
+    public static void convertObject(TimeResult result, int totalMinutes) {
+        result.hours = totalMinutes / 60;
+        result.minutes = totalMinutes % 60;
+    }
+
+    static class TimeResult {
+        int hours;
+        int minutes;
+    }
+}</code></pre>
+          <ul>
+<li><p><code>convertPrimitive()</code> changes only local copies.</p></li>
+<li><p><code>convertObject()</code> changes fields in the object passed to it.</p></li>
+<li><p><strong>example:</strong> <code>TimeConverter.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Class Design Details</h1>
+        </section>
+        <section class="frame">
+          <h2>The this Implicit Parameter</h2>
+
+          <p>Inside an instance method, <code>this</code> refers to the object that received the method call.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class ThisKeyword {
+    static class ShapeSquare {
+        private double sideLength;
+
+        public void setSideLength(double sideLength) {
+            this.sideLength = sideLength;
+        }
+
+        public double getArea() {
+            return this.sideLength * this.sideLength;
+        }
+    }
+}</code></pre>
+          <ul>
+<li><p>The field and parameter have the same name here.</p></li>
+<li><p><code>this.sideLength</code> means the object field.</p></li>
+<li><p><code>sideLength</code> by itself means the parameter.</p></li>
+<li><p><strong>example:</strong> <code>ThisKeyword.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>When to Create a Class</h2>
+
+          <p>When designing a program, look for nouns and responsibilities.</p>
+          <ul>
+<li><p>If a thing has several related values, it may deserve a class.</p></li>
+<li><p>If a thing has actions that belong with those values, it is a stronger class candidate.</p></li>
+<li><p>Avoid creating a class for every single variable.</p></li>
+<li><p>A useful class has a clear job and a small public interface.</p></li>
+</ul>
+          <p>For example, an <code>Employee</code> class can store name, age, salary, and hours, then print a payslip.</p>
+        </section>
+        <section class="frame">
+          <h2>main() in a Programmer-Defined Class</h2>
+
+          <p>A class can contain <code>main()</code>, but <code>main()</code> is not part of each object.</p>
+          <ul>
+<li><p><code>main()</code> is <code>static</code>, so it starts without an object.</p></li>
+<li><p>Inside <code>main()</code>, create objects with <code>new</code>.</p></li>
+<li><p>Then call instance methods on those objects.</p></li>
+<li><p>For larger programs, it is common to put the class and the tester in separate files.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Static Members Belong to the Class</h2>
+
+          <p>A static member belongs to the class itself, not to one individual object.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class StaticStore {
+    static class Store {
+        private static int nextId = 101; // one value shared by the class
+        private String name;             // each object has its own name
+        private int id;                  // each object has its own id
+
+        public Store(String storeName) {
+            name = storeName;
+            id = nextId;
+            ++nextId;                    // prepare the next object id
+        }
+
+        public static int getNextId() {
+            return nextId;
+        }
+    }
+}</code></pre>
+          <ul>
+<li><p><code>nextId</code> is shared by all <code>Store</code> objects.</p></li>
+<li><p>Each object still has its own <code>name</code> and <code>id</code>.</p></li>
+<li><p>Call static methods with the class name, such as <code>Store.getNextId()</code>.</p></li>
+<li><p><strong>example:</strong> <code>StaticStore.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Packages and import Statements</h2>
+
+          <p>A package groups related Java classes. The <code>import</code> statement lets us use a class by its short name.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">import java.util.ArrayList;
+
+public class PackageImportExample {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; names = new ArrayList&lt;String&gt;();
+        names.add(&quot;Ava&quot;);   // add increases the list size
+        names.add(&quot;Noah&quot;);
+        names.add(&quot;Mia&quot;);
+
+        System.out.println(&quot;Names: &quot; + names);
+    }
+}</code></pre>
+          <ul>
+<li><p><code>java.lang</code> is imported automatically.</p></li>
+<li><p><code>java.util.ArrayList</code> must be imported or fully qualified.</p></li>
+<li><p><strong>example:</strong> <code>PackageImportExample.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Testing and Library Support</h1>
+        </section>
+        <section class="frame">
+          <h2>Java Documentation for Classes</h2>
+
+          <p>Javadoc comments describe how another programmer should use a class or method.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">/**
+ * Represents a rectangle with a width and height.
+ */
+public class Rectangle {
+    private double width;
+    private double height;
+
+    /**
+     * Returns the area of the rectangle.
+     * @return width multiplied by height
+     */
+    public double getArea() {
+        return width * height;
+    }
+}</code></pre>
+          <ul>
+<li><p>Use <code>/** ... */</code> for Javadoc comments.</p></li>
+<li><p><code>@param</code> explains a parameter.</p></li>
+<li><p><code>@return</code> explains the returned value.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Unit Testing a Class</h2>
+
+          <p>A test program creates objects and checks whether their public methods return the expected results.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class RectangleTester {
+    public static void main(String[] args) {
+        Rectangle testRectangle = new Rectangle(2.0, 3.0);
+
+        if (testRectangle.getArea() != 6.0) {
+            System.out.println(&quot;FAILED getArea for 2 by 3&quot;);
+        }
+        if (testRectangle.getPerimeter() != 10.0) {
+            System.out.println(&quot;FAILED getPerimeter for 2 by 3&quot;);
+        }
+
+        System.out.println(&quot;Tests complete.&quot;);
+    }
+}</code></pre>
+          <ul>
+<li><p>A good test checks normal values and boundary values.</p></li>
+<li><p>When a class changes, run the same tests again.</p></li>
+<li><p><strong>example:</strong> <code>Rectangle.java</code>, <code>RectangleTester.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Wrapper Class Conversions</h2>
+
+          <p>Wrapper classes let primitive values work with object-based tools like collections.</p>
+          <ul>
+<li><p><code>int</code> uses wrapper class <code>Integer</code>.</p></li>
+<li><p><code>double</code> uses wrapper class <code>Double</code>.</p></li>
+<li><p><code>char</code> uses wrapper class <code>Character</code>.</p></li>
+<li><p><code>boolean</code> uses wrapper class <code>Boolean</code>.</p></li>
+<li><p>Autoboxing converts a primitive to a wrapper object automatically.</p></li>
+<li><p>Unboxing converts a wrapper object back to a primitive automatically.</p></li>
+<li><p>Methods like <code>Integer.parseInt()</code> convert text to numbers.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Example: Wrapper Conversion</h2>
+
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class WrapperConversion {
+    public static void main(String[] args) {
+        Integer scoreObj = 95;
+        int scorePrimitive = scoreObj;
+
+        String countText = &quot;42&quot;;
+        int count = Integer.parseInt(countText);
+        String scoreText = scoreObj.toString();
+
+        System.out.println(&quot;scorePrimitive: &quot; + scorePrimitive);
+        System.out.println(&quot;count + 1: &quot; + (count + 1));
+        System.out.println(&quot;scoreText: &quot; + scoreText);
+    }
+}</code></pre>
+          <ul>
+<li><p><code>Integer scoreObj = 95;</code> uses autoboxing.</p></li>
+<li><p><code>int scorePrimitive = scoreObj;</code> uses unboxing.</p></li>
+<li><p><code>Integer.parseInt(countText)</code> converts a String to an int.</p></li>
+<li><p><strong>example:</strong> <code>WrapperConversion.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>ArrayLists of Objects</h2>
+
+          <p>An <code>ArrayList</code> stores object references and can grow as items are added.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">import java.util.ArrayList;
+
+public class ArrayListObjects {
+    static class Business {
+        private String name;
+        private String address;
+
+        public Business(String businessName, String businessAddress) {
+            name = businessName;
+            address = businessAddress;
+        }
+
+        @Override
+        public String toString() {
+            return name + &quot; -- &quot; + address;
+        }
+    }
+}</code></pre>
+          <ul>
+<li><p><code>ArrayList&lt;Business&gt;</code> means this list stores <code>Business</code> objects.</p></li>
+<li><p><code>toString()</code> controls how an object is printed as text.</p></li>
+<li><p><strong>example:</strong> <code>ArrayListObjects.java</code></p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Extended Example</h1>
+        </section>
+        <section class="frame">
+          <h2>Example Problem: Employee Class</h2>
+
+          <p>Design a class that represents one employee.</p>
+          <ul>
+<li><p>Fields: name, age, hourly salary, and hours worked per week.</p></li>
+<li><p>Mutators and accessors let another program set and read field values.</p></li>
+<li><p>A private helper method computes weekly salary.</p></li>
+<li><p>A public method prints a simple payslip.</p></li>
+<li><p>A no-argument constructor creates safe default values.</p></li>
+<li><p>An overloaded constructor creates a complete employee in one statement.</p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Example: Employee Fields and Constructors</h2>
+
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class Employee {
+    private String name;
+    private int age;
+    private double hourlySalary;
+    private double hoursPerWeek;
+
+    public Employee() {
+        name = &quot;NoName&quot;;
+        age = 0;
+        hourlySalary = 0.0;
+        hoursPerWeek = 0.0;
+    }
+
+    public Employee(String initName, int initAge, double initSalary, double initHours) {
+        name = initName;
+        age = initAge;
+        hourlySalary = initSalary;
+        hoursPerWeek = initHours;
+    }
+
+    private double weeklySalaryCalc() {
+        return hourlySalary * hoursPerWeek;
+    }
+}</code></pre>
+          <ul>
+<li><p>This example combines fields, constructors, and a private helper method.</p></li>
+<li><p><strong>example:</strong> <code>Employee.java</code>, <code>EmployeeTester.java</code></p></li>
+</ul>
+        </section>
+        <section class="frame">
+          <h2>Example: Employee Public Interface</h2>
+
+          <p>The public interface is the part other code should use.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public void setName(String employeeName) { name = employeeName; }
+public void setAge(int employeeAge) { age = employeeAge; }
+public void setHourlySalary(double salary) { hourlySalary = salary; }
+public void setHoursPerWeek(double hours) { hoursPerWeek = hours; }
+
+public String getName() { return name; }
+public int getAge() { return age; }
+public double getHourlySalary() { return hourlySalary; }
+public double getHoursPerWeek() { return hoursPerWeek; }
+
+public void printPayslip() {
+    System.out.println(&quot;Name: &quot; + name);
+    System.out.println(&quot;Age: &quot; + age);
+    System.out.printf(&quot;Weekly salary: $%.2f%n&quot;, weeklySalaryCalc());
+}</code></pre>
+          <ul>
+<li><p>The tester should call public methods.</p></li>
+<li><p>The tester should not directly modify private fields.</p></li>
+<li><p>The helper calculation is hidden inside the class.</p></li>
+</ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+
+          <ul>
+<li><p>A class defines a new type; an object is one instance of that type.</p></li>
+<li><p>Fields store object data; methods define object behavior.</p></li>
+<li><p>Private fields support information hiding.</p></li>
+<li><p>Mutators, accessors, and helper methods organize the public and private parts of a class.</p></li>
+<li><p>Constructors initialize objects when <code>new</code> creates them.</p></li>
+<li><p>Reference variables can point to the same object, so aliasing matters.</p></li>
+<li><p>Static members belong to the class, not to one particular object.</p></li>
+<li><p>Testing a class separately makes larger programs easier to trust.</p></li>
+</ul>
+        </section>
+      </section>
+    </div>
+  </div>
+
+  <!-- Reveal -->
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
