@@ -42,13 +42,13 @@ section.has-dark-background, section.has-dark-background h1, section.has-dark-ba
   background-color: var(--r-background-color); }
 
 .reveal-viewport {
-  overflow: auto;
-  overflow-x: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   max-width: 100vw; }
 
 html,
 body {
-  overflow: auto;
+  overflow-y: auto;
   overflow-x: hidden; }
 
 html.reveal-full-page {
@@ -128,6 +128,9 @@ html.reveal-full-page {
   padding-top: 0.5em;
   padding-bottom: 0.5em}
 
+.reveal h2 {
+  text-transform: none;
+}
 .reveal .slides > section.title-slide,
 .reveal .slides > section > section.title-slide {
   display: flex !important;
@@ -411,8 +414,13 @@ html.reveal-full-page {
  * PROGRESS BAR
  *********************************************/
 .reveal .progress {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   background: rgba(0, 0, 0, 0.2);
-  color: var(--r-link-color); }
+  color: var(--r-link-color);
+  z-index: 100; }
 
 /*********************************************
  * PRINT BACKGROUND

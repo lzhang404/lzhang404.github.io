@@ -332,113 +332,74 @@ lunchPlace.print();</code></pre>
         </section>
       <section class="frame">
           <h2>Primitive vs Reference Variables </h2>
-          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
+
           <ul>
 <li><p><strong>primitive variable:</strong> stores the actual value. </p></li>
 <li><p><strong>reference variable:</strong> stores a reference to an object. </p></li>
-<li><p>Common primitive types include <code>int</code>, <code>double</code>, <code>boolean</code>, and <code>char</code>.</p></li>
-<li><p>Common reference types include <code>String</code>, arrays, objects, and <code>ArrayList</code>.</p></li>
 <li><p>The biggest surprise is what happens when variables are passed to methods.</p></li>
 </ul>
-</div>
-<div style="flex:0 0 50%;min-width:0;">
+
   <img
       src = "../_static/images/cop2253/primitive_vs_reference.png"
       alt = "Difference between primitive variables vs reference variables"
-      style="display:block; margin: 0.5em auto; max-width: 80%; max-height: 80%; height:auto;">  
-  </div>
-  </div>
+      style="display:block; margin: 0.5em auto; max-width: 60%; max-height: 60%; height:auto;">  
+
         </section>
 
         <section class="frame">
           <h2>Parameters: Primitive vs. Object Reference</h2>
-<div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-<div style="flex:1;min-width:0;">
-    <ul>
+              <ul>
       <li>Java is pass-by-value.</li>
       <li>For primitives, the copies value is the actual number.</li>
       <li>For objects, the copies value is the reference(address), which can still be used to find and modify the same object.</li>
     </ul>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class TimeConverter {
-    public static void convertPrimitive(int totalMinutes, int hours, int minutes) {
-        hours = totalMinutes / 60;
-        minutes = totalMinutes % 60;
-    }
 
-    public static void convertObject(TimeResult result, int totalMinutes) {
-        result.hours = totalMinutes / 60;
-        result.minutes = totalMinutes % 60;
-    }
+    <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class TimeConverter {
+  public static void convertPrimitive(int totalMinutes, int hours, int minutes) {...}
+  public static void convertObject(TimeResult result, int totalMinutes) {...}
 
-    static class TimeResult {
-        int hours;
-        int minutes;
-    }
-    public static void main(String[] args) {
-        int totalMinutes = 156;
-        int hours = 0;
-        int minutes = 0;
-
-        convertPrimitive(totalMinutes, hours, minutes);
-
-        TimeResult result = new TimeResult();
-        convertObject(result, totalMinutes);;
+  static class TimeResult {
+      int hours;
+      int minutes;
+  }
+  public static void main(String[] args) {
+      int totalMinutes = 156;
+      int hours = 0;
+      int minutes = 0;
+      convertPrimitive(totalMinutes, hours, minutes);
+      TimeResult result = new TimeResult();
+      convertObject(result, totalMinutes);;
     }
 }</code></pre>
 <ul>
 <li><p><strong>example:</strong> <code>TimeConverter.java</code></p></li>
 </ul>
-</div>
-<div style="flex:0 0 40%;min-width:0;">
-  <img
+</section>
+
+    <section class="frame">
+      <h2>Parameters: Primitive vs. Object Reference (cont')</h2>
+        <img
       src = "../_static/images/cop2253/primitive_vs_reference_argument.png"
       alt = "Arguments are passed by copies but the copy of the reference points to the same object."
-      style="display:block; margin: 0.5em auto; max-width:90%; max-height: 90%; height:auto;">             
-    </div>
-    </div>
-        </section>
-                <section class="frame">
+      style="display:block; margin: 0.5em auto; max-width:60%; max-height:60%; height:auto;">  
+    </section>
+    <section class="frame">
           <h2>Aliasing: Multiple References to One Object</h2>
-          <div style="display:flex;gap:0.3em;align-items:flex-start;margin-top:0.4em;">
-<div style="flex:1;min-width:0;">      
-          <p>Two reference variables can point to the same object. This is called aliasing.</p>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class ReferenceAliasing {
-    static class RunRecord {
-        private int seconds;
-        private double miles;
+          <ul>
+            <li><p>Two reference variables can point to the same object. This is called aliasing.</p></li>
+<li><p>Changing the object through <code>currentRun</code> also affects what <code>lastRun</code> sees.</p></li>
+<li><p>There is one object, but two references to it.</p></li>
+<li><p>example: <code>ReferenceAliasing.java</code></p></li>
+</ul>
 
-        public void setRun(int runSeconds, double runMiles) {
-            seconds = runSeconds;
-            miles = runMiles;
-        }
 
-        public double getSpeedMph() {
-            return miles / (seconds / 3600.0);
-        }
-    }
-
-    public static void main(String[] args) {
-        RunRecord lastRun = new RunRecord();
-        RunRecord currentRun = lastRun; // copy the reference, not the object
-
-        currentRun.setRun(300, 1.5);    // changes the one shared object
-        System.out.printf(&quot;Last speed: %.1f%n&quot;, lastRun.getSpeedMph());
-    }
-}</code></pre>
-</div>
-<div style="flex:0 0 30%;min-width:0;">
   <img
       src = "../_static/images/cop2253/objAliasing.png"
       alt = "Aliasing allow multiple variables point to the same object"
-      style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">             
-    </div>
-  </div>
-          <ul>
-<li><p>Changing the object through <code>currentRun</code> also affects what <code>lastRun</code> sees.</p></li>
-<li><p>There is one object, but two references to it.</p></li>
-<li><p><strong>example:</strong> <code>ReferenceAliasing.java</code></p></li>
-</ul>
+      style="display:block; margin: 0.5em auto; max-width: 40%; max-height: 40%; height:auto;">             
+
+
+          
         </section>
       </section>
       <section>
@@ -446,7 +407,7 @@ lunchPlace.print();</code></pre>
           <h1>Class Design Details</h1>
         </section>
         <section class="frame">
-          <h2>The this Implicit Parameter</h2>
+          <h2>The "this" Implicit Parameter</h2>
 
           <p>Inside an instance method, <code>this</code> refers to the object that received the method call.</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class ThisKeyword {
@@ -469,19 +430,8 @@ lunchPlace.print();</code></pre>
 <li><p><strong>example:</strong> <code>ThisKeyword.java</code></p></li>
 </ul>
         </section>
-        <section class="frame">
-          <h2>When to Create a Class</h2>
 
-          <p>When designing a program, look for nouns and responsibilities.</p>
-          <ul>
-<li><p>If a thing has several related values, it may deserve a class.</p></li>
-<li><p>If a thing has actions that belong with those values, it is a stronger class candidate.</p></li>
-<li><p>Avoid creating a class for every single variable.</p></li>
-<li><p>A useful class has a clear job and a small public interface.</p></li>
-</ul>
-          <p>For example, an <code>Employee</code> class can store name, age, salary, and hours, then print a payslip.</p>
-        </section>
-                <section class="frame">
+        <section class="frame">
           <h2>Static Members Belong to the Class</h2>
 
           <p>A static member belongs to the class itself, not to one individual object.</p>
@@ -519,6 +469,18 @@ lunchPlace.print();</code></pre>
 <li><p>Then call instance methods on those objects.</p></li>
 <li><p>For larger programs, it is common to put the class and the tester in separate files.</p></li>
 </ul>
+        </section>
+                <section class="frame">
+          <h2>When to Create a Class</h2>
+
+          <p>When designing a program, look for nouns and responsibilities.</p>
+          <ul>
+<li><p>If a thing has several related values, it may deserve a class.</p></li>
+<li><p>If a thing has actions that belong with those values, it is a stronger class candidate.</p></li>
+<li><p>Avoid creating a class for every single variable.</p></li>
+<li><p>A useful class has a clear job and a small public interface.</p></li>
+</ul>
+          <p>For example, an <code>Employee</code> class can store name, age, salary, and hours, then print a payslip.</p>
         </section>
 
         <section class="frame">
@@ -558,7 +520,6 @@ public class PackageImportExample {
 public class Rectangle {
     private double width;
     private double height;
-
     /**
      * Returns the area of the rectangle.
      * @return width multiplied by height
