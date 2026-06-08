@@ -10,7 +10,7 @@
   --muted: #57606a;
   --border: #d0d7de;
   --bg: #ffffff;
-  --code-bg: #f6f8fa;
+  --code-bg: #e6e6e6;
   --accent: #0969da;
 }
 * { box-sizing: border-box; }
@@ -122,13 +122,13 @@ a { color: var(--accent); }
 <hr />
 
 <h2>File and class name</h2>
-<p>Submit one Java file:</p>
-<pre><code class="language-text">CourseGradebookAnalyzer.java
-</code></pre>
-<p>Your public class must be named:<pre><code class="language-java">public class CourseGradebookAnalyzer
-</code></pre></p>
+<p>Submit one Java file: <code class="language-text">CourseGradebookAnalyzer.java
+</code></p>
+<p>Your public class must be named: <code class="language-java">public class CourseGradebookAnalyzer
+</code></p>
 <p>Your program must contain a <code>main()</code> method.</p>
 <hr />
+
 <h2>Program idea</h2>
 <p>Your program reads several students.</p>
 <p>For each student, the input gives:</p>
@@ -149,6 +149,11 @@ a { color: var(--accent); }
 <h2>Program input</h2>
 <p>The first input value is the number of students.</p>
 <p>Then each student has one name, one lab score, and one exam score.</p>
+
+<p><code>numberOfStudents</code>: The number of students in the gradebook. This value will be at least 1</p>
+<p><code>name</code>: The student's name. The name will be one token with no spaces. </p>
+<p><code>labScore</code>: The student's lab score. This value will be an integer from 0 through 100.</p>
+<p><code>examScore</code>: The student's exam score. This value will be an integer from 0 through 100.</p>
 <pre><code class="language-text">numberOfStudents
 name1 labScore1 examScore1
 name2 labScore2 examScore2
@@ -156,12 +161,7 @@ name3 labScore3 examScore3
 ...
 </code></pre>
 <p>The input may also appear on one line. Since <code>Scanner</code> reads tokens, both formats should work.</p>
-<hr />
-<h2>Input value descriptions</h2>
-<p><code>numberOfStudents</code>: The number of students in the gradebook. This value will be at least 1</p>
-<p><code>name</code>: The student's name. The name will be one token with no spaces. </p>
-<p><code>labScore</code>: The student's lab score. This value will be an integer from 0 through 100.</p>
-<p><code>examScore</code>: The student's exam score. This value will be an integer from 0 through 100.</p>
+
 <hr />
 <h2>Required arrays</h2>
 <p>Your program must use these arrays:</p>
@@ -180,82 +180,77 @@ finalScores[2] -&gt; the third student's final score
 </code></pre>
 <hr />
 
-<h2>Letter grade rules</h2>
-<p>Use the final score to assign a letter grade.</p>
+<h2>Required methods</h2>
+<p>Your program must include all of the following methods with exactly these method headers.</p>
+<h3><code class="language-java">public static double calculateFinalScore(int labScore, int examScore)</code></h3>
+<ul>
+  <li><p>This method calculates and returns one student's final score with this formula: <code class="language-text">final = labScore * 0.40 + examScore * 0.60</code></p></li>
+  <li><p>This method should not read input.</p></li>
+  <li><p>This method should not print output.</p></li>
+</ul>
+
+
+<h3><code class="language-java">public static void fillFinalScores(int[] labScores, int[] examScores, double[] finalScores)</code></h3>
+<ul>
+  <li><p>This method fills the <code>finalScores</code> array with a loop</p></li>
+  <li><p>For each index, calculate the final score from the matching lab score and exam score. For example: <code class="language-text">finalScores[i] stores the final score for student i
+</code></p></li>
+  <li><p>This method should call <code>calculateFinalScore()</code>.</p></li>
+  <li><p>This method should not read input nor print output</p></li>
+</ul>
+
+
+<h3><code class="language-java">public static double average(double[] values)
+</code></h3>
+<ul>
+  <li><p>This method returns the average of all values in the array using this formula <code class="language-text">average = sum of values / number of values
+</code></p></li>
+ <li><p>A loop is useful in finding the sum of the values here. This method should not print output.</p> </li>
+
+</ul>
+
+<h3><code class="language-java">public static int indexOfHighest(double[] values)
+</code></h3>
+<ul>
+  <li><p>This method returns the index of the largest value in the array.</p>
+</li>
+<li><p>If more than one value is tied for highest, return the first highest index.</p>
+</li>
+<li><p>Given an array: <code class="language-text">values = {87.0, 97.0, 97.0, 75.0}
+</code></p></li>
+<li><p>The method returns: <code class="language-text">1</code>. The first <code>97.0</code> is at index 1.</p></li>
+
+</ul>
+
+
+<h3><code class="language-java">public static int countPassing(double[] values)
+</code></h3>
+<ul>
+  <li><p>This method returns how many final scores are at least 60.00.</p></li>
+</ul>
+
+<h3><code class="language-java">public static int countBelowAverage(double[] values)
+</code></h3>
+<ul>
+<li><p>This method returns how many values are strictly less than the average of the whole array.</p></li>
+<li><p>This method may call <code>average(values)</code>.</p></li>
+
+</ul>
+
+<h3><code class="language-java">public static char letterGrade(double score)
+</code></h3>
+<ul>
+<li><p>This method returns the letter grade for one final score.</p></li>
+<li><p>Use the final score to assign a letter grade.</p></li>
 <pre><code class="language-text">A: score &gt;= 90
 B: score &gt;= 80 and score &lt; 90
 C: score &gt;= 70 and score &lt; 80
 D: score &gt;= 60 and score &lt; 70
 F: score &lt; 60
 </code></pre>
-<p>A student is passing if the final score is at least 60.00.</p>
-<hr />
+<li><p>A student is passing if the final score is at least 60.00.</p></li>
+</ul>
 
-<h2>Required methods</h2>
-<p>Your program must include all of the following methods with exactly these method headers.</p>
-<pre><code class="language-java">public static double calculateFinalScore(int labScore, int examScore)
-</code></pre>
-<p>This method calculates and returns one student's final score with this formula: <code class="language-text">final = labScore * 0.40 + examScore * 0.60</code></p>
-<p>This method should not read input.</p>
-<p>This method should not print output.</p>
-<hr />
-
-<pre><code class="language-java">public static void fillFinalScores(int[] labScores, int[] examScores, double[] finalScores)
-</code></pre>
-<p>This method fills the <code>finalScores</code> array.</p>
-<p>Use a loop.</p>
-<p>For each index, calculate the final score from the matching lab score and exam score.</p>
-<p>Example idea:</p>
-<pre><code class="language-text">finalScores[i] stores the final score for student i
-</code></pre>
-<p>This method should call <code>calculateFinalScore()</code>.</p>
-<p>This method should not read input.</p>
-<p>This method should not print output.</p>
-<hr />
-<pre><code class="language-java">public static double average(double[] values)
-</code></pre>
-<p>This method returns the average of all values in the array.</p>
-<p>Formula:</p>
-<pre><code class="language-text">average = sum of values / number of values
-</code></pre>
-<p>Use a loop.</p>
-<p>This method should not print output.</p>
-<hr />
-<pre><code class="language-java">public static int indexOfHighest(double[] values)
-</code></pre>
-<p>This method returns the index of the largest value in the array.</p>
-<p>If more than one value is tied for highest, return the first highest index.</p>
-<p>Example:</p>
-<pre><code class="language-text">values = {87.0, 97.0, 97.0, 75.0}
-</code></pre>
-<p>The method returns:</p>
-<pre><code class="language-text">1
-</code></pre>
-<p>The first <code>97.0</code> is at index 1.</p>
-<hr />
-<pre><code class="language-java">public static int countPassing(double[] values)
-</code></pre>
-<p>This method returns how many final scores are at least 60.00.</p>
-<p>Use a loop.</p>
-<hr />
-<pre><code class="language-java">public static int countBelowAverage(double[] values)
-</code></pre>
-<p>This method returns how many values are strictly less than the average of the whole array.</p>
-<p>This method may call <code>average(values)</code>.</p>
-<p>Use a loop.</p>
-<hr />
-<pre><code class="language-java">public static char letterGrade(double score)
-</code></pre>
-<p>This method returns the letter grade for one final score.</p>
-<p>Return one of these characters:</p>
-<pre><code class="language-text">'A'
-'B'
-'C'
-'D'
-'F'
-</code></pre>
-<p>Use branches.</p>
-<hr />
 
 <h2>Suggested program structure</h2>
 <p>Your <code>main()</code> method should:</p>
@@ -378,37 +373,63 @@ Below average: 3
 </code></pre>
 <hr />
 
-<h2>Grading rubric</h2>
+
+<h2>Grading Rubric</h2>
 <p>Total: 100 points</p>
-<h3>Input parsing and arrays: 20 points</h3>
-<p>The program correctly reads the number of students.</p>
-<p>The program correctly creates all required arrays.</p>
-<p>The program correctly fills the parallel arrays.</p>
-<p>The program keeps each student's data at the same index across all arrays.</p>
-<p>The program works when input values are on the same line or different lines.</p>
 
+<h3>Input parsing and arrays: 15 points</h3>
+<ul>
+  <li>Correctly reads the number of students: 3 points</li>
+  <li>Creates all required arrays: <code>names</code>, <code>labScores</code>, <code>examScores</code>, and <code>finalScores</code>: 4 points</li>
+  <li>Correctly fills the name, lab score, and exam score arrays: 4 points</li>
+  <li>Keeps each student's data at the same index across all parallel arrays: 3 points</li>
+  <li>Works whether input appears on one line or multiple lines: 1 point</li>
+</ul>
 
-<h3>Required method design: 50 points</h3>
-<p>All seven required methods are present.</p>
-<p>The method headers match exactly.</p>
-<p>The methods use parameters correctly.</p>
-<p>The methods return values correctly.</p>
-<p>The required methods do not read input.</p>
-<p>The required methods do not print output.</p>
-<p>The program uses array parameters correctly.</p>
+<h3>Required methods: 55 points</h3>
+<ul>
+  <li><code>calculateFinalScore(int labScore, int examScore)</code>: 5 points</li>
+  <li><code>fillFinalScores(int[] labScores, int[] examScores, double[] finalScores)</code>: 10 points</li>
+  <li><code>average(double[] values)</code>: 8 points</li>
+  <li><code>indexOfHighest(double[] values)</code>: 9 points</li>
+  <li><code>countPassing(double[] values)</code>: 6 points</li>
+  <li><code>countBelowAverage(double[] values)</code>: 8 points</li>
+  <li><code>letterGrade(double score)</code>: 9 points</li>
+</ul>
+
+<p>Methods are graded for exact required headers, correct logic, correct use of parameters, correct return values, and no input or output inside the required methods.</p>
 
 <h3>Output format: 15 points</h3>
-<p>The output labels match exactly.</p>
-<p>The output appears in the required order.</p>
-<p>All scores and averages show two digits after the decimal point.</p>
-<p>There are no prompts.</p>
-<p>There are no extra blank lines.</p>
+<ul>
+  <li>Prints the report in the required order: 4 points</li>
+  <li>Prints each student's name, final score, and letter grade correctly: 4 points</li>
+  <li>Prints class average, highest student, passing count, and below-average count correctly: 4 points</li>
+  <li>Displays all scores and averages with exactly two digits after the decimal point: 2 points</li>
+  <li>Includes no prompts, extra blank lines, or extra messages: 1 point</li>
+</ul>
 
-<h3>Style: 15 points</h3>
-<p>The code is readable.</p>
-<p>Indentation is consistent.</p>
-<p>Variable names are meaningful.</p>
-<p>Use java document and comments explain important parts of the logic.</p>
+<h3>Restrictions, style, and Java documentation: 15 points</h3>
+<ul>
+  <li>No violation of restricted methods, features etc: 3 points</li>
+  <li>Code is readable, organized, and consistently indented: 3 points</li>
+  <li>Variable names are meaningful and appropriate: 3 point</li>
+  <li>Each required method includes Java documentation comments with correct <code>@param</code> and <code>@return</code> tags when appropriate: 6 points</li>
+</ul>
+
+<p>Each required method must include a Java documentation comment before the method header.</p>
+
+<pre><code class="language-java">/**
+ * Calculates the final score using the lab score and exam score.
+ *
+ * @param labScore the student's lab score
+ * @param examScore the student's exam score
+ * @return the calculated final score
+ */
+public static double calculateFinalScore(int labScore, int examScore)</code></pre>
+
+<p>Methods that return a value must include an <code>@return</code> tag. Methods with parameters must include an <code>@param</code> tag for each parameter. Methods that return <code>void</code> should not include an <code>@return</code> tag.</p>
+
+
 
 </main>
 </body>
