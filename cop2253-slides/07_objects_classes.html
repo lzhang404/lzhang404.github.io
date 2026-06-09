@@ -355,20 +355,33 @@ lunchPlace.print();</code></pre>
     </ul>
 
     <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class TimeConverter {
-  public static void convertPrimitive(int totalMinutes, int hours, int minutes) {...}
-  public static void convertObject(TimeResult result, int totalMinutes) {...}
+    public static void convertPrimitive(int totalMinutes, int hours, int minutes) {
+        hours = totalMinutes / 60;
+        minutes = totalMinutes % 60;
+    }
 
-  static class TimeResult {
-      int hours;
-      int minutes;
-  }
-  public static void main(String[] args) {
-      int totalMinutes = 156;
-      int hours = 0;
-      int minutes = 0;
-      convertPrimitive(totalMinutes, hours, minutes);
-      TimeResult result = new TimeResult();
-      convertObject(result, totalMinutes);;
+    public static void convertObject(TimeResult result, int totalMinutes) {
+        result.hours = totalMinutes / 60;
+        result.minutes = totalMinutes % 60;
+    }
+
+    // This small object lets a method update two related values.
+    static class TimeResult {
+        int hours;
+        int minutes;
+    }
+
+    public static void main(String[] args) {
+        int totalMinutes = 156;
+        int hours = 0;
+        int minutes = 0;
+
+        convertPrimitive(totalMinutes, hours, minutes);
+        System.out.println("Primitive result: " + hours + " hrs " + minutes + " mins");
+
+        TimeResult result = new TimeResult();
+        convertObject(result, totalMinutes);
+        System.out.println("Object result: " + result.hours + " hrs " + result.minutes + " mins");
     }
 }</code></pre>
 <ul>
@@ -391,6 +404,10 @@ lunchPlace.print();</code></pre>
 <li><p>There is one object, but two references to it.</p></li>
 <li><p>example: <code>ReferenceAliasing.java</code></p></li>
 </ul>
+<pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">
+RunRecord lastRun = new RunRecord();
+RunRecord currentRun = lastRun;
+</code></pre>
 
 
   <img
