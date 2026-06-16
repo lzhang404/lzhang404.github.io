@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Inheritance and Polymorphism</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%">
+<h1>Inheritance and Polymorphism</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+<section>
+<section class="frame"><h2>Today's Roadmap</h2>
+<p>Chapter 8 shows how related classes can share code and still behave differently.</p>
+<ul>
+<li><p>UML diagrams: reading classes and inheritance relationships visually.</p></li>
+<li><p>Is-a vs. has-a: deciding whether inheritance is the right design.</p></li>
+<li><p>Derived classes: using <code>extends</code> with a clear base class and subclass.</p></li>
+<li><p>Access control: understanding why private fields stay private.</p></li>
+<li><p>Overriding and <code>super</code>: changing behavior without rewriting everything.</p></li>
+<li><p>The <code>Object</code> class and <code>toString()</code>.</p></li>
+<li><p>Polymorphism: one reference type, different actual object types.</p></li>
+</ul>
+<p><em>Reading focus: Chapter 8, Inheritance and Polymorphism</em></p></section>
+<section class="frame"><h2>What You Should Be Able To Do</h2>
+<ul>
+<li><p>Read a simple UML class diagram.</p></li>
+<li><p>Choose between an is-a relationship and a has-a relationship.</p></li>
+<li><p>Write a basic derived class using <code>extends</code>.</p></li>
+<li><p>Explain what a subclass inherits and what it cannot directly access.</p></li>
+<li><p>Use <code>@Override</code> when replacing inherited behavior.</p></li>
+<li><p>Use <code>super</code> to reuse base-class constructors or methods.</p></li>
+<li><p>Explain how a base-class reference can point to a derived-class object.</p></li>
+</ul>
+<p>Main question for the chapter: what relationship are we modeling?</p></section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Relationships Between Classes</h1>
+</section>
+
+<section class="frame">
+  <h2>What UML Class Diagrams Show</h2>
+  <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+  <div style="flex:1;min-width:0;">
+  
+  <ul>
+  <li><p><strong>UML</strong> stands for <strong>Unified Modeling Language</strong>.</p></li>
+  <li><p>A UML <strong>class diagram</strong> gives a compact picture of a class.</p></li>
+  <li><p>The top part shows the <strong>class name</strong>.</p></li>
+  <li><p>The middle part shows <strong>attributes / fields</strong>.</p></li>
+  <li><p>The bottom part shows <strong>methods</strong>.</p></li>
+  <li><p>Symbols such as <code>+</code> and <code>-</code> show access.</p></li>
+  </ul>
+</div>
+<div style="flex:0 0 50%;min-width:0;">
+  <img alt="UML class diagram example showing two class boxes, Circle and Square, with fields and methods labeled by name, type, return type, and access." 
+  src="../_static/images/cop2253/uml.png" style="max-width: 78%; display: block; margin: 0.6em auto 0.3em auto;"/>
+  <p style="font-size: 0.7em; text-align: center;"><em>UML class diagram example. Credit: zyBook.</em></p>
+  </div>
+  </div>
+</section>
+<section class="frame"><h2>Class Relationships: Is-a and Has-a</h2>
+<p>Once we know how to read a class diagram, we can talk about relationships between classes.</p>
+<ul>
+<li><p><strong>Is-a:</strong> one class is a more specific version of another class.</p>
+<ul>
+<li><p><code>Restaurant</code> is a <code>Business</code>.</p></li>
+<li><p><code>CoffeeShop</code> is a <code>Restaurant</code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Has-a:</strong> one object contains or owns another object.</p>
+<ul>
+<li><p><code>Restaurant</code> has menu items.</p></li>
+<li><p><code>Restaurant</code> has customer reviews.</p></li>
+</ul>
+</li>
+<li><p>Use inheritance only for a real <strong>is-a</strong> relationship.</p></li>
+<li><p>Use fields or ArrayLists for a <strong>has-a</strong> relationship.</p></li>
+</ul></section>
+<section class="frame"><h2>Composition Example: Restaurant Has Menu Items</h2>
+<p>Composition means one class stores another object as part of its data.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.util.ArrayList;
+
+public class RestaurantMenuComposition {
+    static class MenuItem {
+        private String name;
+        private int priceDollars;
+
+        public MenuItem(String name, int priceDollars) {
+            this.name = name;
+            this.priceDollars = priceDollars;
+        }
+
+        public String getDescription() {
+            return name + " $" + priceDollars;
+        }
+    }
+
+    static class Restaurant {
+        private String name;
+        private ArrayList&lt;MenuItem&gt; menu = new ArrayList&lt;MenuItem&gt;(); // Restaurant has menu items
+
+        public Restaurant(String name) {
+            this.name = name;
+        }
+
+        public void addMenuItem(String itemName, int priceDollars) {
+            menu.add(new MenuItem(itemName, priceDollars)); // add one object to the menu list
+        }
+
+        public void printMenu() {
+            System.out.println(name + " menu:");
+            for (MenuItem item : menu) {
+                System.out.println("- " + item.getDescription());
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Restaurant cafe = new Restaurant("Campus Cafe");
+        cafe.addMenuItem("Sandwich", 8);
+        cafe.addMenuItem("Soup", 5);
+        cafe.printMenu();
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>RestaurantMenuComposition.java</code></p></li>
+</ul></section>
+<section class="frame"><h2>Inheritance Definition</h2>
+<p>Inheritance means a derived class starts with the members of a base class.</p>
+<ul>
+<li><p>The <strong>base class</strong> contains the shared idea.</p></li>
+<li><p>The <strong>derived class</strong> adds details that make it more specific.</p></li>
+<li><p>In code, Java uses <code>extends</code>.</p></li>
+<li><p>A derived object can use inherited public methods.</p></li>
+</ul>
+<p><code>Restaurant</code> is a <code>Business</code>, so <code>Restaurant</code> can inherit common business behavior.</p></section>
+
+<section class="frame">
+<h2>UML for Inheritance</h2>
+<div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+  <div style="flex:1;min-width:0;">
+<ul>
+  <li>A solid line with a closed, unfilled arrowhead indicates a class is derived from another class</li>
+<li><p>The arrow points toward the more general class, also called the <strong>base class</strong> or <strong>superclass</strong>.</p></li>
+<li><p>The lower class is the more specific class, also called the <strong>derived class</strong> or <strong>subclass</strong>.</p></li>
+<li><p>If a class name or method name appears in italics, UML is showing something abstract.</p></li>
+</ul>
+</div>
+<div style="flex:0 0 50%;min-width:0;">
+<img alt="UML inheritance diagram with Shape at the top and Circle below, connected by a line with an unfilled arrow pointing to Shape." 
+src="../_static/images/cop2253/inheritance_uml.png" style="max-width: 30%; display: block; margin: 0.6em auto 0.3em auto;"/>
+<p style="font-size: 0.7em; text-align: center;"><em>UML inheritance diagram. Credit: zyBook.</em></p>
+</div>
+</div>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Derived Classes</h1>
+</section>
+<section class="frame"><h2>Base Class and Derived Class</h2>
+<p>Java uses the keyword <code>extends</code> to create a derived class.</p>
+<ul>
+<li><p>A <strong>base class</strong> is also called a superclass.</p></li>
+<li><p>A <strong>derived class</strong> is also called a subclass.</p></li>
+<li><p>The derived class inherits members from the base class.</p></li>
+<li><p>The derived class can add new fields and methods.</p></li>
+<li><p>Java classes can directly extend only one base class.</p></li>
+</ul></section>
+<section class="frame">
+<h2>Inheritance Example: Business and Restaurant</h2>
+<p>This program creates one base object and one derived object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class RestaurantInheritance {
+    static class Business {
+        private String name;
+        private String address;
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public String getDescription() {
+            return name + " -- " + address;
+        }
+    }
+
+    static class Restaurant extends Business { // Restaurant is a Business
+        private int rating;
+
+        public void setRating(int rating) {
+            this.rating = rating;
+        }
+
+        public int getRating() {
+            return rating;
+        }
+    }
+
+    public static void main(String[] args) {
+        Business store = new Business();
+        Restaurant cafe = new Restaurant();
+
+        store.setName("ACME");
+        store.setAddress("4 Main St");
+
+        cafe.setName("Friends Cafe");
+        cafe.setAddress("500 W 2nd Ave");
+        cafe.setRating(5);
+
+        System.out.println(store.getDescription());
+        System.out.println(cafe.getDescription());
+        System.out.println("\nRating: " + cafe.getRating());
+    }
+}
+</code></pre><ul>
+<li><p><strong>example:</strong> <code>RestaurantInheritance.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Inherited Members and New Members</h2>
+<p>The <code>Restaurant</code> class inherits public behavior from <code>Business</code> and adds restaurant-specific behavior.</p>
+<ul>
+<li><p>Inherited from <code>Business</code>: <code>setName()</code>, <code>setAddress()</code>, <code>getDescription()</code>.</p></li>
+<li><p>Added in <code>Restaurant</code>: <code>rating</code>, <code>setRating()</code>, <code>getRating()</code>.</p></li>
+<li><p>A <code>Business</code> object cannot call <code>setRating()</code> because that method only exists in <code>Restaurant</code>.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Inheritance Avoids Duplicate Code</h2>
+<p>Without inheritance, similar classes often repeat the same fields and methods.</p>
+<ul>
+<li><p>A store, restaurant, and hotel may all have a name and address.</p></li>
+<li><p>Those shared members belong in a common base class.</p></li>
+<li><p>Each derived class keeps only the fields and methods that make it different.</p></li>
+<li><p>Less duplicate code usually means fewer places to fix the same bug.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Inheritance Scenarios</h2>
+<p>Use inheritance only when the sentence sounds natural.</p>
+<ul>
+<li><p><code>Restaurant</code> is a <code>Business</code>. Inheritance may make sense.</p></li>
+<li><p><code>CoffeeShop</code> is a <code>Restaurant</code>. Inheritance may make sense.</p></li>
+<li><p><code>MenuItem</code> is not a <code>Restaurant</code>. A restaurant has menu items.</p></li>
+<li><p><code>Review</code> is not a <code>Restaurant</code>. A restaurant has reviews.</p></li>
+<li><p>If the relationship is has-a, use a field or collection instead of <code>extends</code>.</p></li>
+</ul></section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Access by Derived Classes</h1>
+</section>
+<section class="frame">
+<h2>Private Fields Are Still Private</h2>
+<p>Inheritance does not mean the derived class can directly touch every field.</p>
+<ul>
+<li><p>A derived object contains inherited data as part of the object.</p></li>
+<li><p>But the derived class cannot directly access the base class's private fields.</p></li>
+<li><p>Use public methods from the base class to read or update private data safely.</p></li>
+<li><p>This keeps encapsulation from Chapter 7 intact.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Example: Private Field Access Error</h2>
+<p>The derived class tries to use a private base-class field directly.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class AccessModifierBroken {
+    static class Business {
+        private String name;
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    static class Restaurant extends Business { // Restaurant is a Business
+        public void printNameDirectly() {
+            System.out.println(name); // compiler error: name is private in Business
+        }
+    }
+
+    public static void main(String[] args) {
+        Restaurant cafe = new Restaurant();
+        cafe.setName("Campus Cafe");
+        cafe.printNameDirectly();
+    }
+}
+</code></pre><ul>
+<li><p>The fix is not to make everything public.</p></li>
+<li><p>The better fix is to add or use an appropriate public method.</p></li>
+<li><p><strong>example:</strong> <code>AccessModifierBroken.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Access Modifiers in Inheritance</h2>
+<p>Access modifiers decide where a member can be used.</p>
+<table>
+<thead><tr><th>Modifier</th><th>Beginner meaning</th></tr></thead>
+<tbody>
+<tr><td><code>private</code></td><td>Only code inside the same class should directly use it.</td></tr>
+<tr><td><code>protected</code></td><td>Derived classes can use it, but use carefully.</td></tr>
+<tr><td><code>public</code></td><td>Other code may use it as part of the class interface.</td></tr>
+<tr><td>no modifier</td><td>Package-level access. We usually avoid relying on this in beginner examples.</td></tr>
+</tbody>
+</table>
+<ul>
+<li><p>Keep fields private unless there is a strong reason not to.</p></li>
+<li><p>Expose useful behavior through public methods.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Protected Access: Use Carefully</h2>
+<p><code>protected</code> can make base-class members available to derived classes.</p>
+<ul>
+<li><p>It is useful when a derived class really needs direct access to shared implementation details.</p></li>
+<li><p>It also weakens information hiding compared with private fields.</p></li>
+<li><p>For beginner class design, prefer private fields plus public or protected helper methods.</p></li>
+<li><p>Do not change fields to <code>protected</code> just to avoid writing accessors.</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Overriding Member Methods</h1>
+</section>
+<section class="frame">
+<h2>Overriding Replaces Inherited Behavior</h2>
+<p>Overriding means the derived class provides its own version of an inherited method.</p>
+<ul>
+<li><p>The method name is the same.</p></li>
+<li><p>The parameter list is the same.</p></li>
+<li><p>The return type must be compatible.</p></li>
+<li><p>The derived version is used when the actual object is the derived type.</p></li>
+<li><p>Use <code>@Override</code> so the compiler checks that you really are overriding.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Overriding Example: Business Type</h2>
+<p>The derived class provides its own version of an inherited method.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class RestaurantOverride {
+    static class Business {
+        public String getType() {
+            return "Business";
+        }
+    }
+
+    static class Restaurant extends Business { // Restaurant is a Business
+        @Override
+        public String getType() {
+            return "Restaurant";
+        }
+    }
+
+    public static void main(String[] args) {
+        Business basicPlace = new Business();
+        Restaurant cafe = new Restaurant();
+
+        System.out.println(basicPlace.getType());
+        System.out.println(cafe.getType());
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>RestaurantOverride.java</code></p></li>
+</ul></section>
+<section class="frame"><h2>Using super: Reuse Base-Class Code</h2>
+<p>Sometimes the derived method should reuse the base method and add more information.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class SuperDescription {
+    static class Business {
+        private String name;
+        private String address;
+
+        public Business(String name, String address) {
+            this.name = name;
+            this.address = address;
+        }
+
+        public String getDescription() {
+            return name + " -- " + address;
+        }
+    }
+
+    static class Restaurant extends Business { // Restaurant is a Business
+        private int rating;
+
+        public Restaurant(String name, String address, int rating) {
+            super(name, address); // call Business constructor
+            this.rating = rating;
+        }
+
+        @Override
+        public String getDescription() {
+            return super.getDescription() + "\nRating: " + rating; // reuse base description
+        }
+    }
+
+    public static void main(String[] args) {
+        Restaurant cafe = new Restaurant("Friends Cafe", "500 W 2nd Ave", 5);
+        System.out.println(cafe.getDescription());
+    }
+}</code></pre>
+<ul>
+<li><p><strong>example:</strong> <code>SuperDescription.java</code></p></li>
+</ul></section>
+<section class="frame">
+<h2>Overriding and Overloading Are Different</h2>
+<p>These two words sound similar, but they describe different ideas.</p>
+<ul>
+<li><p><strong>Overriding</strong>: same method signature in a derived class.</p></li>
+<li><p><strong>Overloading</strong>: same method name but different parameter list.</p></li>
+<li><p>Overriding is about inheritance behavior.</p></li>
+<li><p>Overloading is about choosing among methods by argument types and counts.</p></li>
+<li><p>Use <code>@Override</code> only for overriding, not overloading.</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>The Object Class</h1>
+</section>
+<section class="frame">
+<h2>Every Class Inherits from Object</h2>
+<p>In Java, every class ultimately inherits from <code>Object</code>.</p>
+<ul>
+<li><p>If a class does not explicitly extend another class, it still extends <code>Object</code> indirectly.</p></li>
+<li><p><code>Object</code> provides methods such as <code>toString()</code> and <code>equals()</code>.</p></li>
+<li><p>The default <code>toString()</code> output is usually not very helpful when reading program output.</p></li>
+<li><p>Overriding <code>toString()</code> makes object output readable.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>toString() Example: Readable Object Output</h2>
+<p>When an object is printed, Java automatically calls <code>toString()</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class ToStringOverride {
+    static class Business {
+        private String name;
+        private String address;
+
+        public Business(String name, String address) {
+            this.name = name;
+            this.address = address;
+        }
+
+        @Override
+        public String toString() {
+            return name + " -- " + address;
+        }
+    }
+
+    static class Restaurant extends Business { // Restaurant is a Business
+        private int rating;
+
+        public Restaurant(String name, String address, int rating) {
+            super(name, address); // call Business constructor
+            this.rating = rating;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + ", Rating: " + rating;
+        }
+    }
+
+    public static void main(String[] args) {
+        Business store = new Business("AAA Business", "5 Race St");
+        Restaurant tacoShop = new Restaurant("Tom's Tacos", "600 Pleasure Ave", 5);
+
+        System.out.println(store);     // calls store.toString()
+        System.out.println(tacoShop);  // calls Restaurant toString()
+    }
+}
+</code></pre><ul>
+<li><p>Printing <code>store</code> calls <code>store.toString()</code>.</p></li>
+<li><p>Printing <code>tacoShop</code> calls the derived class version.</p></li>
+<li><p><strong>example:</strong> <code>ToStringOverride.java</code></p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Polymorphism</h1>
+</section>
+
+<section class="frame">
+<h2>Why Polymorphism Matters</h2>
+<p>Polymorphism lets us write code using a general type, while Java still runs behavior from the actual object type.</p>
+<ul>
+<li><p>Inheritance gives us related classes, such as <code>Business</code> and <code>Restaurant</code>.</p></li>
+<li><p>Overriding lets a derived class replace a method from the base class.</p></li>
+<li><p>Polymorphism combines these ideas.</p></li>
+<li><p>The same method call can behave differently for different actual objects.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Business place = new Restaurant("Friends Cafe", 5);
+System.out.println(place.getDescription()); // can run the Restaurant version</code></pre>
+</section>
+
+<section class="frame">
+<h2>Reference Type vs. Object Type</h2>
+<p>In polymorphism, one variable can involve two different types.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Business place = new Restaurant("Friends Cafe", 5);
+// reference type: Business
+// object type: Restaurant</code></pre>
+
+<table>
+<thead>
+<tr><th>Type</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reference type</strong></td>
+<td>The type written for the variable. Here, it is <code>Business</code>.</td>
+</tr>
+<tr>
+<td><strong>Object type</strong></td>
+<td>The type created by <code>new</code>. Here, it is <code>Restaurant</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<ul>
+<li><p>This works because <code>Restaurant</code> is a <code>Business</code>.</p></li>
+<li><p>The reference type controls what method names the compiler allows.</p></li>
+<li><p>The object type controls which overridden method runs at runtime.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>The Two-Step Rule</h2>
+<p>When Java sees a method call on a polymorphic reference, two checks happen.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Business place = new Restaurant("Friends Cafe", 5);
+System.out.println(place.getDescription());</code></pre>
+
+<ol>
+<li><p><strong>Compile time:</strong> Java checks the reference type.</p>
+<ul>
+<li><p>Does <code>Business</code> have a method named <code>getDescription()</code>?</p></li>
+<li><p>If yes, the code is allowed to compile.</p></li>
+</ul>
+</li>
+<li><p><strong>Runtime:</strong> Java checks the actual object type.</p>
+<ul>
+<li><p>The object is actually a <code>Restaurant</code>.</p></li>
+<li><p>If <code>Restaurant</code> overrides <code>getDescription()</code>, Java runs the <code>Restaurant</code> version.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+
+<section class="frame">
+<h2>Small Polymorphism Example</h2>
+<p>This example uses a <code>Business</code> reference to point to a <code>Restaurant</code> object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class SimplePolymorphism {
+    static class Business {
+        public String getDescription() {
+            return "General business";
+        }
+    }
+
+    static class Restaurant extends Business {
+        @Override
+        public String getDescription() {
+            return "Restaurant with rating";
+        }
+    }
+
+    public static void main(String[] args) {
+        Business place = new Restaurant();
+
+        System.out.println(place.getDescription());
+    }
+}</code></pre>
+
+<ul>
+<li><p>The reference type is <code>Business</code>.</p></li>
+<li><p>The object type is <code>Restaurant</code>.</p></li>
+<li><p>The output is <code>Restaurant with rating</code> because the actual object is a <code>Restaurant</code>.</p></li>
+<li><p><strong>example:</strong> <code>SimplePolymorphism.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Why Use a Base-Class List?</h2>
+<p>Polymorphism is useful when we want one list to hold different but related object types.</p>
+<ul>
+<li><p>A <code>Business</code> list can hold <code>Business</code> objects.</p></li>
+<li><p>It can also hold <code>Restaurant</code> objects because a <code>Restaurant</code> is a <code>Business</code>.</p></li>
+<li><p>The loop can use the shared method name, such as <code>getDescription()</code>.</p></li>
+<li><p>Each object can still run its own overridden version.</p></li>
+</ul>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ArrayList&lt;Business&gt; directory = new ArrayList&lt;Business&gt;();
+
+directory.add(new Business("City Library"));
+directory.add(new Restaurant("Friends Cafe", 5));
+
+for (Business place : directory) {
+    System.out.println(place.getDescription());
+}</code></pre>
+</section>
+
+<section class="frame">
+<h2>Polymorphism Example: Business Directory</h2>
+<p>This program stores both a general business and a restaurant in the same list.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.util.ArrayList;
+
+public class BusinessDirectoryPolymorphism {
+    static class Business {
+        private String name;
+
+        public Business(String name) {
+            this.name = name;
+        }
+
+        public String getDescription() {
+            return name;
+        }
+    }
+
+    static class Restaurant extends Business {
+        private int rating;
+
+        public Restaurant(String name, int rating) {
+            super(name);
+            this.rating = rating;
+        }
+
+        @Override
+        public String getDescription() {
+            return super.getDescription() + " (rating " + rating + ")";
+        }
+    }
+
+    public static void main(String[] args) {
+        ArrayList&lt;Business&gt; directory = new ArrayList&lt;Business&gt;();
+
+        directory.add(new Business("City Library"));
+        directory.add(new Restaurant("Friends Cafe", 5));
+
+        for (Business place : directory) {
+            System.out.println(place.getDescription());
+        }
+    }
+}</code></pre>
+<ul>
+<li><p>The list stores <code>Business</code> references.</p></li>
+<li><p>The second object is actually a <code>Restaurant</code>.</p></li>
+<li><p>Java chooses the correct <code>getDescription()</code> version at runtime.</p></li>
+<li><p><strong>example:</strong> <code>BusinessDirectoryPolymorphism.java</code></p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Base-Class References and Derived-Only Methods</h2>
+<p>A base-class reference can only call methods that are available through the base-class type.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Business place = new Restaurant("Friends Cafe", 5);
+
+place.getDescription(); // OK: Business has getDescription()
+
+place.getRating();      // Error: Business does not have getRating()</code></pre>
+
+<ul>
+<li><p><code>getDescription()</code> works because the method exists in <code>Business</code>.</p></li>
+<li><p>If <code>Restaurant</code> overrides <code>getDescription()</code>, the <code>Restaurant</code> version can still run.</p></li>
+<li><p><code>getRating()</code> does not work because it only exists in <code>Restaurant</code>.</p></li>
+<li><p>The compiler checks the reference type before the program runs.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Polymorphism Rule to Remember</h2>
+<p>Polymorphism has one compile-time rule and one runtime rule.</p>
+
+<table>
+<thead>
+<tr><th>Question</th><th>Who decides?</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>Can I call this method?</td>
+<td>The <strong>reference type</strong></td>
+</tr>
+<tr>
+<td>Which overridden version runs?</td>
+<td>The <strong>object type</strong></td>
+</tr>
+</tbody>
+</table>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Business place = new Restaurant("Friends Cafe", 5);
+
+place.getDescription(); // allowed by Business, runs Restaurant version</code></pre>
+
+<ul>
+<li><p>The compiler cares about the variable type.</p></li>
+<li><p>The running program cares about the actual object type for overridden methods.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Debugging Inheritance and Polymorphism Code</h2>
+<p>When inheritance or polymorphism code fails, check one idea at a time.</p>
+<ul>
+<li><p>Check whether the relationship should be <strong>is-a</strong> or <strong>has-a</strong>.</p></li>
+<li><p>Check whether the method belongs to the reference type.</p></li>
+<li><p>Check whether the method is overridden with the same name and parameter list.</p></li>
+<li><p>Check whether a field is private and should be accessed through a method.</p></li>
+<li><p>Check whether <code>super</code> should be used to reuse base-class behavior.</p></li>
+</ul>
+
+<p>A helpful question:</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">What type does the compiler see?
+What type is the actual object?</code></pre>
+</section>
+</section>
+
+<section>  
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+<section class="frame"><h2>Key Takeaways</h2>
+<ul>
+<li><p>UML class diagrams show class names, fields, methods, and relationships.</p></li>
+<li><p>Inheritance represents an <strong>is-a</strong> relationship.</p></li>
+<li><p>Composition represents a <strong>has-a</strong> relationship.</p></li>
+<li><p>A derived class uses <code>extends</code> and inherits members from a base class.</p></li>
+<li><p>Private base-class fields are not directly accessible in the derived class.</p></li>
+<li><p>Overriding lets a derived class replace inherited behavior.</p></li>
+<li><p><code>super</code> lets derived code reuse base-class constructors or methods.</p></li>
+<li><p>Polymorphism lets Java choose the correct overridden method at runtime.</p></li>
+</ul></section>
+</section>
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
