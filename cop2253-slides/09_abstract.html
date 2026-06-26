@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Abstract Classes and Interfaces</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+      <section>
+        <section data-background-color="white"
+                 data-background-image="../_static/logo.png"
+                 data-background-size="50%"
+                 data-background-position="top center"
+                 data-background-repeat="no-repeat">
+          <h1>Abstract Classes and Interfaces</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+      <section>
+        <section class="frame">
+          <h2>Today's Roadmap</h2>
+          <p>Chapter 9 builds on inheritance by adding two ways to describe required behavior.</p>
+          <ul>
+            <li><p>Abstract classes: shared code plus required methods for subclasses.</p></li>
+            <li><p>Concrete classes: classes that can actually be used to create objects.</p></li>
+            <li><p>Abstract methods: method headers that subclasses must finish.</p></li>
+            <li><p>Interfaces: contracts that say what methods a class must provide.</p></li>
+            <li><p>Abstract class vs. interface: choosing the right tool for a design.</p></li>
+            <li><p>Employee payroll examples that combine these ideas.</p></li>
+          </ul>
+          <p><em>Reading focus: Chapter 9, Abstract Classes and Interfaces</em></p>
+        </section>
+        <section class="frame">
+          <h2>What You Should Be Able To Do</h2>
+          <ul>
+            <li><p>Explain why an abstract class cannot be instantiated.</p></li>
+            <li><p>Write an abstract method and implement it in a concrete subclass.</p></li>
+            <li><p>Use <code>extends</code> with an abstract base class.</p></li>
+            <li><p>Use <code>implements</code> with an interface.</p></li>
+            <li><p>Explain what happens when a class does not implement a required method.</p></li>
+            <li><p>Choose between an abstract class and an interface for a simple design.</p></li>
+          </ul>
+          <p>Main question for the chapter: are we sharing code, requiring behavior, or both?</p>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Abstract Classes</h1>
+        </section>
+        <section class="frame">
+          <h2>Abstract Class Vocabulary</h2>
+          <p>An abstract class describes a common idea, but it is not complete enough to create directly.</p>
+          <ul>
+            <li><p><strong>abstract class:</strong> a class that cannot be instantiated. Example: <code>Employee</code></p></li>
+            <li><p><strong>concrete class:</strong> a class that can be instantiated. Example: <code>Manager</code></p></li>
+            <li><p><strong>abstract method:</strong> a method header without a body. Example: <code>public abstract double getAnnualBonus();</code></p></li>
+            <li><p><strong>method signature:</strong> the method name and parameter list. Example: <code>getAnnualBonus()</code></p></li>
+            <li><p><strong>instantiate:</strong> create an object with <code>new</code>. Example: <code>new Manager(...)</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Abstract Classes: Shared Design, Concrete Implementation</h2>
+          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;">
+              <ul>
+                <li>In UML, an abstract class is represented by italicizing the class name or by appending the {abstract} property text</li>
+                <li><p>The abstract class describes the shared idea.</p></li>
+                <li><p>The abstract method is required but not finished there.</p></li>
+                <li><p>The concrete subclass implements the missing method.</p></li>
+                <li><p>Objects can be created from the concrete subclass, not from the abstract class.</p></li>
+              </ul>
+            </div>
+            <div style="flex:0 0 52%;min-width:0;">
+              <img src="../_static/images/cop2253/abstract_uml.png" alt="UML Representation for abstract class" style="max-width: 100%; display:block; margin: 0.2em auto 0.3em auto;">
+              
+            </div>
+          </div>
+        </section>
+        <section class="frame">
+          <h2>Abstract Employee Base Class</h2>
+          <p>The base class stores shared employee data and requires each employee type to define its own bonus rule.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">static abstract class Employee {
+    private String name;
+    private double salary;
+
+    public Employee(String name, double salary) {
+        this.name = name;
+        this.salary = salary;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    public abstract double getAnnualBonus();
+}</code></pre>
+          <ul>
+            <li><p><strong>example:</strong> <code>PayrollAbstract.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Concrete Employee Subclasses</h2>
+          <p>A concrete subclass must provide the body for every inherited abstract method.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">static class Manager extends Employee {
+    public Manager(String name, double salary) {
+        super(name, salary);
+    }
+
+    @Override
+    public double getAnnualBonus() {
+        return getSalary() * 0.10;
+    }
+}
+
+static class Staff extends Employee {
+    public Staff(String name, double salary) {
+        super(name, salary);
+    }
+
+    @Override
+    public double getAnnualBonus() {
+        return getSalary() * 0.05;
+    }
+}</code></pre>
+          <ul>
+            <li><p><code>Manager</code> and <code>Staff</code> both finish <code>getAnnualBonus()</code>.</p></li>
+            <li><p><strong>example:</strong> <code>PayrollAbstract.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Example: Cannot Create an Abstract Object</h2>
+          <p>An abstract class can be used as a base class, but not as the object type after <code>new</code>.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class AbstractEmployeeInstantiationBroken {
+    static abstract class Employee {
+        public abstract double getAnnualBonus();
+    }
+
+    public static void main(String[] args) {
+        Employee employee = new Employee(); // error
+    }
+}</code></pre>
+          <ul>
+            <li><p>The compiler rejects <code>new Employee()</code> because <code>Employee</code> is abstract.</p></li>
+            <li><p><strong>example:</strong> <code>AbstractEmployeeInstantiationBroken.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>When an Abstract Class Fits</h2>
+          <p>Use an abstract class when related classes need shared code and required behavior.</p>
+          <ul>
+            <li><p>Shared fields: <code>name</code>, <code>salary</code>.</p></li>
+            <li><p>Shared methods: <code>getName()</code>, <code>getSalary()</code>, <code>printInfo()</code>.</p></li>
+            <li><p>Required method: <code>getAnnualBonus()</code>.</p></li>
+            <li><p>The base class keeps common code in one place.</p></li>
+            <li><p>The subclasses fill in the parts that differ.</p></li>
+          </ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Interfaces</h1>
+        </section>
+        <section class="frame">
+          <h2>Interface Vocabulary</h2>
+          <p>An interface describes required methods without storing normal object data.</p>
+          <ul>
+            <li><p><strong>interface:</strong> a method contract that a class agrees to follow. Example: <code>PayReport</code></p></li>
+            <li><p><strong>implements:</strong> the keyword used when a class agrees to an interface. Example: <code>implements PayReport</code></p></li>
+            <li><p><strong>required method:</strong> a method the class must provide. Example: <code>printReport()</code></p></li>
+            <li><p><strong>contract:</strong> a promise that certain method calls will be available.</p></li>
+          </ul>
+          <p>Think of an interface as a checklist of methods a class must have.</p>
+        </section>
+        <section class="frame">
+          <h2>Interface Method Contract</h2>
+          <p>The interface lists the required method, and the class provides the method body.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class PayReportInterface {
+    interface PayReport {
+        void printReport();
+    }
+
+    static class Manager implements PayReport {
+        private String name;
+
+        public Manager(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void printReport() {
+            System.out.println(name + " report ready");
+        }
+    }
+}</code></pre>
+          <ul>
+            <li><p><strong>example:</strong> <code>PayReportInterface.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Interfaces in UML</h2>
+          <p>UML marks an interface with <code>&lt;&lt;interface&gt;&gt;</code> above the interface name.</p>
+          <div style="display:flex;gap:0.7em;align-items:center;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;">
+              <ul>
+                <li><p>The box names the interface.</p></li>
+                <li><p>The method listed in the box is required.</p></li>
+                <li><p>A class that implements the interface must provide that method.</p></li>
+              </ul>
+            </div>
+            <div style="flex:0 0 45%;min-width:0;">
+              <img src="../_static/images/cop2253/interface_uml.png" alt="UML interface diagram with double angle brackets around interface and a required drawMe method." style="max-width: 90%; display:block; margin: 0.2em auto 0.3em auto;">
+              <p style="font-size:0.7em;text-align:center;"></p>
+            </div>
+          </div>
+        </section>
+        <section class="frame">
+          <h2>Example: Missing Interface Method</h2>
+          <p>A class that implements an interface must provide all required methods.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">public class InterfaceMethodMissingBroken {
+    interface PayReport {
+        void printReport();
+    }
+
+    static class Staff implements PayReport {
+        private String name;
+
+        public Staff(String name) {
+            this.name = name;
+        }
+        // error: printReport() is missing
+    }
+}</code></pre>
+          <ul>
+            <li><p>The compiler rejects <code>Staff</code> because <code>printReport()</code> is missing.</p></li>
+            <li><p><strong>example:</strong> <code>InterfaceMethodMissingBroken.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Multiple Interfaces</h2>
+          <p>A class can implement more than one interface when it agrees to multiple method contracts.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">interface PayReport {
+    void printReport();
+}
+
+interface ContactCard {
+    String contactLine();
+}
+
+static class Staff implements PayReport, ContactCard {
+    @Override
+    public void printReport() {
+        System.out.println("Pay report ready");
+    }
+
+    @Override
+    public String contactLine() {
+        return "Bob &lt;bob@uwf.edu&gt;";
+    }
+}</code></pre>
+          <ul>
+            <li><p><code>Staff</code> must provide methods from both interfaces.</p></li>
+            <li><p><strong>example:</strong> <code>MultipleInterfaces.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Choosing the Right Tool</h1>
+        </section>
+        <section class="frame">
+          <h2>Abstract Class vs. Interface</h2>
+          <p>Both tools can require methods, but they are useful for different design needs.</p>
+          <table>
+            <thead>
+              <tr><th>Use this</th><th>When the design needs...</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>abstract class</strong></td><td>shared fields, shared methods, and required methods</td></tr>
+              <tr><td><strong>interface</strong></td><td>a method contract that different classes can agree to</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p><code>Employee</code> is a good abstract class because all employees share data.</p></li>
+            <li><p><code>PayReport</code> is a good interface because it only requires a reporting method.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Combining an Abstract Class and an Interface</h2>
+          <p>A class can inherit shared code from an abstract class and also follow an interface contract.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="small"><code class="language-java">interface PayReport {
+    void printReport();
+}
+
+static abstract class Employee implements PayReport {
+    private String name;
+    private double salary;
+
+    public Employee(String name, double salary) {
+        this.name = name;
+        this.salary = salary;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    public abstract double getAnnualBonus();
+
+    @Override
+    public void printReport() {
+        System.out.printf("%s: bonus $%.2f%n", name, getAnnualBonus());
+    }
+}</code></pre>
+          <ul>
+            <li><p><code>Employee</code> stores shared data and requires <code>getAnnualBonus()</code>.</p></li>
+            <li><p><code>PayReport</code> requires <code>printReport()</code>.</p></li>
+            <li><p><strong>example:</strong> <code>EmployeeAbstractInterface.java</code></p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Design Check: What Are We Trying to Say?</h2>
+          <p>Before writing <code>abstract</code> or <code>interface</code>, describe the design in plain English.</p>
+          <ul>
+            <li><p><code>Manager</code> is an <code>Employee</code>: use inheritance.</p></li>
+            <li><p><code>Staff</code> is an <code>Employee</code>: use inheritance.</p></li>
+            <li><p>Every employee can produce a pay report: use an interface or shared method.</p></li>
+            <li><p>Different employee types compute bonuses differently: use an abstract method.</p></li>
+          </ul>
+        </section>
+      </section>
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+        <section class="frame">
+          <h2>Key Takeaways</h2>
+          <ul>
+            <li><p>An abstract class cannot be instantiated.</p></li>
+            <li><p>An abstract method has no body in the abstract class.</p></li>
+            <li><p>A concrete subclass must implement inherited abstract methods.</p></li>
+            <li><p>An interface is a contract of required methods.</p></li>
+            <li><p>A class uses <code>extends</code> for a superclass and <code>implements</code> for an interface.</p></li>
+            <li><p>Use an abstract class for shared code plus required behavior.</p></li>
+            <li><p>Use an interface when the main goal is a method contract.</p></li>
+          </ul>
+        </section>
+      </section>
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
