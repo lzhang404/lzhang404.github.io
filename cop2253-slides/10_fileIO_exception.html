@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>File I/O and Exceptions</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%">
+<h1>File I/O and Exceptions</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+<section>
+<section class="frame">
+<h2>Today's Roadmap</h2>
+<p>Chapter 10 connects programs to text streams, files, and runtime error handling.</p>
+<ul>
+<li><p>Read text from strings, keyboard input, and files.</p></li>
+<li><p>Write summaries to strings and text files.</p></li>
+<li><p>Use loops to process an unknown number of input lines.</p></li>
+<li><p>Handle invalid input with <code>try</code> and <code>catch</code>.</p></li>
+<li><p>Use <code>throw</code> and <code>throws</code> when a method detects a problem.</p></li>
+<li><p>Close file resources safely with <code>close()</code> or try-with-resources.</p></li>
+</ul>
+<p><em>Reading focus: Chapter 10, File I/O and Exceptions</em></p>
+</section>
+<section class="frame">
+<h2>What You Should Be Able To Do</h2>
+<ul>
+<li><p>Create a <code>Scanner</code> from a string, keyboard input, or file input stream.</p></li>
+<li><p>Use <code>hasNext()</code>, <code>hasNextInt()</code>, and <code>hasNextLine()</code> to control loops.</p></li>
+<li><p>Create a <code>PrintWriter</code> to write formatted output.</p></li>
+<li><p>Read a text file and compute a small summary.</p></li>
+<li><p>Write summary information to a text file.</p></li>
+<li><p>Catch common exceptions and keep the program from stopping unexpectedly.</p></li>
+<li><p>Explain the difference between checked and unchecked exceptions.</p></li>
+</ul>
+<p>Main question for this chapter: where is the data coming from, and what can go wrong?</p>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Streams Using Strings</h1>
+</section>
+<section class="frame">
+<h2>One Idea: Read Text From Different Sources</h2>
+<p>A stream is a flow of data that a program can read from or write to.</p>
+<table>
+<thead><tr><th>Source</th><th>Common object</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Keyboard</td><td><code>Scanner</code></td><td><code>new Scanner(System.in)</code></td></tr>
+<tr><td>String</td><td><code>Scanner</code></td><td><code>new Scanner(reviewLine)</code></td></tr>
+<tr><td>File</td><td><code>Scanner</code></td><td><code>new Scanner(fileStream)</code></td></tr>
+</tbody>
+</table>
+<ul>
+<li><p>The parsing methods are familiar: <code>next()</code>, <code>nextInt()</code>, <code>nextLine()</code>.</p></li>
+<li><p>The main change is the source of the input.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>String Input Stream: Parse One Review Line</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.util.Scanner;
+
+public class ReviewLineParser {
+    public static void main(String[] args) {
+        String reviewLine = "Campus Cafe 5 friendly-service";
+
+        Scanner lineScanner = new Scanner(reviewLine); // Scanner reads from a String
+        String restaurantName = lineScanner.next();
+        String restaurantType = lineScanner.next();
+        int rating = lineScanner.nextInt();
+        String comment = lineScanner.next();
+
+        System.out.println("Restaurant: " + restaurantName + " " + restaurantType);
+        System.out.println("Rating: " + rating);
+        System.out.println("Comment: " + comment);
+
+        lineScanner.close();
+    }
+}</code></pre>
+<ul><li><p><strong>example:</strong> <code>ReviewLineParser.java</code></p></li></ul>
+</section>
+<section class="frame"><h2>StringWriter and PrintWriter</h2>
+<p>Sometimes we want to build text first, then use that text later. These two classes work together for that job.</p>
+<ul>
+<li><p><code>StringWriter</code>: a character output stream that stores the output in a <code>String</code> in memory.</p></li>
+<li><p><code>PrintWriter</code>: a writer that gives us familiar methods such as <code>print()</code>, <code>println()</code>, and <code>printf()</code>.</p></li>
+<li><p>We often connect them like this: <code>PrintWriter reportWriter = new PrintWriter(reportStream);</code></p></li>
+<li><p>This is useful when we want to build a formatted report before printing it or saving it.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">StringWriter reportStream = new StringWriter();
+PrintWriter reportWriter = new PrintWriter(reportStream);</code></pre></section><section class="frame"><h2>Example: Build a Report in Memory</h2>
+<p>This example writes formatted output into a string stream, then prints the finished report.</p><pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.io.PrintWriter;
+import java.io.StringWriter;
+
+public class ReviewStringReport {
+    public static void main(String[] args) {
+        String restaurantName = "Campus Cafe";
+        int reviewCount = 3;
+        double averageRating = 4.3333;
+
+        StringWriter reportStream = new StringWriter();
+        PrintWriter reportWriter = new PrintWriter(reportStream);
+
+        reportWriter.println("Restaurant Review Summary");
+        reportWriter.println("Restaurant: " + restaurantName);
+        reportWriter.printf("Average rating: %.2f%n", averageRating);
+        reportWriter.println("Number of reviews: " + reviewCount);
+
+        reportWriter.close();
+        String reportText = reportStream.toString();
+        System.out.print(reportText);
+    }
+}</code></pre><ul><li><p><strong>example:</strong> <code>ReviewStringReport.java</code></p></li></ul></section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>File Input</h1>
+</section>
+<section class="frame">
+<h2>Opening a Text File for Reading</h2>
+<p>File input uses the same scanner idea, but the scanner reads from a file stream.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">FileInputStream fileStream = new FileInputStream("restaurant_reviews.txt");
+Scanner fileScanner = new Scanner(fileStream);
+
+// read from fileScanner
+
+fileScanner.close();
+fileStream.close();</code></pre>
+<ul>
+<li><p><code>FileInputStream</code> opens the file.</p></li>
+<li><p><code>Scanner</code> converts the file bytes into tokens or lines.</p></li>
+<li><p>The file must exist in the program's working directory.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Example: Print All Review Lines From a File</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Scanner;
+
+public class ReviewFileReader {
+    public static void main(String[] args) throws IOException {
+        FileInputStream fileStream = new FileInputStream("restaurant_reviews.txt");
+        Scanner fileScanner = new Scanner(fileStream);
+
+        while (fileScanner.hasNextLine()) { // read until no lines remain
+            String reviewLine = fileScanner.nextLine();
+            System.out.println(reviewLine);
+        }
+
+        fileScanner.close();
+        fileStream.close();
+    }
+}</code></pre>
+<ul><li><p><strong>example:</strong> <code>ReviewFileReader.java</code></p></li></ul>
+</section>
+<section class="frame">
+<h2>Reading Until the End of the File</h2>
+<p>Files often contain an unknown number of rows.</p>
+<table>
+<thead><tr><th>Method</th><th>Use when</th></tr></thead>
+<tbody>
+<tr><td><code>hasNextLine()</code></td><td>Each row should be processed as a full line.</td></tr>
+<tr><td><code>hasNext()</code></td><td>The file is read token by token.</td></tr>
+<tr><td><code>hasNextInt()</code></td><td>The next token must be an integer before reading.</td></tr>
+</tbody>
+</table>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">while (fileScanner.hasNextLine()) {
+    String line = fileScanner.nextLine();
+    // process one line
+}</code></pre>
+<ul><li><p>The condition is checked before each read.</p></li></ul>
+</section>
+<section class="frame">
+<h2>Example: Compute Average Rating From a File</h2>
+<p>This example reads one review line at a time and keeps a running total.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">while (fileScanner.hasNextLine()) {
+    String line = fileScanner.nextLine();
+    Scanner lineScanner = new Scanner(line); // parse one review line
+
+    lineScanner.next(); // restaurant first word
+    lineScanner.next(); // restaurant second word
+    int rating = lineScanner.nextInt();
+
+    ratingSum += rating;
+    reviewCount += 1;
+    lineScanner.close();
+}
+
+double average = (double) ratingSum / reviewCount;</code></pre>
+<ul><li><p><strong>example:</strong> <code>ReviewAverageFromFile.java</code></p></li></ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>File Output</h1>
+</section>
+<section class="frame">
+<h2>Opening a Text File for Writing</h2>
+<p>File output sends text from the program into a file.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">FileOutputStream outputStream = new FileOutputStream("review_report.txt");
+PrintWriter outputWriter = new PrintWriter(outputStream);
+
+outputWriter.println("Restaurant Review Summary");
+outputWriter.printf("Average rating: %.2f%n", average);
+
+outputWriter.close();
+outputStream.close();</code></pre>
+<ul>
+<li><p><code>FileOutputStream</code> opens the file for writing.</p></li>
+<li><p><code>PrintWriter</code> gives familiar <code>print</code>, <code>println</code>, and <code>printf</code> methods.</p></li>
+<li><p>Closing the writer finishes the output.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Example: Write a Review Summary File</h2>
+<p>This example writes the computed summary to a separate text file.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">FileOutputStream outputStream = new FileOutputStream("review_report.txt");
+PrintWriter outputWriter = new PrintWriter(outputStream);
+
+outputWriter.println("Restaurant Review Summary");
+outputWriter.println("Reviews processed: " + reviewCount);
+outputWriter.printf("Average rating: %.2f%n", average);
+
+outputWriter.close(); // finish writing output</code></pre>
+<ul><li><p><strong>example:</strong> <code>ReviewReportWriter.java</code></p></li></ul>
+</section>
+<section class="frame">
+<h2>Closing Files Safely</h2>
+<p>File resources should not be left open after the program is done with them.</p>
+<ul>
+<li><p>Close output first if the output writer depends on an output stream.</p></li>
+<li><p>Closing a writer flushes remaining text into the file.</p></li>
+<li><p>Closing becomes harder when an exception happens before the normal end of the program.</p></li>
+</ul>
+<table>
+<thead><tr><th>Approach</th><th>Beginner meaning</th></tr></thead>
+<tbody>
+<tr><td><code>close()</code></td><td>You close the resource manually.</td></tr>
+<tr><td>try-with-resources</td><td>Java closes the resource automatically after the block.</td></tr>
+</tbody>
+</table>
+</section>
+<section class="frame">
+<h2>Try-With-Resources</h2>
+<p>A try-with-resources statement opens resources in parentheses after <code>try</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Scanner inputScanner = new Scanner(new FileInputStream("restaurant_reviews.txt"));
+     PrintWriter outputWriter = new PrintWriter(new FileOutputStream("review_summary.txt"))) {
+
+    // read from inputScanner
+    // write to outputWriter
+}
+catch (IOException excpt) {
+    System.out.println("File problem: " + excpt.getMessage());
+}</code></pre>
+<ul>
+<li><p>The scanner and writer close automatically after the <code>try</code> block.</p></li>
+<li><p>This is usually cleaner than manually closing file resources.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Example: Try-With-Resources Summary</h2>
+<p>This example uses try-with-resources so the input and output resources close automatically.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Scanner inputScanner = new Scanner(new FileInputStream("restaurant_reviews.txt"));
+     PrintWriter outputWriter = new PrintWriter(new FileOutputStream("review_summary.txt"))) {
+
+    while (inputScanner.hasNextLine()) {
+        Scanner lineScanner = new Scanner(inputScanner.nextLine());
+        lineScanner.next();
+        lineScanner.next();
+        int rating = lineScanner.nextInt();
+        // update total and count
+        lineScanner.close();
+    }
+
+    outputWriter.printf("Average rating: %.2f%n", average);
+}
+catch (IOException excpt) {
+    System.out.println("File problem: " + excpt.getMessage());
+}</code></pre>
+<ul><li><p><strong>example:</strong> <code>ReviewTryWithResources.java</code></p></li></ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Handling Exceptions</h1>
+</section>
+<section class="frame">
+<h2>What an Exception Means</h2>
+<p>An exception is a runtime problem. The program compiled, started running, and then hit a situation it could not handle normally.</p>
+<ul>
+<li><p><strong>Normal path:</strong> the statement works, and the program continues to the next statement.</p></li>
+<li><p><strong>Exception path:</strong> the statement fails, Java creates an exception object, and normal execution stops at that point.</p></li>
+<li><p>Java then looks for a matching <code>catch</code> block.</p></li>
+<li><p>The <code>catch</code> block decides what to do next: print a message, ask again, skip bad data, or stop cleanly.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int rating = scnr.nextInt();
+// If input is 5: continue normally
+// If input is five: throw InputMismatchException</code></pre>
+</section>
+<section class="frame">
+<h2>try and catch Blocks</h2>
+<p>This example shows the full pattern: catch bad input, remove it, and ask again.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">while (!ratingAccepted) {
+    try {
+        System.out.print("Enter rating 1-5: ");
+        rating = scnr.nextInt();
+        ratingAccepted = true;
+    }
+    catch (InputMismatchException excpt) {
+        System.out.println("Please enter a whole number.");
+        scnr.next(); // remove the bad token before trying again
+    }
+}</code></pre>
+<ul>
+<li><p>The <code>try</code> block contains the read that may fail.</p></li>
+<li><p>If the read succeeds, <code>ratingAccepted</code> becomes <code>true</code>, and the loop can stop.</p></li>
+<li><p>If the read throws <code>InputMismatchException</code>, the matching <code>catch</code> block runs.</p></li>
+<li><p><code>scnr.next()</code> removes the bad token before the next attempt.</p></li>
+<li><p><strong>example:</strong> <code>RatingInputRetry.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Common Exception Types</h2>
+<p>Different problems create different exception types.</p>
+<table>
+<thead><tr><th>Exception</th><th>Common cause</th></tr></thead>
+<tbody>
+<tr><td><code>FileNotFoundException</code></td><td>A file cannot be opened.</td></tr>
+<tr><td><code>IOException</code></td><td>A file or stream operation fails.</td></tr>
+<tr><td><code>InputMismatchException</code></td><td>A scanner read expects one type but sees another.</td></tr>
+<tr><td><code>NumberFormatException</code></td><td>A string cannot be converted to a number.</td></tr>
+<tr><td><code>ArithmeticException</code></td><td>An arithmetic operation fails, such as integer division by zero.</td></tr>
+</tbody>
+</table>
+<ul><li><p>The catch type should match the problem you are prepared to handle.</p></li></ul>
+</section><section class="frame">
+<h2>Handling Invalid Text While Reading</h2>
+<p>A common exception in file processing happens when text should be a number but is not numeric.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String ratingText = "excellent";
+int rating = Integer.parseInt(ratingText); // NumberFormatException</code></pre>
+<ul>
+<li><p><code>"5"</code> can be converted to an integer.</p></li>
+<li><p><code>"excellent"</code> cannot be converted to an integer.</p></li>
+<li><p>When one row is bad, the program can skip that row and continue processing the rest.</p></li>
+</ul>
+</section><section class="frame">
+<h2>Example: Skip Invalid Rating Text</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class NumberFormatReport {
+    public static void main(String[] args) {
+        String[] ratingTexts = {"5", "4", "excellent", "3"};
+        int ratingSum = 0;
+        int reviewCount = 0;
+
+        for (String ratingText : ratingTexts) {
+            try {
+                int rating = Integer.parseInt(ratingText); // may throw NumberFormatException
+                ratingSum += rating;
+                reviewCount += 1;
+            }
+            catch (NumberFormatException excpt) {
+                System.out.println("Skipping invalid rating: " + ratingText);
+            }
+        }
+
+        System.out.printf("Average rating: %.2f%n", (double) ratingSum / reviewCount);
+    }
+}</code></pre>
+<ul><li><p>This example skips one bad rating value and keeps processing the remaining values.</p></li></ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Throwing Exceptions</h1>
+</section>
+<section class="frame">
+<h2>What <code>throw</code> Does</h2>
+<p><code>throw</code> is how a program creates an exception on purpose.</p>
+<ul>
+<li><p>Use it when the program detects a rule violation that Java cannot know by itself.</p></li>
+<li><p>The exception object stores a message that explains the problem.</p></li>
+<li><p>After <code>throw</code> runs, the current normal path stops.</p></li>
+<li><p>Java looks for a matching <code>catch</code> block in the current method or in the caller.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">throw new Exception("clear problem message");</code></pre>
+</section>
+<section class="frame">
+<h2>Example: Validate a Rating With <code>throw</code></h2>
+<p>The program checks a course rating rule: the rating must be from 1 to 5.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.util.Scanner;
+
+public class RatingValidatorThrow {
+    public static void main(String[] args) {
+        Scanner scnr = new Scanner(System.in);
+
+        try {
+            System.out.print("Enter rating 1-5: ");
+            int rating = scnr.nextInt();
+
+            if (rating &lt; 1 || rating &gt; 5) {
+                throw new Exception("Rating must be between 1 and 5.");
+            }
+
+            System.out.println("Rating saved: " + rating);
+        }
+        catch (Exception excpt) {
+            System.out.println(excpt.getMessage());
+        }
+    }
+}</code></pre>
+<ul>
+<li><p>If the rating is valid, the success message prints.</p></li>
+<li><p>If the rating is outside the range, <code>throw</code> creates an exception and the <code>catch</code> block prints the message.</p></li>
+<li><p><strong>example:</strong> <code>RatingValidatorThrow.java</code></p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Example: Throw From a Method</h2>
+<p>The method checks the rating and passes the exception back to <code>main()</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static int readRating(Scanner scnr) throws Exception {
+    int rating = scnr.nextInt();
+
+    if (rating &lt; 1 || rating &gt; 5) {
+        throw new Exception("Rating must be between 1 and 5.");
+    }
+
+    return rating;
+}
+
+// in main:
+try {
+    int rating = readRating(scnr);
+    System.out.println("Rating saved: " + rating);
+}
+catch (Exception excpt) {
+    System.out.println(excpt.getMessage());
+}</code></pre>
+<ul>
+<li><p><code>throw</code> creates the exception inside <code>readRating()</code>.</p></li>
+<li><p><code>throws Exception</code> tells the caller that this method may pass an exception back.</p></li>
+<li><p><strong>example:</strong> <code>RatingValidatorMethodThrows.java</code></p></li>
+</ul>
+</section><section class="frame">
+<h2>User-Defined Exception Type</h2>
+<p>Sometimes a program needs a clearer exception name for a specific problem in its own data.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class InvalidRatingException extends Exception {
+    public InvalidRatingException(int rating) {
+        super("Invalid rating: " + rating);
+    }
+}</code></pre>
+<ul>
+<li><p>The class extends <code>Exception</code>.</p></li>
+<li><p>The constructor passes a clear message to the base <code>Exception</code> class.</p></li>
+<li><p>The catch block can now catch exactly <code>InvalidRatingException</code>.</p></li>
+</ul>
+</section><section class="frame">
+<h2>Example: Custom Invalid Rating Exception</h2>
+<p>The catch block handles the custom exception type directly.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try {
+    System.out.print("Enter rating 1-5: ");
+    int rating = readRating(scnr);
+    System.out.println("Rating saved: " + rating);
+}
+catch (InvalidRatingException excpt) {
+    System.out.println(excpt.getMessage());
+}</code></pre>
+<ul><li><p><strong>example:</strong> <code>InvalidRatingExceptionExample.java</code></p></li></ul>
+</section>
+<section class="frame">
+<h2>Checked and Unchecked Exceptions</h2>
+<p>Java treats some exception types differently at compile time.</p>
+<table>
+<thead><tr><th>Type</th><th>Beginner meaning</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Checked</td><td>Java requires the method to catch or declare it.</td><td><code>IOException</code></td></tr>
+<tr><td>Unchecked</td><td>Java does not require catch or throws.</td><td><code>InputMismatchException</code></td></tr>
+</tbody>
+</table>
+<ul>
+<li><p>File operations often involve checked exceptions.</p></li>
+<li><p>Invalid keyboard input often creates unchecked exceptions.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.util.Scanner;
+public class CheckedExample {
+    public static void main(String[] args) {
+        try {
+            FileReader reader = new FileReader("data.txt");
+            System.out.println("File opened successfully.");
+            reader.close();
+        } catch (IOException e) {
+            System.out.println("Something went wrong with the file.");
+        }
+    }
+}
+//handle checked exception with throws 
+public class CheckedExample {
+    public static void main(String[] args) throws IOException {
+        FileReader reader = new FileReader("data.txt");
+        System.out.println("File opened successfully.");
+        reader.close();
+    }
+}
+//unchecked
+public class UncheckedExample {
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        System.out.print("Enter a number: ");
+        int number = input.nextInt();//may throw InputMismatchException
+        System.out.println("You entered: " + number);
+    }
+}
+</code></pre>
+</section>
+<section class="frame">
+<h2>Catch Order: Specific Before General</h2>
+<p>When there are multiple catch blocks, Java checks them from top to bottom.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try {
+    // code that may throw different exceptions
+}
+catch (NumberFormatException excpt) {
+    System.out.println("Invalid number text.");
+}
+catch (Exception excpt) {
+    System.out.println("Other problem: " + excpt.getMessage());
+}</code></pre>
+<ul>
+<li><p>Put the more specific exception type first.</p></li>
+<li><p>A general catch block such as <code>Exception</code> belongs later.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+<section class="frame">
+<h2>File I/O Problem-Solving Pattern</h2>
+<p>Most file problems in this chapter follow the same pattern.</p>
+<ol>
+<li><p>Open the input source.</p></li>
+<li><p>Loop while more data exists.</p></li>
+<li><p>Parse one line or token at a time.</p></li>
+<li><p>Validate values before using them.</p></li>
+<li><p>Update counters, totals, or output text.</p></li>
+<li><p>Write the result if needed.</p></li>
+<li><p>Close resources safely.</p></li>
+</ol>
+<p>This pattern is the same whether the data is ratings, dates, food items, or movie rows.</p>
+</section>
+<section class="frame">
+<h2>Correct Patterns and Mistakes to Avoid</h2>
+<p>Most bugs in this chapter happen when the code reads, writes, or catches in the wrong order.</p>
+<ul>
+<li><p><strong>Check before reading:</strong> use <code>hasNext...</code> before reading an unknown amount of input.</p></li>
+<li><p><strong>Match the method to the data:</strong> use <code>nextInt()</code> only when the next token should be an integer.</p></li>
+<li><p><strong>Choose token or line input:</strong> <code>next()</code> reads one token; <code>nextLine()</code> reads the rest of the line.</p></li>
+<li><p><strong>Finish file output:</strong> close the writer or use try-with-resources.</p></li>
+<li><p><strong>Catch specific first:</strong> put specific catch blocks before general catch blocks.</p></li>
+<li><p><strong>Know who handles the exception:</strong> <code>throws</code> passes the problem to the caller; <code>catch</code> handles it.</p></li>
+</ul>
+</section>
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>A <code>Scanner</code> can read from the keyboard, a string, or a file stream.</p></li>
+<li><p>A <code>PrintWriter</code> can write familiar output methods to a string or file.</p></li>
+<li><p>File-reading loops should check whether more data exists before reading.</p></li>
+<li><p>Exceptions are runtime problems that can change the normal flow of execution.</p></li>
+<li><p><code>try</code> and <code>catch</code> handle expected problems.</p></li>
+<li><p><code>throw</code> reports a problem; <code>throws</code> passes that possibility to the caller.</p></li>
+<li><p>Try-with-resources is a clean way to close file resources automatically.</p></li>
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
