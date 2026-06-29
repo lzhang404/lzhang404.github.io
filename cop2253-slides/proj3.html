@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project: Mini Pet Shelter</title>
+  <style>
+:root {
+  --text: #24292f;
+  --muted: #57606a;
+  --border: #d0d7de;
+  --bg: #ffffff;
+  --code-bg: #e6e6e6;
+  --accent: #0969da;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 36px 32px 72px;
+}
+h1, h2, h3, h4 {
+  line-height: 1.25;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  font-weight: 650;
+}
+h1 {
+  font-size: 2.1rem;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--border);
+  margin-top: 0;
+}
+h2 {
+  font-size: 1.45rem;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--border);
+}
+h3 { font-size: 1.15rem; }
+h4 { font-size: 1rem; }
+p { margin: 0.75em 0; }
+ul, ol { padding-left: 1.6em; }
+li { margin: 0.25em 0; }
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 28px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+  background: var(--code-bg);
+  padding: 0.15em 0.35em;
+  border-radius: 6px;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  vertical-align: top;
+}
+th { background: var(--code-bg); }
+@media print {
+  main { max-width: none; padding: 24px; }
+  pre { white-space: pre-wrap; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Project: Mini Pet Shelter</h1>
+
+<h2>Overview</h2>
+
+<p>In this project, you will write a small Java program for a pet shelter.</p>
+
+<p>The project practices:</p>
+
+<ul>
+  <li>objects and classes</li>
+  <li>constructors</li>
+  <li>inheritance</li>
+  <li>abstract classes</li>
+  <li>interfaces</li>
+  <li>method overriding</li>
+  <li>polymorphism</li>
+  <li><code>ArrayList</code></li>
+  <li>file input</li>
+  <li>file output</li>
+</ul>
+
+<hr />
+
+<h2>Project background</h2>
+
+<p>A small animal shelter keeps records for dogs and cats.</p>
+
+<p>Every pet has a name. Dogs and cats are both pets, but they behave differently. A dog says <code>Woof!</code> and needs dog care. A cat says <code>Meow!</code> and needs cat care.</p>
+
+<p>Your program will read the name of an input file from the console. Then it will open that file, create the correct pet objects, store all pets in one list, print each pet's information, care instruction, and sound, and save a short summary report to a file.</p>
+
+<hr />
+
+<h2>Required files</h2>
+
+<p>Submit these Java files:</p>
+
+<pre><code class="language-text">Pet.java
+PetShelterManager.java
+</code></pre>
+
+<p>The instructor will provide one or more input files for testing.</p>
+
+<p>Your program will create this output file when it runs:</p>
+
+<pre><code class="language-text">shelter_report.txt
+</code></pre>
+
+<hr />
+
+<h2>Program input</h2>
+
+<p>The program should read one input file name from the console.</p>
+
+<p>The input file name will be one token with no spaces.</p>
+
+<p>Example console input:</p>
+
+<pre><code class="language-text">pets1.txt
+</code></pre>
+
+<p>Your program should open the file with that name.</p>
+
+<p>Do not hard-code the input file name.</p>
+
+<p>Do not print a prompt.</p>
+
+<hr />
+
+<h2>Pet input file format</h2>
+
+<p>Each line in the input file describes one pet.</p>
+
+<p>The file uses this format:</p>
+
+<pre><code class="language-text">type name
+</code></pre>
+
+<p>Example input file:</p>
+
+<pre><code class="language-text">DOG Buddy
+CAT Luna
+DOG Max
+CAT Milo
+</code></pre>
+
+<p>You may assume the input file is correctly formatted.</p>
+
+<hr />
+
+<h2>Files and required code</h2>
+
+<h3><code class="language-text">Pet.java</code></h3>
+
+<p>This file contains the abstract parent class, the interface, and the two pet subclasses.</p>
+
+<p>This file must contain:</p>
+
+<pre><code class="language-java">public abstract class Pet
+interface Careable
+class Dog
+class Cat
+</code></pre>
+
+<p>Only <code>Pet</code> should be public.</p>
+
+<p>Do not write <code>public</code> before <code>Careable</code>, <code>Dog</code>, or <code>Cat</code>.</p>
+
+<h4>Abstract class: <code class="language-java">Pet</code></h4>
+
+<p>Create an abstract class named <code>Pet</code>.</p>
+
+<p>Required instance variable:</p>
+
+<pre><code class="language-java">private String name;
+</code></pre>
+
+<p>Required constructor:</p>
+
+<pre><code class="language-java">public Pet(String name)
+</code></pre>
+
+<p>Required methods:</p>
+
+<pre><code class="language-java">public String getName()
+public abstract String makeSound()
+public abstract String getType()
+public String toString()
+</code></pre>
+
+<ul>
+  <li><code>getName()</code> returns the pet's name.</li>
+  <li><code>makeSound()</code> returns the sound made by the pet.</li>
+  <li><code>getType()</code> returns the pet type.</li>
+  <li><code>toString()</code> returns the pet information as a String.</li>
+</ul>
+
+<p>Required <code>toString()</code> format:</p>
+
+<pre><code class="language-text">Dog: Buddy
+Cat: Luna
+</code></pre>
+
+<h4>Interface: <code class="language-java">Careable</code></h4>
+
+<p>Create an interface named <code>Careable</code> in <code>Pet.java</code>.</p>
+
+<p>The interface must require one method:</p>
+
+<pre><code class="language-java">String getCareInstructions()
+</code></pre>
+
+<p>Both <code>Dog</code> and <code>Cat</code> must implement this interface.</p>
+
+<h4>Class: <code class="language-java">Dog</code></h4>
+
+<p>Create a class named <code>Dog</code> in <code>Pet.java</code>.</p>
+
+<p><code>Dog</code> must extend <code>Pet</code> and implement <code>Careable</code>.</p>
+
+<p>Required constructor:</p>
+
+<pre><code class="language-java">public Dog(String name)
+</code></pre>
+
+<p>Required methods:</p>
+
+<pre><code class="language-java">public String makeSound()
+public String getType()
+public String getCareInstructions()
+</code></pre>
+
+<ul>
+  <li><code>makeSound()</code> returns <code>Woof!</code></li>
+  <li><code>getType()</code> returns <code>Dog</code></li>
+  <li><code>getCareInstructions()</code> returns the dog's name followed by <code>needs walks and dog food.</code></li>
+</ul>
+
+<p>Required dog care format:</p>
+
+<pre><code class="language-text">Buddy needs walks and dog food.
+</code></pre>
+
+<h4>Class: <code class="language-java">Cat</code></h4>
+
+<p>Create a class named <code>Cat</code> in <code>Pet.java</code>.</p>
+
+<p><code>Cat</code> must extend <code>Pet</code> and implement <code>Careable</code>.</p>
+
+<p>Required constructor:</p>
+
+<pre><code class="language-java">public Cat(String name)
+</code></pre>
+
+<p>Required methods:</p>
+
+<pre><code class="language-java">public String makeSound()
+public String getType()
+public String getCareInstructions()
+</code></pre>
+
+<ul>
+  <li><code>makeSound()</code> returns <code>Meow!</code></li>
+  <li><code>getType()</code> returns <code>Cat</code></li>
+  <li><code>getCareInstructions()</code> returns the cat's name followed by <code>needs cat food and a clean litter box.</code></li>
+</ul>
+
+<p>Required cat care format:</p>
+
+<pre><code class="language-text">Luna needs cat food and a clean litter box.
+</code></pre>
+
+<hr />
+
+<h3><code class="language-text">PetShelterManager.java</code></h3>
+
+<p>This file contains the main program.</p>
+
+<p>This file must contain:</p>
+
+<pre><code class="language-java">public class PetShelterManager
+</code></pre>
+
+<p>The <code>PetShelterManager</code> class must contain this method:</p>
+
+<pre><code class="language-java">public static void main(String[] args) throws IOException
+</code></pre>
+
+<p>For this project, file reading, object creation, counting, console output, and file output should be handled inside <code>main()</code>.</p>
+
+<p>Use the File I/O approach covered in class:</p>
+
+<ul>
+  <li>Use <code>Scanner</code> to read the input file name from the console.</li>
+  <li>Use <code>FileInputStream</code> to open the input file.</li>
+  <li>Use <code>Scanner</code> to read from the file stream.</li>
+  <li>Use <code>hasNextLine()</code> to read all lines from the file.</li>
+  <li>Create one <code>ArrayList&lt;Pet&gt;</code> to store all dog and cat objects.</li>
+  <li>Update the dog count and cat count while reading the file.</li>
+  <li>Use <code>FileOutputStream</code> to open the output file.</li>
+  <li>Use <code>PrintWriter</code> to write the summary report.</li>
+  <li>Close file resources when finished.</li>
+</ul>
+
+<h4>Main method requirements</h4>
+
+<p>Your <code>main()</code> method should follow this order:</p>
+
+<pre><code class="language-text">read the input file name from the console
+create one ArrayList&lt;Pet&gt;
+create dog and cat counters
+
+open the selected input file
+read each pet from the file
+create the correct Dog or Cat object
+add each pet object to the list
+update the dog or cat counter
+close the input file resources
+
+print each pet's information, care instruction, and sound
+
+create shelter_report.txt
+write the summary report
+close the output file resources
+</code></pre>
+
+<p>Do not print a prompt before reading the input file name.</p>
+
+<hr />
+
+<h2>Required console output format</h2>
+
+<p>Example console input:</p>
+
+<pre><code class="language-text">pets1.txt
+</code></pre>
+
+<p>Assume <code>pets1.txt</code> contains:</p>
+
+<pre><code class="language-text">DOG Buddy
+CAT Luna
+DOG Max
+CAT Milo
+</code></pre>
+
+<p>The console output should be exactly:</p>
+
+<pre><code class="language-text">Dog: Buddy
+Buddy needs walks and dog food.
+Woof!
+
+Cat: Luna
+Luna needs cat food and a clean litter box.
+Meow!
+
+Dog: Max
+Max needs walks and dog food.
+Woof!
+
+Cat: Milo
+Milo needs cat food and a clean litter box.
+Meow!
+</code></pre>
+
+<hr />
+
+<h2>Required output file</h2>
+
+<p>Your program must create this file:</p>
+
+<pre><code class="language-text">shelter_report.txt
+</code></pre>
+
+<p>The file should contain only the summary report.</p>
+
+<p>For the example input file above, <code>shelter_report.txt</code> should contain exactly:</p>
+
+<pre><code class="language-text">Pet Shelter Report
+Total pets: 4
+Dogs: 2
+Cats: 2
+</code></pre>
+
+<p>Do not write the console output into <code>shelter_report.txt</code>.</p>
+
+<p>Do not write each pet's sound into <code>shelter_report.txt</code>.</p>
+
+<p>Do not write each pet's care instructions into <code>shelter_report.txt</code>.</p>
+
+<hr />
+
+<h2>Restrictions</h2>
+
+<ul>
+  <li>Do not create a <code>Pet</code> object directly. <code>Pet</code> must be abstract.</li>
+  <li>Do not store dogs and cats in separate lists. Use one <code>ArrayList&lt;Pet&gt;</code>.</li>
+  <li>Do not hard-code the input file name.</li>
+  <li>Do not hard-code the pets, sample output, dog count, or cat count.</li>
+  <li>Do not decide pet sounds in <code>PetShelterManager</code>. Each subclass should define its own sound.</li>
+  <li>Do not write console output into <code>shelter_report.txt</code>.</li>
+  <li>Do not skip file input or file output.</li>
+  <li>Your program must work with different valid input files provided by the instructor.</li>
+</ul>
+
+<hr />
+
+<h2>Grading rubric</h2>
+
+<p>Total: 100 points</p>
+
+<h3>Pet class hierarchy and interface: 35 points</h3>
+
+<ul>
+  <li><code>Pet</code> is an abstract class with the required field, constructor, and methods: 8 points</li>
+  <li><code>Pet</code> correctly defines abstract methods for <code>makeSound()</code> and <code>getType()</code>: 5 points</li>
+  <li><code>Pet</code> correctly implements <code>toString()</code> in the required format: 5 points</li>
+  <li><code>Careable</code> interface is correctly defined with <code>getCareInstructions()</code>: 5 points</li>
+  <li><code>Dog</code> correctly extends <code>Pet</code> and implements <code>Careable</code>: 6 points</li>
+  <li><code>Cat</code> correctly extends <code>Pet</code> and implements <code>Careable</code>: 6 points</li>
+</ul>
+
+<h3>Subclass behavior and polymorphism: 20 points</h3>
+
+<ul>
+  <li><code>Dog</code> returns the correct type, sound, and care instruction: 6 points</li>
+  <li><code>Cat</code> returns the correct type, sound, and care instruction: 6 points</li>
+  <li>Uses one <code>ArrayList&lt;Pet&gt;</code> to store all pets: 4 points</li>
+  <li>Uses polymorphism when printing each pet's sound: 4 points</li>
+</ul>
+
+<h3>File input and main logic: 25 points</h3>
+
+<ul>
+  <li>Reads the input file name from the console: 4 points</li>
+  <li>Opens the selected file using <code>FileInputStream</code>: 4 points</li>
+  <li>Uses <code>Scanner</code> and <code>hasNextLine()</code> to process all lines: 5 points</li>
+  <li>Correctly reads the pet type and pet name from each line: 4 points</li>
+  <li>Creates the correct object type for each input line: 4 points</li>
+  <li>Correctly updates dog and cat counts while reading the file: 4 points</li>
+</ul>
+
+<h3>Console output and report file: 10 points</h3>
+
+<ul>
+  <li>Console output follows the required pet information, care, and sound format: 4 points</li>
+  <li>Creates <code>shelter_report.txt</code> using <code>FileOutputStream</code> and <code>PrintWriter</code>: 3 points</li>
+  <li>The output file contains only the required summary report: 3 points</li>
+</ul>
+
+<h3>Style and restrictions: 10 points</h3>
+
+<ul>
+  <li>Code is readable, organized, and properly indented: 3 points</li>
+  <li>Variable names are meaningful: 2 points</li>
+  <li>Does not hard-code the input file name, pets, output, or counts: 3 points</li>
+  <li>Does not use separate dog and cat lists: 2 points</li>
+</ul>
+
+</main>
+</body>
+</html>
