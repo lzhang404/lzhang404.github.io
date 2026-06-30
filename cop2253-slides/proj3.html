@@ -124,6 +124,8 @@ th { background: var(--code-bg); }
 
 <p>Every pet has a name. Dogs and cats are both pets, but they behave differently. A dog says <code>Woof!</code> and needs dog care. A cat says <code>Meow!</code> and needs cat care.</p>
 
+<p>In this project, every pet should be careable. This means the abstract <code>Pet</code> class will implement the <code>Careable</code> interface. Then each subclass, such as <code>Dog</code> and <code>Cat</code>, will provide its own care instructions.</p>
+
 <p>Your program will read the name of an input file from the console. Then it will open that file, create the correct pet objects, store all pets in one list, print each pet's information, care instruction, and sound, and save a short summary report to a file.</p>
 
 <hr />
@@ -193,19 +195,35 @@ CAT Milo
 
 <p>This file must contain:</p>
 
-<pre><code class="language-java">public abstract class Pet
+<pre><code class="language-java">public abstract class Pet implements Careable
 interface Careable
-class Dog
-class Cat
+class Dog extends Pet
+class Cat extends Pet
 </code></pre>
 
 <p>Only <code>Pet</code> should be public.</p>
 
 <p>Do not write <code>public</code> before <code>Careable</code>, <code>Dog</code>, or <code>Cat</code>.</p>
 
+<h4>Interface: <code class="language-java">Careable</code></h4>
+
+<p>Create an interface named <code>Careable</code> in <code>Pet.java</code>.</p>
+
+<p>The interface must require one method:</p>
+
+<pre><code class="language-java">String getCareInstructions()
+</code></pre>
+
+<p>The abstract class <code>Pet</code> must implement <code>Careable</code>. Since <code>Dog</code> and <code>Cat</code> extend <code>Pet</code>, they are also careable pets.</p>
+
 <h4>Abstract class: <code class="language-java">Pet</code></h4>
 
 <p>Create an abstract class named <code>Pet</code>.</p>
+
+<p><code>Pet</code> must implement the <code>Careable</code> interface:</p>
+
+<pre><code class="language-java">public abstract class Pet implements Careable
+</code></pre>
 
 <p>Required instance variable:</p>
 
@@ -222,6 +240,7 @@ class Cat
 <pre><code class="language-java">public String getName()
 public abstract String makeSound()
 public abstract String getType()
+public abstract String getCareInstructions()
 public String toString()
 </code></pre>
 
@@ -229,6 +248,7 @@ public String toString()
   <li><code>getName()</code> returns the pet's name.</li>
   <li><code>makeSound()</code> returns the sound made by the pet.</li>
   <li><code>getType()</code> returns the pet type.</li>
+  <li><code>getCareInstructions()</code> returns the care instructions for the pet.</li>
   <li><code>toString()</code> returns the pet information as a String.</li>
 </ul>
 
@@ -238,22 +258,13 @@ public String toString()
 Cat: Luna
 </code></pre>
 
-<h4>Interface: <code class="language-java">Careable</code></h4>
-
-<p>Create an interface named <code>Careable</code> in <code>Pet.java</code>.</p>
-
-<p>The interface must require one method:</p>
-
-<pre><code class="language-java">String getCareInstructions()
-</code></pre>
-
-<p>Both <code>Dog</code> and <code>Cat</code> must implement this interface.</p>
+<p>Use the <code>@Override</code> annotation before <code>toString()</code>.</p>
 
 <h4>Class: <code class="language-java">Dog</code></h4>
 
 <p>Create a class named <code>Dog</code> in <code>Pet.java</code>.</p>
 
-<p><code>Dog</code> must extend <code>Pet</code> and implement <code>Careable</code>.</p>
+<p><code>Dog</code> must extend <code>Pet</code>.</p>
 
 <p>Required constructor:</p>
 
@@ -273,6 +284,8 @@ public String getCareInstructions()
   <li><code>getCareInstructions()</code> returns the dog's name followed by <code>needs walks and dog food.</code></li>
 </ul>
 
+<p>Use the <code>@Override</code> annotation before each required method in <code>Dog</code>.</p>
+
 <p>Required dog care format:</p>
 
 <pre><code class="language-text">Buddy needs walks and dog food.
@@ -282,7 +295,7 @@ public String getCareInstructions()
 
 <p>Create a class named <code>Cat</code> in <code>Pet.java</code>.</p>
 
-<p><code>Cat</code> must extend <code>Pet</code> and implement <code>Careable</code>.</p>
+<p><code>Cat</code> must extend <code>Pet</code>.</p>
 
 <p>Required constructor:</p>
 
@@ -301,6 +314,8 @@ public String getCareInstructions()
   <li><code>getType()</code> returns <code>Cat</code></li>
   <li><code>getCareInstructions()</code> returns the cat's name followed by <code>needs cat food and a clean litter box.</code></li>
 </ul>
+
+<p>Use the <code>@Override</code> annotation before each required method in <code>Cat</code>.</p>
 
 <p>Required cat care format:</p>
 
@@ -334,6 +349,7 @@ public String getCareInstructions()
   <li>Use <code>hasNextLine()</code> to read all lines from the file.</li>
   <li>Create one <code>ArrayList&lt;Pet&gt;</code> to store all dog and cat objects.</li>
   <li>Update the dog count and cat count while reading the file.</li>
+  <li>Use a loop to print each pet's information, care instruction, and sound.</li>
   <li>Use <code>FileOutputStream</code> to open the output file.</li>
   <li>Use <code>PrintWriter</code> to write the summary report.</li>
   <li>Close file resources when finished.</li>
@@ -362,6 +378,19 @@ close the output file resources
 </code></pre>
 
 <p>Do not print a prompt before reading the input file name.</p>
+
+<p>When printing pet information, use a <code>Pet</code> reference from the list. Because <code>Pet</code> implements <code>Careable</code>, your code should be able to call <code>getCareInstructions()</code> directly from the <code>Pet</code> reference.</p>
+
+<p>For example, the printing logic should be based on this idea:</p>
+
+<pre><code class="language-java">Pet pet = pets.get(i);
+
+System.out.println(pet);
+System.out.println(pet.getCareInstructions());
+System.out.println(pet.makeSound());
+</code></pre>
+
+<p>Do not cast a <code>Pet</code> object to <code>Careable</code> in <code>PetShelterManager</code>.</p>
 
 <hr />
 
@@ -430,10 +459,14 @@ Cats: 2
 
 <ul>
   <li>Do not create a <code>Pet</code> object directly. <code>Pet</code> must be abstract.</li>
+  <li><code>Pet</code> must implement the <code>Careable</code> interface.</li>
+  <li><code>Dog</code> and <code>Cat</code> must extend <code>Pet</code>.</li>
+  <li>Do not cast <code>Pet</code> to <code>Careable</code> in <code>PetShelterManager</code>.</li>
   <li>Do not store dogs and cats in separate lists. Use one <code>ArrayList&lt;Pet&gt;</code>.</li>
   <li>Do not hard-code the input file name.</li>
   <li>Do not hard-code the pets, sample output, dog count, or cat count.</li>
   <li>Do not decide pet sounds in <code>PetShelterManager</code>. Each subclass should define its own sound.</li>
+  <li>Do not decide care instructions in <code>PetShelterManager</code>. Each subclass should define its own care instructions.</li>
   <li>Do not write console output into <code>shelter_report.txt</code>.</li>
   <li>Do not skip file input or file output.</li>
   <li>Your program must work with different valid input files provided by the instructor.</li>
@@ -448,27 +481,30 @@ Cats: 2
 <h3>Pet class hierarchy and interface: 35 points</h3>
 
 <ul>
-  <li><code>Pet</code> is an abstract class with the required field, constructor, and methods: 8 points</li>
-  <li><code>Pet</code> correctly defines abstract methods for <code>makeSound()</code> and <code>getType()</code>: 5 points</li>
-  <li><code>Pet</code> correctly implements <code>toString()</code> in the required format: 5 points</li>
   <li><code>Careable</code> interface is correctly defined with <code>getCareInstructions()</code>: 5 points</li>
-  <li><code>Dog</code> correctly extends <code>Pet</code> and implements <code>Careable</code>: 6 points</li>
-  <li><code>Cat</code> correctly extends <code>Pet</code> and implements <code>Careable</code>: 6 points</li>
+  <li><code>Pet</code> is an abstract class that implements <code>Careable</code>: 5 points</li>
+  <li><code>Pet</code> has the required private field, constructor, and <code>getName()</code> method: 6 points</li>
+  <li><code>Pet</code> correctly defines abstract methods for <code>makeSound()</code>, <code>getType()</code>, and <code>getCareInstructions()</code>: 7 points</li>
+  <li><code>Pet</code> correctly implements <code>toString()</code> in the required format: 5 points</li>
+  <li><code>Dog</code> correctly extends <code>Pet</code>: 3 points</li>
+  <li><code>Cat</code> correctly extends <code>Pet</code>: 3 points</li>
+  <li>Only <code>Pet</code> is declared <code>public</code> in <code>Pet.java</code>: 1 point</li>
 </ul>
 
 <h3>Subclass behavior and polymorphism: 20 points</h3>
 
 <ul>
-  <li><code>Dog</code> returns the correct type, sound, and care instruction: 6 points</li>
-  <li><code>Cat</code> returns the correct type, sound, and care instruction: 6 points</li>
-  <li>Uses one <code>ArrayList&lt;Pet&gt;</code> to store all pets: 4 points</li>
-  <li>Uses polymorphism when printing each pet's sound: 4 points</li>
+  <li><code>Dog</code> has the required constructor and returns the correct type, sound, and care instruction: 6 points</li>
+  <li><code>Cat</code> has the required constructor and returns the correct type, sound, and care instruction: 6 points</li>
+  <li>Uses one <code>ArrayList&lt;Pet&gt;</code> to store all dogs and cats: 3 points</li>
+  <li>Uses polymorphism when printing each pet's sound from a <code>Pet</code> reference: 3 points</li>
+  <li>Calls <code>getCareInstructions()</code> from a <code>Pet</code> reference without casting to <code>Careable</code>: 2 points</li>
 </ul>
 
 <h3>File input and main logic: 25 points</h3>
 
 <ul>
-  <li>Reads the input file name from the console: 4 points</li>
+  <li>Reads the input file name from the console without printing a prompt: 4 points</li>
   <li>Opens the selected file using <code>FileInputStream</code>: 4 points</li>
   <li>Uses <code>Scanner</code> and <code>hasNextLine()</code> to process all lines: 5 points</li>
   <li>Correctly reads the pet type and pet name from each line: 4 points</li>
@@ -489,8 +525,9 @@ Cats: 2
 <ul>
   <li>Code is readable, organized, and properly indented: 3 points</li>
   <li>Variable names are meaningful: 2 points</li>
-  <li>Does not hard-code the input file name, pets, output, or counts: 3 points</li>
-  <li>Does not use separate dog and cat lists: 2 points</li>
+  <li>Uses <code>@Override</code> before methods that override or implement required methods: 2 points</li>
+  <li>Does not hard-code the input file name, pets, output, or counts: 2 points</li>
+  <li>Does not use separate dog and cat lists: 1 point</li>
 </ul>
 
 </main>

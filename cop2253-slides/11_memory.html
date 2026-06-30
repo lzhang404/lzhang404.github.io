@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Memory Basics</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<style>
+  .mem-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:0.55em; margin-top:0.6em; font-size:0.78em; }
+  .mem-card { border:2px solid #315f8c; border-radius:8px; background:#f7f9fc; padding:0.55em; min-height:5.0em; }
+  .mem-card strong { color:#315f8c; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1em; align-items:start; }
+  .memory-box { border:2px solid #315f8c; border-radius:8px; background:#f7f9fc; padding:0.55em; margin-bottom:0.45em; }
+  .memory-title { font-weight:700; color:#315f8c; margin-bottom:0.25em; }
+  .slot { border:1px solid #777; background:white; border-radius:5px; padding:0.25em 0.4em; margin:0.18em 0; font-family:Consolas, monospace; font-size:0.78em; }
+  .slot.dim { background:#eeeeee; color:#666; }
+  .heap-object { border:2px solid #397843; background:#f7fff8; border-radius:8px; padding:0.45em 0.65em; text-align:center; font-size:0.82em; min-width:7em; }
+  .ref-var { border:2px solid #315f8c; background:#f7f9fc; border-radius:8px; padding:0.45em 0.65em; text-align:center; font-size:0.82em; min-width:6em; }
+  .ref-null { border:2px solid #888; background:#eeeeee; color:#555; border-radius:8px; padding:0.45em 0.65em; text-align:center; font-size:0.82em; min-width:6em; }
+  .ref-row { display:flex; align-items:center; justify-content:center; gap:0.55em; margin:0.5em 0; }
+  .arrow { color:#315f8c; font-weight:700; font-size:1.2em; }
+  .flow { display:flex; align-items:center; justify-content:center; gap:0.35em; margin:0.6em 0; font-size:0.78em; }
+  .flow-box { border:2px solid #315f8c; background:#f7f9fc; border-radius:8px; padding:0.4em 0.55em; text-align:center; }
+</style>
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%">
+<h1>Memory Basics</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+
+<section>
+<section class="frame">
+<h2>Today's Roadmap</h2>
+<p>Today we look at where variables and objects live while a Java program runs.</p>
+<ul>
+<li><p>Four memory regions: code, static memory, stack, and heap.</p></li>
+<li><p>How method calls use the stack.</p></li>
+<li><p>How <code>new</code> creates objects on the heap.</p></li>
+<li><p>How reference variables point to objects.</p></li>
+<li><p>How <code>null</code> affects references.</p></li>
+<li><p>How garbage collection cleans up unreachable objects.</p></li>
+<li><p>How local variables go out of scope when a method returns.</p></li>
+</ul>
+<p><em>Reading focus: Chapter 11, Memory Management</em></p>
+</section>
+
+<section class="frame">
+<h2>What You Should Be Able To Do</h2>
+<ul>
+<li><p>Describe the four memory regions at a high level.</p></li>
+<li><p>Identify local variables on the stack.</p></li>
+<li><p>Identify objects created with <code>new</code> on the heap.</p></li>
+<li><p>Explain the difference between a reference variable and an object.</p></li>
+<li><p>Explain when an object becomes unreachable.</p></li>
+<li><p>Explain why local variables disappear when a method returns.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>Memory Regions</h1></section>
+
+
+<section class="frame">
+<h2>Simple Memory Map</h2>
+<p>This is a simplified picture of memory while a program is running.</p>
+<div class="two-col">
+<div>
+<ul>
+<li><p><strong>Code:</strong> program instructions.</p></li>
+<li><p><strong>Static memory:</strong> static fields.</p></li>
+<li><p><strong>Stack:</strong> local variables for active method calls.</p></li>
+<li><p><strong>Heap:</strong> objects created with <code>new</code>.</p></li>
+</ul>
+</div>
+<div>
+<div class="memory-box"><div class="memory-title">Code</div><div class="slot">program instructions</div></div>
+<div class="memory-box"><div class="memory-title">Static memory</div><div class="slot">static fields</div></div>
+<div class="memory-box"><div class="memory-title">Stack</div><div class="slot">main() local variables</div><div class="slot">myMethod() local variables</div></div>
+<div class="memory-box"><div class="memory-title">Heap</div><div class="slot">objects</div></div>
+</div>
+</div>
+</section>
+
+<section class="frame">
+<h2>Example Program and Memory Regions</h2>
+<div class="two-col">
+<div>
+<p>This example uses static memory, the stack, and the heap.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class MemoryRegionEx {
+    public static int myStaticField = 33;
+
+    public static void myMethod() {
+        int myLocal;
+        myLocal = 999;
+        System.out.print(" " + myLocal);
+    }
+
+    public static void main(String[] args) {
+        int myInt;
+        Integer myInteger = null;
+
+        myInt = 555;
+        myInteger = new Integer(222);
+
+        System.out.print(myInteger.intValue()
+                + " " + myInt);
+
+        myInteger = null;
+        myMethod();
+    }
+}</code></pre>
+</div>
+<div style="flex:0 0 40%;text-align:center;">
+<p>Where the important values go:</p>
+<div class="memory-box">
+<div class="memory-title">Static memory</div>
+<div class="slot">myStaticField = 33</div>
+</div>
+<div class="memory-box">
+<div class="memory-title">Stack</div>
+<div class="slot">main(): myInt = 555</div>
+<div class="slot">main(): myInteger →</div>
+<div class="slot">myMethod(): myLocal = 999</div>
+</div>
+<div class="memory-box">
+<div class="memory-title">Heap</div>
+<div class="slot">Integer object: 222</div>
+</div>
+<ul>
+<li><p><code>myInteger</code> is a reference variable.</p></li>
+<li><p><code>new Integer(222)</code> creates the heap object.</p></li>
+</ul>
+</div>
+</div>
+<p><strong>example:</strong> <code>MemoryRegionEx.java</code></p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>The Stack</h1></section>
+
+<section class="frame">
+<h2>The Stack Stores Local Variables</h2>
+<p>The stack stores local variables while a method is running.</p>
+<div class="two-col">
+<div>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static void myMethod() {
+    int myLocal;
+    myLocal = 999;
+    System.out.print(" " + myLocal);
+}</code></pre>
+</div>
+<div>
+<div class="memory-box">
+<div class="memory-title">Stack while myMethod() is running</div>
+<div class="slot">myMethod(): myLocal = 999</div>
+<div class="slot">main(): myInt = 555</div>
+<div class="slot">main(): myInteger</div>
+</div>
+<ul>
+<li><p><code>myLocal</code> exists while <code>myMethod()</code> is running.</p></li>
+<li><p>When <code>myMethod()</code> returns, <code>myLocal</code> is removed.</p></li>
+</ul>
+</div>
+</div>
+</section>
+
+<section class="frame">
+<h2>Method Calls Add and Remove Stack Frames</h2>
+<p>A method call adds local variables to the stack. A method return removes them.</p>
+<div class="flow">
+<div class="flow-box"><code>main()</code> starts</div>
+<span class="arrow">→</span>
+<div class="flow-box"><code>myMethod()</code> called</div>
+<span class="arrow">→</span>
+<div class="flow-box"><code>myLocal</code> added</div>
+<span class="arrow">→</span>
+<div class="flow-box"><code>myMethod()</code> returns</div>
+<span class="arrow">→</span>
+<div class="flow-box"><code>myLocal</code> removed</div>
+</div>
+<ul>
+<li><p>This is automatic memory management.</p></li>
+<li><p>The programmer does not manually remove local variables.</p></li>
+<li><p>The local variables disappear when the method returns.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>The Heap</h1></section>
+
+<section class="frame">
+<h2><code>new</code> Creates an Object on the Heap</h2>
+<p>The heap stores objects created with <code>new</code>.</p>
+<div class="two-col">
+<div>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Integer myInteger = null;
+
+myInteger = new Integer(222);</code></pre>
+<ul>
+<li><p><code>myInteger</code> is a local reference variable.</p></li>
+<li><p>The reference variable is on the stack.</p></li>
+<li><p>The <code>Integer</code> object is on the heap.</p></li>
+</ul>
+</div>
+<div>
+<div class="memory-box">
+<div class="memory-title">Stack</div>
+<div class="slot">myInteger →</div>
+</div>
+<div class="memory-box">
+<div class="memory-title">Heap</div>
+<div class="slot">Integer object: 222</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="frame">
+<h2>Reference Variable Versus Object</h2>
+<p>A reference variable is not the object itself.</p>
+<div class="ref-row">
+<div class="ref-var"><code>myInteger</code><br/>reference variable</div>
+<span class="arrow">→</span>
+<div class="heap-object"><strong>Integer object</strong><br/><code>222</code></div>
+</div>
+<ul>
+<li><p>The reference variable stores a way to find the object.</p></li>
+<li><p>The object stores the actual data.</p></li>
+<li><p>Changing the reference variable does not directly erase the object.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2><code>null</code> Means No Object</h2>
+<p>A reference variable can store <code>null</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Integer myInteger = null;</code></pre>
+<ul>
+<li><p><code>null</code> means the variable does not currently refer to an object.</p></li>
+<li><p>If code tries to use an object through <code>null</code>, Java can throw <code>NullPointerException</code>.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>References and Garbage Collection</h1></section>
+
+<section class="frame">
+<h2>Two References Can Point to One Object</h2>
+<p>Assigning one reference variable to another copies the reference, not the object.</p>
+<div class="two-col">
+<div>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Integer myInt = null;
+Integer myOtherInt = null;
+
+myInt = new Integer(10);
+myOtherInt = myInt;</code></pre>
+</div>
+<div>
+<div class="ref-row">
+<div class="ref-var"><code>myInt</code></div>
+<span class="arrow">↘</span>
+<div class="heap-object"><strong>Integer object</strong><br/><code>10</code></div>
+<span class="arrow">↙</span>
+<div class="ref-var"><code>myOtherInt</code></div>
+</div>
+<ul>
+<li><p>There is one heap object.</p></li>
+<li><p>Two reference variables can reach it.</p></li>
+</ul>
+</div>
+</div>
+</section>
+
+<section class="frame">
+<h2>Setting One Reference to <code>null</code></h2>
+<p>The object is still reachable if another reference points to it.</p>
+<div class="two-col">
+<div>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">myInt = null;</code></pre>
+<ul>
+<li><p><code>myInt</code> no longer refers to the object.</p></li>
+<li><p><code>myOtherInt</code> still refers to the object.</p></li>
+</ul>
+</div>
+<div>
+<div class="ref-row">
+<div class="ref-null"><code>myInt</code><br/><code>null</code></div>
+<div class="heap-object"><strong>Integer object</strong><br/>still reachable</div>
+<span class="arrow">←</span>
+<div class="ref-var"><code>myOtherInt</code></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="frame">
+<h2>When No Reference Remains</h2>
+<p>An object becomes unreachable when no live reference can reach it.</p>
+<div class="two-col">
+<div>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">myOtherInt = null;</code></pre>
+<ul>
+<li><p>Now <code>myInt</code> is <code>null</code>.</p></li>
+<li><p>Now <code>myOtherInt</code> is also <code>null</code>.</p></li>
+<li><p>No reference can reach the object.</p></li>
+</ul>
+</div>
+<div>
+<div class="ref-row">
+<div class="ref-null"><code>myInt</code><br/><code>null</code></div>
+<div class="heap-object"><strong>Integer object</strong><br/>unreachable</div>
+<div class="ref-null"><code>myOtherInt</code><br/><code>null</code></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="frame">
+<h2>What Is Garbage Collection?</h2>
+<p>Garbage collection is Java's automatic process for cleaning up heap objects that are no longer reachable.</p>
+<div class="flow">
+<div class="flow-box">Object is created</div>
+<span class="arrow">→</span>
+<div class="flow-box">References point to it</div>
+<span class="arrow">→</span>
+<div class="flow-box">No references remain</div>
+<span class="arrow">→</span>
+<div class="flow-box">Object is eligible for cleanup</div>
+</div>
+<ul>
+<li><p>Java programmers usually do not manually free heap objects.</p></li>
+<li><p>The Java Virtual Machine decides when garbage collection runs.</p></li>
+<li><p>An unreachable object is not always removed immediately.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>Scope and Memory</h1></section>
+
+<section class="frame">
+<h2>Local Variables Go Out of Scope</h2>
+<p>A local variable only exists while its method is running.</p>
+<ul>
+<li><p>When a method starts, its local variables are created.</p></li>
+<li><p>When a method returns, its local variables are removed.</p></li>
+<li><p>If a local reference was the only way to reach an object, that object becomes unreachable.</p></li>
+</ul>
+<p>Setting a local reference to <code>null</code> is not always necessary. Returning from the method can remove the reference automatically.</p>
+</section>
+
+<section class="frame">
+<h2>Local Reference in a Method</h2>
+<div class="two-col">
+<div>
+<p>The method creates a local reference variable named <code>binaryStr</code>.</p>
+<pre data-fontsize="x-small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class BitCounter {
+    public static int countBits(int inNum) {
+        int countInt;
+        String binaryStr;
+
+        binaryStr = Integer.toBinaryString(inNum);
+        countInt = binaryStr.length();
+
+        return countInt;
+    }
+
+    public static void main(String[] args) {
+        int numBits;
+        numBits = countBits(7);
+    }
+}</code></pre>
+</div>
+<div>
+<p>While <code>countBits(7)</code> is running:</p>
+<div class="memory-box">
+<div class="memory-title">Stack</div>
+<div class="slot">countBits(): inNum = 7</div>
+<div class="slot">countBits(): countInt = 3</div>
+<div class="slot">countBits(): binaryStr →</div>
+<div class="slot">main(): numBits</div>
+</div>
+<div class="memory-box">
+<div class="memory-title">Heap</div>
+<div class="slot">String object: "111"</div>
+</div>
+<ul>
+<li><p><code>binaryStr</code> refers to the string object.</p></li>
+<li><p><code>numBits</code> will receive the returned value.</p></li>
+</ul>
+</div>
+</div>
+<p><strong>example:</strong> <code>BitCounter.java</code></p>
+</section>
+
+<section class="frame">
+<h2>After the Method Returns</h2>
+<p>When <code>countBits()</code> returns, its local variables are removed from the stack.</p>
+<div class="two-col">
+<div>
+<ul>
+<li><p><code>numBits</code> receives the returned value <code>3</code>.</p></li>
+<li><p><code>binaryStr</code> goes out of scope.</p></li>
+<li><p>If no other reference points to <code>"111"</code>, the string object becomes unreachable.</p></li>
+</ul>
+</div>
+<div>
+<div class="memory-box">
+<div class="memory-title">Stack after return</div>
+<div class="slot">main(): numBits = 3</div>
+<div class="slot dim">countBits() frame removed</div>
+<div class="slot dim">binaryStr is gone</div>
+</div>
+<div class="memory-box">
+<div class="memory-title">Heap</div>
+<div class="slot dim">String object may be unreachable</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>Summary</h1></section>
+
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>Code memory stores program instructions.</p></li>
+<li><p>Static memory stores static fields.</p></li>
+<li><p>The stack stores active method calls and local variables.</p></li>
+<li><p>The heap stores objects created with <code>new</code>.</p></li>
+<li><p>A reference variable is not the object itself.</p></li>
+<li><p><code>null</code> means a reference variable does not refer to an object.</p></li>
+<li><p>An object becomes unreachable when no live reference can reach it.</p></li>
+<li><p>Garbage collection can reclaim unreachable objects.</p></li>
+<li><p>When a method returns, its local variables go out of scope.</p></li>
+</ul>
+</section>
+</section>
+
+</div>
+</div>
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>

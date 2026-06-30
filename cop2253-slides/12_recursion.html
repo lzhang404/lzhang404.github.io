@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Recursion</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%">
+<h1>Recursion</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+
+<section>
+<section class="frame">
+<h2>Today's Roadmap</h2>
+<p>Today we introduce recursion as a way to solve a problem by solving a smaller version of the same problem.</p>
+<ul>
+<li><p>Understand what recursion means.</p></li>
+<li><p>Identify the stopping case and the repeated case.</p></li>
+<li><p>Trace a recursive countdown example.</p></li>
+<li><p>Use recursion to return a value.</p></li>
+<li><p>Recognize common recursion mistakes.</p></li>
+<li><p>Decide when recursion is useful and when a loop may be clearer.</p></li>
+</ul>
+<p>Reading focus: Chapter 12, Recursion</p>
+</section>
+
+<section class="frame">
+<h2>What You Should Be Able To Do</h2>
+<ul>
+<li><p>Explain what a recursive method is.</p></li>
+<li><p>Find the base case in a recursive method.</p></li>
+<li><p>Find the recursive case in a recursive method.</p></li>
+<li><p>Trace a short recursive method call by call.</p></li>
+<li><p>Explain why the problem must get smaller each time.</p></li>
+<li><p>Explain why missing a base case can cause an error.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>The Big Idea</h1></section>
+
+<section class="frame">
+<h2>What Is Recursion?</h2>
+<p>A recursive method is a method that calls itself.</p>
+<ul>
+<li><p>The method solves part of the problem.</p></li>
+<li><p>Then it calls itself to solve a smaller part.</p></li>
+<li><p>This continues until the problem becomes small enough to answer directly.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Original problem
+Smaller problem
+Even smaller problem
+Smallest problem that can be answered directly</code></pre>
+</section>
+
+<section class="frame">
+<h2>Recursion Needs a Stopping Point</h2>
+<p>A recursive method cannot call itself forever.</p>
+<ul>
+<li><p>The base case is the condition that stops the recursion.</p></li>
+<li><p>The recursive case is the part that calls the same method again.</p></li>
+<li><p>Each recursive call should move closer to the base case.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">if the problem is small enough:
+    answer it now
+else:
+    solve a smaller version of the same problem</code></pre>
+</section>
+
+<section class="frame">
+<h2>Base Case and Recursive Case</h2>
+<p>Most recursive methods have the same basic shape.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static void recursiveMethod(int value) {
+    if (value is small enough) {
+        // base case
+        // stop here
+    }
+    else {
+        // recursive case
+        recursiveMethod(smallerValue);
+    }
+}</code></pre>
+<ul>
+<li><p>The base case prevents endless recursion.</p></li>
+<li><p>The recursive case keeps the method moving.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>First Example: Countdown</h1></section>
+
+<section class="frame">
+<h2>Countdown Without Recursion</h2>
+<p>A loop is a familiar way to repeat a task.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">for (int count = 3; count &gt;= 1; count--) {
+    System.out.println(count);
+}
+System.out.println("Go!");</code></pre>
+<ul>
+<li><p>The loop repeats while the count changes.</p></li>
+<li><p>Recursion can also repeat, but it repeats through method calls.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Countdown With Recursion</h2>
+<div style="display:flex;gap:1em;align-items:flex-start;">
+<div style="flex:1;min-width:0;">
+<p>The method prints, then calls itself with a smaller number.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static void countDown(int count) {
+    if (count &lt;= 0) {
+        System.out.println("Go!");
+    }
+    else {
+        System.out.println(count);
+        countDown(count - 1);
+    }
+}</code></pre>
+</div>
+<div style="flex:1;min-width:0;">
+<p>Trace <code>countDown(3)</code>:</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">countDown(3) prints 3
+countDown(2) prints 2
+countDown(1) prints 1
+countDown(0) prints Go!</code></pre>
+<ul>
+<li><p>Base case: <code>count &lt;= 0</code></p></li>
+<li><p>Recursive case: <code>countDown(count - 1)</code></p></li>
+<li><p>The value gets smaller each time.</p></li>
+</ul>
+</div>
+</div>
+<p>example: <code>CountDown.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Recursive Calls Return Backward</h2>
+<div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+<div style="flex:1;min-width:0;">
+<ul>
+ <li><p>Each method call must finish before the previous method call can finish.</p></li> 
+<li><p><code>countDown(3)</code> calls <code>countDown(2)</code>.</p></li>
+<li><p><code>countDown(2)</code> calls <code>countDown(1)</code>.</p></li>
+<li><p><code>countDown(1)</code> calls <code>countDown(0)</code>.</p></li>
+<li><p>After the base case finishes, the calls return in reverse order.</p></li>
+</ul>
+</div>
+<div style="flex:0 0 52%;text-align:center;">
+<img alt="Diagram showing recursive countDown calls stacked as separate method frames." src="../_static/images/cop2253/recursion_stack_frames.png" style="max-width:35%;object-fit:contain;"/>
+<p style="font-size:0.65em;text-align:center;">Each active call has its own stack frame.</p>
+</div>
+</div>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>Returning Values</h1></section>
+
+<section class="frame">
+<h2>Recursive Methods Can Return Values</h2>
+<p>Some recursive methods print output. Other recursive methods calculate and return an answer.</p>
+<ul>
+<li><p>A printing method may use <code>void</code>.</p></li>
+<li><p>A calculation method returns a value such as <code>int</code> or <code>double</code>.</p></li>
+<li><p>The recursive call can be part of the returned expression.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">answer for n
+= current part
++ answer for a smaller problem</code></pre>
+</section>
+
+<section class="frame">
+<h2>Factorial Code and Trace</h2>
+<div style="display:flex;gap:1em;align-items:flex-start;">
+<div style="flex:1;min-width:0;">
+<p>Factorial multiplies a number by all positive whole numbers below it.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static int factorial(int n) {
+    if (n &lt;= 1) {
+        return 1;
+    }
+
+    return n * factorial(n - 1);
+}</code></pre>
+<ul>
+<li><p>Base case: <code>n &lt;= 1</code></p></li>
+<li><p>Recursive case: <code>n * factorial(n - 1)</code></p></li>
+</ul>
+</div>
+<div style="flex:1;min-width:0;">
+<p>Trace <code>factorial(4)</code>:</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">factorial(4)
+= 4 * factorial(3)
+= 4 * 3 * factorial(2)
+= 4 * 3 * 2 * factorial(1)
+= 4 * 3 * 2 * 1
+= 24</code></pre>
+<p>The calls go down to the base case, then return values back.</p>
+</div>
+</div>
+<p>example: <code>FactorialCalculator.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Fibonacci Numbers</h2>
+<p>Fibonacci numbers are another example where the definition is recursive.</p>
+<div style="display:flex;gap:1em;align-items:flex-start;">
+<div style="flex:1;min-width:0;">
+<ul>
+<li><p><code>F(0) = 0</code></p></li>
+<li><p><code>F(1) = 1</code></p></li>
+<li><p><code>F(n) = F(n - 1) + F(n - 2)</code></p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static int fibonacci(int n) {
+    if (n &lt;= 0) {
+        return 0;
+    }
+    if (n == 1) {
+        return 1;
+    }
+
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}</code></pre>
+</div>
+<div style="flex:1;min-width:0;">
+<p>Trace <code>fibonacci(4)</code>:</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">fibonacci(4)
+= fibonacci(3) + fibonacci(2)
+= 2 + 1
+= 3</code></pre>
+<ul>
+<li><p>This matches the definition.</p></li>
+<li><p>This version is easy to read.</p></li>
+<li><p>For larger values, it repeats work.</p></li>
+</ul>
+</div>
+</div>
+<p>example: <code>FibonacciNumbers.java</code></p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>Using Parameters to Track Progress</h1></section>
+
+<section class="frame">
+<h2>Parameters Remember the Current State</h2>
+<p>Each recursive call can receive different parameter values.</p>
+<ul>
+<li><p>In countdown, the parameter is <code>count</code>.</p></li>
+<li><p>In factorial, the parameter is <code>n</code>.</p></li>
+<li><p>In an array problem, the parameter may be the current index.</p></li>
+</ul>
+<p>The parameter tells the method which smaller problem it is solving right now.</p>
+</section>
+
+<section class="frame">
+<h2>Sum an Array Recursively</h2>
+<div style="display:flex;gap:1em;align-items:flex-start;">
+<div style="flex:1;min-width:0;">
+<p>This method adds values starting from one index to the end of the array.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static int sumFrom(int[] values, int index) {
+    if (index == values.length) {
+        return 0;
+    }
+
+    return values[index] + sumFrom(values, index + 1);
+}</code></pre>
+<ul>
+<li><p>Base case: the index has reached the end.</p></li>
+<li><p>Recursive case: add the current value and sum the rest.</p></li>
+</ul>
+</div>
+<div style="flex:1;min-width:0;">
+<p>Trace with <code>{4, 6, 2}</code>:</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">sumFrom(values, 0)
+= 4 + sumFrom(values, 1)
+= 4 + 6 + sumFrom(values, 2)
+= 4 + 6 + 2 + sumFrom(values, 3)
+= 4 + 6 + 2 + 0
+= 12</code></pre>
+<p>The index increases each time, so the method gets closer to stopping.</p>
+</div>
+</div>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>Common Recursion Mistakes</h1></section>
+
+<section class="frame">
+<h2>Mistake 1: Missing the Base Case</h2>
+<p>If there is no stopping condition, the method keeps calling itself.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static void repeatForever(int value) {
+    System.out.println(value);
+    repeatForever(value + 1);
+}</code></pre>
+<ul>
+<li><p>This method has no base case.</p></li>
+<li><p>It does not know when to stop.</p></li>
+<li><p>Java eventually throws <code>StackOverflowError</code>.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Mistake 2: Not Moving Toward the Base Case</h2>
+<p>A method may have a base case but still fail if the recursive call does not make progress.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static void countDown(int count) {
+    if (count &lt;= 0) {
+        System.out.println("Go!");
+    }
+    else {
+        System.out.println(count);
+        countDown(count);
+    }
+}</code></pre>
+<ul>
+<li><p>The base case is <code>count &lt;= 0</code>.</p></li>
+<li><p>The recursive call uses the same value again.</p></li>
+<li><p>The method never gets closer to stopping.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Stack Overflow Means Too Many Active Calls</h2>
+<p>Every active method call uses memory on the call stack.</p>
+<ul>
+<li><p>Recursive calls add more active calls.</p></li>
+<li><p>If the recursion does not stop, the call stack fills up.</p></li>
+<li><p>That causes <code>StackOverflowError</code>.</p></li>
+<li><p>The fix is to correct the base case or the recursive step.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Debugging Recursion</h2>
+<p>Print the parameter values to see how the recursive calls are changing.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static void countDown(int count) {
+    System.out.println("count = " + count);
+
+    if (count &lt;= 0) {
+        System.out.println("Go!");
+    }
+    else {
+        countDown(count - 1);
+    }
+}</code></pre>
+<ul>
+<li><p>If the values move toward the base case, the recursion is making progress.</p></li>
+<li><p>If the values repeat forever, check the recursive call.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>When Should We Use Recursion?</h1></section>
+
+<section class="frame">
+<h2>Recursion Is Useful for Some Problems</h2>
+<p>Recursion is helpful when the problem naturally contains smaller versions of itself.</p>
+<ul>
+<li><p>Counting down from a number.</p></li>
+<li><p>Computing formulas such as factorial.</p></li>
+<li><p>Working through nested structures.</p></li>
+<li><p>Exploring choices one step at a time.</p></li>
+</ul>
+<p>For this course, focus on recognizing the pattern and tracing short examples.</p>
+</section>
+
+<section class="frame">
+<h2>Sometimes a Loop Is Clearer</h2>
+<p>Many simple repetition problems can be solved with either a loop or recursion.</p>
+<table class="docutils align-default">
+<thead>
+<tr><th>Problem</th><th>Usually Clearer Choice</th></tr>
+</thead>
+<tbody>
+<tr><td>Print numbers from 1 to 10</td><td>Loop</td></tr>
+<tr><td>Add all values in an array</td><td>Loop or recursion</td></tr>
+<tr><td>Factorial formula</td><td>Loop or recursion</td></tr>
+<tr><td>Nested choices</td><td>Recursion</td></tr>
+</tbody>
+</table>
+<p>Choose the approach that makes the code easier to understand.</p>
+</section>
+
+<section class="frame">
+<h2>Recursion Checklist</h2>
+<p>Before writing a recursive method, ask these questions.</p>
+<ul>
+<li><p>What is the smaller version of the problem?</p></li>
+<li><p>What is the base case?</p></li>
+<li><p>What value should be returned or printed at the base case?</p></li>
+<li><p>How does each recursive call move closer to the base case?</p></li>
+<li><p>What happens after the recursive call returns?</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1"><h1>Summary</h1></section>
+
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>A recursive method calls itself.</p></li>
+<li><p>The base case stops the recursion.</p></li>
+<li><p>The recursive case calls the method with a smaller problem.</p></li>
+<li><p>Each recursive call has its own parameter values.</p></li>
+<li><p>Recursive calls return in reverse order.</p></li>
+<li><p>A missing base case can cause <code>StackOverflowError</code>.</p></li>
+<li><p>Recursion is useful when the problem naturally breaks into smaller versions of itself.</p></li>
+<li><p>For simple counting, a loop may be easier to read.</p></li>
+</ul>
+</section>
+</section>
+
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
