@@ -379,19 +379,6 @@ close the output file resources
 
 <p>Do not print a prompt before reading the input file name.</p>
 
-<p>When printing pet information, use a <code>Pet</code> reference from the list. Because <code>Pet</code> implements <code>Careable</code>, your code should be able to call <code>getCareInstructions()</code> directly from the <code>Pet</code> reference.</p>
-
-<p>For example, the printing logic should be based on this idea:</p>
-
-<pre><code class="language-java">Pet pet = pets.get(i);
-
-System.out.println(pet);
-System.out.println(pet.getCareInstructions());
-System.out.println(pet.makeSound());
-</code></pre>
-
-<p>Do not cast a <code>Pet</code> object to <code>Careable</code> in <code>PetShelterManager</code>.</p>
-
 <hr />
 
 <h2>Required console output format</h2>
