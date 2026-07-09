@@ -13,29 +13,86 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <style>
-  .gui-wire { border: 2px solid #315f8c; border-radius: 8px; background: #f7f9fc; padding: 0.55em; }
-  .gui-panel { border: 2px solid #777; border-radius: 6px; background: #f5f5f5; padding: 0.5em; box-shadow: 0 2px 4px rgba(0,0,0,.12); }
-  .gui-label { font-weight: 600; color: #315f8c; }
-  .field { display:inline-block; min-width:8em; border:1px solid #777; background:white; padding:0.18em 0.35em; margin:0.1em; font-family:Consolas, monospace; }
-  .button { display:inline-block; border:1px solid #555; border-radius:4px; background:#e6e6e6; padding:0.22em 0.7em; margin:0.1em; font-weight:600; }
-  .mini-table { border-collapse: collapse; margin: 0.4em auto; font-size:0.78em; }
-  .mini-table th, .mini-table td { border:1px solid #777; padding:0.25em 0.55em; }
-  .mini-table th { background:#e2e8f0; }
-  .grid-demo { display:grid; grid-template-columns: 1fr 1fr; gap:.35em; width:75%; margin:.4em auto; }
-  .grid-cell { border:1px dashed #999; min-height:2.1em; padding:.25em; background:#fafafa; font-size:.75em; }
-  .canvas-box { width: 460px; height: 230px; border:2px solid #555; background:#fbfbfb; margin:.4em auto; position:relative; }
-  .canvas-axis-x { position:absolute; left:34px; right:22px; top:34px; border-top:2px solid #777; }
-  .canvas-axis-y { position:absolute; left:34px; top:34px; bottom:20px; border-left:2px solid #777; }
-  .canvas-x-text { position:absolute; right:12px; top:22px; font-size:.58em; color:#555; }
-  .canvas-y-text { position:absolute; left:20px; bottom:6px; font-size:.58em; color:#555; }
-  .canvas-origin { position:absolute; left:8px; top:6px; font-size:.58em; color:#555; }
-  .coord-dot { position:absolute; left:88px; top:70px; width:9px; height:9px; border-radius:50%; background:#315f8c; }
-  .coord-label { position:absolute; left:104px; top:63px; font-size:.56em; color:#315f8c; font-family:Consolas, monospace; }
-  .canvas-bar { position:absolute; left:92px; height:28px; border-radius:2px; }
-  .bar1 { top:88px; width:210px; background:#9a9a00; }
-  .bar2 { top:126px; width:145px; background:#44c2c4; }
-  .bar3 { top:164px; width:250px; background:#666; }
-  .canvas-caption { position:absolute; left:92px; top:202px; font-size:.54em; color:#555; }
+  .gui-panel {
+    border: 2px solid #777;
+    border-radius: 8px;
+    background: #f5f5f5;
+    padding: 0.6em;
+    box-shadow: 0 2px 4px rgba(0,0,0,.12);
+  }
+  .gui-title {
+    text-align:center;
+    font-weight:700;
+    margin:.1em 0 .5em;
+  }
+  .gui-row {
+    display:grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap:.4em;
+    align-items:center;
+    margin:.35em 0;
+  }
+  .gui-label {
+    font-weight: 600;
+    color: #315f8c;
+    text-align:right;
+  }
+  .field {
+    display:inline-block;
+    min-width:8em;
+    border:1px solid #777;
+    background:white;
+    padding:0.18em 0.35em;
+    font-family:Consolas, monospace;
+  }
+  .button {
+    display:inline-block;
+    border:1px solid #555;
+    border-radius:4px;
+    background:#e6e6e6;
+    padding:0.25em 0.85em;
+    margin:.3em auto .1em;
+    font-weight:600;
+  }
+  .mini-table {
+    border-collapse: collapse;
+    margin: 0.4em auto;
+    font-size:0.78em;
+  }
+  .mini-table th, .mini-table td {
+    border:1px solid #777;
+    padding:0.25em 0.55em;
+  }
+  .mini-table th {
+    background:#e2e8f0;
+  }
+  .grid-demo {
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:.35em;
+    width:72%;
+    margin:.4em auto;
+  }
+  .grid-cell {
+    border:1px dashed #999;
+    min-height:2.2em;
+    padding:.3em;
+    background:#fafafa;
+    font-size:.76em;
+  }
+  .flow-box {
+    border:2px solid #315f8c;
+    border-radius:8px;
+    background:#f7f9fc;
+    padding:.5em .7em;
+    margin:.35em 0;
+    font-size:.85em;
+  }
+  .small-note {
+    font-size:.68em;
+    color:#555;
+    text-align:center;
+  }
 </style>
 </head>
 <body>
@@ -45,59 +102,61 @@
 <section>
 <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%" data-background-position="top center" data-background-repeat="no-repeat">
 <h1>GUI Programming</h1>
-<div class="subtitle docutils container"><p>Liting Zhang</p><p>University of West Florida</p></div>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
 </section>
 </section>
 
 <section>
 <section class="frame">
 <h2>Today's Roadmap</h2>
-<p>Today we introduce graphical programs at a beginner level.</p>
+<p>Today we introduce GUI programming with one small example: a salary calculator.</p>
 <ul>
 <li><p>What a GUI program is.</p></li>
-<li><p>Two Java GUI libraries: Swing and JavaFX.</p></li>
-<li><p>Common GUI objects, such as windows, labels, fields, and buttons.</p></li>
-<li><p>How a program responds when the user clicks a button.</p></li>
-<li><p>How layout decides where components appear.</p></li>
-<li><p>How simple drawing uses coordinates.</p></li>
+<li><p>Basic Swing components: <code>JFrame</code>, <code>JLabel</code>, <code>JTextField</code>, and <code>JButton</code>.</p></li>
+<li><p>How <code>JPanel</code>, <code>GridLayout</code>, and <code>BorderLayout</code> organize components.</p></li>
+<li><p>How a button click runs code using a listener.</p></li>
+<li><p>How to use <code>getText()</code>, <code>setText()</code>, and <code>try/catch</code>.</p></li>
 </ul>
-<p><em>Reading focus: Chapter 13, GUI Programming</em></p>
 </section>
-
-
 
 <section class="frame">
 <h2>What You Should Be Able To Do</h2>
 <ul>
 <li><p>Explain what a graphical user interface is.</p></li>
-<li><p>Identify the basic parts of a GUI program.</p></li>
-<li><p>Tell the difference between Swing examples and JavaFX examples.</p></li>
-<li><p>Describe the idea of an event, such as a button click.</p></li>
+<li><p>Identify labels, text fields, buttons, panels, and frames.</p></li>
 <li><p>Explain why layout managers are useful.</p></li>
-<li><p>Explain the basic x-y coordinate system used for drawing.</p></li>
+<li><p>Describe what happens when a button is clicked.</p></li>
+<li><p>Read input from a text field using <code>getText()</code>.</p></li>
+<li><p>Display output using <code>setText()</code>.</p></li>
+<li><p>Use <code>try/catch</code> to handle invalid input.</p></li>
 </ul>
 </section>
 </section>
 
 <section>
-<section class="title-slide slide level1"><h1>What Is a GUI?</h1></section>
+<section class="title-slide slide level1">
+<h1>What Is a GUI?</h1>
+</section>
 
 <section class="frame">
-<h2>Programs Can Talk to Users in Different Ways</h2>
+<h2>Console Program vs. GUI Program</h2>
 <p>So far, many of our programs have used text input and text output.</p>
 <div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
 <div style="flex:1;min-width:0;">
 <ul>
 <li><p>A console program prints text to the screen.</p></li>
-<li><p>The user types input using the keyboard.</p></li>
-<li><p>The program usually runs from top to bottom.</p></li>
-<li><p>This is simple and good for learning basic programming.</p></li>
+<li><p>The user types input into the console.</p></li>
+<li><p>The program often runs from top to bottom.</p></li>
+<li><p>This is useful for learning basic programming.</p></li>
 </ul>
 </div>
-<div style="flex:0 0 38%;min-width:0;">
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Enter miles: 120
-Driving time: 2.0 hours</code></pre>
-<p style="font-size:.65em;text-align:center;"><em>Console programs use text interaction.</em></p>
+<div style="flex:0 0 40%;min-width:0;">
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Enter hourly wage: 20
+Yearly salary: 40000.00</code></pre>
+<p class="small-note"><em>Console programs use text interaction.</em></p>
 </div>
 </div>
 </section>
@@ -109,144 +168,269 @@ Driving time: 2.0 hours</code></pre>
 <div style="flex:1;min-width:0;">
 <ul>
 <li><p>GUI means graphical user interface.</p></li>
-<li><p>The user sees windows, labels, text fields, buttons, menus, and tables.</p></li>
-<li><p>The user can click, type, select, and scroll.</p></li>
+<li><p>The user sees windows, labels, text fields, and buttons.</p></li>
+<li><p>The user can type and click.</p></li>
 <li><p>The program responds to the user's actions.</p></li>
 </ul>
 </div>
-<div style="flex:0 0 38%;min-width:0;">
+<div style="flex:0 0 40%;min-width:0;">
 <div class="gui-panel">
-<p style="text-align:center;font-weight:700;margin:.1em 0 .4em;">Travel Time</p>
-<p><span class="gui-label">Miles:</span> <span class="field">120</span></p>
-<p><span class="button">Calculate</span></p>
-<p><span class="gui-label">Hours:</span> <span class="field">2.0</span></p>
+<p class="gui-title">Salary Calculator</p>
+<div class="gui-row"><span class="gui-label">Hourly wage:</span><span class="field">20</span></div>
+<div class="gui-row"><span class="gui-label">Yearly salary:</span><span class="field">40000.00</span></div>
+<p style="text-align:center;"><span class="button">Calculate</span></p>
 </div>
-<p style="font-size:.65em;text-align:center;"><em>A GUI program uses visual components.</em></p>
+<p class="small-note"><em>A GUI program uses visual components.</em></p>
 </div>
 </div>
-</section>
-
-<section class="frame">
-<h2>GUI Programs Are Event Driven</h2>
-<p>In a GUI program, the program often waits for the user to do something.</p>
-<ul>
-<li><p>The user types in a field.</p></li>
-<li><p>The user clicks a button.</p></li>
-<li><p>The user selects an item.</p></li>
-<li><p>The program runs the matching code for that action.</p></li>
-</ul>
-<p>For example, clicking a calculate button can tell the program to read input, do math, and show a result.</p>
-</section>
-<section class="frame">
-<h2>Java GUI Libraries</h2>
-<p>Java has more than one library for building graphical programs.</p>
-<table class="mini-table">
-<tr><th>Library</th><th>Used For</th><th>Example Classes</th></tr>
-<tr><td>Swing</td><td>Basic windows and components</td><td><code>JFrame</code>, <code>JLabel</code>, <code>JTextField</code>, <code>JButton</code></td></tr>
-<tr><td>JavaFX</td><td>Modern GUI programs and drawing</td><td><code>Application</code>, <code>Stage</code>, <code>Scene</code>, <code>Canvas</code></td></tr>
-</table>
-<ul>
-<li><p>We first use Swing examples to understand basic GUI ideas.</p></li>
-<li><p>Later, we use JavaFX to introduce drawing with a canvas.</p></li>
-<li><p>The class names are different, but the big ideas are similar.</p></li>
-</ul>
 </section>
 </section>
 
 <section>
-<section class="title-slide slide level1"><h1>Swing GUI Building Blocks</h1></section>
+<section class="title-slide slide level1">
+<h1>Basic Swing Components</h1>
+</section>
 
 <section class="frame">
-<h2>A Swing Window Holds Components</h2>
-<p>A Swing GUI program is built by placing visual components inside a window.</p>
+<h2>The Main Components in Our Example</h2>
+<table class="mini-table">
+<tr><th>Component</th><th>Meaning</th><th>Example</th></tr>
+<tr><td><code>JFrame</code></td><td>Main window</td><td>Salary Calculator window</td></tr>
+<tr><td><code>JLabel</code></td><td>Text shown to the user</td><td><code>Hourly wage:</code></td></tr>
+<tr><td><code>JTextField</code></td><td>Text input or output box</td><td><code>20</code>, <code>40000.00</code></td></tr>
+<tr><td><code>JButton</code></td><td>Clickable button</td><td><code>Calculate</code></td></tr>
+<tr><td><code>JPanel</code></td><td>Container for components</td><td>Input area</td></tr>
+</table>
+</section>
+
+<section class="frame">
+<h2>JFrame: The Main Window</h2>
 <div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
 <div style="flex:1;min-width:0;">
+<p>A <code>JFrame</code> is the main window of a Swing program.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">JFrame frame = new JFrame("Salary Calculator");
+
+frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+frame.pack();
+frame.setVisible(true);</code></pre>
 <ul>
-<li><p>A <code>JFrame</code> is the main window.</p></li>
-<li><p>A <code>JLabel</code> shows text to the user.</p></li>
-<li><p>A <code>JTextField</code> lets the user type input.</p></li>
-<li><p>A <code>JButton</code> lets the user start an action.</p></li>
-<li><p>Another text field can show the program result.</p></li>
+<li><p>The constructor creates the window and gives it a title.</p></li>
+<li><p><code>setDefaultCloseOperation()</code> tells the program to exit when the window closes.</p></li>
+<li><p><code>pack()</code> sizes the window to fit its components.</p></li>
+<li><p><code>setVisible(true)</code> shows the window.</p></li>
+</ul>
+</div>
+<div style="flex:0 0 40%;min-width:0;">
+<img alt="Diagram showing a JFrame." src="../_static/images/cop2253/empty_jframe.png" style="max-width:45%;object-fit:contain;"/>
+</div>
+</div>
+</section>
+
+<section class="frame">
+<h2>JLabel, JTextField, and JButton</h2>
+<p>Each GUI component is created as an object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">JLabel wageLabel = new JLabel("Hourly wage:");
+JLabel salaryLabel = new JLabel("Yearly salary:");
+
+JTextField wageField = new JTextField(10);
+JTextField salaryField = new JTextField(10);
+
+JButton calculateButton = new JButton("Calculate");</code></pre>
+<ul>
+<li><p><code>JLabel</code> displays text.</p></li>
+<li><p><code>JTextField</code> stores text.</p></li>
+<li><p><code>JButton</code> creates a button the user can click.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Input Field and Output Field</h2>
+<p>The salary calculator uses two text fields, but they have different jobs.</p>
+<div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
+<div style="flex:1;min-width:0;">
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">JTextField wageField = new JTextField(10);
+
+JTextField salaryField = new JTextField(10);
+salaryField.setEditable(false);</code></pre>
+<ul>
+<li><p>The wage field is for user input.</p></li>
+<li><p>The salary field is for program output.</p></li>
+<li><p><code>setEditable(false)</code> means the user cannot type in the result field.</p></li>
 </ul>
 </div>
 <div style="flex:0 0 38%;min-width:0;">
 <div class="gui-panel">
-<p style="text-align:center;font-weight:700;margin:.1em 0 .4em;">Salary Calculator</p>
-<p><span class="gui-label">Hourly wage:</span> <span class="field">20</span></p>
-<p><span class="button">Calculate</span></p>
-<p><span class="gui-label">Yearly salary:</span> <span class="field">40000</span></p>
-</div>
-<p style="font-size:.65em;text-align:center;"><em>Example: a salary calculator GUI</em></p>
+<p class="gui-title">Two Text Fields</p>
+<div class="gui-row"><span class="gui-label">Input:</span><span class="field">20</span></div>
+<div class="gui-row"><span class="gui-label">Output:</span><span class="field">40000.00</span></div>
 </div>
 </div>
-</section>
-
-<section class="frame">
-<h2>Example: Build a Simple Swing Window</h2>
-<p>This code creates three Swing components and adds them to the window.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">JLabel wageLabel = new JLabel("Hourly wage:");
-JTextField wageField = new JTextField(10);
-JButton calculateButton = new JButton("Calculate");
-
-add(wageLabel);
-add(wageField);
-add(calculateButton);</code></pre>
-<ul>
-<li><p>Each component is created as an object.</p></li>
-<li><p>The <code>add()</code> method places the component in the window.</p></li>
-<li><p>Layout code controls the final position of each component.</p></li>
-</ul>
-<p><strong>example:</strong> <code>SalaryCalculatorFrame.java</code></p>
-</section>
-
-<section class="frame">
-<h2>Layout Means Where Things Go</h2>
-<p>A layout manager decides where components appear in the window.</p>
-<div class="grid-demo">
-<div class="grid-cell"><strong>Row 0, Column 0</strong><br/>Miles label</div>
-<div class="grid-cell"><strong>Row 0, Column 1</strong><br/>Miles field</div>
-<div class="grid-cell"><strong>Row 1, Column 0</strong><br/>Button</div>
-<div class="grid-cell"><strong>Row 1, Column 1</strong><br/>Result field</div>
 </div>
-<ul>
-<li><p>Without layout, the program would not know where to place components.</p></li>
-<li><p>A layout manager helps the window stay organized.</p></li>
-<li><p>Different layout managers arrange components in different ways.</p></li>
-</ul>
 </section>
 </section>
 
 <section>
-<section class="title-slide slide level1"><h1>Events</h1></section>
+<section class="title-slide slide level1">
+<h1>Panels and Layout</h1>
+</section>
+
+<section class="frame">
+<h2>Why Do We Need Layout?</h2>
+<p>A layout manager decides where components appear in the window.</p>
+<ul>
+<li><p>Without layout, components may not appear where we expect.</p></li>
+<li><p>A layout manager organizes components for us.</p></li>
+<li><p>For beginners, <code>GridLayout</code> and <code>BorderLayout</code> are easier than <code>GridBagLayout</code>.</p></li>
+</ul>
+<div class="grid-demo">
+<div class="grid-cell"><strong>Row 0, Column 0</strong><br/>Hourly wage label</div>
+<div class="grid-cell"><strong>Row 0, Column 1</strong><br/>Hourly wage field</div>
+<div class="grid-cell"><strong>Row 1, Column 0</strong><br/>Yearly salary label</div>
+<div class="grid-cell"><strong>Row 1, Column 1</strong><br/>Yearly salary field</div>
+</div>
+</section>
+
+<section class="frame">
+<h2>JPanel: A Container</h2>
+<p>A <code>JPanel</code> is a container that can hold other components.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">JPanel inputPanel = new JPanel();
+
+inputPanel.add(wageLabel);
+inputPanel.add(wageField);</code></pre>
+<ul>
+<li><p>A panel helps us group related components.</p></li>
+<li><p>We can add labels, text fields, buttons, or other panels.</p></li>
+<li><p>Then we can add the panel to the frame.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>GridLayout: Rows and Columns</h2>
+<div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
+<div style="flex:1;min-width:0;">
+<p><code>GridLayout(2, 2)</code> creates 2 rows and 2 columns.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">JPanel inputPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+
+inputPanel.add(wageLabel);
+inputPanel.add(wageField);
+inputPanel.add(salaryLabel);
+inputPanel.add(salaryField);</code></pre>
+<ul>
+<li><p>The first component goes in row 0, column 0.</p></li>
+<li><p>The second component goes in row 0, column 1.</p></li>
+<li><p>Components are placed in the order they are added.</p></li>
+</ul>
+</div>
+<div style="flex:0 0 40%;min-width:0;">
+  <img alt="Diagram showing a JPanel Layout" src="../_static/images/cop2253/salary_calculator_0.png" style="max-width:45%;object-fit:contain;"/>
+  </div>
+  </div>
+</section>
+
+<section class="frame">
+<h2>BorderLayout: Center and Bottom</h2>
+<div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
+<div style="flex:1;min-width:0;">
+<p><code>BorderLayout</code> can place components in areas such as center and south.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+
+mainPanel.add(inputPanel, BorderLayout.CENTER);
+mainPanel.add(calculateButton, BorderLayout.SOUTH);
+
+frame.add(mainPanel);</code></pre>
+<ul>
+<li><p>The input panel goes in the center.</p></li>
+<li><p>The Calculate button goes at the bottom.</p></li>
+<li><p>The frame adds one main panel.</p></li>
+<li>Example: SalaryWindow.java</li>
+</ul>
+</div>
+
+<div style="flex:0 0 40%;min-width:0;text-align:center;">
+  <figure style="margin:0;">
+    <img
+      alt="A JFrame using BorderLayout"
+      src="../_static/images/cop2253/salary_calculator_1.png"
+      style="max-width:100%;height:auto;object-fit:contain;"
+    />
+    <figcaption style="font-size:0.65em;color:#555;margin-top:0.4em;">
+      BorderLayout places the input panel in the center and the button at the bottom.
+    </figcaption>
+  </figure>
+</div>
+</div>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Events and Listeners</h1>
+</section>
 
 <section class="frame">
 <h2>A Button Click Is an Event</h2>
 <p>An event is something that happens while the program is running.</p>
+<div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
+<div style="flex:1;min-width:0;">
 <ul>
-<li><p>The user clicks a button.</p></li>
-<li><p>The button tells the program that something happened.</p></li>
+<li><p>The user types an hourly wage.</p></li>
+<li><p>The user clicks the Calculate button.</p></li>
 <li><p>The program runs the code connected to that button.</p></li>
-<li><p>The output on the screen may change.</p></li>
+<li><p>The output field changes.</p></li>
 </ul>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User clicks Calculate
-Program reads the miles
-Program calculates the hours
-Program displays the result</code></pre>
+</div>
+<div style="flex:0 0 40%;min-width:0;">
+<div class="flow-box">1. User types <code>20</code></div>
+<div class="flow-box">2. User clicks <strong>Calculate</strong></div>
+<div class="flow-box">3. Program calculates <code>20 * 40 * 50</code></div>
+<div class="flow-box">4. Program displays <code>40000.00</code></div>
+</div>
+</div>
 </section>
 
 <section class="frame">
-<h2>Event Handler Means Response Code</h2>
-<p>An event handler is code that runs when an event happens.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">button.addActionListener(event -> {
-    double miles = Double.parseDouble(milesField.getText());
-    double hours = miles / 60.0;
-
-    resultField.setText(String.format("%.2f", hours));
+<h2>Listener Means Response Code</h2>
+<p>A listener waits for an event. For a button, we use an action listener.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">calculateButton.addActionListener(event -> {
+    // code to run after the button is clicked
 });</code></pre>
 <ul>
-<li><p>The button has a listener.</p></li>
-<li><p>The listener waits for a click.</p></li>
-<li><p>When the click happens, the calculation runs.</p></li>
+<li><p>The button does not calculate by itself.</p></li>
+<li><p>The listener connects the button to code.</p></li>
+<li><p>The code inside the braces runs after the click.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Reading and Writing Text Fields</h2>
+<p>A text field stores text, even when the text looks like a number.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String input = wageField.getText();
+
+double wage = Double.parseDouble(input);
+
+salaryField.setText("40000.00");</code></pre>
+<ul>
+<li><p><code>getText()</code> gets text from a text field.</p></li>
+<li><p><code>Double.parseDouble()</code> converts text to a number.</p></li>
+<li><p><code>setText()</code> changes what appears in a text field.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Button Click Code</h2>
+<p>When the button is clicked, the program reads the input, calculates, and displays the output.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">calculateButton.addActionListener(event -> {
+    String input = wageField.getText();
+
+    double wage = Double.parseDouble(input);
+    double salary = wage * 40 * 50;
+
+    salaryField.setText(String.format("%.2f", salary));
+});</code></pre>
+<ul>
+<li><p><code>wageField.getText()</code> reads the user's input.</p></li>
+<li><p>The salary is calculated using normal arithmetic.</p></li>
+<li><p><code>salaryField.setText(...)</code> displays the answer.</p></li>
 </ul>
 </section>
 
@@ -256,173 +440,53 @@ Program displays the result</code></pre>
 <ul>
 <li><p>The field may be empty.</p></li>
 <li><p>The user may type letters instead of a number.</p></li>
-<li><p>The user may type a number that does not make sense.</p></li>
-<li><p>The program should give a clear message instead of crashing.</p></li>
+<li><p>The user may type extra words, such as <code>20 dollars</code>.</p></li>
+<li><p>The program should show a clear message instead of crashing.</p></li>
 </ul>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">if (miles <= 0) {
-    JOptionPane.showMessageDialog(this,
-            "Enter a positive number of miles.");
-}</code></pre>
-</section>
-</section>
-
-<section>
-<section class="title-slide slide level1"><h1>JavaFX</h1></section>
-
-<section class="frame">
-<h2>What Is JavaFX?</h2>
-<p>JavaFX is another Java library for building graphical programs.</p>
-<div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
-<div style="flex:1;min-width:0;">
-<ul>
-<li><p>It lets Java programs create windows.</p></li>
-<li><p>It provides GUI components such as buttons, labels, text fields, and menus.</p></li>
-<li><p>It supports drawing, images, colors, and simple animation.</p></li>
-<li><p>It uses different class names from Swing.</p></li>
-</ul>
-</div>
-<div style="flex:0 0 38%;min-width:0;">
-<div class="gui-panel">
-<p style="text-align:center;font-weight:700;margin:.1em 0 .4em;">JavaFX App</p>
-<p><span class="gui-label">Name:</span> <span class="field">Alex</span></p>
-<p><span class="button">Say Hello</span></p>
-<p><span class="gui-label">Output:</span> <span class="field">Hello, Alex</span></p>
-</div>
-<p style="font-size:.65em;text-align:center;"><em>JavaFX helps us build the visual part of the program.</em></p>
-</div>
-</div>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Good input: 20
+Bad input: abc
+Bad input: 20 dollars</code></pre>
 </section>
 
 <section class="frame">
-<h2>JavaFX Programs Use a Stage and a Scene</h2>
-<p>JavaFX uses a few new words to describe a GUI program.</p>
-<table class="mini-table">
-<tr><th>JavaFX Term</th><th>Simple Meaning</th></tr>
-<tr><td>Stage</td><td>The main window.</td></tr>
-<tr><td>Scene</td><td>The content inside the window.</td></tr>
-<tr><td>Node</td><td>A visual object, such as a button or label.</td></tr>
-<tr><td>Layout pane</td><td>An object that arranges nodes.</td></tr>
-<tr><td>Event handler</td><td>Code that responds to a user action.</td></tr>
-</table>
-<p>The main idea is simple: the stage holds the scene, and the scene holds the visual objects.</p>
-</section>
+<h2>try/catch Handles Bad Input</h2>
+<p>A <code>try/catch</code> statement lets the program handle invalid input.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try {
+    double wage = Double.parseDouble(wageField.getText());
+    double salary = wage * 40 * 50;
 
-<section class="frame">
-<h2>JavaFX Program Structure</h2>
-<p>A JavaFX program has a special starting method named <code>start()</code>.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class HelloFx extends Application {
-    @Override
-    public void start(Stage stage) {
-        Button button = new Button("Click me");
-
-        Scene scene = new Scene(button, 300, 150);
-        stage.setScene(scene);
-        stage.setTitle("Hello JavaFX");
-        stage.show();
-    }
+    salaryField.setText(String.format("%.2f", salary));
+} catch (NumberFormatException ex) {
+    salaryField.setText("Invalid input");
 }</code></pre>
 <ul>
-<li><p>The stage is the window.</p></li>
-<li><p>The scene is placed inside the stage.</p></li>
-<li><p>The button is a visual object inside the scene.</p></li>
+<li><p>The <code>try</code> block contains code that might fail.</p></li>
+<li><p>The <code>catch</code> block runs if the input is not a valid number.</p></li>
+<li>Example: SalaryCalculatorFrame.java</li>
 </ul>
 </section>
 </section>
+
 
 <section>
-<section class="title-slide slide level1"><h1>Drawing Simple Graphics</h1></section>
-
-<section class="frame">
-<h2>A Canvas Is a Drawing Area</h2>
-<p>JavaFX can also draw simple shapes. A <code>Canvas</code> gives the program a place to draw.</p>
-<div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
-<div style="flex:1;min-width:0;">
-<ul>
-<li><p>A canvas is like a blank piece of paper inside the window.</p></li>
-<li><p>The program can draw lines, rectangles, circles, and text.</p></li>
-<li><p>Drawing uses x-y coordinates.</p></li>
-<li><p>The coordinate system tells the program where to place each shape.</p></li>
-</ul>
-</div>
-<div style="flex:0 0 38%;min-width:0;">
-<div class="canvas-box">
-<div class="canvas-axis-x"></div>
-<div class="canvas-axis-y"></div>
-<div class="canvas-x-text">x increases right</div>
-<div class="canvas-y-text">y increases down</div>
-<div class="canvas-origin">(0, 0)</div>
-<div class="coord-dot"></div>
-<div class="coord-label">point</div>
-<div class="canvas-bar bar1"></div>
-<div class="canvas-bar bar2"></div>
-<div class="canvas-bar bar3"></div>
-<div class="canvas-caption">Each rectangle starts at a coordinate.</div>
-</div>
-</div>
-</div>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
 </section>
-
-<section class="frame">
-<h2>Canvas Uses Coordinates</h2>
-<p>Coordinates tell the program where something should appear.</p>
-<ul>
-<li><p>The point <code>(0, 0)</code> is the top-left corner.</p></li>
-<li><p>The x value increases as you move right.</p></li>
-<li><p>The y value increases as you move down.</p></li>
-<li><p>A rectangle needs an x value, a y value, a width, and a height.</p></li>
-</ul>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">gc.fillRect(10, 75, 150, 50);</code></pre>
-<ul>
-<li><p><code>10</code> is the x position.</p></li>
-<li><p><code>75</code> is the y position.</p></li>
-<li><p><code>150</code> is the width.</p></li>
-<li><p><code>50</code> is the height.</p></li>
-</ul>
-</section>
-
-<section class="frame">
-<h2>GraphicsContext Draws on a Canvas</h2>
-<p>A <code>GraphicsContext</code> is the object that draws shapes on a JavaFX <code>Canvas</code>.</p>
-<ul>
-<li><p>First, create a canvas.</p></li>
-<li><p>Then, get the graphics context from the canvas.</p></li>
-<li><p>Finally, call drawing methods such as <code>fillRect()</code>.</p></li>
-</ul>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Canvas canvas = new Canvas(400, 200);
-GraphicsContext gc = canvas.getGraphicsContext2D();
-
-gc.setFill(Color.CORNFLOWERBLUE);
-gc.fillRect(10, 75, 150, 50);</code></pre>
-</section>
-
-<section class="frame">
-<h2>Common Drawing Ideas</h2>
-<p>Different drawing methods create different shapes or styles.</p>
-<table class="mini-table" style="font-size:.7em;">
-<tr><th>Goal</th><th>Method</th><th>Meaning</th></tr>
-<tr><td>Filled rectangle</td><td><code>fillRect(x, y, w, h)</code></td><td>Draws a solid rectangle.</td></tr>
-<tr><td>Rectangle outline</td><td><code>strokeRect(x, y, w, h)</code></td><td>Draws only the border.</td></tr>
-<tr><td>Fill color</td><td><code>setFill(color)</code></td><td>Sets the color for filled shapes.</td></tr>
-<tr><td>Line color</td><td><code>setStroke(color)</code></td><td>Sets the color for outlines and lines.</td></tr>
-</table>
-<p><strong>example:</strong> <code>HistogramViewerFx.java</code></p>
-</section>
-</section>
-
-<section>
-<section class="title-slide slide level1"><h1>Summary</h1></section>
 
 <section class="frame">
 <h2>Key Takeaways</h2>
 <p>GUI programs use visual objects so users can interact with a program more naturally.</p>
 <ul>
-<li><p>A GUI is a graphical user interface.</p></li>
-<li><p>Java has more than one GUI library, including Swing and JavaFX.</p></li>
-<li><p>Swing uses classes such as <code>JFrame</code>, <code>JLabel</code>, <code>JTextField</code>, and <code>JButton</code>.</p></li>
-<li><p>JavaFX uses classes such as <code>Application</code>, <code>Stage</code>, <code>Scene</code>, and <code>Canvas</code>.</p></li>
-<li><p>An event is something the user does, such as clicking a button.</p></li>
-<li><p>An event handler is the code that responds to the event.</p></li>
-<li><p>Drawing uses coordinates where x increases right and y increases down.</p></li>
+<li><p>A <code>JFrame</code> is the main window.</p></li>
+<li><p>A <code>JLabel</code> displays text.</p></li>
+<li><p>A <code>JTextField</code> stores input or output text.</p></li>
+<li><p>A <code>JButton</code> lets the user click to start an action.</p></li>
+<li><p>A <code>JPanel</code> groups components.</p></li>
+<li><p><code>GridLayout</code> arranges components in rows and columns.</p></li>
+<li><p><code>BorderLayout</code> places components in larger regions.</p></li>
+<li><p>A listener responds to an event such as a button click.</p></li>
+<li><p><code>getText()</code> reads text, and <code>setText()</code> displays text.</p></li>
+<li><p><code>try/catch</code> helps handle invalid user input.</p></li>
 </ul>
 </section>
 </section>
@@ -434,7 +498,8 @@ gc.fillRect(10, 75, 150, 50);</code></pre>
 <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
 <script>
     var revealjsConfig = new Object();
-    Object.assign(revealjsConfig, { "disableLayout": true,
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
       "controls": true,
       "progress": true,
       "hash": true,
@@ -448,6 +513,6 @@ gc.fillRect(10, 75, 150, 50);</code></pre>
     });
     revealjsConfig.plugins = [RevealNotes, RevealHighlight];
     Reveal.initialize(revealjsConfig);
-  </script>
+</script>
 </body>
 </html>
