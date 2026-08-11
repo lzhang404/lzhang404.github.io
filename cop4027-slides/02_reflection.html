@@ -1,0 +1,543 @@
+
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Reflection and Annotations</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<style>
+.reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+.reveal table.compact { font-size: 0.78em; }
+.reveal table.tight { font-size: 0.72em; }
+</style>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%" class="title-slide">
+<h1>Reflection and Annotations</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+
+<section>
+<section class="frame">
+<h2>Roadmap</h2>
+<ol>
+<li><p>Explain why runtime discovery is sometimes needed.</p></li>
+<li><p>Obtain a <code>Class&lt;?&gt;</code> object and inspect a type.</p></li>
+<li><p>Create objects and invoke methods dynamically.</p></li>
+<li><p>Keep reflection behind a small, validated boundary.</p></li>
+<li><p>Use annotations to mark selected program elements for tools or frameworks.</p></li>
+</ol>
+</section>
+
+<section class="frame">
+<h2>Learning Goals</h2>
+<ul>
+<li><p>Explain when reflection is useful and when direct calls are better.</p></li>
+<li><p>Obtain and interpret a <code>Class&lt;?&gt;</code> object.</p></li>
+<li><p>Distinguish public members from declared members.</p></li>
+<li><p>Construct an object and invoke a method using reflection.</p></li>
+<li><p>Define, discover, and validate a runtime annotation.</p></li>
+</ul>
+<p>Main question: how can code work with a type or method selected after the program starts?</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Why Reflection?</h1>
+</section>
+
+<section class="frame">
+<h2>Normal Calls Are Best When Choices Are Fixed</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Direct code names the class and method at compile time.
+Car car = new Car("red");
+System.out.println(car.describe("A"));</code></pre>
+<ul>
+<li><p>The compiler knows the class, constructor, and method.</p></li>
+<li><p>The compiler can check spelling, parameter types, and return types.</p></li>
+<li><p>This is simpler and safer when the exact class is known in advance.</p></li>
+</ul>
+<p>Reflection should not replace ordinary Java calls without a runtime-discovery reason.</p>
+</section>
+
+<section class="frame">
+<h2>When Direct Calls Become a Problem</h2>
+<p>Suppose the application supports plugins chosen from configuration.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Plugin plugin;
+
+if (name.equals("email")) {
+    plugin = new EmailPlugin();
+} else if (name.equals("sms")) {
+    plugin = new SmsPlugin();
+} else {
+    throw new IllegalArgumentException("Unknown plugin");
+}</code></pre>
+<ul>
+<li><p>Every new plugin requires editing this loader.</p></li>
+<li><p>The main application must know every implementation class.</p></li>
+<li><p>The loader must be recompiled when new choices are added.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>The Runtime-Discovery Requirement</h2>
+<p>A more flexible plugin system separates the fixed contract from the runtime choice.</p>
+<ul>
+  <li>Known when writing the loader</li>
+  <ul>
+    <li>Plugin interface, no-argument constructor rule, run() method</li>
+  </ul>
+  <li>Chosen while running</li>
+  <ul>
+    <li>EmailPlugin, SmsPlugin, a new plugin added later</li>
+  </ul>
+</ul>
+<p>Reflection is useful when the program knows the rules, but the exact implementation is selected later.</p>
+</section>
+
+<section class="frame">
+<h2>What Reflection Does</h2>
+<p>Reflection lets a running Java program examine metadata about loaded types and use their existing members.</p>
+<ul>
+<li><p>Find a type selected by name at runtime.</p></li>
+<li><p>Inspect its constructors, methods, fields, interfaces, and annotations.</p></li>
+<li><p>Create an object through a discovered constructor.</p></li>
+<li><p>Invoke a discovered method.</p></li>
+</ul>
+<p>Reflection does not remove all knowledge. It fills in the part that is chosen while the program is running.</p>
+</section>
+
+<section class="frame">
+<h2>Reflection Still Needs a Contract</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Good reflective design:
+
+runtime class or method
+    -&gt; validate known rules
+    -&gt; construct or select the allowed member
+    -&gt; return to normal Java calls when possible</code></pre>
+<ul>
+<li><p>A plugin loader can require a known <code>Plugin</code> interface.</p></li>
+<li><p>A test or command runner can validate which methods are eligible.</p></li>
+<li><p>Invalid runtime metadata should produce a clear error.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>What Reflection Is Not</h2>
+<ul>
+<li><p>It is not a better replacement for every method call.</p></li>
+<li><p>It is not checked as strongly by the compiler.</p></li>
+<li><p>It may fail at runtime because of missing classes, wrong signatures, or access rules.</p></li>
+<li><p>It is not a security boundary by itself.</p></li>
+</ul>
+<p>Use reflection only when runtime discovery is part of the requirement.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Class Metadata</h1>
+</section>
+
+<section class="frame">
+<h2>Getting a Class Object</h2>
+<p><code>Class&lt;?&gt;</code> represents a Java type, not an ordinary instance of that type.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Type is already known in the source code.
+Class&lt;Car&gt; knownType = Car.class;
+
+Car car = new Car("red");
+// Ask an existing object for its actual runtime type.
+Class&lt;?&gt; actualType = car.getClass();
+
+// The class name can come from configuration or another runtime source.
+Class&lt;?&gt; runtimeType = Class.forName("example.Car");</code></pre>
+<ul>
+<li><p><code>Car.class</code> is checked by the compiler.</p></li>
+<li><p><code>getClass()</code> starts from an object that already exists.</p></li>
+<li><p><code>Class.forName(...)</code> is useful when the class name is chosen at runtime.</p></li>
+<li><p>An unknown runtime name causes <code>ClassNotFoundException</code>.</p></li>
+</ul>
+<ul>
+<li><p>Example: <code>reflection/MetadataDemo.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Example: Car</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">package example;
+
+public final class Car {
+    private final String color;
+
+    public Car(String color) {
+        this.color = color;
+    }
+
+    public String describe(String prefix) {
+        return prefix + " " + color + " car";
+    }
+}</code></pre>
+<p>We will use this small class to see what reflection can discover and use at runtime.</p>
+<ul>
+<li><p>Example: <code>reflection/Car.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>What Can a Class Tell Us?</h2>
+<table class="compact">
+<thead><tr><th>Kind of information</th><th>Questions we can ask</th></tr></thead>
+<tbody>
+<tr><td>Identity</td><td>What is the class name and package?</td></tr>
+<tr><td>Relationships</td><td>What does it extend or implement?</td></tr>
+<tr><td>Members</td><td>What constructors, methods, and fields exist?</td></tr>
+<tr><td>Metadata</td><td>What annotations are attached?</td></tr>
+</tbody>
+</table>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">System.out.println(type.getSimpleName());
+System.out.println(type.getPackageName());
+System.out.println(type.getSuperclass());
+
+for (Class&lt;?&gt; interfaceType : type.getInterfaces()) {
+    System.out.println(interfaceType.getSimpleName());
+}</code></pre>
+<p>The <code>Class</code> object is the starting point for asking questions about a runtime type.</p>
+</section>
+
+<section class="frame">
+<h2>Inspecting Members</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Method[] publicMethods = type.getMethods();
+Method[] declaredMethods = type.getDeclaredMethods();
+
+Constructor&lt;?&gt;[] constructors = type.getDeclaredConstructors();
+Field[] fields = type.getDeclaredFields();</code></pre>
+<ul>
+  <li><code>getMethods()</code>: Public methods available through the type, including inherited public methods.</li>
+  <li><code>getDeclaredMethods()</code>: Methods declared directly by this class, including non-public methods.</li>
+</ul>
+<p>The same declared idea applies to constructors and fields. Discovery does not automatically grant access.</p>
+<ul>
+<li><p>Example: <code>reflection/MetadataDemo.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Creating an Object at Runtime</h2>
+<p>Once the program has a runtime <code>Class</code> object, it can select a constructor and create an object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Find a public constructor that accepts one String.
+Constructor&lt;?&gt; constructor =
+    type.getConstructor(String.class);
+
+// Call that constructor at runtime.
+Object car = constructor.newInstance("red");</code></pre>
+<ul>
+<li><p>The parameter types identify which constructor to use.</p></li>
+<li><p>The new object really has runtime type <code>Car</code>.</p></li>
+<li><p>The reflective result is represented as <code>Object</code> until the program validates and narrows the type.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Finding and Calling One Method</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Name + parameter types identify one overload.
+Method method = type.getMethod("describe", String.class);
+
+System.out.println(method.getReturnType().getSimpleName());
+for (Class&lt;?&gt; parameterType : method.getParameterTypes()) {
+    System.out.println(parameterType.getSimpleName());
+}
+
+// First invoke argument is the receiver object.
+Object result = method.invoke(car, "A");
+System.out.println(result);  // A red car</code></pre>
+<ul>
+<li><p>The method name alone is not enough because Java methods can be overloaded.</p></li>
+<li><p>The first argument to <code>invoke</code> is the object receiving the call.</p></li>
+<li><p>The remaining arguments are passed to the method.</p></li>
+</ul>
+<ul>
+<li><p>Example: <code>reflection/RuntimeInvocationDemo.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Safe Boundary: Return to Normal Java</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Class&lt;?&gt; candidate = Class.forName(className);
+
+// Require the runtime class to follow the Plugin contract.
+if (!Plugin.class.isAssignableFrom(candidate)) {
+    throw new IllegalArgumentException("Not a Plugin: " + className);
+}
+
+Class&lt;? extends Plugin&gt; pluginType =
+    candidate.asSubclass(Plugin.class);
+
+Plugin plugin = pluginType.getConstructor().newInstance();
+plugin.run();  // Normal Java call again.</code></pre>
+<p>Reflection selects and validates the implementation. The rest of the program uses the normal <code>Plugin</code> interface.</p>
+<ul>
+<li><p>Example: <code>reflection/PluginLoaderDemo.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Where Reflection Can Fail</h2>
+<table class="compact">
+<thead><tr><th>Step</th><th>Example failure</th><th>Java exception</th></tr></thead>
+<tbody>
+<tr><td>Load</td><td>The class name cannot be found.</td><td><code>ClassNotFoundException</code></td></tr>
+<tr><td>Find</td><td>No constructor or method matches the requested signature.</td><td><code>NoSuchMethodException</code></td></tr>
+<tr><td>Access</td><td>The caller cannot access the selected member.</td><td><code>IllegalAccessException</code></td></tr>
+<tr><td>Invoke</td><td>The called method itself throws an exception.</td><td><code>InvocationTargetException</code></td></tr>
+</tbody>
+</table>
+<p>Direct calls let the compiler catch more mistakes before execution; reflection moves some checks to runtime.</p>
+</section>
+
+
+<section class="frame">
+<h2>Reflection Checkpoint</h2>
+<ol>
+<li><p>When is <code>Class.forName(...)</code> more useful than a class literal?</p></li>
+<li><p>What is the difference between public members and declared members?</p></li>
+<li><p>Why does <code>getMethod(...)</code> require parameter types?</p></li>
+<li><p>Why should a plugin loader validate a known interface before constructing an object?</p></li>
+</ol>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Annotations as Metadata</h1>
+</section>
+
+<section class="frame">
+<h2>Why Mark Methods?</h2>
+<p>Reflection can discover many methods, but a framework usually needs only selected methods.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class CalculatorTests {
+    public void helperMethod() {
+        // Setup code, not a test.
+    }
+
+    @Test
+    public void addingTwoNumbersWorks() {
+        // The test runner should execute this method.
+    }
+}</code></pre>
+<ul>
+<li><p>Reflection can discover both methods.</p></li>
+<li><p><code>@Test</code> marks the method that has the special role.</p></li>
+<li><p>The test runner reads the annotation and decides what to execute.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Who Reads Annotations?</h2>
+<table>
+<thead><tr><th>Annotation</th><th>Who uses it?</th></tr></thead>
+<tbody>
+<tr><td><code>@Override</code></td><td>The compiler checks that a method really overrides another method.</td></tr>
+<tr><td><code>@Deprecated</code></td><td>The compiler and tools warn about discouraged APIs.</td></tr>
+<tr><td><code>@SuppressWarnings</code></td><td>The compiler suppresses selected warnings.</td></tr>
+<tr><td>Custom runtime annotation</td><td>Your program or framework can read it through reflection.</td></tr>
+</tbody>
+</table>
+<p>Reflection works without annotations. An annotation matters only when a compiler, tool, framework, or program reads it.</p>
+</section>
+
+<section class="frame">
+<h2>Defining a Runtime Annotation</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+//@Rentention answers how long does the annotation remain availble?
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD) //@Target answers where may the annotation appear?
+public @interface Command {
+    String value();
+}</code></pre>
+<ul>
+<li><p><code>@interface</code> declares an annotation type.</p></li>
+<li><p><code>String value()</code> defines one required metadata property.</p></li>
+<li><p><code>@Command("start")</code> stores <code>"start"</code> as that value.</p></li>
+</ul>
+<ul>
+<li><p>Example: <code>reflection/Command.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Retention and Target</h2>
+<table class="compact">
+<thead><tr><th>Retention policy</th><th>Availability</th></tr></thead>
+<tbody>
+<tr><td><code>SOURCE</code></td><td>Source code only.</td></tr>
+<tr><td><code>CLASS</code></td><td>Stored in the class file but not normally exposed through reflection.</td></tr>
+<tr><td><code>RUNTIME</code></td><td>Stored in the class file and available through reflection.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="frame">
+<h2>Marking Allowed Commands</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class CarCommands {
+    @Command("start")
+    public void startCarEngine() {
+        System.out.println("Car started");
+    }
+
+    public void resetInternalState() {
+        System.out.println("Internal state reset");
+    }
+}</code></pre>
+<ul>
+<li><p>Reflection can discover both methods.</p></li>
+<li><p>Only <code>startCarEngine()</code> is marked as part of this command system.</p></li>
+<li><p>The external command <code>"start"</code> does not have to match the Java method name.</p></li>
+</ul>
+<p>The annotation is an explicit marker for this runner; it is not a security mechanism.</p>
+<ul>
+<li><p>Example: <code>reflection/CarCommands.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Discover and Run Commands</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">for (Method method : type.getDeclaredMethods()) {
+    // returns the annotation or null 
+    Command command = method.getAnnotation(Command.class);
+    //command.value() reads the external command name.
+    if (command != null &amp;&amp; command.value().equals(name)) {
+        method.invoke(handler); //runs the selected no-argument method.
+        return;
+    }
+}
+
+throw new IllegalArgumentException("Unknown command: " + name);</code></pre>
+<ul>
+<li><p>Example: <code>reflection/CommandRunner.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Validate Before Running</h2>
+<p>An annotation says that a method is intended to be a command. The runner should still verify the command contract.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int modifiers = method.getModifiers();
+
+if (!Modifier.isPublic(modifiers)
+        || method.getParameterCount() != 0
+        || method.getReturnType() != void.class) {
+    throw new IllegalStateException(
+        "Invalid @Command method: " + method);
+}</code></pre>
+<ul>
+<li><p>Require public methods.</p></li>
+<li><p>Require no parameters and a <code>void</code> return type.</p></li>
+<li><p>Also reject duplicate command names while building the command list.</p></li>
+</ul>
+<ul>
+<li><p>Example: <code>reflection/CommandRunner.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>What Annotations Do Not Do</h2>
+<ul>
+<li><p>An annotation does not run a method by itself.</p></li>
+<li><p>An annotation is not required for reflection.</p></li>
+<li><p>An annotation does not prevent other Java code from using reflection.</p></li>
+<li><p>An annotation is metadata that another part of the system chooses to interpret.</p></li>
+</ul>
+<p>The runner controls which annotated methods it accepts and how it uses them.</p>
+</section>
+
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>Use direct calls when the class and method are known in advance.</p></li>
+<li><p>Use reflection when the program must discover a type or member at runtime.</p></li>
+<li><p><code>Class&lt;?&gt;</code> is the starting point for runtime information about a Java type.</p></li>
+<li><p>Reflection can inspect members, create objects, and invoke existing methods.</p></li>
+<li><p>Annotations attach structured metadata that compilers, tools, or programs can read.</p></li>
+<li><p>Keep reflection behind a small validated boundary and return to normal Java types when possible.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Final Mental Model</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Reflection:
+    discovers and uses code structure while the program is running
+
+Annotation:
+    attaches a structured label to part of the code
+
+Runner or framework:
+    reads the metadata, validates the rules, and decides what to do</code></pre>
+<p>Reflection discovers. Annotations describe. The framework decides.</p>
+</section>
+
+<section class="frame">
+<h2>Checkpoint</h2>
+<table>
+<thead><tr><th>Question</th><th>Concept</th></tr></thead>
+<tbody>
+<tr><td>Why use reflection instead of a direct call?</td><td>The exact type or member is selected at runtime.</td></tr>
+<tr><td>How do you get metadata for a class named in configuration?</td><td><code>Class.forName(...)</code></td></tr>
+<tr><td>Why can declared-member lookup find something public-member lookup cannot?</td><td>Declared members include non-public members written directly in the class.</td></tr>
+<tr><td>What makes an annotation visible through reflection?</td><td><code>@Retention(RUNTIME)</code></td></tr>
+<tr><td>Why validate before invoking?</td><td>Reflection moves some checks from compile time to runtime.</td></tr>
+</tbody>
+</table>
+</section>
+</section>
+
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+</script>
+</body>
+</html>

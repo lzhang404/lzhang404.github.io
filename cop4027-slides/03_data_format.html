@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+<title>Data and Configuration Formats</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Data and Configuration Formats</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Advanced Programming</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Overview</h1>
+        </section>
+
+        <section>
+          <h2>Learning Goals</h2>
+          <p>After this topic, you should be able to:</p>
+          <ul class="simple">
+            <li><p>Explain why programs keep configuration and data outside source code.</p></li>
+            <li><p>Recognize the basic syntax of properties, JSON, YAML, and XML.</p></li>
+            <li><p>Choose an appropriate Java reading strategy: key-value, object mapping, tree model, or streaming.</p></li>
+            <li><p>Convert parsed text values into useful Java types and validate them.</p></li>
+            <li><p>Describe how schemas, namespaces, and application rules help keep external data safe and predictable.</p></li>
+          </ul>
+        </section>
+
+
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>External Formats</h1>
+        </section>
+
+        <section>
+          <h2>External Configuration</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start;">
+            <div>
+              <p>Hardcoded values are simple but fragile:</p>
+              <pre><code data-trim data-noescape class="language-java">String databaseUrl = "jdbc:mysql://localhost/store";
+int port = 8080;
+boolean debug = true;
+String dataFile = "products.json";</code></pre>
+              <ul class="simple">
+                <li><p>Changing settings requires changing and rebuilding code.</p></li>
+                <li><p>Different machines may need different values.</p></li>
+                <li><p>Passwords and tokens must not be stored in source code.</p></li>
+              </ul>
+            </div>
+            <div>
+              <p>Common workflow:</p>
+              <pre><code data-trim data-noescape class="language-text">External text
+  -&gt; locate the source
+  -&gt; open it safely
+  -&gt; parse the syntax
+  -&gt; represent it in Java
+  -&gt; validate the meaning
+  -&gt; use it or write it back</code></pre>
+              <p>This topic prepares us for JavaFX FXML, Spring Boot, REST APIs, databases, and containers.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Config vs Data</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start;">
+            <div>
+              <p><strong>Configuration</strong></p>
+              <ul class="simple">
+                <li><p>Controls how the program behaves.</p></li>
+                <li><p>Usually small and read near startup.</p></li>
+                <li><p>Edited by developers, administrators, or deployment tools.</p></li>
+              </ul>
+              <pre><code data-trim data-noescape class="language-properties">app.name=Inventory Manager
+server.port=8080
+debug=false
+data.file=products.json</code></pre>
+            </div>
+            <div>
+              <p><strong>Application Data</strong></p>
+              <ul class="simple">
+                <li><p>Information the program processes.</p></li>
+                <li><p>May grow or change while the program runs.</p></li>
+                <li><p>Created by users, services, APIs, or databases.</p></li>
+              </ul>
+              <pre><code data-trim data-noescape class="language-json">{
+  "id": 1,
+  "name": "Keyboard",
+  "price": 49.99,
+  "available": true
+}</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Data Sources</h2>
+          <p>External text can come from several places:</p>
+          <ul class="simple">
+            <li><p><strong>Classpath resources:</strong> files packaged with the application, commonly under <code>src/main/resources</code>.</p></li>
+            <li><p><strong>External files:</strong> files stored outside the application, such as a config folder on the machine.</p></li>
+            <li><p><strong>Runtime settings:</strong> environment variables and command-line arguments.</p></li>
+            <li><p><strong>Remote or persistent sources:</strong> API responses, network requests, and databases.</p></li>
+          </ul>
+          <p>The source tells Java where the text comes from. The format tells Java how to parse it.</p>
+          <pre><code data-trim data-noescape class="language-java">//external file path
+Path path = Path.of("config", "application.properties");
+
+// Classpath resource
+InputStream input = PropertiesExample.class.getResourceAsStream(
+        "/data/application.properties"
+    );</code></pre>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Formats and Readers</h1>
+        </section>
+
+<section>
+          <h2>Format Overview</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Format</p></th>
+                <th><p>Main Use</p></th>
+                <th><p>Important Characteristic</p></th>
+                <th><p>Common Trap</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p><code>.properties</code></p></td>
+                <td><p>Simple Java configuration</p></td>
+                <td><p>Flat keys and string values</p></td>
+                <td><p>Looks typed, but starts as text</p></td>
+              </tr>
+              <tr>
+                <td><p>JSON</p></td>
+                <td><p>APIs and structured data</p></td>
+                <td><p>Objects, arrays, typed values</p></td>
+                <td><p>Arrays may mix types; Java lists often expect one type</p></td>
+              </tr>
+              <tr>
+                <td><p>YAML</p></td>
+                <td><p>Readable configuration</p></td>
+                <td><p>Indentation, maps, lists</p></td>
+                <td><p>Whitespace can change meaning</p></td>
+              </tr>
+              <tr>
+                <td><p>XML</p></td>
+                <td><p>FXML and structured documents</p></td>
+                <td><p>Elements, attributes, text</p></td>
+                <td><p>Values are usually text and converted later</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+<section>
+          <h2>Text to Java</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Question</p></th>
+                <th><p>What to Look For</p></th>
+                <th><p>Possible Java Representation</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>What does the text look like?</p></td>
+                <td><p>Keys, braces, indentation, tags</p></td>
+                <td><p>Parser choice</p></td>
+              </tr>
+              <tr>
+                <td><p>What value types appear?</p></td>
+                <td><p>String, number, boolean, null</p></td>
+                <td><p><code>String</code>, <code>int</code>, <code>double</code>, <code>boolean</code></p></td>
+              </tr>
+              <tr>
+                <td><p>What is the data shape?</p></td>
+                <td><p>Object, array, nested object, document tree</p></td>
+                <td><p><code>Product</code>, <code>List&lt;Product&gt;</code>, <code>Map</code>, <code>JsonNode</code>, DOM</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Java Representations</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Representation</p></th>
+                <th><p>Meaning</p></th>
+                <th><p>Use When</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>Key-value strings</p></td>
+                <td><p><code>Properties</code> or environment variables</p></td>
+                <td><p>Small flat configuration</p></td>
+              </tr>
+              <tr>
+                <td><p>Object mapping</p></td>
+                <td><p>Text becomes a Java class or record</p></td>
+                <td><p>Structure is known</p></td>
+              </tr>
+              <tr>
+                <td><p>Tree model</p></td>
+                <td><p>Text becomes nodes you inspect</p></td>
+                <td><p>Structure is flexible</p></td>
+              </tr>
+              <tr>
+                <td><p>Streaming parser</p></td>
+                <td><p>Read one event at a time</p></td>
+                <td><p>File is large</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+
+        <section>
+          <h2>Config Format Comparison</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+            <div>
+              <p>Properties: flat keys</p>
+              <pre><code data-trim data-noescape class="language-properties">app.name=Inventory Manager
+server.port=8080
+debug=false
+data.file=products.json
+categories=Books,Electronics</code></pre>
+            </div>
+            <div>
+              <p>YAML: real hierarchy and list</p>
+              <pre><code data-trim data-noescape class="language-yaml">app:
+  name: Inventory Manager
+server:
+  port: 8080
+debug: false
+dataFile: products.json
+categories:
+  - Books
+  - Electronics</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Product Format Comparison</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+            <div>
+              <p>JSON:</p>
+              <pre><code data-trim data-noescape class="language-json">{
+  "id": 1,
+  "name": "Keyboard",
+  "price": 49.99,
+  "available": true
+}</code></pre>
+            </div>
+            <div>
+              <p>XML:</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;product id="1"&gt;
+  &lt;name&gt;Keyboard&lt;/name&gt;
+  &lt;price&gt;49.99&lt;/price&gt;
+  &lt;available&gt;true&lt;/available&gt;
+&lt;/product&gt;</code></pre>
+            </div>
+          </div>
+          <p>The external format can change while the Java domain model stays the same.</p>
+        </section>
+
+        <section>
+          <h2>Choosing a Format</h2>
+          <ul class="simple">
+            <li><p>Use <strong>properties</strong> for a few simple Java settings.</p></li>
+            <li><p>Use <strong>JSON</strong> for REST API requests, responses, and structured application data.</p></li>
+            <li><p>Use <strong>YAML</strong> for readable nested configuration, especially deployment and Spring-style config.</p></li>
+            <li><p>Use <strong>XML</strong> when the document needs elements, attributes, namespaces, or schema validation.</p></li>
+          </ul>
+          <p>The best format depends on the data shape, who edits it, and how strictly it must be validated.</p>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Properties Files</h1>
+        </section>
+
+        <section>
+          <h2>Properties Syntax</h2>
+      
+            <pre><code data-trim data-noescape class="language-properties"># comments can start with #
+! comments can also start with !
+app.name=Inventory Manager
+server.port=8080
+debug=false
+data.file=products.json
+categories=Books,Electronics
+long.message = first line \
+               second line</code></pre>
+        
+          <ul class="simple">
+            <li><p>Each line stores one key-value pair.</p></li>
+            <li><p><code>=</code> and <code>:</code> are commonly used as separators.</p></li>
+            <li><p>Values are read as strings.</p></li>
+            <li><p>The file is flat: there are no real nested objects or arrays.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Reading Properties</h2>
+          <pre><code data-trim data-noescape class="language-java">Properties properties = new Properties();
+
+// A leading slash starts at src/main/resources.
+InputStream resource = PropertiesExample.class.getResourceAsStream(
+    "/data/application.properties"
+);
+if (resource == null) {
+    throw new IOException("Resource not found");
+}
+
+try (InputStream input = resource) {
+    // load(...) reads key-value pairs from the stream.
+    properties.load(input);
+}
+
+String appName = properties.getProperty(
+    "app.name", "My Application"
+);</code></pre>
+          <ul class="simple">
+            <li><p>Use try-with-resources when opening files or resources.</p></li>
+            <li><p><code>getProperty</code> returns a string and can provide a default value.</p></li>
+            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/PropertiesExample.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Property Validation</h2>
+          <pre><code data-trim data-noescape class="language-java">int port = Integer.parseInt(
+    properties.getProperty("server.port", "8080")
+);
+
+boolean debug = Boolean.parseBoolean(
+    properties.getProperty("debug", "false")
+);
+
+List&lt;String&gt; categories = Arrays.stream(
+        properties.getProperty("categories", "").split(","))
+    .map(String::trim)
+    .filter(value -&gt; !value.isEmpty())
+    .toList();
+
+public ServerSettings {
+    if (port &lt; 1 || port &gt; 65535) {
+        throw new IllegalArgumentException(
+            "server.port must be between 1 and 65535"
+        );
+    }
+}</code></pre>
+        </section>
+
+        <section>
+          <h2>Properties Tradeoffs</h2>
+
+              <p>Problem examples:</p>
+              <pre><code data-trim data-noescape class="language-properties">server.port=eighty
+debug=yes
+categories=Books,, Electronics</code></pre>
+              <ul class="simple">
+                <li><p><code>server.port</code> cannot convert to <code>int</code>.</p></li>
+                <li><p><code>debug=yes</code> becomes <code>false</code> with <code>Boolean.parseBoolean</code>.</p></li>
+              </ul>
+              <ul>
+                <li><strong>Strengths</strong>: simple syntax, built into Java and easy to edit</li>
+                <li><strong>Limits</strong>: flat structure, no native ojects or arrays, values need conversion</li>
+
+              </ul>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>JSON</h1>
+        </section>
+
+        <section>
+          <h2>JSON Objects</h2>
+          <pre><code data-trim data-noescape class="language-json">{
+  "stringValue": "hello",
+  "numberValue": 42,
+  "decimalValue": 3.14,
+  "booleanValue": true,
+  "nullValue": null,
+  "objectValue": { "x": 1 },
+  "arrayValue": [1, 2, 3]
+}</code></pre>
+          <ul class="simple">
+            <li><p>Objects use curly braces: <code>{ }</code></p></li>
+            <li><p>Keys and strings use double quotes.</p></li>
+            <li><p>Common value types: string, number, boolean, null, object, array.</p></li>
+            <li><p>JSON has no comments, dates, classes, or methods by itself.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Nested JSON</h2>
+          <pre><code data-trim data-noescape class="language-json">{
+  "id": 1,
+  "name": "Keyboard",
+  "tags": ["input", "wired"],
+  "manufacturer": {
+    "name": "Acme",
+    "country": "US"
+  }
+}</code></pre>
+          <ul class="simple">
+            <li><p>Object values can be arrays or nested objects.</p></li>
+            <li><p>Field order should not be treated as meaningful application logic.</p></li>
+            <li><p>If order matters, use an array.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>JSON Arrays</h2>
+
+              <p>Valid mixed array:</p>
+              <pre><code data-trim data-noescape class="language-json">[
+  42,
+  "Keyboard",
+  true,
+  null,
+  { "id": 1, "name": "Mouse" },
+  ["nested", "array"]
+]</code></pre>
+
+              <p>Common application array:</p>
+              <pre><code data-trim data-noescape class="language-json">[
+  { "id": 1, "name": "Keyboard", "price": 49.99 },
+  { "id": 2, "name": "Mouse", "price": 24.99 },
+  { "id": 3, "name": "Monitor", "price": 159.99 }
+]</code></pre>
+
+          <ul class="simple">
+            <li><p>JSON allows mixed arrays, but strongly typed Java code is easier with consistent element shapes.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Root Shape</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>JSON Root</p></th>
+                <th><p>Example</p></th>
+                <th><p>Common Java Target</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>Object</p></td>
+                <td><p><code>{ "id": 1, "name": "Keyboard" }</code></p></td>
+                <td><p><code>Product</code></p></td>
+              </tr>
+              <tr>
+                <td><p>Array of objects</p></td>
+                <td><p><code>[{...}, {...}]</code></p></td>
+                <td><p><code>List&lt;Product&gt;</code></p></td>
+              </tr>
+              <tr>
+                <td><p>Flexible or mixed shape</p></td>
+                <td><p><code>[1, "text", {...}]</code></p></td>
+                <td><p><code>JsonNode</code> or custom logic</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+
+                <section>
+          <h2>Object Mapping and Tree Model</h2>
+
+              <p><strong>Object mapping</strong></p>
+              <ul class="simple">
+                <li><p>The file is converted into a Java class or record.</p></li>
+                <li><p>Field names in the text usually match field names in Java.</p></li>
+                <li><p>Best when the structure is known and stable.</p></li>
+              </ul>
+              <pre><code data-trim data-noescape class="language-java">Product product = mapper.readValue(input, Product.class);</code></pre>
+
+              <p><strong>Tree model</strong></p>
+              <ul class="simple">
+                <li><p>The file is converted into generic nodes.</p></li>
+                <li><p>The code chooses which nodes to inspect.</p></li>
+                <li><p>Best when the structure is flexible or only a few fields are needed.</p></li>
+              </ul>
+              <pre><code data-trim data-noescape class="language-java">JsonNode root = mapper.readTree(input);
+String name = root.path("name").asText();</code></pre>
+  
+        </section>
+        <section>
+          <h2>Java Records</h2>
+          <pre><code data-trim data-noescape class="language-java">public record Product(
+    int id,
+    String name,
+    double price,
+    boolean available
+) {
+}</code></pre>
+          <ul class="simple">
+            <li><p>Each record component matches a JSON field.</p></li>
+            <li><p>A record is compact for data with a known shape.</p></li>
+            <li><p>A regular class is still useful when objects need setters, inheritance, or complex behavior.</p></li>
+            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/Product.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Lists of Objects</h2>
+          <pre><code data-trim data-noescape class="language-java">// ObjectMapper is Jackson's main JSON reader and writer.
+ObjectMapper mapper = new ObjectMapper();
+
+InputStream resource = JsonExample.class.getResourceAsStream(
+    "/data/products.json"
+);
+if (resource == null) {
+    throw new IOException("Resource not found");
+}
+
+try (InputStream input = resource) {
+
+    // TypeReference keeps the information that this is a List of Product,
+    // not just a raw List.
+    List&lt;Product&gt; products = mapper.readValue(
+        input,
+        new TypeReference&lt;List&lt;Product&gt;&gt;() {}
+    );
+}</code></pre>
+          <ul class="simple">
+            <li><p>Object mapping is best when the JSON shape is known and stable.</p></li>
+            <li><p>The rest of the program works with normal Java data, not raw JSON.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Tree Model</h2>
+          <pre><code data-trim data-noescape class="language-java">ObjectMapper mapper = new ObjectMapper();
+
+InputStream resource = JsonExample.class.getResourceAsStream(
+    "/data/products.json"
+);
+if (resource == null) {
+    throw new IOException("Resource not found");
+}
+
+try (InputStream input = resource) {
+
+    // Parse JSON into a generic tree instead of a Product class.
+    JsonNode root = mapper.readTree(input);
+
+    // The root is an array, so get(0) selects the first item.
+    // path("name") selects the field without returning null.
+    // asText("(missing)") converts it to text with a fallback.
+    String name = root.get(0)
+        .path("name")
+        .asText("(missing)");
+}</code></pre>
+          <ul class="simple">
+            <li><p>Use the tree model when the JSON structure is flexible or only a few fields are needed.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Choosing Mapping or Tree</h2>
+          <ul class="simple">
+            <li><p>Choose <strong>object mapping</strong> when</p></li>
+            <ul>
+              <li>the file has a stable shape</li>
+              <li>and the rest of the program wants normal Java objects</li>
+            </ul> 
+            <li><p>Choose <strong>tree model</strong> when</p></li>
+            <ul>
+              <li>the file shape may vary</li>
+              <li>fields are optional</li>
+              <li>the program only needs part of the data</li>
+            </ul>
+            <li><p>Both approaches still need validation. Parsing does not prove that the values make sense for the application.</p></li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-text">Known shape      -&gt; Product or List&lt;Product&gt;
+Flexible shape   -&gt; JsonNode tree
+Very large input -&gt; streaming parser</code></pre>
+        </section>
+
+        <section>
+          <h2>JSON I/O</h2>
+          <p>Serialization converts Java objects to JSON text. Deserialization converts JSON text to Java objects.</p>
+          <pre><code data-trim data-noescape class="language-java">String json =
+    mapper.writerWithDefaultPrettyPrinter()
+          .writeValueAsString(products);
+
+List&lt;Product&gt; copy = mapper.readValue(
+    json,
+    new TypeReference&lt;List&lt;Product&gt;&gt;() {}
+);</code></pre>
+          <pre><code data-trim data-noescape class="language-text">Java object  --serialization--&gt;    JSON text
+JSON text    --deserialization--&gt;  Java object</code></pre>
+        </section>
+
+        <section>
+          <h2>JSON Error Types</h2>
+
+              <p>Syntax error: Syntax fails before mapping. </p>
+              <pre><code data-trim data-noescape class="language-json">{
+  "name": "Keyboard",
+  "price": 49.99,
+}</code></pre>
+
+              <p>Wrong type: Wrong type fails during mapping.</p>
+              <pre><code data-trim data-noescape class="language-json">{
+  "id": 1,
+  "name": "Keyboard",
+  "price": "forty-nine"
+}</code></pre>
+
+              <p>Invalid value: Invalid value fails during application validation</p>
+              <pre><code data-trim data-noescape class="language-json">{
+  "id": 1,
+  "name": "",
+  "price": -25.00
+}</code></pre>
+
+        </section>
+
+        <section>
+          <h2>JSON Error Handling</h2>
+          <pre><code data-trim data-noescape class="language-java">try {
+    List&lt;Product&gt; products = loadProducts();
+} catch (JsonProcessingException exception) {
+    System.err.println(
+        "Invalid JSON: " + exception.getOriginalMessage()
+    );
+} catch (IOException exception) {
+    System.err.println(
+        "Unable to read products: " + exception.getMessage()
+    );
+}</code></pre>
+          <ul class="simple">
+            <li><p>Parsing errors and resource errors communicate different problems.</p></li>
+            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/JsonExample.java</code></p></li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>YAML</h1>
+        </section>
+
+        <section>
+          <h2>YAML Basics</h2>
+     
+            <pre><code data-trim data-noescape class="language-yaml">app:
+  name: Inventory Manager
+server:                 # map
+  port: 8080
+debug: false            # scalar
+dataFile: products.json # scalar
+categories:             # list
+  - Books
+  - Electronics</code></pre>
+        
+          <ul class="simple">
+            <li><p>Indentation creates hierarchy.</p></li>
+            <li><p>A scalar is a single value; a map stores key-value pairs; a list stores ordered items.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>YAML Types</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start;">
+            <div>
+              <p>Mixed lists are possible:</p>
+              <pre><code data-trim data-noescape class="language-yaml">mixedValues:
+  - 42
+  - Keyboard
+  - true
+  - null
+  - id: 1
+    name: Mouse
+  - [nested, list]</code></pre>
+            </div>
+            <div>
+              <p>Quote values that must stay text:</p>
+              <pre><code data-trim data-noescape class="language-yaml">debug: false
+port: 8080
+version: "1.0"
+code: "00123"
+message: "false should stay text here"</code></pre>
+            </div>
+          </div>
+          <ul class="simple">
+            <li><p>Consistent list items are easier to map into Java types.</p></li>
+            <li><p>Unquoted values may be interpreted as booleans, numbers, or null.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>YAML in Java</h2>
+          <ul class="simple">
+            <li><p>Java does not include a built-in YAML parser.</p></li>
+            <li><p>Jackson can read YAML when the project adds the YAML module.</p></li>
+            <li><p>For known configuration, map YAML into a record such as <code>ApplicationConfig</code>.</p></li>
+            <li><p>For flexible configuration, read YAML into a <code>Map</code> or tree-like structure.</p></li>
+          </ul>
+          <p>The same idea from JSON applies: choose object mapping when the shape is stable, and choose a map or tree when the shape is flexible.</p>
+        </section>
+
+        <section>
+          <h2>YAML Records</h2>
+          <pre><code data-trim data-noescape class="language-java">public record ApplicationConfig(
+    AppSettings app,
+    ServerSettings server,
+    boolean debug,
+    String dataFile,
+    List&lt;String&gt; categories
+) {
+    public record AppSettings(String name) {}
+    public record ServerSettings(int port) {}
+}
+
+// YAMLFactory tells Jackson to read YAML syntax instead of JSON syntax.
+ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+
+InputStream resource = YamlExample.class.getResourceAsStream(
+    "/data/application.yaml"
+);
+if (resource == null) {
+    throw new IOException("Resource not found");
+}
+
+try (InputStream input = resource) {
+    ApplicationConfig config = yamlMapper.readValue(
+        input,
+        ApplicationConfig.class
+    );
+}</code></pre>
+          <ul class="simple">
+            <li><p>The nested Java records match the nested YAML structure.</p></li>
+            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/YamlExample.java</code></p></li>
+            <li><p>Supporting record: <code>examples/data-formats/src/main/java/cop4027/data/ApplicationConfig.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>YAML Error Types</h2>
+      
+              <p>Malformed syntax: Indentation and colons affect syntax. </p>
+              <pre><code data-trim data-noescape class="language-yaml">server:
+ port: 8080
+  host: localhost</code></pre>
+            
+              <p>Wrong shape: Java mapping checks shape. </p>
+              <pre><code data-trim data-noescape class="language-yaml">server:
+  port: eight thousand
+categories: Books,Electronics</code></pre>
+            
+              <p>Invalid values: Application validation checks meaning.</p>
+              <pre><code data-trim data-noescape class="language-yaml">app:
+  name: ""
+server:
+  port: 70000
+categories: []</code></pre>
+     
+        </section>
+
+        <section>
+          <h2>YAML Tradeoffs</h2>
+          <ul class="simple">
+            <li><p><strong>Strength:</strong> </p></li>
+            <ul>
+              <li>for nested configuration.</li>
+              <li>supports maps, lists, and hierarchy without many braces.</li>
+              </ul>
+            <li><p><strong>Limit:</strong> </p></li>
+            <ul>
+              <li>indentation errors are common and can change meaning.</li>
+              <li>unquoted values may be inte</li>
+            </ul>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>XML</h1>
+        </section>
+
+        <section>
+          <h2>XML Building Blocks</h2>
+          <pre><code data-trim data-noescape class="language-xml">&lt;product id="1" category="input"&gt;
+  &lt;name&gt;Keyboard&lt;/name&gt;
+  &lt;price currency="USD"&gt;49.99&lt;/price&gt;
+  &lt;tag&gt;wired&lt;/tag&gt;
+  &lt;tag&gt;mechanical&lt;/tag&gt;
+&lt;/product&gt;</code></pre>
+          <ul class="simple">
+            <li><p><code>product</code>, <code>name</code>, <code>price</code>, and <code>tag</code> are elements.</p></li>
+            <li><p><code>id</code>, <code>category</code>, and <code>currency</code> are attributes.</p></li>
+            <li><p>Repeated child elements can represent a list.</p></li>
+            <li><p>There must be exactly one root element.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>XML Structure</h2>
+          <ul class="simple">
+            <li><p>Use <strong>elements</strong> for main data content, values that may repeat, or values that may become nested.</p></li>
+            <li><p>Use <strong>attributes</strong> for short metadata about an element, such as an id, category, or currency.</p></li>
+            <li><p>Repeated child elements can represent a list, and element order can matter.</p></li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-xml">&lt;product id="1" category="input"&gt;
+  &lt;name&gt;Keyboard&lt;/name&gt;
+  &lt;tag&gt;wired&lt;/tag&gt;
+  &lt;tag&gt;mechanical&lt;/tag&gt;
+&lt;/product&gt;</code></pre>
+          <pre><code data-trim data-noescape class="language-xml">&lt;description&gt;
+  A &lt;strong&gt;mechanical&lt;/strong&gt; keyboard
+&lt;/description&gt;</code></pre>
+        </section>
+
+        <section>
+          <h2>XML Namespaces</h2>
+          <pre><code data-trim data-noescape class="language-xml">&lt;order xmlns:store="https://example.com/store"
+       xmlns:ship="https://example.com/shipping"&gt;
+  &lt;store:address&gt;Store 101&lt;/store:address&gt;
+  &lt;ship:address&gt;123 Main St&lt;/ship:address&gt;
+&lt;/order&gt;</code></pre>
+          <ul class="simple">
+            <li><p>A namespace gives an XML name a unique identity.</p></li>
+            <li><p>The prefix is a short label: <code>store</code>, <code>ship</code>, <code>xs</code>, or <code>fx</code>.</p></li>
+            <li><p><code>store:address</code> and <code>ship:address</code> can use the same local name without meaning the same thing.</p></li>
+            <li><p>FXML uses namespaces such as <code>xmlns:fx="http://javafx.com/fxml"</code>.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Well-Formed vs Valid XML</h2>
+          <ul class="simple">
+            <li><p><strong>Well-formed XML</strong> follows XML syntax rules: one root element, matching tags, proper nesting, and quoted attributes.</p></li>
+            <li><p><strong>Schema-valid XML</strong> is well-formed and also follows a rule set such as XSD.</p></li>
+            <li><p><strong>Application-valid data</strong> also makes sense for the program, such as a non-empty name and a non-negative price.</p></li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-text">XML text
+  -&gt; syntax check
+  -&gt; schema check
+  -&gt; parse into Java
+  -&gt; application validation</code></pre>
+        </section>
+
+        <section>
+  <h2>DTD and XSD</h2>
+
+  <p>XML can use a schema to define what structure and values are allowed.</p>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+
+    <div>
+      <p>DTD</p>
+      <ul class="simple">
+        <li><p>Older XML validation mechanism.</p></li>
+        <li><p>Defines allowed elements, attributes, and ordering.</p></li>
+        <li><p>Uses its own syntax rather than XML syntax.</p></li>
+      </ul>
+
+      <pre><code data-trim data-noescape class="language-xml">&lt;!ELEMENT product (name, price)&gt;
+&lt;!ELEMENT name (#PCDATA)&gt;
+&lt;!ELEMENT price (#PCDATA)&gt;</code></pre>
+    </div>
+
+    <div>
+      <p>XSD</p>
+      <ul class="simple">
+        <li><p>More powerful schema language.</p></li>
+        <li><p>Written using XML syntax.</p></li>
+        <li><p>Defines structure and data types.</p></li>
+        <li><p>Supports constraints such as ranges and patterns.</p></li>
+      </ul>
+
+      <pre><code data-trim data-noescape class="language-xml">&lt;xs:element
+    name="price"
+    type="xs:decimal"/&gt;</code></pre>
+    </div>
+
+  </div>
+</section>
+
+        <section>
+          <h2>XML Schema Definition</h2>
+          <p>XSD describes the expected structure and data types of an XML document.</p>
+          <pre><code data-trim data-noescape class="language-xml">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;xs:element name="product"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="name" type="xs:string"/&gt;
+        &lt;xs:element name="price" type="xs:decimal"/&gt;
+        &lt;xs:element name="available" type="xs:boolean"/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name="id" type="xs:int" use="required"/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+&lt;/xs:schema&gt;</code></pre>
+          <ul class="simple">
+            <li><p><code>xs</code> is the namespace prefix for XML Schema vocabulary.</p></li>
+            <li><p><code>xs:sequence</code> requires child elements to appear in this order.</p></li>
+            <li><p>XSD can check required elements, attributes, numbers, booleans, dates, ranges, and patterns.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>XSD Validation</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start;">
+            <div>
+              <p>Valid structure and types:</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;product id="1"&gt;
+  &lt;name&gt;Keyboard&lt;/name&gt;
+  &lt;price&gt;49.99&lt;/price&gt;
+  &lt;available&gt;true&lt;/available&gt;
+&lt;/product&gt;</code></pre>
+            </div>
+            <div>
+              <p>Well-formed, but schema-invalid:</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;product id="abc"&gt;
+  &lt;name&gt;Keyboard&lt;/name&gt;
+  &lt;price&gt;forty-nine&lt;/price&gt;
+  &lt;available&gt;yes&lt;/available&gt;
+&lt;/product&gt;</code></pre>
+            </div>
+          </div>
+          <ul class="simple">
+            <li><p>The second document has legal XML syntax, but the values do not match the XSD types.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Validating XML in Java</h2>
+          <pre><code data-trim data-noescape class="language-java">SchemaFactory schemaFactory = SchemaFactory.newInstance(
+    XMLConstants.W3C_XML_SCHEMA_NS_URI
+);
+
+Schema schema = schemaFactory.newSchema(
+    new File("resources/product.xsd")
+);
+
+Validator validator = schema.newValidator();
+validator.validate(
+    new StreamSource(new File("resources/product.xml"))
+);</code></pre>
+          <ul class="simple">
+            <li><p><code>SchemaFactory</code> loads the XSD rules.</p></li>
+            <li><p><code>Validator</code> checks whether the XML document follows those rules.</p></li>
+            <li><p>Validation errors should be handled before the program trusts the data.</p></li>
+            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/XsdValidationExample.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>XML Parsing</h2>
+          <ul class="simple">
+            <li><p><strong>DOM:</strong> loads the whole XML document into a tree. Good for small or medium documents that need navigation.</p></li>
+            <li><p><strong>SAX:</strong> pushes events to handler methods while reading. Good for large read-only documents.</p></li>
+            <li><p><strong>StAX:</strong> lets code pull the next event when ready. Good for large documents when the program needs more control.</p></li>
+          </ul>
+          <p>Validation checks whether the XML follows rules. Parsing converts XML into something Java can read.</p>
+        </section>
+
+        <section>
+          <h2>DOM Parsing</h2>
+          <pre><code data-trim data-noescape class="language-java">// Factory creates a parser builder with the settings we choose.
+DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+// Namespace-aware parsing matters when XML uses prefixes.
+factory.setNamespaceAware(true);
+
+// Safer defaults for parsing XML from untrusted sources.
+factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+
+InputStream resource = XmlExample.class.getResourceAsStream(
+    "/data/product.xml"
+);
+if (resource == null) {
+    throw new IOException("Resource not found");
+}
+
+try (InputStream input = resource) {
+    // Parse the whole XML document into a DOM tree.
+    Document document = factory.newDocumentBuilder().parse(input);
+
+    // The root element is the top-level element, here &lt;product&gt;.
+    Element root = document.getDocumentElement();
+}</code></pre>
+          <ul class="simple">
+            <li><p>DOM is convenient when the whole XML document can fit comfortably in memory.</p></li>
+            <li><p>Disable external access when parsing untrusted XML.</p></li>
+            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/XmlExample.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>XML Values</h2>
+          <pre><code data-trim data-noescape class="language-java">// Read the id attribute from &lt;product id="1"&gt; and convert it.
+int id = Integer.parseInt(root.getAttribute("id"));
+
+// Find the first &lt;name&gt; element and get its text content.
+String name = root
+    .getElementsByTagName("name")
+    .item(0)
+    .getTextContent()
+    .trim();
+
+// XML text is still text, so numeric values need conversion.
+double price = Double.parseDouble(
+    root.getElementsByTagName("price")
+        .item(0)
+        .getTextContent()
+        .trim()
+);</code></pre>
+          <ul class="simple">
+            <li><p>DOM gives access to XML nodes, but application code still handles conversion and validation.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Well-Formed XML</h2>
+     
+              <p>Well-formed:</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;book&gt;
+  &lt;title&gt;XML Basics&lt;/title&gt;
+  &lt;price&gt;39.99&lt;/price&gt;
+&lt;/book&gt;</code></pre>
+
+              <p>Malformed:</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;book&gt;
+  &lt;title&gt;XML Basics
+  &lt;price&gt;39.99&lt;/price&gt;
+&lt;/book&gt;
+
+&lt;book&gt;&lt;title&gt;XML&lt;/book&gt;&lt;/title&gt;
+
+&lt;book&gt;XML Basics&lt;/book&gt;
+&lt;book&gt;JSON Basics&lt;/book&gt;</code></pre>
+   
+          <ul class="simple">
+            <li><p>Every start tag needs a matching end tag, nesting must be correct, and the document needs one root element.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>XML Rule Levels</h2>
+   
+              <p>Syntax problem: XML parsing checks document syntax.</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;!-- invalid because &amp; starts an entity reference --&gt;
+&lt;company&gt;Smith &amp; Jones&lt;/company&gt;
+
+&lt;!-- valid --&gt;
+&lt;company&gt;Smith &amp;amp; Jones&lt;/company&gt;</code></pre>
+      
+              <p>Application problem: schema can accept the structure, but the program may reject the meaning.</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;product id="1"&gt;
+  &lt;name&gt;&lt;/name&gt;
+  &lt;price&gt;-25.00&lt;/price&gt;
+  &lt;available&gt;true&lt;/available&gt;
+&lt;/product&gt;</code></pre>
+          <ul class="simple">
+            <li><p>Schema validation checks structure and types. Application validation checks business meaning.</p></li>
+          </ul>
+    
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Environment Variables</h1>
+        </section>
+
+        <section>
+          <h2>Environment Variables</h2>
+          
+            <pre><code data-trim data-noescape class="language-text">DATABASE_URL=jdbc:mysql://localhost/inventory
+DATABASE_USERNAME=app_user
+DATABASE_PASSWORD=...</code></pre>
+            <table class="docutils align-default">
+              <thead>
+                <tr>
+                  <th><p>Characteristic</p></th>
+                  <th><p>Meaning</p></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><p>String values</p></td><td><p>Numbers and booleans still need conversion</p></td></tr>
+                <tr><td><p>Provided outside code</p></td><td><p>Good for deployment-specific settings</p></td></tr>
+                <tr><td><p>Process-level</p></td><td><p>The Java process reads the values it was started with</p></td></tr>
+                <tr><td><p>Not a full secret manager</p></td><td><p>Still avoid logging or exposing them</p></td></tr>
+              </tbody>
+            </table>
+        
+        </section>
+
+        <section>
+          <h2>Reading Environment Variables</h2>
+          <pre><code data-trim data-noescape class="language-java">Map&lt;String, String&gt; environment = System.getenv();
+
+String databaseUrl = environment.getOrDefault(
+    "DATABASE_URL", "jdbc:h2:mem:inventory"
+);
+String username = environment.getOrDefault(
+    "DATABASE_USERNAME", "student"
+);
+
+if (databaseUrl.isBlank()) {
+    throw new IllegalArgumentException(
+        "DATABASE_URL cannot be blank"
+    );
+}</code></pre>
+          <ul class="simple">
+            <li><p>Environment variables are strings.</p></li>
+            <li><p>Defaults make this example runnable without machine-specific setup.</p></li>
+            <li><p>The same conversion and validation rules still apply.</p></li>
+            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/EnvironmentExample.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Config Precedence</h2>
+          <p>Applications often receive settings from multiple sources.</p>
+          <pre><code data-trim data-noescape class="language-text">Built-in default
+  -&gt; configuration file
+  -&gt; environment variable
+  -&gt; command-line argument</code></pre>
+          <ul class="simple">
+            <li><p>Defaults keep the application usable.</p></li>
+            <li><p>Files make configuration visible and repeatable.</p></li>
+            <li><p>Environment variables are useful in deployment.</p></li>
+            <li><p>Command-line arguments are useful for one-time overrides.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Secrets</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start;">
+            <div>
+              <p>Do not commit real secrets:</p>
+              <pre><code data-trim data-noescape class="language-properties">database.password=myActualPassword
+api.key=abc123secret</code></pre>
+              <p>Use environment names or a secret manager:</p>
+              <pre><code data-trim data-noescape class="language-text">DATABASE_PASSWORD
+API_KEY</code></pre>
+            </div>
+            <div>
+              <p>Commit an example file:</p>
+              <pre><code data-trim data-noescape class="language-text">application.properties.example</code></pre>
+              <pre><code data-trim data-noescape class="language-properties">database.url=jdbc:mysql://localhost/inventory
+database.username=YOUR_USERNAME
+database.password=YOUR_PASSWORD</code></pre>
+              <p>Do not commit the real local file.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Summary</h1>
+        </section>
+
+        <section>
+          <h2>Format to Java</h2>
+          <ul class="simple">
+            <li><p><strong>Properties:</strong> <code>Properties.load()</code> reads key-value strings, then code converts and validates values.</p></li>
+            <li><p><strong>JSON:</strong> Jackson <code>ObjectMapper</code> reads objects, lists, or <code>JsonNode</code> trees.</p></li>
+            <li><p><strong>YAML:</strong> Jackson YAML or SnakeYAML reads configuration into records, maps, or trees.</p></li>
+            <li><p><strong>XML:</strong> DOM, SAX, or StAX reads documents as trees or stream events.</p></li>
+            <li><p><strong>Environment variables:</strong> <code>System.getenv()</code> reads named strings from the runtime environment.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Boundary</h2>
+          <p>A JSON file or configuration file is not a substitute for a database when data becomes:</p>
+          <ul class="simple">
+            <li><p>large</p></li>
+            <li><p>frequently updated</p></li>
+            <li><p>shared by multiple users</p></li>
+            <li><p>searched and filtered often</p></li>
+            <li><p>subject to integrity constraints</p></li>
+          </ul>
+          <p>We will return to this when we discuss database persistence.</p>
+        </section>
+
+        <section>
+          <h2>Connections</h2>
+          <ul class="simple">
+            <li><p><strong>JavaFX:</strong> FXML is XML-based, and CSS controls styling.</p></li>
+            <li><p><strong>Spring Boot:</strong> applications commonly use properties or YAML configuration.</p></li>
+            <li><p><strong>REST APIs:</strong> request and response bodies commonly use JSON.</p></li>
+            <li><p><strong>Containers and deployment:</strong> tools commonly use YAML, environment variables, and secrets.</p></li>
+            <li><p><strong>Databases:</strong> structured files are useful, but shared persistent data needs database support.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Takeaway</h2>
+          <ul class="simple">
+            <li><p>Configuration controls how an application runs; application data represents what it processes.</p></li>
+            <li><p>Before parsing, decide what Java representation you want.</p></li>
+            <li><p>Parsing a file is not the same as validating its meaning.</p></li>
+            <li><p>Secrets should stay out of source control and AI prompts.</p></li>
+          </ul>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true, "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 800, "height": 540 });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>

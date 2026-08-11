@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Serialization</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<style>
+.reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+.reveal table.compact { font-size: 0.78em; }
+.reveal table.tight { font-size: 0.72em; }
+</style>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%" class="title-slide">
+<h1>Serialization</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+
+<section>
+<section class="frame">
+<h2>Roadmap</h2>
+<ol>
+<li><p>Why object state needs an external representation.</p></li>
+<li><p>Save and restore Java objects with object streams.</p></li>
+<li><p>Determine what is included in a serialized object graph.</p></li>
+<li><p>Handle class changes and validate restored objects.</p></li>
+<li><p>Recognize deserialization risks and choose an appropriate data format.</p></li>
+</ol>
+</section>
+
+<section class="frame">
+<h2>Learning Goals</h2>
+<ul>
+<li><p>Explain serialization, deserialization, and an object graph.</p></li>
+<li><p>Save and restore Java objects with <code>ObjectOutputStream</code> and <code>ObjectInputStream</code>.</p></li>
+<li><p>Predict how <code>static</code>, <code>transient</code>, shared references, and inheritance affect restored state.</p></li>
+<li><p>Use <code>serialVersionUID</code> and validation when classes evolve.</p></li>
+<li><p>Recognize when Java object serialization is a poor boundary for data exchange.</p></li>
+</ul>
+<p>Main question: how can object state outlive the process that created it?</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Introduction to Serialization</h1>
+</section>
+
+<section class="frame">
+<h2>Object Lifetime and Persistent State</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Running program                    After the program exits
+
+TaskList object                    No Java objects remain
+  name = "Week 6"         ---->   Only an external representation can survive
+  tasks = [Task, Task]</code></pre>
+<ul>
+<li><p>Objects and their fields live in memory while the program is running.</p></li>
+<li><p>To keep that state, the program must convert it into data that can be stored or transmitted.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Serialization and Deserialization</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Object graph  --serialize-->  bytes  --deserialize-->  object graph
+
+memory                         file                      new objects
+                              network
+                              cache</code></pre>
+<ul>
+<li><p><strong>Serialization</strong> encodes object state into a representation.</p></li>
+<li><p><strong>Deserialization</strong> reconstructs objects from that representation.</p></li>
+<li><p>The restored objects contain the saved state, but they are newly created objects in memory.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>What Is an Object Graph?</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskList
+  |-- name ----------> String
+  `-- tasks ---------> ArrayList
+                        |-- Task
+                        `-- Task</code></pre>
+<ul>
+<li><p>The object passed to <code>writeObject</code> is the <strong>root</strong>.</p></li>
+<li><p>Its fields may reference other objects, which may reference more objects.</p></li>
+<li><p>Together, the reachable objects form an <strong>object graph</strong>.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Saving and Loading Java Objects</h1>
+</section>
+
+<section class="frame">
+<h2>The <code>Serializable</code> Interface</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.io.Serializable;
+
+public final class Task implements Serializable {
+    // Serializable is a marker interface: no methods are required here.
+    private final String title;
+    private boolean done;
+
+    public Task(String title) {
+        this.title = title;
+    }
+}</code></pre>
+<ul>
+<li><p><code>Serializable</code> tells Java that instances of the class are eligible for object serialization.</p></li>
+<li><p>Instance fields are candidates for the saved object state.</p></li>
+</ul>
+<aside class="notes">[Sources] https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/Serializable.html</aside>
+</section>
+
+<section class="frame">
+<h2>Serializable Objects with Referenced Fields</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskList implements Serializable {
+    private final String name;
+    private final List&lt;Task&gt; tasks = new ArrayList&lt;&gt;();
+
+    public TaskList(String name) {
+        this.name = name;
+    }
+
+    public void add(Task task) {
+        tasks.add(task);
+    }
+}</code></pre>
+<p>A <code>TaskList</code> contains its own fields and references to other objects.</p>
+</section>
+
+<section class="frame">
+<h2>Serializing an Object with <code>ObjectOutputStream</code></h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void save(Path file, TaskList taskList) throws IOException {
+    try (ObjectOutputStream out = new ObjectOutputStream(
+            Files.newOutputStream(file))) {
+        // writeObject starts at this root and follows reachable objects.
+        out.writeObject(taskList);
+    } // Closing ObjectOutputStream also flushes the object-stream data.
+}</code></pre>
+<ul>
+<li><p><code>ObjectOutputStream</code> converts a Java object graph into object-stream data.</p></li>
+<li><p>The object passed to <code>writeObject</code> is the root of that graph.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Deserializing an Object with <code>ObjectInputStream</code></h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static TaskList load(Path file) throws IOException, ClassNotFoundException {
+    try (ObjectInputStream in = new ObjectInputStream(
+            Files.newInputStream(file))) {
+        // readObject returns Object because the stream stores type metadata.
+        Object value = in.readObject();
+        if (!(value instanceof TaskList taskList)) {
+            throw new InvalidObjectException("Expected TaskList");
+        }
+        return taskList;
+    }
+}</code></pre>
+<ul>
+<li><p><code>readObject()</code> reconstructs the next object from the stream.</p></li>
+<li><p>The required classes must be available while the stream is read.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Saving and Loading an Object</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskList original = new TaskList("Week 6");
+original.add(new Task("Read"));
+original.add(new Task("Practice"));
+
+Path file = Path.of("tasks.bin");
+save(file, original);
+
+TaskList restored = load(file);</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">original  --save-->  tasks.bin  --load-->  restored
+
+same saved state                         different Java object</code></pre>
+<ul>
+<li><p>Serialization preserves selected state, not the original memory location.</p></li>
+<li><p>Example: <code>examples/serialization/src/main/java/cop4027/serialization/BasicObjectStreamExample.java</code></p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Testing Serialization and Deserialization</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskList original = sampleTaskList();
+
+save(file, original);
+TaskList restored = load(file);
+
+assertEquals("Week 6", restored.name());
+assertEquals(List.of("Read", "Practice"),
+             restored.taskTitles());</code></pre>
+<ul>
+<li><p>A round-trip test checks that intended state survives <code>save → load</code>.</p></li>
+<li><p>Tests can also check excluded fields, shared references, filters, and invariants.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>What Java Serialization Saves</h1>
+</section>
+
+<section class="frame">
+<h2>Serialization of Referenced Objects</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskList
+  |-- name --------------------> String
+  `-- tasks -------------------> ArrayList
+                                  |-- Task
+                                  |     `--> String
+                                  `-- Task
+                                        `--> String</code></pre>
+<ul>
+<li><p><code>writeObject(taskList)</code> does not save only the fields physically declared in <code>TaskList</code>.</p></li>
+<li><p>It follows reachable object references through the graph.</p></li>
+<li><p>Default serialization therefore works across nested object structures.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Serializable Requirements for an Object Graph</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskList implements Serializable {
+    private final List&lt;Task&gt; tasks = new ArrayList&lt;&gt;();
+    private AuditLogger logger;  // not Serializable
+}</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">java.io.NotSerializableException: example.AuditLogger</code></pre>
+<ul>
+<li><p>A non-serializable object anywhere in the reached graph can cause the write to fail.</p></li>
+<li><p>Possible fixes: make it serializable, exclude the field, or save a serializable representation instead.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Instance, Static, and Transient State</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskList implements Serializable {
+    private static int createdCount;        // class state: not saved with one object
+
+    private final String name;              // instance state: saved
+    private final List&lt;Task&gt; tasks = new ArrayList&lt;&gt;();
+
+    private transient Path sourceFile;      // runtime context: excluded
+    private transient int completedCount;   // derived cache: rebuild after loading
+}</code></pre>
+<ul>
+<li><p>Normal instance fields such as <code>name</code> and <code>tasks</code> are part of the saved object state.</p></li>
+<li><p><code>static</code> fields belong to the class, not to one serialized instance.</p></li>
+<li><p><code>transient</code> fields are intentionally excluded from default serialization.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Field Values After Deserialization</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Example implements Serializable {
+    static int total = 10;
+    int score = 7;
+    transient String token = "abc";
+}
+
+Example saved = new Example();
+// save saved
+Example.total = 99;
+// load into restored</code></pre>
+<table class="compact">
+<thead><tr><th>Expression</th><th>Value</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><code>restored.score</code></td><td><code>7</code></td><td>Instance field was saved</td></tr>
+<tr><td><code>restored.token</code></td><td><code>null</code></td><td>Transient field was excluded</td></tr>
+<tr><td><code>Example.total</code></td><td><code>99</code></td><td>Static field uses current JVM state</td></tr>
+</tbody>
+</table>
+<p>Excluded primitive fields similarly receive their normal default values such as <code>0</code> or <code>false</code>.</p>
+</section>
+
+<section class="frame">
+<h2>Using <code>transient</code> Fields</h2>
+<ul>
+<li><p><strong>Runtime resource:</strong> a file handle, socket, or environment-specific object should be reopened or recreated.</p></li>
+<li><p><strong>Derived value:</strong> a cache can be recomputed from authoritative saved state.</p></li>
+<li><p><strong>Runtime collaborator:</strong> a logger or service can be injected again after loading.</p></li>
+<li><p><strong>Data that should not be stored:</strong> exclude the field from this serialized representation.</p></li>
+</ul>
+<ul>
+<li><p><code>transient</code> changes what is serialized; it is not an encryption or access-control mechanism.</p></li>
+<li><p>Example: <code>examples/serialization/src/main/java/cop4027/serialization/TransientFieldsExample.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Object Identity and Cyclic References</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Shared reference                         Cycle
+
+Task -----> SharedNote <--- Task          Object A ------> Object B
+                                              ^              |
+                                              |              |
+                                              +--------------+</code></pre>
+<ul>
+<li><p>Object streams track objects that have already been written.</p></li>
+<li><p>If two fields refer to the same object before saving, the restored fields refer to the same restored object.</p></li>
+<li><p>Back-references also allow cyclic graphs without infinite recursion.</p></li>
+<li><p>All reached state must still satisfy serialization requirements.</p></li>
+<li><p>Example: <code>examples/serialization/src/main/java/cop4027/serialization/SharedReferenceExample.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Serialization and Inheritance</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Item implements Serializable { /* ... */ }
+final class Task extends Item { /* also serializable */ }
+
+class SessionContext {
+    SessionContext() { /* runs while loading */ }
+}
+
+final class SavedWork extends SessionContext
+        implements Serializable {
+    private String documentName;
+}</code></pre>
+<ul>
+<li><p>A subclass of a serializable class is also serializable.</p></li>
+<li><p>If a serializable class extends a non-serializable superclass, the superclass state is initialized through its accessible no-argument constructor.</p></li>
+</ul>
+<aside class="notes">[Sources] https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/Serializable.html</aside>
+</section>
+
+<section class="frame">
+<h2>Checking a Serializable Object Graph</h2>
+<ol>
+<li><p>What is the root object passed to <code>writeObject</code>?</p></li>
+<li><p>Which non-static, non-transient fields are reachable from it?</p></li>
+<li><p>Does every reached object implement <code>Serializable</code>?</p></li>
+<li><p>Which references are shared or cyclic?</p></li>
+<li><p>Which excluded values must be reconstructed after loading?</p></li>
+</ol>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Versioning and Deserialization</h1>
+</section>
+
+<section class="frame">
+<h2>Deserializing Data After a Class Changes</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Monday                     Friday
+
+TaskList v1                TaskList v2
+save tasks.bin   ---->     load tasks.bin
+
+fields and rules           fields and rules changed</code></pre>
+<ul>
+<li><p>A serialized file may outlive the exact class version that created it.</p></li>
+<li><p>Class evolution asks whether old bytes still describe a valid object under the current code.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>serialVersionUID</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">import java.io.Serial;
+
+@Serial
+private static final long serialVersionUID = 1L;</code></pre>
+<ul>
+<li><p>The serialized stream records the class&apos;s version identifier.</p></li>
+<li><p>During loading, Java compares the saved identifier with the current class.</p></li>
+<li><p>Keeping the same UID states that the versions are intended to be compatible.</p></li>
+<li><p><code>@Serial</code> lets the compiler check serialization-specific declarations.</p></li>
+</ul>
+<aside class="notes">[Sources] https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/Serializable.html https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/Serial.html</aside>
+</section>
+
+<section class="frame">
+<h2>Compatible and Incompatible Changes</h2>
+<table class="compact">
+<thead><tr><th>Change</th><th>Typical effect</th></tr></thead>
+<tbody>
+<tr><td>Add a field</td><td>Old streams provide its default value</td></tr>
+<tr><td>Remove a field</td><td>The old saved value is ignored</td></tr>
+<tr><td>Add methods</td><td>Serialized field data is unaffected</td></tr>
+<tr><td>Change a field to an incompatible type</td><td>Compatibility can fail</td></tr>
+<tr><td>Change the class hierarchy or serialization form</td><td>May require migration or rejection</td></tr>
+<tr><td>Change UID from <code>1L</code> to <code>2L</code></td><td><code>InvalidClassException</code></td></tr>
+</tbody>
+</table>
+<p>The UID is a compatibility declaration; it does not migrate data by itself.</p>
+</section>
+
+<section class="frame">
+<h2>Constructor Behavior During Deserialization</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public TaskList(String name) {
+    System.out.println("constructor");
+    this.name = Objects.requireNonNull(name);
+}</code></pre>
+<ul>
+<li><p>Normal deserialization restores serializable fields without calling this constructor.</p></li>
+<li><p>Therefore, constructor checks do not guarantee that restored data satisfies current rules.</p></li>
+<li><p>Serialized data should be treated as input that must satisfy object invariants.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Validate Restored State</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Serial
+private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+
+    if (name == null || name.isBlank()) {
+        throw new InvalidObjectException(
+            "Task list name must not be blank");
+    }
+    if (tasks == null) {
+        throw new InvalidObjectException(
+            "Task collection is required");
+    }
+}</code></pre>
+<p>Validation during deserialization enforces the same important invariants expected from normally constructed objects.</p>
+</section>
+
+<section class="frame">
+<h2>Restoring Transient and Derived State</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private transient int completedCount;
+
+@Serial
+private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    validateState();
+
+    completedCount = (int) tasks.stream()
+        .filter(Task::isDone)
+        .count();
+}</code></pre>
+<ul>
+<li><p><code>defaultReadObject()</code> restores the normal serialized fields.</p></li>
+<li><p>Validation checks the restored authoritative state.</p></li>
+<li><p>Derived transient values can then be recomputed.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Custom Serialization Hooks</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Serial
+private void writeObject(ObjectOutputStream out)
+        throws IOException {
+    out.defaultWriteObject();
+    out.writeInt(calculateCompletedCount());
+}
+
+@Serial
+private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    int savedCount = in.readInt();
+}</code></pre>
+<ul>
+<li><p>Custom hooks can add application-specific values to the default serialized fields.</p></li>
+<li><p>Custom values must be read in the same order and with compatible types used when writing them.</p></li>
+<li><p>Use custom hooks only when the default representation does not meet the object&apos;s needs.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Practice: Class Version Changes</h2>
+<ol>
+<li><p>Save a <code>TaskList</code> using version 1 of the class.</p></li>
+<li><p>Add a <code>description</code> field while keeping UID <code>1L</code>.</p></li>
+<li><p>Load the old file and observe the new field&apos;s value.</p></li>
+<li><p>Supply a valid default during deserialization if the application requires one.</p></li>
+<li><p>Change the UID to <code>2L</code> and explain the resulting exception.</p></li>
+</ol>
+</section>
+
+<section class="frame">
+<h2>Compatibility Tests</h2>
+<ol>
+<li><p>Keep a small serialized fixture written by each supported version.</p></li>
+<li><p>Load every fixture with the current code.</p></li>
+<li><p>Verify required defaults, reconstructed values, and invariants.</p></li>
+<li><p>Reject unsupported versions with a clear error.</p></li>
+</ol>
+<p>A round trip using only the current class cannot prove backward compatibility.</p>
+</section>
+
+<section class="frame">
+<h2>Common Deserialization Errors</h2>
+<ul>
+<li><p><code>IOException</code>: the bytes cannot be read or do not form the expected stream.</p></li>
+<li><p><code>ClassNotFoundException</code>: a class named in the stream is unavailable.</p></li>
+<li><p><code>InvalidClassException</code>: the saved class version is incompatible with the current class.</p></li>
+<li><p><code>InvalidObjectException</code>: restored data violates application validation rules.</p></li>
+<li><p>Unexpected top-level type: the stream contains a different kind of object than the application expects.</p></li>
+</ul>
+<p>These failures represent different problems and should not be hidden by an empty catch block.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Serialization Security and Alternatives</h1>
+</section>
+
+<section class="frame">
+<h2>Security Risks of Deserialization</h2>
+<p>The bytes in an object stream influence which classes are created, their field values, and the shape of the reconstructed graph.</p>
+<ul>
+<li><p>Deserialization can invoke class-specific restoration hooks.</p></li>
+<li><p>A malicious graph can consume excessive memory, depth, references, or processing time.</p></li>
+<li><p>Unexpected classes can introduce dangerous behavior during restoration.</p></li>
+</ul>
+<p>Do not treat arbitrary network input or unknown files as safe Java object streams.</p>
+<aside class="notes">[Sources] https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/Serializable.html https://openjdk.org/jeps/415</aside>
+</section>
+
+<section class="frame">
+<h2>ObjectInputFilter</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ObjectInputFilter filter =
+    ObjectInputFilter.Config.createFilter(
+        "maxdepth=20;maxrefs=10000;maxbytes=1000000;" +
+        "cop4027.serialization.TaskList;" +
+        "cop4027.serialization.Task;" +
+        "java.base/*;!*");
+
+try (ObjectInputStream in = new ObjectInputStream(
+        Files.newInputStream(file))) {
+    // Apply the filter before readObject creates objects from the stream.
+    in.setObjectInputFilter(filter);
+    TaskList list = (TaskList) in.readObject();
+}</code></pre>
+<ul>
+<li><p>Filters can limit graph depth, reference count, input size, and allowed classes.</p></li>
+<li><p>A narrow allowlist reduces what the stream is permitted to reconstruct.</p></li>
+<li><p>Example: <code>examples/serialization/src/main/java/cop4027/serialization/FilteredDeserializationExample.java</code></p></li>
+</ul>
+<aside class="notes">[Sources] https://docs.oracle.com/en/java/javase/21/core/java-serialization-filters.html https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/ObjectInputFilter.html</aside>
+</section>
+
+<section class="frame">
+<h2>Limitations of Deserialization Filters</h2>
+<ul>
+<li><p>Control or authenticate the source of serialized data.</p></li>
+<li><p>Use realistic size and graph limits.</p></li>
+<li><p>Validate restored fields and invariants.</p></li>
+<li><p>Handle rejected input as a normal failure path.</p></li>
+<li><p>Remember that binary data is not encrypted data.</p></li>
+</ul>
+<p>Encryption, integrity protection, access control, filtering, and object validation solve different problems.</p>
+</section>
+
+<section class="frame">
+<h2>Serialization vs. Persistence</h2>
+<ul>
+<li><p><strong>Serialization:</strong> converts state to and from a representation.</p></li>
+<li><p><strong>Persistence:</strong> keeps data beyond one program execution.</p></li>
+<li><p><strong>Transport:</strong> moves data between processes or machines.</p></li>
+<li><p><strong>Encoding:</strong> defines how information is represented as bytes or text.</p></li>
+</ul>
+<p>A serialized representation may be stored in a file, sent over a network, or used in a cache, but serialization itself does not decide where the data goes.</p>
+</section>
+
+<section class="frame">
+<h2>Choosing a Data Representation</h2>
+<table class="compact">
+<thead><tr><th>Representation</th><th>Useful when</th><th>Main tradeoff</th></tr></thead>
+<tbody>
+<tr><td>Java object stream</td><td>One Java application controls the object graph</td><td>Tightly coupled to Java classes</td></tr>
+<tr><td>JSON</td><td>APIs, configuration, cross-language data exchange</td><td>Requires explicit mapping</td></tr>
+<tr><td>XML</td><td>Structured interchange, schemas, document-oriented data</td><td>More verbose and requires mapping</td></tr>
+<tr><td>Database model</td><td>Queryable, shared, durable application data</td><td>Requires a persistence schema/model</td></tr>
+</tbody>
+</table>
+<p>A Java object stream is a binary Java-specific representation, not a stable public data contract by default.</p>
+</section>
+
+<section class="frame">
+<h2>Separating Java Objects from Stored Data</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Domain object
+    |
+    | select and map fields
+    v
+Data model / DTO  ----->  JSON / XML / database row
+    ^
+    | validate and map
+    |
+Domain object</code></pre>
+<ul>
+<li><p>The boundary explicitly states which data crosses between systems.</p></li>
+<li><p>Private implementation fields do not automatically become part of the external contract.</p></li>
+<li><p>The stored or transmitted representation can evolve separately from internal object structure.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Example: JSON Instead of an Object Stream</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ObjectMapper mapper = new ObjectMapper();
+
+Enrollment enrollment = new Enrollment(
+    "Grace", "COP4027-02", LocalDate.now()
+);
+
+// JSON stores named data fields, not Java object-stream metadata.
+String json = mapper.writeValueAsString(enrollment);
+Enrollment restored =
+    mapper.readValue(json, Enrollment.class);</code></pre>
+<ul>
+<li><p>JSON stores a named data representation instead of Java&apos;s private object-stream format.</p></li>
+<li><p>This is usually a better fit when data crosses application, language, or trust boundaries.</p></li>
+<li><p>Example: <code>examples/serialization/src/main/java/cop4027/serialization/JacksonMappingExamples.java</code></p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>When to Use Java Object Serialization</h2>
+<ul>
+<li><p>A short-lived local cache controlled by one Java application.</p></li>
+<li><p>Trusted data exchanged between closely matching Java code.</p></li>
+<li><p>A quick object snapshot where class coupling is acceptable.</p></li>
+<li><p>Learning how Java preserves object graphs, identity, and state.</p></li>
+</ul>
+<p>Prefer another representation when data is long-lived, public, cross-language, or supplied by untrusted sources.</p>
+</section>
+
+<section class="frame">
+<h2>Design Checklist</h2>
+<ul>
+<li><p>Is Java object serialization appropriate for this boundary?</p></li>
+<li><p>Is every intended object in the graph serializable?</p></li>
+<li><p>Are runtime-only and sensitive fields excluded appropriately?</p></li>
+<li><p>Are compatibility expectations and <code>serialVersionUID</code> explicit?</p></li>
+<li><p>Are restored invariants validated and transient state rebuilt?</p></li>
+<li><p>Is incoming data trusted, filtered, and size-limited?</p></li>
+<li><p>Do tests cover both round trips and older serialized fixtures?</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Summary and Review</h1>
+</section>
+
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>Serialization converts object state into a representation that can survive outside the running JVM.</p></li>
+<li><p><code>ObjectOutputStream</code> and <code>ObjectInputStream</code> operate on reachable object graphs, not isolated fields.</p></li>
+<li><p>Normal instance state is saved; <code>static</code> state is not part of the instance, and <code>transient</code> state is excluded.</p></li>
+<li><p>Class evolution requires explicit compatibility decisions and validation of restored objects.</p></li>
+<li><p>Untrusted object streams are risky; choose JSON, XML, or a database model when the boundary needs a clearer and safer data contract.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Review Questions</h2>
+<ol>
+<li><p>Why can one non-serializable referenced object prevent the root object from being saved?</p></li>
+<li><p>What happens to <code>static</code> and <code>transient</code> fields after loading?</p></li>
+<li><p>What does <code>serialVersionUID</code> control?</p></li>
+<li><p>Why must important invariants be checked during deserialization?</p></li>
+<li><p>When is JSON or a database model a better choice than a Java object stream?</p></li>
+</ol>
+</section>
+</section>
+
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+</script>
+</body>
+</html>

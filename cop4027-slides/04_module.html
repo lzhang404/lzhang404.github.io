@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+<title>Java Project Structure, Maven, and Modules</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Java Project Structure, Maven, and Modules</h1>
+          <div class="subtitle docutils container">
+            <p><strong>Advanced Programming</strong></p>
+            <p>Liting Zhang</p>
+          </div>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>From Java Files to Java Projects</h1>
+        </section>
+
+        <section>
+          <h2>Why Project Structure Matters</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
+            <div>
+              <p>Small program:</p>
+              <pre><code data-trim data-noescape class="language-text">Hello.java
+Student.java
+GradeBook.java</code></pre>
+              <ul class="simple">
+                <li><p>Few files</p></li>
+                <li><p>Easy to compile manually</p></li>
+                <li><p>Few or no external libraries</p></li>
+              </ul>
+            </div>
+            <div>
+              <p>Real project:</p>
+              <pre><code data-trim data-noescape class="language-text">source code
+resources
+tests
+external libraries
+build settings
+generated output</code></pre>
+              <ul class="simple">
+                <li><p>Needs repeatable build steps</p></li>
+                <li><p>Needs dependency management</p></li>
+                <li><p>Needs a standard folder layout</p></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Three Questions for Today</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Question</p></th>
+                <th><p>Concept / Tool</p></th>
+                <th><p>What It Helps Us Decide</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>How should a Java project be organized and built?</p></td>
+                <td><p>Maven</p></td>
+                <td><p>Source folders, resources, dependencies, tests, packaging</p></td>
+              </tr>
+              <tr>
+                <td><p>How should code be separated into boundaries?</p></td>
+                <td><p>Packages and modules</p></td>
+                <td><p>Which code is public, internal, required, or exported</p></td>
+              </tr>
+              <tr>
+                <td><p>How do we work with the project day to day?</p></td>
+                <td><p>Eclipse</p></td>
+                <td><p>Open, run, test, debug, and inspect the Maven project</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Build Tool vs IDE</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Tool</p></th>
+                <th><p>Role</p></th>
+                <th><p>Examples</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>Build tool</p></td>
+                <td><p>Defines how the project is compiled, tested, packaged, and managed</p></td>
+                <td><p>Maven, Gradle</p></td>
+              </tr>
+              <tr>
+                <td><p>IDE / editor</p></td>
+                <td><p>Helps you write, navigate, run, debug, and inspect code</p></td>
+                <td><p>Eclipse, IntelliJ, VS Code</p></td>
+              </tr>
+            </tbody>
+          </table>
+          <p>For this course, Maven defines the project. Eclipse is the environment we use to work with it.</p>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Maven: The Java Build Workflow</h1>
+        </section>
+
+        <section>
+          <h2>What Maven Does</h2>
+          <ul class="simple">
+            <li><p>Uses a standard project structure.</p></li>
+            <li><p>Downloads external libraries.</p></li>
+            <li><p>Compiles source code.</p></li>
+            <li><p>Runs tests as part of the build.</p></li>
+            <li><p>Packages the project into a <code>.jar</code> file.</p></li>
+            <li><p>Makes the build repeatable across machines.</p></li>
+          </ul>
+          <pre><code data-trim data-noescape class="language-text">pom.xml
+  -&gt; dependencies
+  -&gt; plugins
+  -&gt; compile
+  -&gt; test
+  -&gt; package</code></pre>
+        </section>
+
+        <section>
+          <h2>Maven Standard Directory Layout</h2>
+          <pre><code data-trim data-noescape class="language-text">maven-basics/
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/          application source code
+│   │   └── resources/     files packaged with the app
+│   └── test/
+│       ├── java/          test source code
+│       └── resources/     files used by tests
+└── target/                generated build output</code></pre>
+          <ul class="simple">
+            <li><p>Do not manually edit files in <code>target</code>.</p></li>
+            <li><p>Maven can delete and recreate <code>target</code>.</p></li>
+            <li><p>Example: <code>examples/maven-basics</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>The POM: Maven's Project File</h2>
+          <pre><code data-trim data-noescape class="language-xml">&lt;project&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+  &lt;groupId&gt;cop4027&lt;/groupId&gt;
+  &lt;artifactId&gt;maven-basics&lt;/artifactId&gt;
+  &lt;version&gt;1.0.0-SNAPSHOT&lt;/version&gt;
+
+  &lt;properties&gt;
+    &lt;maven.compiler.release&gt;21&lt;/maven.compiler.release&gt;
+  &lt;/properties&gt;
+&lt;/project&gt;</code></pre>
+          <ul class="simple">
+            <li><p><code>pom.xml</code> describes project identity, dependencies, plugins, and build behavior.</p></li>
+            <li><p>Project coordinates are written as <code>groupId:artifactId:version</code>.</p></li>
+            <li><p>Example: <code>examples/maven-basics/pom.xml</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Project Coordinates</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>POM Element</p></th>
+                <th><p>Meaning</p></th>
+                <th><p>Example</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p><code>groupId</code></p></td>
+                <td><p>Organization or namespace</p></td>
+                <td><p><code>cop4027</code></p></td>
+              </tr>
+              <tr>
+                <td><p><code>artifactId</code></p></td>
+                <td><p>Project or library name</p></td>
+                <td><p><code>maven-basics</code></p></td>
+              </tr>
+              <tr>
+                <td><p><code>version</code></p></td>
+                <td><p>Release or development version</p></td>
+                <td><p><code>1.0.0-SNAPSHOT</code></p></td>
+              </tr>
+            </tbody>
+          </table>
+          <pre><code data-trim data-noescape class="language-text">cop4027:maven-basics:1.0.0-SNAPSHOT</code></pre>
+          <p><code>SNAPSHOT</code> identifies a version that is still under development.</p>
+        </section>
+
+        <section>
+          <h2>Dependencies: Libraries Your Project Uses</h2>
+          <pre><code data-trim data-noescape class="language-xml">&lt;dependencies&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;org.apache.commons&lt;/groupId&gt;
+    &lt;artifactId&gt;commons-lang3&lt;/artifactId&gt;
+    &lt;version&gt;${commons-lang3.version}&lt;/version&gt;
+  &lt;/dependency&gt;
+&lt;/dependencies&gt;</code></pre>
+          <ul class="simple">
+            <li><p>You declare the library in <code>pom.xml</code>.</p></li>
+            <li><p>Maven downloads it to the local <code>.m2</code> repository.</p></li>
+            <li><p>Maven also downloads required transitive dependencies.</p></li>
+            <li><p><code>mvn dependency:tree</code> shows the resolved dependency graph.</p></li>
+            <li><p>Example: <code>examples/maven-basics/pom.xml</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Dependency Scope</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Scope</p></th>
+                <th><p>When It Is Used</p></th>
+                <th><p>Example</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>compile</p></td>
+                <td><p>Main code and tests</p></td>
+                <td><p>Commons Lang in <code>maven-basics</code></p></td>
+              </tr>
+              <tr>
+                <td><p>test</p></td>
+                <td><p>Only during testing</p></td>
+                <td><p>JUnit</p></td>
+              </tr>
+              <tr>
+                <td><p>runtime</p></td>
+                <td><p>Needed when running, not compiling main code</p></td>
+                <td><p>H2 in <code>data-persistence</code></p></td>
+              </tr>
+            </tbody>
+          </table>
+          <p>The most common scopes for this course are <code>compile</code> and <code>test</code>.</p>
+        </section>
+
+        <section>
+          <h2>Dependencies vs Build Plugins</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
+            <div>
+              <p><strong>Dependency</strong></p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;dependency&gt;
+  &lt;artifactId&gt;commons-lang3&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+              <p><code>GreetingApp</code> imports and calls library code.</p>
+            </div>
+            <div>
+              <p><strong>Build plugin</strong></p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;plugin&gt;
+  &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+&lt;/plugin&gt;</code></pre>
+              <p>Maven invokes the plugin while building the project.</p>
+            </div>
+          </div>
+          <p>Example: <code>examples/maven-basics/pom.xml</code></p>
+        </section>
+
+        <section>
+          <h2>Maven Phases Run in Order</h2>
+          <pre><code data-trim data-noescape class="language-text">compile  -&gt;  test  -&gt;  package  -&gt;  verify
+   |          |          |           |
+ main       tests       JAR       integration
+ classes                file         checks</code></pre>
+          <ul class="simple">
+            <li><p><code>mvn package</code> also compiles the code and runs unit tests.</p></li>
+            <li><p><code>mvn verify</code> performs the complete check used by this example.</p></li>
+            <li><p><code>mvn clean</code> uses a separate lifecycle to delete <code>target</code>.</p></li>
+            <li><p>Run combined lifecycles with <code>mvn clean verify</code>.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Maven Is Convention-Based</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
+            <div>
+              <p>If you follow Maven conventions:</p>
+              <pre><code data-trim data-noescape class="language-text">src/main/java
+src/main/resources
+src/test/java
+src/test/resources</code></pre>
+              <p>Maven already knows what to do.</p>
+            </div>
+            <div>
+              <p>If you use a custom layout:</p>
+              <pre><code data-trim data-noescape class="language-text">source/
+assets/
+tests/
+output/</code></pre>
+              <p>You must configure more manually.</p>
+            </div>
+          </div>
+          <p>For this course, use the standard layout unless there is a strong reason not to.</p>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Eclipse Workflow for Maven Projects</h1>
+        </section>
+
+        <section>
+          <h2>Recommended Eclipse Setup</h2>
+          <ul class="simple">
+            <li><p>Install the course JDK: Java 21.</p></li>
+            <li><p>Install Eclipse IDE for Java Developers.</p></li>
+            <li><p>Use Maven Integration for Eclipse (m2e), which is included.</p></li>
+            <li><p>Clone or download <code>example-code</code> once.</p></li>
+            <li><p>Import one topic folder from its <code>pom.xml</code> when we reach it.</p></li>
+            <li><p>A separate Maven installation is optional.</p></li>
+          </ul>
+          <p>Setup guide: <code>docs/setup-eclipse.md</code></p>
+        </section>
+
+        <section>
+          <h2>Eclipse Project Views</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Where to Look</p></th>
+                <th><p>What You Use It For</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>Package Explorer</p></td>
+                <td><p>See projects, source folders, packages, and files</p></td>
+              </tr>
+              <tr>
+                <td><p>Maven Dependencies</p></td>
+                <td><p>Inspect libraries resolved from <code>pom.xml</code></p></td>
+              </tr>
+              <tr>
+                <td><p>Problems view</p></td>
+                <td><p>See compiler, module, and configuration errors</p></td>
+              </tr>
+              <tr>
+                <td><p>Console and JUnit views</p></td>
+                <td><p>Inspect program output and test results</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Create or Import a Maven Project</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
+            <div>
+              <p>Create a new project:</p>
+              <pre><code data-trim data-noescape class="language-text">File -&gt; New -&gt; Maven Project
+  -&gt; choose an archetype
+  -&gt; enter groupId
+  -&gt; enter artifactId
+  -&gt; Finish
+  -&gt; set Java release to 21 in pom.xml</code></pre>
+            </div>
+            <div>
+              <p>Import a course example:</p>
+              <pre><code data-trim data-noescape class="language-text">File -&gt; Import...
+  -&gt; Maven -&gt; Existing Maven Projects
+  -&gt; choose one topic folder
+  -&gt; keep its pom.xml selected
+  -&gt; Finish</code></pre>
+              <p>Eclipse reads the POM and downloads the required dependencies.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Import the Topic Folder</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
+            <div>
+              <p>Correct:</p>
+              <pre><code data-trim data-noescape class="language-text">examples/
+  maven-basics/       &lt;- import this folder
+    pom.xml
+    src/</code></pre>
+            </div>
+            <div>
+              <p>Incorrect:</p>
+              <pre><code data-trim data-noescape class="language-text">src/main/java/
+
+GreetingApp.java</code></pre>
+              <p>Do not import a source folder or open a Java file by itself.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Run with Eclipse or Maven</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
+            <div>
+              <p>From editor:</p>
+              <pre><code data-trim data-noescape class="language-java">public class GreetingApp {
+    public static void main(String[] args) {
+        System.out.println(greeting(args));
+    }
+}</code></pre>
+              <p>Right-click the class, then choose <strong>Run As &gt; Java Application</strong>.</p>
+            </div>
+            <div>
+              <p>Optional terminal check:</p>
+              <pre><code data-trim data-noescape class="language-bash">cd examples/maven-basics
+mvn test
+mvn exec:java "-Dexec.args=ada lovelace"</code></pre>
+              <p>The Maven build confirms the project works outside the editor.</p>
+            </div>
+          </div>
+          <p>Example: <code>examples/maven-basics/src/main/java/cop4027/maven/GreetingApp.java</code></p>
+        </section>
+
+        <section>
+          <h2>Package and Run the Application JAR</h2>
+          <pre><code data-trim data-noescape class="language-bash">cd examples/maven-basics
+mvn package
+java -jar target/maven-basics-1.0.0-SNAPSHOT.jar ada lovelace</code></pre>
+          <pre><code data-trim data-noescape class="language-text">Hello, Ada Lovelace!</code></pre>
+          <ul class="simple">
+            <li><p>The JAR plugin records the main class in the manifest.</p></li>
+            <li><p>The Dependency plugin copies runtime libraries into <code>target/lib</code>.</p></li>
+            <li><p>The packaged application runs without Eclipse.</p></li>
+          </ul>
+          <p>Example: <code>examples/maven-basics/pom.xml</code></p>
+        </section>
+
+        <section>
+          <h2>Run Maven Goals in Eclipse</h2>
+          <pre><code data-trim data-noescape class="language-text">Right-click project -&gt; Run As
+  -&gt; Maven test
+  -&gt; Maven build...
+       Goals: clean package</code></pre>
+          <ul class="simple">
+            <li><p>Eclipse uses its embedded Maven runtime through m2e.</p></li>
+            <li><p>Using the terminal is still useful for debugging build errors.</p></li>
+            <li><p>If the project is stale, use <strong>Maven &gt; Update Project...</strong>.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Common Eclipse Maven Problems</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Symptom</p></th>
+                <th><p>Likely Cause</p></th>
+                <th><p>Fix</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>Imports cannot be resolved</p></td>
+                <td><p>Project not imported or dependency missing</p></td>
+                <td><p>Import the folder containing <code>pom.xml</code>; use <strong>Maven &gt; Update Project...</strong></p></td>
+              </tr>
+              <tr>
+                <td><p>Java Application option missing</p></td>
+                <td><p>A source folder or file was opened instead of the Maven project</p></td>
+                <td><p>Import the project through <strong>File &gt; Import...</strong></p></td>
+              </tr>
+              <tr>
+                <td><p>Works in Eclipse but not terminal</p></td>
+                <td><p>IDE configuration differs from Maven build</p></td>
+                <td><p>Trust <code>mvn test</code> as the build check</p></td>
+              </tr>
+              <tr>
+                <td><p>Wrong Java version</p></td>
+                <td><p>Eclipse or terminal uses a different JDK</p></td>
+                <td><p>Check Eclipse's installed JRE and <code>java -version</code></p></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Resources, Tests, and Build Output</h1>
+        </section>
+
+        <section>
+          <h2>Tests in Maven: Build Integration Only</h2>
+          <pre><code data-trim data-noescape class="language-xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
+  &lt;artifactId&gt;junit-jupiter&lt;/artifactId&gt;
+  &lt;version&gt;${junit.version}&lt;/version&gt;
+  &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+          <ul class="simple">
+            <li><p><code>scope</code> is <code>test</code> because JUnit is needed for test code, not main application code.</p></li>
+            <li><p>Test files belong under <code>src/test/java</code>.</p></li>
+            <li><p>Run tests with <strong>Run As &gt; JUnit Test</strong> or <strong>Run As &gt; Maven test</strong>.</p></li>
+            <li><p>Test design, integration testing, and contract testing are separate topics later.</p></li>
+            <li><p>Example: <code>examples/maven-basics/src/test/java/cop4027/maven/GreetingAppTest.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Test Folder Layout</h2>
+          <pre><code data-trim data-noescape class="language-text">src/
+├── main/
+│   └── java/
+│       └── cop4027/maven/GreetingApp.java
+└── test/
+    └── java/
+        └── cop4027/maven/GreetingAppTest.java</code></pre>
+          <p>This slide only shows where tests live in Maven. We will discuss how to design different kinds of tests later.</p>
+        </section>
+
+        <section>
+          <h2>Resources in Maven</h2>
+          <pre><code data-trim data-noescape class="language-text">src/main/resources/
+└── application.properties
+
+target/classes/
+└── application.properties</code></pre>
+          <ul class="simple">
+            <li><p>Main resources are packaged with the application.</p></li>
+            <li><p>Test resources are available while tests run.</p></li>
+            <li><p>Use classpath resource loading for files that travel with the program.</p></li>
+            <li><p>Example: <code>examples/maven-basics/src/main/resources/application.properties</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Classpath Resource Loading</h2>
+          <pre><code data-trim data-noescape class="language-java">try (InputStream input = GreetingApp.class
+        .getResourceAsStream("application.properties")) {
+    if (input == null) {
+        throw new IllegalStateException("Missing resource");
+    }
+
+    properties.load(input);
+}</code></pre>
+          <ul class="simple">
+            <li><p>The class loader starts at the classpath root; do not add a leading <code>/</code>.</p></li>
+            <li><p>Files in <code>src/main/resources</code> are copied into the runtime classpath.</p></li>
+            <li><p>This is different from reading an external file path.</p></li>
+            <li><p>Example: <code>examples/maven-basics/src/main/java/cop4027/maven/GreetingApp.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>What Maven Generates</h2>
+          <pre><code data-trim data-noescape class="language-text">target/
+├── classes/              compiled main classes and resources
+├── test-classes/         compiled test classes and test resources
+├── surefire-reports/     test reports
+├── lib/                  runtime dependency JARs
+└── maven-basics-1.0.0-SNAPSHOT.jar</code></pre>
+          <ul class="simple">
+            <li><p><code>target</code> is generated output.</p></li>
+            <li><p>It can be deleted and recreated.</p></li>
+            <li><p>Do not submit or manually edit generated files unless specifically asked.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Pre-Submission Build Check</h2>
+          <pre><code data-trim data-noescape class="language-bash">java -version
+javac -version
+mvn -version
+mvn clean verify</code></pre>
+          <ul class="simple">
+            <li><p>Check that the terminal uses the expected JDK.</p></li>
+            <li><p>Check that Maven is available.</p></li>
+            <li><p>The Java line in <code>mvn -version</code> must also report Java 21.</p></li>
+            <li><p>Use <code>mvn clean verify</code> before submitting a project.</p></li>
+            <li><p>If it only works in the editor but fails with Maven, fix the Maven build.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Packages and Java Modules</h1>
+        </section>
+
+        <section>
+          <h2>Modules Group Packages</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Concept</p></th>
+                <th><p>Responsibility</p></th>
+                <th><p>Course Example</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>Class</p></td>
+                <td><p>Defines data and behavior</p></td>
+                <td><p><code>GreetingService</code></p></td>
+              </tr>
+              <tr>
+                <td><p>Package</p></td>
+                <td><p>Groups related types and provides a namespace</p></td>
+                <td><p><code>cop4027.greeting</code></p></td>
+              </tr>
+              <tr>
+                <td><p>Java module</p></td>
+                <td><p>Groups packages and declares readable and exported APIs</p></td>
+                <td><p><code>course.greeting</code></p></td>
+              </tr>
+            </tbody>
+          </table>
+          <pre><code data-trim data-noescape class="language-text">module -&gt; packages -&gt; classes</code></pre>
+        </section>
+
+        <section>
+          <h2>Two Module Descriptors</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
+            <div>
+              <p>Library module:</p>
+              <pre><code data-trim data-noescape class="language-java">module course.greeting {
+    exports cop4027.greeting;
+}</code></pre>
+              <p><code>exports</code> makes the public package available to other modules.</p>
+            </div>
+            <div>
+              <p>Application module:</p>
+              <pre><code data-trim data-noescape class="language-java">module course.app {
+    requires course.greeting;
+}</code></pre>
+              <p><code>requires</code> lets this module read the exported API.</p>
+            </div>
+          </div>
+          <ul class="simple">
+            <li><p>Every module implicitly requires <code>java.base</code>.</p></li>
+            <li><p>Example: <code>examples/java-modules/course-greeting/src/main/java/module-info.java</code></p></li>
+            <li><p>Example: <code>examples/java-modules/course-app/src/main/java/module-info.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Public Is Not Enough Across Modules</h2>
+          <pre><code data-trim data-noescape class="language-text">course.app
+  requires course.greeting
+             |
+             v
+course.greeting
+  exports cop4027.greeting
+             |
+             v
+  public GreetingService</code></pre>
+          <ul class="simple">
+            <li><p>The class must be <code>public</code>.</p></li>
+            <li><p>Its package must be exported.</p></li>
+            <li><p>The caller's module must require the provider module.</p></li>
+            <li><p>Example: <code>examples/java-modules/course-greeting/src/main/java/cop4027/greeting/GreetingService.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Import and Run the Module Demo</h2>
+          <pre><code data-trim data-noescape class="language-text">File -&gt; Import...
+  -&gt; Maven -&gt; Existing Maven Projects
+  -&gt; choose examples/java-modules
+  -&gt; select all three POMs
+  -&gt; Finish
+
+ModuleApp.java -&gt; Run As -&gt; Java Application</code></pre>
+          <pre><code data-trim data-noescape class="language-text">Hello, Java modules!</code></pre>
+          <ul class="simple">
+            <li><p>Eclipse builds <code>course-greeting</code> before <code>course-app</code>.</p></li>
+            <li><p>Remove <code>exports</code> or <code>requires</code> temporarily and inspect the compiler error.</p></li>
+            <li><p>Example: <code>examples/java-modules/course-app/src/main/java/cop4027/app/ModuleApp.java</code></p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>How Maven Builds the Two Modules</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
+            <div>
+              <p>POM:</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;packaging&gt;pom&lt;/packaging&gt;
+&lt;modules&gt;
+  &lt;module&gt;course-greeting&lt;/module&gt;
+  &lt;module&gt;course-app&lt;/module&gt;
+&lt;/modules&gt;</code></pre>
+            </div>
+            <div>
+              <p>Application dependency:</p>
+              <pre><code data-trim data-noescape class="language-xml">&lt;dependency&gt;
+  &lt;groupId&gt;cop4027&lt;/groupId&gt;
+  &lt;artifactId&gt;course-greeting&lt;/artifactId&gt;
+  &lt;version&gt;${project.version}&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+            </div>
+          </div>
+          <p>Example: <code>examples/java-modules/pom.xml</code></p>
+        </section>
+
+        <section>
+          <h2>Java Modules Are Not Maven Modules</h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Term</p></th>
+                <th><p>Defined By</p></th>
+                <th><p>Purpose</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>Java module</p></td>
+                <td><p><code>module-info.java</code></p></td>
+                <td><p>Runtime and compiler boundaries</p></td>
+              </tr>
+              <tr>
+                <td><p>Maven project</p></td>
+                <td><p><code>pom.xml</code></p></td>
+                <td><p>One buildable project</p></td>
+              </tr>
+              <tr>
+                <td><p>Maven multi-module build</p></td>
+                <td><p>Parent POM with <code>&lt;modules&gt;</code></p></td>
+                <td><p>Builds several Maven projects together</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Choosing the Right Tool for the Job</h1>
+        </section>
+
+        <section>
+          <h2>When to Use <code>module-info.java</code></h2>
+          <table class="docutils align-default">
+            <thead>
+              <tr>
+                <th><p>Use It When</p></th>
+                <th><p>Avoid or Delay It When</p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p>You want explicit module boundaries</p></td>
+                <td><p>The project is a small beginner example</p></td>
+              </tr>
+              <tr>
+                <td><p>You are building a library with exported API packages</p></td>
+                <td><p>Dependencies are not module-friendly</p></td>
+              </tr>
+              <tr>
+                <td><p>You want stronger encapsulation than packages alone</p></td>
+                <td><p>The build setup becomes the main distraction</p></td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Modules are powerful, but Maven project structure is the more important daily workflow for this course.</p>
+        </section>
+
+        <section>
+          <h2>Course Mental Model</h2>
+          <pre><code data-trim data-noescape class="language-text">Maven answers:
+  How do I compile, test, package, and download libraries?
+
+Eclipse answers:
+  How do I edit, run, debug, and inspect the project?
+
+Java packages answer:
+  How do I organize related classes?
+
+Java modules answer:
+  Which packages does this component require and expose?</code></pre>
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+          <ul class="simple">
+            <li><p>Maven gives Java projects a standard structure and repeatable build process.</p></li>
+            <li><p><code>pom.xml</code> declares project identity, dependencies, plugins, and build settings.</p></li>
+            <li><p>Eclipse imports each topic from the folder containing its <code>pom.xml</code>.</p></li>
+            <li><p>Java modules provide stronger boundaries through <code>requires</code> and <code>exports</code>.</p></li>
+            <li><p>For this course, always verify your project with Maven, not only the editor run button.</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true, "controls": true, "progress": true, "hash": true, "center": true, "transition": "slide", "slideNumber": true, "scrollActivationWidth": null, "mouseWheel": false, "width": 800, "height": 540 });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>
