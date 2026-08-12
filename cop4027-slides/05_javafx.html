@@ -12,6 +12,7 @@
 <script src="../_static/design-tabs.js?v=f930bc37"></script>
 <style>
 .reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+.reveal pre[data-fontsize="xsmall"] { font-size: 0.56em; }
 </style>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
@@ -34,11 +35,13 @@
 <section class="frame">
 <h2>Roadmap</h2>
 <ol>
-<li><p>Build the JavaFX mental model and a first application.</p></li>
-<li><p>Add controls, events, layouts, input validation, and CSS.</p></li>
-<li><p>Grow a simple menu demo into a stateful text editor.</p></li>
+<li><p>Build the JavaFX mental model.</p></li>
+<li><p>Create controls, layouts, and event handlers.</p></li>
+<li><p>Read and validate user input.</p></li>
+<li><p>Separate appearance with CSS.</p></li>
+<li><p>Describe the same UI with FXML and connect a controller.</p></li>
+<li><p>Manage stateful commands with menus, dialogs, files, properties, listeners, and binding.</p></li>
 <li><p>Keep the interface responsive during background work.</p></li>
-<li><p>Move larger layouts to FXML and connect controllers.</p></li>
 <li><p>Survey optional visual APIs and connect JavaFX to MVC.</p></li>
 </ol>
 </section>
@@ -47,10 +50,11 @@
 <h2>Learning Goals</h2>
 <ul>
 <li><p>Explain <code>Stage</code>, <code>Scene</code>, layouts, nodes, and the scene graph.</p></li>
-<li><p>Build forms with controls, handlers, validation, and CSS.</p></li>
-<li><p>Use properties, listeners, menus, dialogs, and files in a stateful application.</p></li>
+<li><p>Build forms with controls, event handlers, validation, and CSS.</p></li>
+<li><p>Read FXML as JavaFX object construction written in XML.</p></li>
+<li><p>Use <code>fx:id</code>, <code>@FXML</code>, and <code>onAction</code> to connect FXML to a controller.</p></li>
+<li><p>Use properties, listeners, binding, menus, dialogs, and files in a stateful application.</p></li>
 <li><p>Move slow work off the JavaFX Application Thread.</p></li>
-<li><p>Connect FXML elements to a controller with <code>fx:id</code> and <code>@FXML</code>.</p></li>
 </ul>
 <p>Main question: how does user input become a correct, visible change on screen?</p>
 </section>
@@ -58,19 +62,19 @@
 
 <section>
 <section class="title-slide slide level1">
-<h1>Mental Model</h1>
+<h1>JavaFX Mental Model</h1>
 </section>
 
 <section class="frame">
 <h2>JavaFX Overview</h2>
 <p>JavaFX is a Java library for building desktop graphical user interfaces.</p>
 <ul>
-<li><p>It provides windows, buttons, labels, text fields, menus, dialogs, charts, images, and drawing tools.</p></li>
+<li><p>It provides windows, buttons, labels, text fields, menus, dialogs, images, charts, animation, and drawing tools.</p></li>
 <li><p>It uses a scene graph: a tree of UI objects.</p></li>
 <li><p>It supports CSS styling and FXML layout files.</p></li>
 <li><p>It is useful for desktop apps, teaching GUI design, and visualizing algorithms.</p></li>
 </ul>
-<p>In this course, JavaFX is not just about buttons. It is also a way to practice event-driven programming.</p>
+<p>JavaFX is also a way to practice event-driven programming.</p>
 </section>
 
 <section class="frame">
@@ -80,7 +84,7 @@
 <tbody>
 <tr><td>UI model</td><td>Component hierarchy</td><td>Scene graph</td></tr>
 <tr><td>Styling</td><td>Look and Feel / UIManager</td><td>CSS-like stylesheets</td></tr>
-<tr><td>View separation</td><td>Mostly Java code</td><td>Java code or FXML</td></tr>
+<tr><td>View construction</td><td>Mostly Java code</td><td>Java code or FXML</td></tr>
 <tr><td>Graphics</td><td>Custom painting</td><td>Nodes, Canvas, animation APIs</td></tr>
 <tr><td>Thread rule</td><td>Swing EDT</td><td>JavaFX Application Thread</td></tr>
 </tbody>
@@ -89,8 +93,26 @@
 </section>
 
 <section class="frame">
-<h2>Mental Model</h2>
-<p>A JavaFX window is built as a hierarchy.</p>
+<h2>Application Structure</h2>
+<p>A JavaFX app starts from an <code>Application</code> subclass.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">main(...)
+    ↓
+launch(args)
+    ↓
+JavaFX runtime starts
+    ↓
+start(Stage primaryStage)
+    ↓
+build scene graph
+    ↓
+put Scene on Stage
+    ↓
+show Stage</code></pre>
+<p>After the window appears, the event loop waits for user actions.</p>
+</section>
+
+<section class="frame">
+<h2>Stage, Scene, and Nodes</h2>
 <table>
 <thead><tr><th>Level</th><th>Meaning</th><th>Example</th></tr></thead>
 <tbody>
@@ -120,62 +142,52 @@
 <li><p>Changing the scene graph changes what the user sees.</p></li>
 </ul>
 </section>
-</section>
-
-<section>
-<section class="title-slide slide level1">
-<h1>First Application</h1>
-</section>
 
 <section class="frame">
-<h2>Lifecycle</h2>
-<p>JavaFX controls when the application starts and when the window is created.</p>
-<table>
-<thead><tr><th>Part</th><th>Responsibility</th></tr></thead>
-<tbody>
-<tr><td><code>main</code></td><td>Normal Java entry point.</td></tr>
-<tr><td><code>launch(args)</code></td><td>Starts the JavaFX runtime and creates the JavaFX Application Thread.</td></tr>
-<tr><td><code>start(Stage)</code></td><td>Builds the first scene and receives the primary window.</td></tr>
-<tr><td>Event loop</td><td>Keeps the program alive while it waits for user actions.</td></tr>
-</tbody>
-</table>
-</section>
-
-<section class="frame">
-<h2>Application Structure</h2>
-<p>Every JavaFX app starts from an <code>Application</code> subclass.</p>
+<h2>First Application</h2>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size: 0.60em;"><code class="language-java">public class HelloWorld extends Application {
     public static void main(String[] args) {
-        // Start JavaFX; the runtime will call start(...).
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) {
-        // Build the scene graph.
         Button btn = new Button("Say 'Hello World'");
+
         StackPane root = new StackPane();
         root.getChildren().add(btn);
+
         Scene scene = new Scene(root, 300, 250);
 
-        // Put the scene in the window and show it.
+        primaryStage.setTitle("Hello World");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 }</code></pre>
 <p><strong>Example:</strong> <code>cop4027.javafx.basic.HelloWorld</code></p>
 </section>
-
 </section>
 
 <section>
 <section class="title-slide slide level1">
-<h1>Controls and Events</h1>
+<h1>Controls, Layouts, and Events</h1>
 </section>
 
 <section class="frame">
-<h2>UI Controls</h2>
-<p>Controls are ready-made UI objects that users can see or interact with.</p>
+<h2>Three Questions for a GUI</h2>
+<table>
+<thead><tr><th>Question</th><th>JavaFX idea</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>What appears?</td><td>Controls</td><td><code>Label</code>, <code>TextField</code>, <code>Button</code></td></tr>
+<tr><td>Where does it go?</td><td>Layouts</td><td><code>GridPane</code>, <code>VBox</code>, <code>HBox</code></td></tr>
+<tr><td>What happens?</td><td>Events</td><td><code>setOnAction(...)</code></td></tr>
+</tbody>
+</table>
+<p>Most JavaFX screens combine all three.</p>
+</section>
+
+<section class="frame">
+<h2>Common Controls</h2>
 <table>
 <thead><tr><th>Control</th><th>Purpose</th></tr></thead>
 <tbody>
@@ -191,55 +203,14 @@
 </section>
 
 <section class="frame">
-<h2>Event-Driven Code</h2>
-<p>GUI programs wait for user actions.</p>
-<ul>
-<li><p>The program does not run from top to bottom once and finish.</p></li>
-<li><p>It creates the UI, shows the window, and waits.</p></li>
-<li><p>When the user clicks, types, or selects something, an event is created.</p></li>
-<li><p>An event handler is code that responds to that event.</p></li>
-</ul>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">btn.setOnAction(new EventHandler&lt;ActionEvent&gt;() {
-    @Override
-    public void handle(ActionEvent event) {
-        System.out.println("Hello World: " + count++);
-    }
-});</code></pre>
-</section>
-
-<section class="frame">
-<h2>Button Handler</h2>
-<p>This example shows the basic event pattern.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Button btn = new Button("Say 'Hello World'");
-
-btn.setOnAction(new EventHandler&lt;ActionEvent&gt;() {
-    @Override
-    public void handle(ActionEvent event) {
-        System.out.println("Hello World: " + count++);
-    }
-});
-
-StackPane root = new StackPane();
-root.getChildren().add(btn);</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.HelloWorld</code></p>
-</section>
-</section>
-
-<section>
-<section class="title-slide slide level1">
-<h1>Layouts and Forms</h1>
-</section>
-
-<section class="frame">
 <h2>Layout Managers</h2>
 <p>A layout manager decides where child nodes go.</p>
 <ul>
-<li><p>Do not manually set every x and y position for normal forms.</p></li>
-<li><p>Use a layout that matches the structure of the screen.</p></li>
+<li><p>Use layouts instead of manually setting every x and y position for normal forms.</p></li>
+<li><p>Choose a layout that matches the structure of the screen.</p></li>
 <li><p>Layouts help the UI adapt when the window size changes.</p></li>
 <li><p>Layouts can be nested inside other layouts.</p></li>
 </ul>
-<p>Good JavaFX design usually starts with choosing the root layout.</p>
 </section>
 
 <section class="frame">
@@ -255,55 +226,41 @@ root.getChildren().add(btn);</code></pre>
 <tr><td><code>FlowPane</code></td><td>Wrap items like words in a paragraph.</td></tr>
 </tbody>
 </table>
+<p>Example: LayoutSample.java</p>
+</section>
+
+
+<section class="frame">
+<h2>Event-Driven Code</h2>
+<p>GUI programs wait for user actions.</p>
+<ul>
+<li><p>The program does not run from top to bottom once and finish.</p></li>
+<li><p>It creates the UI, shows the window, and waits.</p></li>
+<li><p>When the user clicks, types, or selects something, an event is created.</p></li>
+<li><p>An event handler is code that responds to that event.</p></li>
+</ul>
 </section>
 
 <section class="frame">
-<h2>VBox and HBox</h2>
-<p><code>VBox</code> and <code>HBox</code> are simple and useful for small screens.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// 30 px child gap; 12 px inner padding.
-HBox h = new HBox(30, sampleFive());
-h.setPadding(new Insets(12));
+<h2>Button Event Handler</h2>
+<p>A button fires an action event when the user activates it.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Button submitButton = new Button("Submit");
+Label feedback = new Label();
 
-// VBox uses the same gap and padding.
-VBox v = new VBox(30, sampleFive());
-v.setPadding(new Insets(12));</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.LayoutSample</code></p>
+submitButton.setOnAction(event -> {
+    feedback.setText("Button was pressed.");
+});</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User clicks button
+        ↓
+ActionEvent is created
+        ↓
+handler runs
+        ↓
+feedback Label changes</code></pre>
 </section>
 
 <section class="frame">
-<h2>GridPane</h2>
-<p><code>GridPane</code> is a natural layout for labels and input fields.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">GridPane form = new GridPane();
-form.setHgap(10);
-form.setVgap(12);
-form.setPadding(new Insets(20));
-
-form.addRow(0, new Label("Name"), nameField);
-form.addRow(1, new Label("Email"), emailField);
-
-form.add(submitButton, 1, 2);
-form.add(feedback, 1, 3);</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.validation.ValidatedFormApp</code></p>
-</section>
-
-<section class="frame">
-<h2>BorderPane</h2>
-<p><code>BorderPane</code> is useful when the screen has major regions.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">BorderPane bp = new BorderPane();
-
-bp.setTop(wrap(nodes[2], "Top"));
-bp.setLeft(wrap(nodes[1], "Left"));
-bp.setCenter(wrap(nodes[0], "Center"));
-bp.setRight(wrap(nodes[4], "Right"));
-bp.setBottom(wrap(nodes[3], "Bottom"));
-
-BorderPane.setMargin(bp.getCenter(), new Insets(8));</code></pre>
-<p><strong>Common pattern:</strong> menu at top, main content in center, and status at bottom.</p>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.LayoutSample</code></p>
-</section>
-
-<section class="frame">
-<h2>Login Layout</h2>
+<h2>Login Form</h2>
 <p>A login form combines controls, layout, and an event handler.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">GridPane grid = new GridPane();
 grid.setHgap(10);
@@ -312,14 +269,18 @@ grid.setVgap(10);
 TextField userTextField = new TextField();
 PasswordField pwBox = new PasswordField();
 Button btn = new Button("Sign in");
-Text actiontarget = new Text();
+Label actiontarget = new Label();
 
 grid.add(new Label("User Name:"), 0, 1);
 grid.add(userTextField, 1, 1);
 grid.add(new Label("Password:"), 0, 2);
 grid.add(pwBox, 1, 2);
 grid.add(btn, 1, 4);
-grid.add(actiontarget, 1, 6);</code></pre>
+grid.add(actiontarget, 1, 6);
+
+btn.setOnAction(event ->
+    actiontarget.setText("Sign in button pressed")
+);</code></pre>
 <p><strong>Example:</strong> <code>cop4027.javafx.basic.Login</code></p>
 </section>
 </section>
@@ -341,7 +302,7 @@ Validator checks data rules
 ValidationResult describes success or failure
         ↓
 GUI displays feedback</code></pre>
-<p>The controls collect and display data. They should not own every validation rule.</p>
+<p>Controls collect and display data. Validation rules should be reusable Java logic.</p>
 </section>
 
 <section class="frame">
@@ -365,7 +326,7 @@ TextField emailField = new TextField();
 Label feedback = new Label();
 Button submitButton = new Button("Validate Details");
 
-submitButton.setOnAction(event -&gt; {
+submitButton.setOnAction(event -> {
     ValidationResult result = validator.validate(
         nameField.getText(), emailField.getText()
     );
@@ -391,7 +352,7 @@ public record ValidationResult(
         return new ValidationResult(false, message);
     }
 }</code></pre>
-<p><strong>Design benefit:</strong> this class has no JavaFX imports, so it is easy to test.</p>
+<p>This class has no JavaFX imports, so it is easy to test.</p>
 </section>
 
 <section class="frame">
@@ -412,346 +373,6 @@ public record ValidationResult(
     return ValidationResult.validResult();
 }</code></pre>
 <p><strong>Example:</strong> <code>cop4027.javafx.validation.ValidatedFormApp</code> and <code>cop4027.javafx.validation.FormValidator</code></p>
-</section>
-</section>
-
-
-<section>
-<section class="title-slide slide level1">
-<h1>State and Commands</h1>
-</section>
-
-<section class="frame">
-<h2>Core Idea</h2>
-<p>A GUI command is not just a click. It is an action that depends on the current application state.</p>
-<table>
-<thead><tr><th>User action</th><th>Application question</th><th>Result</th></tr></thead>
-<tbody>
-<tr><td>Click Save</td><td>Is there anything to save?</td><td>Save or stay disabled</td></tr>
-<tr><td>Click Open</td><td>Will current edits be lost?</td><td>Ask first, then open</td></tr>
-<tr><td>Click Exit</td><td>Are there unsaved changes?</td><td>Confirm before closing</td></tr>
-</tbody>
-</table>
-<p>Correct GUI behavior comes from combining commands with state.</p>
-</section>
-
-<section class="frame">
-<h2>Menu Classes</h2>
-<p>JavaFX menus are organized as a hierarchy.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">MenuBar
-├── File
-│   ├── New
-│   ├── Open
-│   ├── Save
-│   └── Exit
-├── Edit
-│   ├── Cut
-│   ├── Copy
-│   └── Paste
-└── Help
-    └── About</code></pre>
-<table>
-<thead><tr><th>Class</th><th>Role</th></tr></thead>
-<tbody>
-<tr><td><code>MenuBar</code></td><td>The horizontal container for menus.</td></tr>
-<tr><td><code>Menu</code></td><td>A group of related commands.</td></tr>
-<tr><td><code>MenuItem</code></td><td>One selectable command.</td></tr>
-</tbody>
-</table>
-</section>
-
-<section class="frame">
-<h2>Menu Events</h2>
-<p>A menu item fires an action event, just like a button.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">MenuItem openItem = new MenuItem("Open");
-
-openItem.setOnAction(event -&gt; openFile());</code></pre>
-<p>The menu changes how the command is presented, not the basic event-handler idea.</p>
-</section>
-
-<section class="frame">
-<h2>Command Categories</h2>
-<p>Menu items usually represent different kinds of application commands.</p>
-<table>
-<thead><tr><th>Category</th><th>Examples</th><th>Main concern</th></tr></thead>
-<tbody>
-<tr><td>Document</td><td>New, Open, Save</td><td>Manage file content and document state.</td></tr>
-<tr><td>Edit</td><td>Cut, Copy, Paste</td><td>Operate on selection or clipboard.</td></tr>
-<tr><td>Application</td><td>Exit, Preferences</td><td>Control the application itself.</td></tr>
-<tr><td>Help</td><td>About, Documentation</td><td>Show information to the user.</td></tr>
-</tbody>
-</table>
-</section>
-
-<section class="frame">
-<h2>Application State</h2>
-<p>Application state is information the program remembers between events.</p>
-<table>
-<thead><tr><th>State</th><th>Question it answers</th></tr></thead>
-<tbody>
-<tr><td><code>currentFile</code></td><td>Which file is currently open?</td></tr>
-<tr><td><code>dirty</code></td><td>Are there unsaved changes?</td></tr>
-<tr><td>editor text</td><td>What is the current document content?</td></tr>
-<tr><td>selection</td><td>What text is currently selected?</td></tr>
-</tbody>
-</table>
-<p>Without state, commands cannot make safe decisions.</p>
-</section>
-
-<section class="frame">
-<h2>Fields vs Properties</h2>
-<table>
-<thead><tr><th>Use ordinary fields when...</th><th>Use JavaFX properties when...</th></tr></thead>
-<tbody>
-<tr><td>The value only needs to be stored and read.</td><td>Other UI elements need to observe the value.</td></tr>
-<tr><td>The value changes only inside command methods.</td><td>The value should participate in binding.</td></tr>
-<tr><td>Example: <code>currentFile</code></td><td>Example: <code>dirty</code></td></tr>
-</tbody>
-</table>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private File currentFile;
-private final BooleanProperty dirty =
-    new SimpleBooleanProperty(false);</code></pre>
-</section>
-
-<section class="frame">
-<h2>GUI Reactions</h2>
-<table>
-<thead><tr><th>Mechanism</th><th>When it runs</th><th>Typical use</th></tr></thead>
-<tbody>
-<tr><td>Event handler</td><td>User performs a command</td><td>Open, Save, Exit</td></tr>
-<tr><td>Listener</td><td>An observed value changes</td><td>Text changed, selection changed</td></tr>
-<tr><td>Binding</td><td>One property follows another</td><td>Disable Save when clean</td></tr>
-</tbody>
-</table>
-<p>Use the mechanism that matches the kind of change you are handling.</p>
-</section>
-
-<section class="frame">
-<h2>Listeners</h2>
-<p>A listener is useful when the application should respond immediately to a changed value.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User edits TextArea
-        ↓
-textProperty changes
-        ↓
-listener marks document dirty
-        ↓
-title, status, and commands update</code></pre>
-<p>Example uses: live validation, character count, selected text count, unsaved-change tracking.</p>
-</section>
-
-<section class="frame">
-<h2>Listener Example</h2>
-<p>This listener turns text editing into an application-state update.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">editor.textProperty().addListener(
-    (observable, oldText, newText) -&gt; {
-        setDirty(true);
-        updateTextStatus(newText);
-    }
-);</code></pre>
-<p>The detailed helper methods can be shown during the code demo.</p>
-</section>
-
-<section class="frame">
-<h2>State Updates</h2>
-<p>When one state value affects several UI elements, update them through one helper method.</p>
-<table>
-<thead><tr><th>State change</th><th>UI elements affected</th></tr></thead>
-<tbody>
-<tr><td><code>dirty = true</code></td><td>Title shows <code>*</code>, Save becomes enabled, status changes.</td></tr>
-<tr><td><code>dirty = false</code></td><td>Title removes <code>*</code>, Save becomes disabled, status changes.</td></tr>
-<tr><td><code>currentFile</code> changes</td><td>Window title shows the new file name.</td></tr>
-</tbody>
-</table>
-<p>Centralized updates prevent different handlers from updating the interface inconsistently.</p>
-</section>
-
-<section class="frame">
-<h2>Binding</h2>
-<p>Binding is useful when one UI property should continuously follow another value.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">saveItem.disableProperty().bind(dirty.not());</code></pre>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">dirty = false  -&gt;  Save disabled
-dirty = true   -&gt;  Save enabled</code></pre>
-<p>Binding removes the need to manually enable or disable Save in every handler.</p>
-</section>
-
-<section class="frame">
-<h2>Event Flow</h2>
-<table>
-<thead><tr><th>Situation</th><th>Best mechanism</th><th>Reason</th></tr></thead>
-<tbody>
-<tr><td>User chooses Open</td><td>Event handler</td><td>A command starts.</td></tr>
-<tr><td>User types in the editor</td><td>Listener</td><td>A property changed.</td></tr>
-<tr><td>Save should match dirty state</td><td>Binding</td><td>A relationship must stay synchronized.</td></tr>
-</tbody>
-</table>
-<p>Do not use binding for everything. File reading, saving, and dialogs are still command methods.</p>
-</section>
-
-<section class="frame">
-<h2>Dialogs</h2>
-<p>A dialog can pause a command and ask the user how to continue.</p>
-<table>
-<thead><tr><th>Choice</th><th>Meaning</th><th>Continue?</th></tr></thead>
-<tbody>
-<tr><td>Save</td><td>Preserve changes first</td><td>Only if saving succeeds</td></tr>
-<tr><td>Don't Save</td><td>Discard changes intentionally</td><td>Yes</td></tr>
-<tr><td>Cancel</td><td>Keep the current document</td><td>No</td></tr>
-</tbody>
-</table>
-<p>A dialog is part of the command workflow, not just a visual popup.</p>
-</section>
-
-<section class="frame">
-<h2>File Chooser</h2>
-<p><code>FileChooser</code> selects a path. The <code>Files</code> class reads or writes the content.</p>
-<table>
-<thead><tr><th>Task</th><th>JavaFX class</th><th>Java I/O class</th></tr></thead>
-<tbody>
-<tr><td>Open</td><td><code>showOpenDialog(stage)</code></td><td><code>Files.readString(...)</code></td></tr>
-<tr><td>Save</td><td><code>showSaveDialog(stage)</code></td><td><code>Files.writeString(...)</code></td></tr>
-</tbody>
-</table>
-<p>If the user cancels a file dialog, the result is <code>null</code>. That is a normal outcome.</p>
-</section>
-
-<section class="frame">
-<h2>Open and Save</h2>
-<table style="font-size: 0.86em;">
-<thead><tr><th>Open</th><th>Save</th></tr></thead>
-<tbody>
-<tr><td>Check unsaved changes.</td><td>Use <code>currentFile</code> if it exists.</td></tr>
-<tr><td>Ask the user to choose a file.</td><td>Otherwise ask for a save location.</td></tr>
-<tr><td>Read content from disk.</td><td>Write editor text to disk.</td></tr>
-<tr><td>Put content in the editor.</td><td>Remember the file path.</td></tr>
-<tr><td>Update <code>currentFile</code> and <code>dirty</code>.</td><td>Mark the document clean.</td></tr>
-</tbody>
-</table>
-</section>
-
-<section class="frame">
-<h2>Full Event Flow</h2>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User edits text
-    -&gt; listener marks document dirty
-    -&gt; title updates
-    -&gt; Save becomes enabled
-
-User chooses Open
-    -&gt; menu event handler runs
-    -&gt; unsaved changes are checked
-    -&gt; FileChooser selects a file
-    -&gt; file content loads
-    -&gt; application state updates</code></pre>
-</section>
-</section>
-
-<section>
-<section class="title-slide slide level1">
-<h1>Responsive Apps</h1>
-</section>
-
-<section class="frame">
-<h2>FX Thread Rule</h2>
-<p>JavaFX uses one special thread for UI work.</p>
-<ul>
-<li><p>The JavaFX Application Thread renders the UI and handles user events.</p></li>
-<li><p>UI controls should only be changed from this thread.</p></li>
-<li><p>Long-running work should not run on this thread.</p></li>
-<li><p>If a button handler runs a slow loop, the window may freeze.</p></li>
-</ul>
-<p>Rule: background work can compute, but UI updates must return to the JavaFX Application Thread.</p>
-</section>
-
-<section class="frame">
-<h2>Frozen UI</h2>
-<p>This code runs a slow task directly inside the button handler.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">startButton.setOnAction(event -&gt; {
-    for (int i = 1; i &lt;= 100; i++) {
-        progressLabel.setText("Step " + i);
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            return;
-        }
-    }
-});</code></pre>
-<p><strong>Result:</strong> rendering and input handling pause until the loop finishes.</p>
-</section>
-
-<section class="frame">
-<h2>Platform.runLater</h2>
-<p><code>Platform.runLater</code> schedules a UI update on the JavaFX Application Thread.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size: 0.62em;"><code class="language-java">@Override
-public void run() {
-    final double reportedProgress = progress;
-
-    Platform.runLater(new Runnable() {
-        @Override
-        public void run() {
-            progressBar.setProgress(reportedProgress);
-        }
-    });
-}</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.advanced.ConcurrencyExample</code></p>
-</section>
-
-<section class="frame">
-<h2>Background Task</h2>
-<p><code>Task.call()</code> runs off the JavaFX Application Thread.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Task&lt;Void&gt; task = new Task&lt;&gt;() {
-    @Override
-    protected Void call() throws Exception {
-        for (int step = 1; step &lt;= 100; step++) {
-            Thread.sleep(40); // Simulate slow work.
-            updateProgress(step, 100);
-            updateMessage("Step " + step + " of 100");
-        }
-        return null;
-    }
-};</code></pre>
-</section>
-
-<section class="frame">
-<h2>Task Binding</h2>
-<p><code>Task</code> exposes observable progress and message properties.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// JavaFX updates these controls when Task reports new values.
-progressBar.progressProperty().bind(
-    task.progressProperty()
-);
-statusLabel.textProperty().bind(
-    task.messageProperty()
-);
-
-Thread worker = new Thread(task);
-worker.setDaemon(true);
-worker.start();</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.advanced.TaskProgressDemo</code></p>
-</section>
-
-<section class="frame">
-<h2>Threading Choices</h2>
-<table>
-<thead><tr><th>Tool</th><th>Use it when</th></tr></thead>
-<tbody>
-<tr><td>Event handler only</td><td>The work is short and updates the UI immediately.</td></tr>
-<tr><td>Background <code>Thread</code></td><td>You need general background execution.</td></tr>
-<tr><td><code>Platform.runLater</code></td><td>A background thread needs to schedule a small UI update.</td></tr>
-<tr><td><code>Task</code></td><td>Background work needs progress, messages, completion, or cancellation state.</td></tr>
-</tbody>
-</table>
-<p><code>Task</code> does not remove the thread rule; it provides JavaFX-aware state for following it.</p>
-</section>
-
-<section class="frame">
-<h2>Threading Check</h2>
-<p>Use this checklist when a JavaFX app freezes or crashes.</p>
-<ul>
-<li><p>Is a long loop, file read, network request, or database query running on the UI thread?</p></li>
-<li><p>Is a background thread directly calling <code>label.setText(...)</code> or changing a control?</p></li>
-<li><p>Should the slow work be placed on a background thread?</p></li>
-<li><p>Should UI updates use <code>Platform.runLater</code> or <code>Task</code> properties?</p></li>
-<li><p>Can the operation be cancelled cleanly?</p></li>
-</ul>
 </section>
 </section>
 
@@ -782,7 +403,7 @@ worker.start();</code></pre>
 <thead><tr><th>Selector</th><th>Syntax</th><th>Java connection</th><th>Applies to</th></tr></thead>
 <tbody>
 <tr><td>Type</td><td><code>Button { }</code></td><td>Node type</td><td>All buttons</td></tr>
-<tr><td>ID</td><td><code>#welcome-text { }</code></td><td><code>setId("welcome-text")</code></td><td>One specific node</td></tr>
+<tr><td>ID</td><td><code>#password-input { }</code></td><td><code>setId("password-input")</code></td><td>One specific node</td></tr>
 <tr><td>Style class</td><td><code>.primary-button { }</code></td><td><code>getStyleClass().add(...)</code></td><td>Any node with that class</td></tr>
 <tr><td>Pseudo-class</td><td><code>.button:hover { }</code></td><td>Node state</td><td>Buttons while hovered</td></tr>
 </tbody>
@@ -792,20 +413,30 @@ worker.start();</code></pre>
 <section class="frame">
 <h2>IDs and Classes</h2>
 <p>An ID is for one specific node. A style class can be shared by many nodes.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Text sceneTitle = new Text("Welcome");
-sceneTitle.setId("welcome-text");
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Label title = new Label("Welcome");
+// A style class can be reused by many controls.
+title.getStyleClass().add("title");
+
+PasswordField passwordField = new PasswordField();
+// An ID should identify one specific control.
+passwordField.setId("password-input");
 
 Button signInButton = new Button("Sign In");
 signInButton.getStyleClass().add("primary-button");</code></pre>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-css">#welcome-text {
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-css">.title {
     -fx-font-size: 32px;
-    -fx-fill: #818181;
+    -fx-text-fill: #333333;
+}
+
+#password-input {
+    -fx-border-color: #5b8def;
 }
 
 .primary-button {
     -fx-font-weight: bold;
     -fx-text-fill: white;
 }</code></pre>
+<p>Example: <code>cop4027.javafx.basic.LoginCSS</code> and <code>Login.css</code></p>
 </section>
 
 <section class="frame">
@@ -823,26 +454,6 @@ signInButton.getStyleClass().add("primary-button");</code></pre>
 </table>
 </section>
 
-<section class="frame">
-<h2>Login Styling</h2>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-css">#welcome-text {
-    -fx-font-size: 32px;
-    -fx-font-family: "Arial Black";
-    -fx-fill: #818181;
-}
-
-.button {
-    -fx-text-fill: white;
-    -fx-font-family: "Arial Narrow";
-    -fx-font-weight: bold;
-    -fx-background-color: linear-gradient(#61a2b1, #2A5058);
-}
-
-.button:hover {
-    -fx-background-color: linear-gradient(#2A5058, #61a2b1);
-}</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.LoginCSS</code> and <code>Login.css</code></p>
-</section>
 </section>
 
 <section>
@@ -850,53 +461,189 @@ signInButton.getStyleClass().add("primary-button");</code></pre>
 <h1>FXML and Controllers</h1>
 </section>
 
+<section class="frame">
+<h2>Why FXML?</h2>
+<p>FXML describes a JavaFX scene graph using XML.</p>
+<table>
+<thead><tr><th>Without FXML</th><th>With FXML</th></tr></thead>
+<tbody>
+<tr><td>Java code creates controls and layouts.</td><td>FXML describes controls and layouts.</td></tr>
+<tr><td>Java code sets visual structure.</td><td>Java controller handles behavior.</td></tr>
+<tr><td>Large screens can make <code>start(...)</code> crowded.</td><td>Layout and behavior are easier to separate.</td></tr>
+</tbody>
+</table>
+<p>FXML does not replace Java. It moves view construction out of Java code.</p>
+</section>
 
 <section class="frame">
-<h2>FXML Overview</h2>
-<p>FXML is an XML-based file format for describing JavaFX UI layout.</p>
-<ul>
-<li><p>FXML describes the view.</p></li>
-<li><p>A controller class handles user events and application logic.</p></li>
-<li><p>The main application loads the FXML file.</p></li>
-<li><p>CSS can still style the UI.</p></li>
-</ul>
+<h2>Java Code vs FXML</h2>
+<p>FXML expresses the same JavaFX objects and properties declaratively.</p>
 <table>
-<thead><tr><th>File</th><th>Role</th></tr></thead>
+<thead><tr><th>Java code</th><th>FXML</th></tr></thead>
 <tbody>
-<tr><td><code>fxml_example.fxml</code></td><td>Layout and controls</td></tr>
-<tr><td><code>FXMLExampleController.java</code></td><td>Event handlers and UI logic</td></tr>
-<tr><td><code>FXMLExample.java</code></td><td>Starts JavaFX and loads FXML</td></tr>
+<tr><td><code>new GridPane()</code></td><td><code>&lt;GridPane&gt;</code></td></tr>
+<tr><td><code>new Label("Welcome")</code></td><td><code>&lt;Label text="Welcome"/&gt;</code></td></tr>
+<tr><td><code>grid.setHgap(10)</code></td><td><code>hgap="10"</code></td></tr>
+<tr><td><code>new TextField()</code></td><td><code>&lt;TextField/&gt;</code></td></tr>
+<tr><td><code>grid.add(node, 1, 2)</code></td><td><code>GridPane.columnIndex="1"</code><br/><code>GridPane.rowIndex="2"</code></td></tr>
 </tbody>
 </table>
 </section>
 
 <section class="frame">
-<h2>FXML Anatomy</h2>
-<p>FXML connects UI nodes to controller fields and methods.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size: 0.65em;"><code class="language-xml">&lt;GridPane
+<h2>Reading an FXML File</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size: 0.62em;"><code class="language-xml">&lt;?import javafx.scene.control.*?&gt;
+&lt;?import javafx.scene.layout.*?&gt;
+
+&lt;GridPane hgap="10" vgap="10"&gt;
+    &lt;Label text="User Name:"
+           GridPane.columnIndex="0"
+           GridPane.rowIndex="1"/&gt;
+
+    &lt;TextField
+           GridPane.columnIndex="1"
+           GridPane.rowIndex="1"/&gt;
+&lt;/GridPane&gt;</code></pre>
+<table>
+<thead><tr><th>FXML part</th><th>JavaFX meaning</th></tr></thead>
+<tbody>
+<tr><td><code>&lt;?import ...?&gt;</code></td><td>Make Java classes available by short name.</td></tr>
+<tr><td><code>&lt;GridPane&gt;</code></td><td>Create a <code>GridPane</code>.</td></tr>
+<tr><td><code>hgap="10"</code></td><td>Set a property on the <code>GridPane</code>.</td></tr>
+<tr><td><code>&lt;Label&gt;</code></td><td>Create a <code>Label</code> child node.</td></tr>
+<tr><td><code>GridPane.rowIndex</code></td><td>Set a layout constraint for the child.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="frame">
+<h2>Nested Nodes</h2>
+<p>Nested FXML elements create nested JavaFX objects.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;HBox spacing="10" alignment="bottom_right"&gt;
+    &lt;Button text="Sign In"/&gt;
+    &lt;Button text="Clear"/&gt;
+&lt;/HBox&gt;</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">HBox
+├── Button: Sign In
+└── Button: Clear</code></pre>
+<p>This is the same scene graph idea used when building the UI in Java.</p>
+</section>
+
+<section class="frame">
+<h2>Object-Valued Properties</h2>
+<p>Some FXML elements set a property whose value is another object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;GridPane hgap="10" vgap="10"&gt;
+    &lt;padding&gt;
+        &lt;Insets top="25"
+                right="25"
+                bottom="10"
+                left="25"/&gt;
+    &lt;/padding&gt;
+&lt;/GridPane&gt;</code></pre>
+<p>Java equivalent:</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">grid.setPadding(
+    new Insets(25, 25, 10, 25)
+);</code></pre>
+</section>
+
+<section class="frame">
+<h2>Identifying and Styling Nodes</h2>
+<p>FXML has several ways to name or classify a node.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;PasswordField
+    fx:id="passwordField"
+    id="password-input"
+    styleClass="input-field"/&gt;</code></pre>
+<table>
+<thead><tr><th>FXML</th><th>Purpose</th><th>Connects to</th></tr></thead>
+<tbody>
+<tr><td><code>fx:id</code></td><td>Name for FXML/controller access</td><td><code>@FXML private PasswordField passwordField;</code></td></tr>
+<tr><td><code>id</code></td><td>JavaFX node ID</td><td><code>#password-input</code> in CSS</td></tr>
+<tr><td><code>styleClass</code></td><td>Reusable CSS class</td><td><code>.input-field</code> in CSS</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="frame">
+<h2>Loading CSS from FXML</h2>
+<p>FXML can attach a stylesheet to the UI.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;stylesheets&gt;
+    &lt;URL value="@Login.css"/&gt;
+&lt;/stylesheets&gt;</code></pre>
+<table>
+<thead><tr><th>FXML</th><th>CSS</th></tr></thead>
+<tbody>
+<tr><td><code>id="password-input"</code></td><td><code>#password-input { ... }</code></td></tr>
+<tr><td><code>styleClass="feedback"</code></td><td><code>.feedback { ... }</code></td></tr>
+<tr><td><code>styleClass="primary-button"</code></td><td><code>.primary-button { ... }</code></td></tr>
+</tbody>
+</table>
+<p>The <code>@</code> prefix identifies a resource location relative to the FXML file.</p>
+</section>
+
+<section class="frame">
+<h2>FXML Controller</h2>
+<p>The <code>fx:controller</code> attribute names the Java class that controls this view.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;GridPane
     fx:controller="cop4027.javafx.fxml.FXMLExampleController"
     xmlns:fx="http://javafx.com/fxml"&gt;
 
     &lt;Button text="Sign In"
-        onAction="#handleSubmitButtonAction" /&gt;
+            onAction="#handleSubmitButtonAction"/&gt;
 
-    &lt;Text fx:id="actiontarget" /&gt;
+    &lt;Label fx:id="actiontarget"/&gt;
 &lt;/GridPane&gt;</code></pre>
+<p>The <code>fx</code> namespace marks FXML-specific instructions such as <code>fx:controller</code> and <code>fx:id</code>.</p>
 </section>
 
 <section class="frame">
-<h2>Controller Basics</h2>
-<p>The controller uses <code>@FXML</code> to access nodes declared in FXML.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">package cop4027.javafx.fxml;
-
+<h2>Controller Fields and Methods</h2>
+<p><code>FXMLLoader</code> uses <code>fx:id</code> to inject UI objects and <code>onAction</code> to connect events.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">
 public class FXMLExampleController {
-    @FXML private Text actiontarget;
+    @FXML
+    private Label actiontarget;
 
     @FXML
-    protected void handleSubmitButtonAction(ActionEvent event) {
+    private void handleSubmitButtonAction(ActionEvent event) {
         actiontarget.setText("Sign in button pressed");
     }
 }</code></pre>
+<table>
+<thead><tr><th>FXML connection</th><th>Controller connection</th></tr></thead>
+<tbody>
+<tr>
+<td><code>&lt;Label fx:id="actiontarget"/&gt;</code></td>
+<td><code>@FXML private Label actiontarget;</code></td>
+</tr>
+<tr>
+<td><code>onAction="#handleSubmitButtonAction"</code></td>
+<td><code>@FXML private void handleSubmitButtonAction(...)</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p>A node only needs <code>fx:id</code> when the controller needs a direct reference to it.</p></li>
+<li><p>A button only needs <code>onAction</code> when it should call a controller method.</p></li>
+<li><p>Nodes without <code>fx:id</code> still exist in the scene graph.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>What FXMLLoader Does</h2>
+<p><code>FXMLLoader</code> turns the FXML file into JavaFX objects.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">FXMLLoader.load(...)
+        ↓
+read the FXML file
+        ↓
+create GridPane, Labels, Buttons, fields...
+        ↓
+create the controller
+        ↓
+inject fields that match fx:id
+        ↓
+connect event handlers named by onAction
+        ↓
+return the root node</code></pre>
 </section>
 
 <section class="frame">
@@ -918,35 +665,28 @@ public class FXMLExampleController {
 </section>
 
 <section class="frame">
-<h2>FXML and CSS</h2>
-<p>FXML can attach the same stylesheet used by a Java-built scene.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;stylesheets&gt;
-    &lt;URL value="@Login.css" /&gt;
-&lt;/stylesheets&gt;</code></pre>
-<p><strong>Example:</strong> <code>fxml_example.fxml</code> and <code>Login.css</code></p>
-</section>
-
-<section class="frame">
 <h2>FXML Module Access</h2>
-<p>In a modular project, <code>FXMLLoader</code> also needs reflective access to the controller package.</p>
+<p>In a modular project, <code>FXMLLoader</code> needs reflective access to the controller package.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">module cop4027.javafx.examples {
     requires javafx.controls;
     requires javafx.fxml;
 
-    // Allows FXMLLoader to inject @FXML fields and call handlers.
     opens cop4027.javafx.fxml to javafx.fxml;
 }</code></pre>
-<p><strong>Example:</strong> <code>module-info.java</code></p>
+<ul>
+<li><p><code>requires javafx.fxml</code> makes the FXML API available.</p></li>
+<li><p><code>opens ... to javafx.fxml</code> allows <code>FXMLLoader</code> to inject private <code>@FXML</code> fields and call private <code>@FXML</code> methods.</p></li>
+</ul>
 </section>
 
 <section class="frame">
-<h2>FXML Mistakes</h2>
+<h2>Common FXML Mistakes</h2>
 <p>Most FXML errors come from broken connections.</p>
 <ul>
 <li><p><strong>Wrong resource path:</strong> <code>getResource(...)</code> returns <code>null</code>.</p></li>
 <li><p><strong>Wrong controller package:</strong> <code>fx:controller</code> does not match the Java class.</p></li>
-<li><p><strong>Wrong fx:id:</strong> the FXML id does not match the controller field name.</p></li>
-<li><p><strong>Missing @FXML:</strong> private fields or methods are not visible to the loader.</p></li>
+<li><p><strong>Wrong <code>fx:id</code>:</strong> the FXML id does not match the controller field name.</p></li>
+<li><p><strong>Missing <code>@FXML</code>:</strong> private fields or methods are not visible to the loader.</p></li>
 <li><p><strong>Wrong method signature:</strong> <code>onAction</code> points to a method that does not exist.</p></li>
 </ul>
 </section>
@@ -962,26 +702,622 @@ public class FXMLExampleController {
 <li><p>Assign event handler names such as <code>#handleSubmitButtonAction</code>.</p></li>
 <li><p>Save the FXML and run the JavaFX application.</p></li>
 </ol>
-<p>Scene Builder changes the FXML file. It does not replace the controller logic.</p>
-</section>
-
-<section class="frame">
-<h2>Practice: Login Form</h2>
-<p>Use FXML and Scene Builder to extend the login form.</p>
-<ul>
-<li><p>Add a <code>CheckBox</code> labeled <strong>Show password</strong>.</p></li>
-<li><p>Add a <code>Hyperlink</code> labeled <strong>Reset password</strong>.</p></li>
-<li><p>Add a <code>CheckBox</code> labeled <strong>Remember me</strong>.</p></li>
-<li><p>Give each interactive control a clear <code>fx:id</code>.</p></li>
-<li><p>Connect each action to a controller method.</p></li>
-</ul>
-<p>Goal: students practice connecting view elements to controller code.</p>
+<p>Scene Builder changes the FXML file. Java controller logic still belongs in Java.</p>
 </section>
 </section>
 
 <section>
 <section class="title-slide slide level1">
-<h1>Optional Capabilities</h1>
+<h1>Stateful Interfaces</h1>
+</section>
+
+<section class="frame">
+<h2>Application State</h2>
+<p>State is information the application remembers between events.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private int count = 0;
+
+Button countButton = new Button("Count");
+Label countLabel = new Label("Count: 0");
+
+countButton.setOnAction(event -> {
+    count++;
+    countLabel.setText("Count: " + count);
+});</code></pre>
+<p>The handler runs once per click, but <code>count</code> keeps its value between clicks.</p>
+</section>
+
+<section class="frame">
+<h2>Fields and JavaFX Properties</h2>
+<p>An ordinary field stores a value.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private boolean enabled = true;</code></pre>
+<p>A JavaFX property stores a value that can also be observed and bound.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final BooleanProperty enabled = new SimpleBooleanProperty(true);
+
+enabled.set(false);
+
+if (!enabled.get()) {
+    System.out.println("The command is disabled.");
+}</code></pre>
+<ul>
+<li><p>Use ordinary fields for values that only need to be stored and checked manually.</p></li>
+<li><p>Use JavaFX properties when the UI should react to value changes.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Listening for Changes</h2>
+<p>A listener runs when an observed property changes.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TextField nameField = new TextField();
+Label countLabel = new Label("Characters: 0");
+
+nameField.textProperty().addListener((observable, oldValue, newValue) -> {
+    countLabel.setText("Characters: " + newValue.length());
+});</code></pre>
+<p>Here the listener reacts every time the text field value changes.</p>
+</section>
+
+<section class="frame">
+<h2>Binding</h2>
+<p>Binding keeps one property synchronized with another value.</p>
+<p>Binding can also keep displayed text synchronized with state.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TextField nameField = new TextField();
+Button submitButton = new Button("Submit");
+
+// Binding keeps the button state synchronized with the text field.
+submitButton.disableProperty().bind(nameField.textProperty().isEmpty());
+
+// Binding can also keep displayed text synchronized.
+greetingLabel.textProperty().bind(nameField.textProperty().concat(" is typing..."));</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TextField empty     -> Submit disabled
+TextField has text  -> Submit enabled</code></pre>
+<p>The button state follows the text field automatically.</p>
+<p>When the text field changes, the label changes without a separate event handler.</p>
+</section>
+
+<section class="frame">
+<h2>Event Handler, Listener, or Binding?</h2>
+<table>
+<thead><tr><th>Situation</th><th>Best mechanism</th><th>Reason</th></tr></thead>
+<tbody>
+<tr><td>User clicks Submit</td><td>Event handler</td><td>A command starts.</td></tr>
+<tr><td>User changes text</td><td>Listener</td><td>A property changed and code should react.</td></tr>
+<tr><td>Submit should follow text state</td><td>Binding</td><td>A relationship should stay synchronized.</td></tr>
+</tbody>
+</table>
+<p>Use event handlers for actions, listeners for reactions, and binding for ongoing relationships.</p>
+<p><strong>Example:</strong> <code>cop4027.javafx.basic.EventListenerBindingDemo</code></p>
+</section>
+
+<section class="frame">
+<h2>Menu Structure</h2>
+<p>JavaFX menus are organized as a hierarchy.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">MenuBar
+└── File            ← Menu
+    ├── New         ← MenuItem
+    ├── Open        ← MenuItem
+    ├── Save        ← MenuItem
+    └── Exit        ← MenuItem</code></pre>
+<ul>
+<li><p><code>MenuBar</code> holds the menus at the top of the interface.</p></li>
+<li><p><code>Menu</code> groups related commands.</p></li>
+<li><p><code>MenuItem</code> represents one command the user can select.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Creating a Menu</h2>
+<p>Create the menu objects, add items to the menu, then add the menu to the menu bar.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">MenuBar menuBar = new MenuBar(); // top menu container
+
+Menu fileMenu = new Menu("File"); // one drop-down menu
+
+MenuItem newItem = new MenuItem("New"); // one command
+MenuItem openItem = new MenuItem("Open");
+MenuItem saveItem = new MenuItem("Save");
+MenuItem exitItem = new MenuItem("Exit");
+
+fileMenu.getItems().addAll(newItem, openItem, saveItem, new SeparatorMenuItem(), exitItem);
+
+menuBar.getMenus().add(fileMenu);</code></pre>
+</section>
+
+
+<section class="frame">
+<h2>Handling Menu Commands</h2>
+<p>A menu item fires an action event, just like a button.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">newItem.setOnAction(event -> {
+    // The handler runs when the menu item is selected.
+    textArea.clear();
+    statusLabel.setText("New document");
+});
+
+exitItem.setOnAction(event -> Platform.exit());</code></pre>
+<p>The menu changes how the command is presented. The event-handler idea is the same.</p>
+<p><strong>Example:</strong> <code>cop4027.javafx.basic.MenuEventDemo</code></p>
+</section>
+
+<section class="frame">
+<h2>Confirmation Dialogs</h2>
+<p>A dialog can ask the user before a command continues.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+alert.setTitle("Confirm Clear");
+alert.setHeaderText("Clear all text?");
+alert.setContentText("Any entered text will be removed.");
+
+// showAndWait displays the dialog and returns the user's choice.
+ButtonType choice = alert.showAndWait().orElse(ButtonType.CANCEL);
+
+if (choice == ButtonType.OK) {
+    textArea.clear();
+}</code></pre>
+<ul>
+<li><p><code>showAndWait()</code> displays the dialog and waits for the user's choice.</p></li>
+<li><p>The command continues only if the result says the user confirmed.</p></li>
+</ul>
+<p><strong>Example:</strong> <code>cop4027.javafx.basic.ConfirmationDialogDemo</code></p>
+</section>
+
+<section class="frame">
+<h2>Selecting a File</h2>
+<p><code>FileChooser</code> lets the user select a file path. It does not read or write the file by itself.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">FileChooser  -> lets the user choose a file path
+Files        -> reads or writes the file content
+
+Open         -> showOpenDialog(stage) + Files.readString(...)
+Save         -> showSaveDialog(stage) + Files.writeString(...)</code></pre>
+<p>If the user cancels a file dialog, the result is <code>null</code>. That is a normal outcome.</p>
+</section>
+
+<section class="frame">
+<h2>Opening and Saving Text</h2>
+<p>The chooser selects a path. The <code>Files</code> class reads or writes the content.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">FileChooser chooser = new FileChooser();
+
+File openFile = chooser.showOpenDialog(stage); // null if cancelled
+if (openFile != null) {
+    textArea.setText(Files.readString(openFile.toPath()));
+}
+
+File saveFile = chooser.showSaveDialog(stage); // null if cancelled
+if (saveFile != null) {
+    Files.writeString(saveFile.toPath(), textArea.getText());
+}</code></pre>
+<ul>
+<li><p><code>showOpenDialog(...)</code> chooses an existing file to read.</p></li>
+<li><p><code>showSaveDialog(...)</code> chooses a destination file to write.</p></li>
+</ul>
+<p><strong>Example:</strong> <code>cop4027.javafx.basic.TextFileChooserDemo</code></p>
+</section>
+
+<section class="frame">
+<h2>Tracking Editor State</h2>
+<p>The editor remembers the current file and whether the text has unsaved changes.</p>
+<pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private File currentFile;
+private final BooleanProperty dirty = new SimpleBooleanProperty(false);
+
+textArea.textProperty().addListener((observable, oldText, newText) -> {
+    // Listener: editing marks the document as changed.
+    dirty.set(true);
+    statusLabel.setText("Unsaved changes");
+});
+
+// Binding: Save follows dirty automatically.
+saveItem.disableProperty().bind(dirty.not());</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">dirty = false  -> Save disabled
+dirty = true   -> Save enabled</code></pre>
+<p><strong>Example:</strong> <code>cop4027.javafx.basic.DirtyStateDemo</code></p>
+</section>
+
+<section class="frame">
+<h2>Opening with Unsaved Changes</h2>
+<p>Opening a new file may need to protect unsaved work first.</p>
+<pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">openItem.setOnAction(event -> {
+    if (dirty.get()) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("Discard unsaved changes?");
+        ButtonType choice = alert.showAndWait().orElse(ButtonType.CANCEL);
+
+        if (choice != ButtonType.OK) {
+            return; // stop if the user keeps the current work
+        }
+    }
+
+    File file = chooser.showOpenDialog(stage);
+    if (file != null) {
+        textArea.setText(Files.readString(file.toPath()));
+        currentFile = file; // remember the file for later Save
+        dirty.set(false);   // loaded text matches the file
+    }
+});</code></pre>
+</section>
+
+<section class="frame">
+<h2>Saving with Current File</h2>
+<p>Saving can reuse the current file. The first save still needs a destination.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">saveItem.setOnAction(event -> {
+    File file = currentFile;
+
+    if (file == null) {
+        file = chooser.showSaveDialog(stage); // first save needs a path
+    }
+
+    if (file != null) {
+        Files.writeString(file.toPath(), textArea.getText());
+        currentFile = file;
+        dirty.set(false); // saved text now matches the file
+        statusLabel.setText("Saved " + file.getName());
+    }
+});</code></pre>
+</section>
+
+<section class="frame">
+<h2>Text Editor Event Flow</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User edits text
+    -> listener marks dirty = true
+    -> binding enables Save
+
+User chooses Save
+    -> event handler chooses a file
+    -> Files.writeString(...) saves text
+    -> dirty = false
+    -> binding disables Save
+
+User chooses Open
+    -> event handler checks dirty state
+    -> dialog asks if needed
+    -> FileChooser selects file
+    -> Files.readString(...) loads text</code></pre>
+<p><strong>Putting it together:</strong> <code>cop4027.javafx.basic.TextEditorMenuDemo</code></p>
+</section>
+
+<section class="frame">
+<h2>Stateful Interface Takeaways</h2>
+<ul>
+<li><p>State is information remembered between events.</p></li>
+<li><p>JavaFX properties make state observable and bindable.</p></li>
+<li><p>Listeners react when a property changes.</p></li>
+<li><p>Binding keeps related properties synchronized.</p></li>
+<li><p><code>MenuBar</code>, <code>Menu</code>, and <code>MenuItem</code> create command menus.</p></li>
+<li><p>Dialogs help commands make safe decisions.</p></li>
+<li><p><code>FileChooser</code> selects files; Java I/O reads and writes them.</p></li>
+<li><p>Larger applications combine these same mechanisms.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Responsive Apps</h1>
+</section>
+
+<section class="frame">
+<h2>FX Thread Rule</h2>
+<p>JavaFX uses one special thread for UI work: the <strong>JavaFX Application Thread</strong>.</p>
+<ul>
+<li><p>It renders the interface.</p></li>
+<li><p>It handles user events such as button clicks.</p></li>
+<li><p>Event handlers already run on this thread.</p></li>
+<li><p>JavaFX controls should only be changed from this thread.</p></li>
+</ul>
+<p>If this thread is busy doing slow work, the interface cannot repaint or respond to the user.</p>
+</section>
+
+<section class="frame">
+<h2>UI Thread and Worker Thread</h2>
+<p>A JavaFX application can use additional threads for work that should not block the interface.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX Application Thread
+    renders controls
+    handles button clicks
+    updates the scene graph
+
+Background worker
+    performs slow calculations
+    reads files
+    communicates over a network
+    does not directly update controls</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">System.out.println(
+    "Button handler: " + Thread.currentThread().getName()
+);
+
+Thread worker = new Thread(() -> {
+    System.out.println(
+        "Worker: " + Thread.currentThread().getName()
+    );
+}, "background-worker");
+
+worker.start();</code></pre>
+
+<p>Example output:</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Button handler: JavaFX Application Thread
+Worker: background-worker</code></pre>
+</section>
+
+<section class="frame">
+<h2>Why the UI Freezes</h2>
+<p>This code runs slow work directly inside the button handler.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">startButton.setOnAction(event -> {
+    for (int step = 1; step &lt;= 100; step++) {
+        doSlowStep(step);
+        progressLabel.setText("Step " + step);
+    }
+});</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Button click
+    ↓
+JavaFX Application Thread enters slow loop
+    ↓
+cannot process repaint or input events
+    ↓
+window appears frozen
+    ↓
+loop finishes
+    ↓
+JavaFX can process events again</code></pre>
+
+<p>The problem is not the loop itself. The problem is that the UI thread is doing the slow work.</p>
+</section>
+
+<section class="frame">
+<h2>Move Slow Work Off the UI Thread</h2>
+<p>A worker thread lets the JavaFX Application Thread remain available for the interface.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Thread worker = new Thread(() -> {
+    doSlowWork();
+}, "background-worker");
+
+worker.setDaemon(true);
+worker.start();</code></pre>
+
+<ul>
+<li><p><code>new Thread(...)</code> creates another thread of execution.</p></li>
+<li><p><code>start()</code> begins executing the worker.</p></li>
+<li><p>The UI thread remains free to repaint and handle events.</p></li>
+</ul>
+
+<p>But the worker should not directly change JavaFX controls.</p>
+</section>
+
+<section class="frame">
+<h2>Platform.runLater</h2>
+<p>A worker can ask the JavaFX Application Thread to perform a small UI update.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Thread worker = new Thread(() -> {
+
+    doSlowWork(); // runs on background-worker
+
+    Platform.runLater(() -> {
+        statusLabel.setText("Work finished");
+
+        System.out.println(
+            "UI update: " + Thread.currentThread().getName()
+        );
+    });
+
+}, "background-worker");
+
+worker.setDaemon(true);
+worker.start();</code></pre>
+
+<p><code>runLater()</code> is called from the worker, but the code inside its lambda runs on the JavaFX Application Thread.</p>
+
+<p><strong>Example:</strong> <code>cop4027.javafx.advanced.RunLaterDemo</code></p>
+</section>
+
+<section class="frame">
+<h2>How runLater Works</h2>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">background-worker
+    |
+    | finishes slow work
+    |
+    | Platform.runLater(...)
+    v
+JavaFX event queue
+    |
+    | JavaFX processes the request
+    v
+JavaFX Application Thread
+    |
+    | statusLabel.setText(...)
+    v
+UI changes</code></pre>
+
+<p><code>Platform.runLater(...)</code> schedules the UI code. It does not move the entire worker onto the UI thread.</p>
+</section>
+
+<section class="frame">
+<h2>When runLater Becomes Repetitive</h2>
+<p><code>Platform.runLater()</code> works well for an occasional UI update.</p>
+
+<p>A longer operation may need to report more information:</p>
+
+<ul>
+<li><p>How much work is complete?</p></li>
+<li><p>What is the current status message?</p></li>
+<li><p>Is the operation still running?</p></li>
+<li><p>Did it finish successfully?</p></li>
+<li><p>Did it fail or get cancelled?</p></li>
+</ul>
+
+<p>JavaFX provides <code>Task</code> for background operations that need this kind of observable state.</p>
+</section>
+
+<section class="frame">
+<h2>JavaFX Task</h2>
+<p><code>Task</code> represents a background job and exposes JavaFX properties describing that job.</p>
+
+<ul>
+<li><p><code>call()</code> contains the background work.</p></li>
+<li><p><code>progressProperty()</code> represents current progress.</p></li>
+<li><p><code>messageProperty()</code> represents a status message.</p></li>
+<li><p><code>runningProperty()</code> indicates whether the task is currently executing.</p></li>
+</ul>
+
+<p>A <code>Task</code> describes the work. A thread still executes the task.</p>
+</section>
+
+<section class="frame">
+<h2>Background Work in call()</h2>
+<p>The slow operation goes inside <code>call()</code>.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Task&lt;Void&gt; task = new Task&lt;&gt;() {
+    @Override
+    protected Void call() throws InterruptedException {
+
+        System.out.println(
+            "Task runs on: " + Thread.currentThread().getName()
+        );
+
+        for (int step = 1; step &lt;= 5; step++) {
+            Thread.sleep(500); // simulate slow work
+
+            updateProgress(step, 5);
+            updateMessage("Step " + step + " of 5");
+        }
+
+        return null;
+    }
+};</code></pre>
+
+<ul>
+<li><p><code>call()</code> runs on the worker thread.</p></li>
+<li><p><code>updateProgress(...)</code> changes the Task's progress state.</p></li>
+<li><p><code>updateMessage(...)</code> changes the Task's message state.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Task Properties and Binding</h2>
+<p>Controls can automatically follow the Task's observable properties.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">progressBar.progressProperty().bind(
+    task.progressProperty()
+);
+
+statusLabel.textProperty().bind(
+    task.messageProperty()
+);
+
+startButton.disableProperty().bind(
+    task.runningProperty()
+);</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">updateProgress(...)
+        ↓
+task.progressProperty()
+        ↓ binding
+ProgressBar
+
+updateMessage(...)
+        ↓
+task.messageProperty()
+        ↓ binding
+Label</code></pre>
+
+<p>The controls follow Task state without manually updating them after every step.</p>
+</section>
+
+<section class="frame">
+<h2>Starting a Task</h2>
+<p>A <code>Task</code> contains the work, but something must execute it.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Thread worker = new Thread(task, "task-worker");
+
+worker.setDaemon(true);
+worker.start();</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Task
+    describes the background work
+
+Thread
+    executes the Task
+
+Task properties
+    expose progress and state to JavaFX controls</code></pre>
+
+<p><strong>Example:</strong> <code>cop4027.javafx.advanced.TaskProgressDemo</code></p>
+</section>
+
+<section class="frame">
+<h2>Task Completion</h2>
+<p>A Task can notify the application when its work finishes.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">task.setOnSucceeded(event -> {
+    statusLabel.textProperty().unbind();
+    statusLabel.setText("Complete");
+});</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">READY
+  |
+  v
+RUNNING
+  |
+  +----&gt; SUCCEEDED
+  |
+  +----&gt; FAILED
+  |
+  +----&gt; CANCELLED</code></pre>
+
+<p>Task event handlers such as <code>setOnSucceeded(...)</code> run on the JavaFX Application Thread, so they can safely update controls.</p>
+</section>
+
+<section class="frame">
+<h2>runLater or Task?</h2>
+
+<table>
+<thead>
+<tr><th>Situation</th><th>Typical choice</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>Short work that immediately changes the UI</td>
+<td>Normal event handler</td>
+</tr>
+<tr>
+<td>Slow background work with one small UI update</td>
+<td><code>Platform.runLater(...)</code></td>
+</tr>
+<tr>
+<td>Background work with progress or status messages</td>
+<td><code>Task</code></td>
+</tr>
+<tr>
+<td>Need running, success, failure, or cancellation state</td>
+<td><code>Task</code></td>
+</tr>
+</tbody>
+</table>
+
+<p>Both approaches follow the same rule: slow work stays off the JavaFX Application Thread, while UI changes happen on it.</p>
+</section>
+
+<section class="frame">
+<h2>Responsive Application Pattern</h2>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User event
+    ↓
+Is the work short?
+    |
+    +-- Yes → handle it on the JavaFX Application Thread
+    |
+    +-- No  → run the slow work in the background
+                  |
+                  +-- one small UI update → Platform.runLater(...)
+                  |
+                  +-- progress / messages / state → Task</code></pre>
+
+<p>Keep the JavaFX Application Thread available for rendering and user interaction.</p>
+</section>
+
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Optional Visual APIs</h1>
 </section>
 
 <section class="frame">
@@ -1001,21 +1337,13 @@ public class FXMLExampleController {
 <section class="frame">
 <h2>Canvas</h2>
 <p><code>Canvas</code> is a drawing surface. <code>GraphicsContext</code> is the drawing tool.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">loadDataFromResource("/shapes.txt");
-
-Canvas canvas = new Canvas(360, 360);
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Canvas canvas = new Canvas(360, 360);
 GraphicsContext gc = canvas.getGraphicsContext2D();
 
-for (Seg l : lines) {
-    gc.strokeLine(l.x1, l.y1, l.x2, l.y2);
-}
-
-for (Circ c : circles) {
-    int d = c.r * 2;
-    gc.strokeOval(c.cx - c.r, c.cy - c.r, d, d);
-}</code></pre>
+gc.strokeLine(20, 20, 200, 20);
+gc.strokeRect(40, 60, 120, 80);
+gc.strokeOval(200, 80, 90, 90);</code></pre>
 <p><strong>Immediate mode:</strong> drawing commands write pixels; they do not add editable shape nodes to the scene graph.</p>
-<p><strong>Example:</strong> <code>cop4027.javafx.advanced.ShapeDrawer</code></p>
 </section>
 
 <section class="frame">
@@ -1025,11 +1353,10 @@ for (Circ c : circles) {
     getClass().getResource("/cat.jpg").toExternalForm()
 );
 
-ImageView iv2 = new ImageView();
-iv2.setImage(image);
-iv2.setFitWidth(200);
-iv2.setPreserveRatio(true);
-iv2.setSmooth(true);</code></pre>
+ImageView imageView = new ImageView(image);
+imageView.setFitWidth(200);
+imageView.setPreserveRatio(true);
+imageView.setSmooth(true);</code></pre>
 <p><strong>Example:</strong> <code>cop4027.javafx.advanced.ImageExample</code></p>
 </section>
 
@@ -1045,6 +1372,10 @@ iv2.setSmooth(true);</code></pre>
 <tr><td><code>ScatterChart</code></td><td>Relationship between two numeric variables</td></tr>
 </tbody>
 </table>
+</section>
+
+<section class="frame">
+<h2>Chart Example</h2>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ObservableList&lt;PieChart.Data&gt; pieData =
     FXCollections.observableArrayList(
         new PieChart.Data("Cats", 30),
@@ -1061,26 +1392,21 @@ pieChart.setTitle("Pet Ownership");</code></pre>
 <section class="frame">
 <h2>Animation</h2>
 <p>JavaFX animation changes properties over time.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Polygon triangle = new Polygon();
-triangle.getPoints().addAll(
-    0.0, 0.0, 60.0, 0.0, 30.0, 60.0
-);
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Rectangle box = new Rectangle(80, 80);
 
 RotateTransition rotate =
-    new RotateTransition(Duration.seconds(3), triangle);
+    new RotateTransition(Duration.seconds(3), box);
 rotate.setByAngle(360);
 rotate.setCycleCount(Animation.INDEFINITE);
 
 ScaleTransition scale =
-    new ScaleTransition(Duration.seconds(1.5), triangle);
+    new ScaleTransition(Duration.seconds(1.5), box);
 scale.setToX(1.5);
 scale.setToY(1.5);
 scale.setAutoReverse(true);
 scale.setCycleCount(Animation.INDEFINITE);
 
-ParallelTransition transition =
-    new ParallelTransition(rotate, scale);
-transition.play();</code></pre>
+new ParallelTransition(rotate, scale).play();</code></pre>
 <p><strong>Example:</strong> <code>cop4027.javafx.advanced.AnimationDemo</code></p>
 </section>
 </section>
@@ -1091,27 +1417,30 @@ transition.play();</code></pre>
 <h1>Summary</h1>
 </section>
 
-
 <section class="frame">
 <h2>Key Takeaways</h2>
 <ul>
 <li><p><code>Stage</code>, <code>Scene</code>, layouts, and controls form a scene graph.</p></li>
-<li><p>Events handle commands; listeners observe changes; binding maintains relationships.</p></li>
-<li><p>Application state determines what menu commands should do.</p></li>
+<li><p>Controls answer what appears; layouts answer where it goes; event handlers answer what happens.</p></li>
+<li><p>Validation rules should be separate from JavaFX controls.</p></li>
+<li><p>CSS separates appearance from Java behavior.</p></li>
+<li><p>FXML describes JavaFX object construction using XML.</p></li>
+<li><p><code>fx:id</code> connects FXML nodes to controller fields; <code>onAction</code> connects events to controller methods.</p></li>
+<li><p>Stateful applications use commands, properties, listeners, binding, dialogs, and files.</p></li>
 <li><p>Background work must not block or directly modify the UI.</p></li>
-<li><p>FXML separates view construction, but its controller is not the entire MVC architecture.</p></li>
 </ul>
 </section>
 
 <section class="frame">
 <h2 style="font-size: 1.35em;">Correct Patterns and Mistakes to Avoid</h2>
 <ul style="font-size: 0.84em;">
-<li><p><strong>Use layouts</strong> instead of hardcoded positions.</p></li>
-<li><p><strong>Keep validation rules separate</strong> from JavaFX controls.</p></li>
-<li><p><strong>Use events, listeners, and binding for their distinct jobs.</strong></p></li>
-<li><p><strong>Centralize application-state updates.</strong></p></li>
-<li><p><strong>Do not block the JavaFX Application Thread.</strong></p></li>
-<li><p><strong>Do not make the FXML controller the entire application.</strong></p></li>
+<li><p>Use layouts instead of hardcoded positions.</p></li>
+<li><p>Keep validation rules separate from JavaFX controls.</p></li>
+<li><p>Use events, listeners, and binding for their distinct jobs.</p></li>
+<li><p>Distinguish <code>fx:id</code>, <code>id</code>, and <code>styleClass</code>.</p></li>
+<li><p>Centralize application-state updates.</p></li>
+<li><p>Do not block the JavaFX Application Thread.</p></li>
+<li><p>Do not make the FXML controller the entire application.</p></li>
 </ul>
 </section>
 </section>
@@ -1124,7 +1453,8 @@ transition.play();</code></pre>
 <script src="../_static/revealjs/plugin/math/math.js"></script>
 <script>
     var revealjsConfig = new Object();
-    Object.assign(revealjsConfig, { "disableLayout": true,
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
       "controls": true,
       "progress": true,
       "hash": true,
