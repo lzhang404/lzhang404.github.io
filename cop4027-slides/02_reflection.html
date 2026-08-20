@@ -230,9 +230,11 @@ Field[] fields = type.getDeclaredFields();</code></pre>
 <ul>
   <li><code>getMethods()</code>: Public methods available through the type, including inherited public methods.</li>
   <li><code>getDeclaredMethods()</code>: Methods declared directly by this class, including non-public methods.</li>
-</ul>
-<p>The same declared idea applies to constructors and fields. Discovery does not automatically grant access.</p>
-<ul>
+<li><p>The same declared idea applies to constructors and fields. 
+</p></li>
+<li>Discovery does not automatically grant access.</li>
+
+
 <li><p>Example: <code>reflection/MetadataDemo.java</code></p></li>
 </ul>
 </section>
@@ -412,9 +414,9 @@ public @interface Command {
 <li><p>Reflection can discover both methods.</p></li>
 <li><p>Only <code>startCarEngine()</code> is marked as part of this command system.</p></li>
 <li><p>The external command <code>"start"</code> does not have to match the Java method name.</p></li>
-</ul>
-<p>The annotation is an explicit marker for this runner; it is not a security mechanism.</p>
-<ul>
+
+<li><p>The annotation is an explicit marker for this runner; it is not a security mechanism.</p>
+</li>
 <li><p>Example: <code>reflection/CarCommands.java</code></p></li>
 </ul>
 </section>
