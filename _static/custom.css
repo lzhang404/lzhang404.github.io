@@ -43,17 +43,20 @@ section.has-dark-background, section.has-dark-background h1, section.has-dark-ba
 
 .reveal-viewport {
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   max-width: 100vw; }
 
 html,
 body {
   overflow-y: auto;
-  overflow-x: hidden; }
+  overflow-x: auto; }
 
 html.reveal-full-page {
   overflow-y: auto !important;
-  overflow-x: hidden !important; }
+  overflow-x: auto !important; }
+
+.reveal-viewport.reveal-scroll {
+  overflow-x: auto; }
 
 .reveal {
   overflow: visible;
@@ -66,6 +69,10 @@ html.reveal-full-page {
   width: 100% !important;
   max-width: 100%;
   box-sizing: border-box; }
+
+.reveal:not(.overview) .slides > section:not(.present),
+.reveal:not(.overview) .slides > section > section:not(.present) {
+  display: none !important; }
 
 .reveal .slides > section.present,
 .reveal .slides > section > section.present {
@@ -408,6 +415,12 @@ html.reveal-full-page {
  * NAVIGATION CONTROLS
  *********************************************/
 .reveal .controls {
+  position: fixed !important;
+  top: auto !important;
+  right: 2.25rem !important;
+  bottom: 3.25rem !important;
+  left: auto !important;
+  z-index: 120;
   color: var(--r-link-color); }
 
 /*********************************************
@@ -415,7 +428,8 @@ html.reveal-full-page {
  *********************************************/
 .reveal .progress {
   position: fixed;
-  bottom: 0;
+  top: 0;
+  bottom: auto;
   left: 0;
   width: 100%;
   background: rgba(0, 0, 0, 0.2);

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Model View Controller</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<style>
+.reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+.reveal table.compact { font-size: 0.78em; }
+.reveal table.tight { font-size: 0.72em; }
+</style>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%" class="title-slide">
+<h1>Model View Controller</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+
+<section>
+<section class="frame">
+<h2>Today's Roadmap</h2>
+<ol>
+<li><p>Define the Model, View, and Controller responsibilities.</p></li>
+<li><p>Trace how user input becomes a change in application state.</p></li>
+<li><p>Compare desktop MVC with server-side/web MVC.</p></li>
+<li><p>Distinguish active-model and controller-centric variants.</p></li>
+<li><p>Apply MVC to a small JavaFX drawing app and lab change.</p></li>
+</ol>
+</section>
+
+<section class="frame">
+<h2>Learning Goals</h2>
+<ul>
+<li><p>Explain MVC responsibilities and request flow.</p></li>
+<li><p>Relate desktop MVC to web MVC.</p></li>
+<li><p>Differentiate stateless and stateful designs.</p></li>
+<li><p>Recognize MVC's benefits and pitfalls.</p></li>
+<li><p>Place new features in the correct MVC layer.</p></li>
+</ul>
+<p>Main question: which part of the program should own each decision?</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Why MVC Exists</h1>
+</section>
+
+<section class="frame">
+<h2>Why Architectural Patterns Matter</h2>
+<p>Codebases grow, so programs need structure.</p>
+<ul>
+<li><p>Separation of concerns leads to cleaner code.</p></li>
+<li><p>A clear structure makes behavior easier to test.</p></li>
+<li><p>Teams can work on UI, data, and request handling in parallel.</p></li>
+<li><p>MVC is one of the most enduring patterns for interactive applications.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Where MVC Comes From</h2>
+<ul>
+<li><p>MVC was created by Trygve Reenskaug in the 1970s in the Smalltalk community.</p></li>
+<li><p>It became common in desktop GUI programming, including Swing and JavaFX-style applications.</p></li>
+<li><p>It later influenced server-side web frameworks, mobile apps, and client-side UI frameworks.</p></li>
+<li><p>The exact flow changes by platform, but the responsibility split remains useful.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>What Is MVC?</h2>
+<p>MVC divides an application into three interconnected parts.</p>
+<table>
+<thead><tr><th>Part</th><th>Primary responsibility</th></tr></thead>
+<tbody>
+<tr><td>Model</td><td>Application data, state, and business rules.</td></tr>
+<tr><td>View</td><td>UI representation of data for the user.</td></tr>
+<tr><td>Controller</td><td>User input, coordination, and request flow.</td></tr>
+</tbody>
+</table>
+<p>The goal is to separate internal representations of information from the ways information is presented to, and accepted from, the user.</p>
+</section>
+
+<section class="frame">
+<h2>The Basic MVC Flow</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User action
+    -&gt; Controller receives input
+    -&gt; Controller asks Model to read or change state
+    -&gt; Model applies data rules
+    -&gt; View renders the current state
+    -&gt; User sees the result</code></pre>
+<p>Different MVC variants disagree about how directly the View talks to the Model.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>MVC Responsibilities</h1>
+</section>
+
+<section class="frame">
+<h2>Model</h2>
+<p>The Model corresponds to the data-related logic that the user works with.</p>
+<ul>
+<li><p>Managing data: CRUD operations.</p></li>
+<li><p>Enforcing business rules.</p></li>
+<li><p>Representing application state.</p></li>
+<li><p>Notifying other parts of state changes in active-model designs.</p></li>
+<li><p>Responding to instructions from the Controller to update itself.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>View</h2>
+<p>The View handles the UI representation of the application.</p>
+<ul>
+<li><p>Rendering data to the user in a specific format.</p></li>
+<li><p>Displaying interface elements such as forms, tables, buttons, or drawings.</p></li>
+<li><p>Updating the display when the model changes or when the controller supplies new data.</p></li>
+<li><p>Keeping markup and UI code logic-light.</p></li>
+</ul>
+<p>A View should not enforce business rules.</p>
+</section>
+
+<section class="frame">
+<h2>Controller</h2>
+<p>The Controller connects user input to the Model and the View.</p>
+<ul>
+<li><p>Receiving user input and interpreting it.</p></li>
+<li><p>Validating request or form data at the boundary.</p></li>
+<li><p>Updating the Model based on user actions.</p></li>
+<li><p>Selecting and displaying the appropriate View.</p></li>
+<li><p>Coordinating workflow without becoming the whole application.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>What Each Part Should Avoid</h2>
+<table>
+<thead><tr><th>Part</th><th>Avoid</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Model</td><td>UI controls and display code</td><td>The same data rules should work without a screen.</td></tr>
+<tr><td>View</td><td>Business decisions</td><td>The interface should render data, not own the rules.</td></tr>
+<tr><td>Controller</td><td>Duplicating domain logic</td><td>Controllers become hard to test and reuse when they get too large.</td></tr>
+</tbody>
+</table>
+<p>MVC is not just three class names. It is a rule for where responsibilities belong.</p>
+</section>
+
+<section class="frame">
+<h2>The Model Is Not Just the Database</h2>
+<p>The Model may use a database, but it is not limited to database access.</p>
+<table>
+<thead><tr><th>Model concern</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>State</td><td>Current drawing color, list of points, selected student.</td></tr>
+<tr><td>Rules</td><td>Clamp brush size, reject invalid input, assign unique IDs.</td></tr>
+<tr><td>Persistence</td><td>Load and save data through files, repositories, or databases.</td></tr>
+</tbody>
+</table>
+<p>In larger applications, services and repositories often support the Model.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Desktop MVC and Web MVC</h1>
+</section>
+
+<section class="frame">
+<h2>GUI MVC</h2>
+<p>GUI MVC is the classic desktop style used in applications such as Smalltalk, Swing, and JavaFX.</p>
+<ul>
+<li><p>The Model is active: it can notify the View when state changes.</p></li>
+<li><p>The View listens to model changes and redraws.</p></li>
+<li><p>Interaction is continuous: mouse moves, drags, key presses, and clicks keep the event loop running.</p></li>
+<li><p>The session is stateful: the app holds state in memory across interactions.</p></li>
+<li><p>The Controller translates UI events into model operations.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>GUI MVC Flow</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User drags mouse
+    -&gt; Controller handles the event
+    -&gt; Controller calls model.addPoint(...)
+    -&gt; Model stores the point
+    -&gt; Model notifies observers or bound properties change
+    -&gt; View redraws from the Model</code></pre>
+<p>The application usually stays alive with state in memory until the user exits.</p>
+</section>
+
+<section class="frame">
+<h2>Server-Side/Web MVC</h2>
+<p>Server-side/web MVC is common in frameworks such as Spring MVC.</p>
+<ul>
+<li><p>The Model is usually passive during a single request.</p></li>
+<li><p>The Controller queries the Model and passes data to the View for one response.</p></li>
+<li><p>The View does not observe the Model directly.</p></li>
+<li><p>Interaction is discrete: one HTTP request in, one response out.</p></li>
+<li><p>Server-side requests are stateless by default unless the app adds session state.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Web MVC Request Flow</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Browser sends HTTP request
+    -&gt; Router maps URL to controller method
+    -&gt; Controller validates input
+    -&gt; Controller calls services, repositories, or model objects
+    -&gt; Controller returns a template name or JSON response
+    -&gt; Server sends response to browser</code></pre>
+<p>After the response, the server should not assume it still owns the same in-memory interaction state.</p>
+</section>
+
+<section class="frame">
+<h2>Stateful vs Stateless</h2>
+<table class="compact">
+<thead><tr><th>Feature</th><th>Stateless</th><th>Stateful</th></tr></thead>
+<tbody>
+<tr><td>Information storage</td><td>Does not store client or session information between requests.</td><td>Stores client or session information on the server.</td></tr>
+<tr><td>Scalability</td><td>Any server can handle a request when all needed context is included.</td><td>May require session management or server affinity.</td></tr>
+<tr><td>Fault tolerance</td><td>More resilient because one server does not own critical session state.</td><td>Session data may be lost or must be replicated if a server fails.</td></tr>
+<tr><td>Complexity</td><td>Simpler architecture; no session synchronization.</td><td>More complex; session data must be managed carefully.</td></tr>
+<tr><td>Examples</td><td>REST APIs, webhooks, stateless firewalls.</td><td>Shopping carts, login sessions, multi-step workflows.</td></tr>
+</tbody>
+</table>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>MVC Variants</h1>
+</section>
+
+<section class="frame">
+<h2>Observer / Active-Model MVC</h2>
+<p>This style is common in desktop GUI MVC with explicit Observer links.</p>
+<ul>
+<li><p><strong>Model:</strong> active; publishes changes.</p></li>
+<li><p><strong>View:</strong> subscribes or binds and pulls state on redraw.</p></li>
+<li><p><strong>Interaction:</strong> continuous events such as drag, resize, and key press.</p></li>
+<li><p><strong>State:</strong> long-lived in memory; many views can observe one model.</p></li>
+<li><p><strong>Controller:</strong> maps gestures to model operations and chooses the view.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Controller-Centric MVC</h2>
+<p>This style is common in server MVC and client-server demos.</p>
+<ul>
+<li><p><strong>Model:</strong> passive during the interaction; reached through the controller.</p></li>
+<li><p><strong>View:</strong> receives data from the controller and formats it.</p></li>
+<li><p><strong>Interaction:</strong> discrete steps.</p></li>
+<li><p><strong>State:</strong> often stateless per call; sessions are explicit and scoped.</p></li>
+<li><p><strong>Controller:</strong> validates, invokes domain operations, and prepares a view or JSON.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Comparing MVC Styles</h2>
+<table class="tight">
+<thead><tr><th>Name</th><th>Context</th><th>Model-View link</th><th>Interaction</th><th>Use when</th></tr></thead>
+<tbody>
+<tr><td>GUI MVC</td><td>Desktop GUI loop</td><td>Usually direct through observers or bindings</td><td>Continuous events</td><td>JavaFX or Swing apps</td></tr>
+<tr><td>Server-side MVC</td><td>Web request-response</td><td>No direct link; controller passes data</td><td>Discrete requests</td><td>Spring MVC, Django, Rails</td></tr>
+<tr><td>Observer / Active-Model</td><td>GUI variant</td><td>Model notifies View; View pulls state</td><td>Continuous</td><td>Live dashboards and JavaFX properties</td></tr>
+<tr><td>Controller-centric / Passive View</td><td>Web or GUI pattern style</td><td>No direct link; controller sets view state</td><td>Stepwise</td><td>Strict separation and high testability</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="frame">
+<h2>MVC and Three-Tier Are Different Ideas</h2>
+<table class="compact">
+<thead><tr><th>Topic</th><th>Three-tier</th><th>MVC</th></tr></thead>
+<tbody>
+<tr><td>Main concern</td><td>System layering and deployment.</td><td>UI structure and request handling.</td></tr>
+<tr><td>Units</td><td>Presentation, application, data.</td><td>Model, View, Controller.</td></tr>
+<tr><td>Coupling rule</td><td>Presentation calls application, which calls data.</td><td>Controller mediates input; View renders; Model owns rules.</td></tr>
+<tr><td>Scalability</td><td>Addresses where layers can scale.</td><td>Does not address scaling directly.</td></tr>
+<tr><td>Examples</td><td>Web server, app server, database.</td><td>Spring MVC, Django, Rails views and controllers.</td></tr>
+</tbody>
+</table>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Small MVC Examples</h1>
+</section>
+
+<section class="frame">
+<h2>Example: Student Records</h2>
+<p>A small console-style MVC example can separate data, output, and commands.</p>
+<table>
+<thead><tr><th>Class</th><th>Responsibility</th><th>Typical methods</th></tr></thead>
+<tbody>
+<tr><td><code>StudentModel</code></td><td>Stores <code>rollNo</code> and <code>name</code>.</td><td><code>getName()</code>, <code>setName(...)</code>, <code>getRollNo()</code></td></tr>
+<tr><td><code>StudentView</code></td><td>Prints the student details.</td><td><code>printStudentDetails(name, rollNo)</code></td></tr>
+<tr><td><code>StudentController</code></td><td>Updates the model and tells the view to display it.</td><td><code>setStudentName(...)</code>, <code>updateView()</code></td></tr>
+</tbody>
+</table>
+<p>This example is simple, but it shows the responsibility split.</p>
+</section>
+
+<section class="frame">
+<h2>Example: Drawing App</h2>
+<p>A small JavaFX app records points and renders them on a canvas using MVC.</p>
+<table>
+<thead><tr><th>Part</th><th>Drawing responsibility</th></tr></thead>
+<tbody>
+<tr><td>Model</td><td>Stores points and the current color.</td></tr>
+<tr><td>View</td><td>Reads the model and renders through <code>Canvas</code> and <code>ListView</code>.</td></tr>
+<tr><td>Controller</td><td>Handles mouse drags and color changes, updates the model, and triggers redraw.</td></tr>
+</tbody>
+</table>
+<p>The model stays testable and the view stays replaceable.</p>
+</section>
+
+<section class="frame">
+<h2>Drawing App Class Responsibilities</h2>
+<table class="compact">
+<thead><tr><th>Class</th><th>State</th><th>Operations</th></tr></thead>
+<tbody>
+<tr><td><code>DrawModel</code></td><td><code>points</code>, <code>selectedColor</code></td><td><code>addPoint(...)</code>, <code>addBreak()</code>, <code>clear()</code>, <code>setSelectedColor(...)</code></td></tr>
+<tr><td><code>DrawView</code></td><td><code>canvas</code>, <code>colorList</code>, <code>status</code>, <code>clearButton</code></td><td><code>getCanvas()</code>, <code>getColorList()</code>, <code>setStatus(...)</code>, <code>redraw()</code></td></tr>
+<tr><td><code>DrawController</code></td><td><code>model</code>, <code>view</code></td><td>Connects handlers, updates the model, and commands redraw.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="frame">
+<h2>Drawing Event Flow</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Mouse pressed or dragged on Canvas
+    -&gt; DrawController event handler runs
+    -&gt; DrawController calls model.addPoint(x, y)
+    -&gt; DrawController calls view.redraw()
+    -&gt; DrawView reads model.getPoints()
+    -&gt; Canvas shows the updated drawing</code></pre>
+<p>The controller handles the event. The model stores the data. The view draws the result.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Practice: Add Brush Size</h1>
+</section>
+
+<section class="frame">
+<h2>Lab Goal</h2>
+<p>Modify the drawing app to support brush size.</p>
+<ul>
+<li><p>Add a way for the user to choose the brush size.</p></li>
+<li><p>Store the selected size in the correct layer.</p></li>
+<li><p>Use the selected size when the drawing is rendered.</p></li>
+<li><p>Keep mouse press and drag handlers focused on adding points.</p></li>
+</ul>
+<p>Question: how does this feature map to MVC layers?</p>
+</section>
+
+<section class="frame">
+<h2>Model: State and Rules</h2>
+<ul>
+<li><p>Add state: <code>private int brushSize;</code></p></li>
+<li><p>Add accessors: <code>getBrushSize()</code> and <code>setBrushSize(int)</code>.</p></li>
+<li><p>Apply a business rule: clamp to a sane range, such as <code>&gt;= 1</code>.</p></li>
+<li><p>Do not store new drawing history for this version.</p></li>
+<li><p>Points can remain <code>List&lt;double[]&gt;</code>; brush size is global at render time.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>View: UI and Rendering</h2>
+<ul>
+<li><p>Add a UI control, such as a slider or radio buttons for small, medium, and large.</p></li>
+<li><p>Keep the control as an input. It should not own the rule for valid brush sizes.</p></li>
+<li><p>In <code>redraw()</code>, set the line width from the model.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">g.setLineWidth(model.getBrushSize());
+
+for (double[] point : model.getPoints()) {
+    // Draw lines exactly as before.
+}</code></pre>
+</section>
+
+<section class="frame">
+<h2>Controller: Input to Model, Then Refresh</h2>
+<ul>
+<li><p>Listen to the slider or radio-button choice.</p></li>
+<li><p>Call <code>model.setBrushSize(...)</code> when the input changes.</p></li>
+<li><p>Call <code>view.redraw()</code> if the current drawing should immediately update.</p></li>
+<li><p>Leave press and drag handlers focused on adding points and redrawing.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">sizeSlider.valueProperty().addListener(
+    (obs, oldValue, newValue) -&gt; {
+        model.setBrushSize(newValue.intValue());
+        view.redraw();
+    }
+);</code></pre>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Benefits and Pitfalls</h1>
+</section>
+
+<section class="frame">
+<h2>Why MVC Helps</h2>
+<ul>
+<li><p>Code is easier to maintain and extend.</p></li>
+<li><p>The Model can be tested separately.</p></li>
+<li><p>View and domain work can happen in parallel.</p></li>
+<li><p>Complexity is reduced by dividing the application into Model, View, and Controller responsibilities.</p></li>
+<li><p>The structure supports test-driven development.</p></li>
+<li><p>It works well for larger apps with many UI changes and data rules.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Pitfalls to Avoid</h2>
+<ul>
+<li><p>Fat controllers that duplicate business logic.</p></li>
+<li><p>Views that compute business rules.</p></li>
+<li><p>Models that leak persistence details into every layer.</p></li>
+<li><p>Too many layers for a very small one-off program.</p></li>
+<li><p>Confusing MVC with three-tier deployment architecture.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Testing by Layer</h2>
+<table>
+<thead><tr><th>Layer</th><th>What to test</th><th>Example assertion</th></tr></thead>
+<tbody>
+<tr><td>Model</td><td>Business rules and state changes.</td><td>Invalid brush size is clamped.</td></tr>
+<tr><td>Controller</td><td>Input handling and coordination.</td><td>A drag event adds a point and redraws.</td></tr>
+<tr><td>View</td><td>Rendering and UI wiring.</td><td>The color list exposes the selected color.</td></tr>
+</tbody>
+</table>
+<p>The Model should be the easiest layer to test without launching the UI.</p>
+</section>
+
+<section class="frame">
+<h2>When to Use MVC</h2>
+<table>
+<thead><tr><th>Use MVC when...</th><th>Avoid MVC when...</th></tr></thead>
+<tbody>
+<tr><td>The app has many features and interactions.</td><td>The app is very small or one-off.</td></tr>
+<tr><td>The UI changes often and should evolve independently.</td><td>UI and business logic are tightly intertwined by nature.</td></tr>
+<tr><td>You want reusable parts and multiple views.</td><td>Hard real-time or game-like interaction dominates.</td></tr>
+<tr><td>Testing and team parallelism matter.</td><td>The team or timeline cannot absorb the layering overhead.</td></tr>
+</tbody>
+</table>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>The Model owns data, state, and business rules.</p></li>
+<li><p>The View renders data and collects UI input without owning business rules.</p></li>
+<li><p>The Controller receives input, coordinates workflow, and chooses the next response.</p></li>
+<li><p>Desktop MVC is usually stateful and event-driven; web MVC is usually stateless and request-driven.</p></li>
+<li><p>Good MVC design keeps each new feature in the layer that naturally owns it.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Check Your Design</h2>
+<table>
+<thead><tr><th>Question</th><th>Layer that should answer it</th></tr></thead>
+<tbody>
+<tr><td>What data do we store, and what rules make it valid?</td><td>Model</td></tr>
+<tr><td>How should the current state appear to the user?</td><td>View</td></tr>
+<tr><td>What should happen after this click, drag, route, or form submission?</td><td>Controller</td></tr>
+</tbody>
+</table>
+<p>If a class answers all three questions, it is probably doing too much.</p>
+</section>
+</section>
+
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+</script>
+</body>
+</html>

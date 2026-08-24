@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Three-Tier Architecture</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+
+  <style>
+    .reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+    .reveal pre[data-fontsize="xsmall"] { font-size: 0.56em; }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      align-items: start;
+    }
+
+    .three-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    figure.diagram {
+      margin: 0.5rem auto 0.7rem auto;
+      text-align: center;
+    }
+
+    figure.diagram img {
+      max-width: 82%;
+      max-height: 220px;
+    }
+
+    figure.diagram figcaption {
+      font-size: 0.7em;
+      color: #555;
+      margin-top: 0.25rem;
+    }
+
+    .small {
+      font-size: 0.86em;
+    }
+  </style>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+  <section data-background-color="white" data-background-image="../_static/logo.png"
+           data-background-size="50%" data-background-position="top center"
+           data-background-repeat="no-repeat" class="title-slide">
+    <h1>Three-Tier Architecture</h1>
+    <div class="subtitle docutils container">
+      <p><strong>Advanced Programming</strong></p>
+      <p>Liting Zhang</p>
+    </div>
+  </section>
+</section>
+
+<section>
+  <section class="frame">
+    <h2>Roadmap</h2>
+    <ol>
+      <li><p>Responsibility boundaries in growing applications</p></li>
+      <li><p>Three-tier architecture: presentation, application, and data</p></li>
+      <li><p>Two-tier and three-tier request flow</p></li>
+      <li><p>Plain Java code with controller, service, and repository</p></li>
+      <li><p>Validation, business rules, and data access placement</p></li>
+      <li><p>Common responsibility mistakes</p></li>
+    </ol>
+  </section>
+
+  <section class="frame">
+    <h2>Learning Goals</h2>
+    <ul>
+      <li><p>Describe the purpose of presentation, application, and data responsibilities.</p></li>
+      <li><p>Explain why direct UI-to-data access becomes risky as applications grow.</p></li>
+      <li><p>Organize Java code into controller, service, and repository classes.</p></li>
+      <li><p>Trace the flow from user action to service rule to data operation.</p></li>
+      <li><p>Recognize common responsibility mistakes in Java applications.</p></li>
+    </ul>
+    <p>Main question: how should an application divide responsibilities so it stays understandable as it grows?</p>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Responsibility Boundaries</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Small Program vs. Growing Application</h2>
+    <div class="two-column">
+      <div>
+        <p><strong>Small program</strong></p>
+        <ul>
+          <li><p>Few files</p></li>
+          <li><p>Simple input and output</p></li>
+          <li><p>Little or no persistent data</p></li>
+          <li><p>Easy to inspect manually</p></li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>Growing application</strong></p>
+        <ul>
+          <li><p>User interface or API boundary</p></li>
+          <li><p>Business rules</p></li>
+          <li><p>Validation</p></li>
+          <li><p>File or database access</p></li>
+          <li><p>Error handling and testing</p></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="frame">
+    <h2>Mixed Responsibilities</h2>
+    <p>A method becomes difficult to maintain when it owns many unrelated jobs.</p>
+    <ul>
+      <li><p>Reads values from the screen</p></li>
+      <li><p>Checks business rules</p></li>
+      <li><p>Builds a database command</p></li>
+      <li><p>Saves data</p></li>
+      <li><p>Chooses the message shown to the user</p></li>
+    </ul>
+    <p>Changing one responsibility can accidentally break another responsibility.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Three Responsibility Areas</h2>
+    <div class="three-column">
+      <div>
+        <p><strong>Presentation</strong></p>
+        <ul>
+          <li><p>User interaction</p></li>
+          <li><p>Input and output</p></li>
+          <li><p>Display formatting</p></li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>Application</strong></p>
+        <ul>
+          <li><p>Business rules</p></li>
+          <li><p>Workflows</p></li>
+          <li><p>Coordination</p></li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>Data</strong></p>
+        <ul>
+          <li><p>Storage</p></li>
+          <li><p>Retrieval</p></li>
+          <li><p>Data mapping</p></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Three-Tier Responsibilities</h1>
+  </section>
+
+  <section class="frame">
+    <h2>What Is Three-Tier Architecture?</h2>
+    <p>Three-tier architecture separates an application into three major responsibility areas.</p>
+    <figure>
+      <img src="../_static/images/cop4027/three-tier-architecture.png"
+           alt="Three-tier architecture diagram showing presentation, application, and data areas in order."
+           style="width:60%; height:auto; display:block; margin-top:0.2rem;" />
+      <figcaption>Presentation → Application → Data</figcaption>
+    </figure>
+    <ul>
+      <li><p><strong>Presentation:</strong> user interface, user input, and displayed output</p></li>
+      <li><p><strong>Application:</strong> business rules, workflows, and coordination</p></li>
+      <li><p><strong>Data:</strong> storage, retrieval, and persistence services</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Two-Tier vs. Three-Tier</h2>
+    <table>
+      <thead>
+        <tr><th>Architecture</th><th>Request flow</th><th>Main result</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><p>Two-tier</p></td>
+          <td><p>Presentation → Data</p></td>
+          <td><p>The UI talks directly to storage, so rules and queries often become mixed with screen code.</p></td>
+        </tr>
+        <tr>
+          <td><p>Three-tier</p></td>
+          <td><p>Presentation → Application → Data</p></td>
+          <td><p>Business rules sit between the user interface and storage.</p></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Responsibilities in Systems and Code</h2>
+    <p>The same three responsibilities appear in both deployed systems and Java code.</p>
+    <div class="two-column">
+      <div>
+        <p><strong>Deployed system</strong></p>
+        <ul>
+          <li><p>Presentation runs in a browser, desktop app, or mobile app</p></li>
+          <li><p>Application logic runs in services or server-side code</p></li>
+          <li><p>Data lives in a database, file store, or persistence service</p></li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>Java code organization</strong></p>
+        <ul>
+          <li><p>Controller receives input and chooses the response</p></li>
+          <li><p>Service applies rules and coordinates work</p></li>
+          <li><p>Repository hides storage access</p></li>
+        </ul>
+      </div>
+    </div>
+    <p>The names change by context, but the responsibility boundary stays clear.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Java Example Names</h2>
+    <ul>
+      <li><p><code>ProductController</code> belongs to the presentation responsibility.</p></li>
+      <li><p><code>ProductService</code> belongs to the application responsibility.</p></li>
+      <li><p><code>ProductRepository</code> belongs to the data responsibility.</p></li>
+      <li><p>A desktop app may keep these classes in one Java process.</p></li>
+      <li><p>A web app may connect a browser, server, and database across separate processes.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Responsibility Boundaries</h2>
+    <table>
+      <thead>
+        <tr><th>Area</th><th>Owns</th><th>Should avoid</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><p>Presentation</p></td>
+          <td><p>User input, output, display formatting</p></td>
+          <td><p>Business rules and SQL</p></td>
+        </tr>
+        <tr>
+          <td><p>Application / Service</p></td>
+          <td><p>Business rules, validation, workflows</p></td>
+          <td><p>UI controls and database-specific details</p></td>
+        </tr>
+        <tr>
+          <td><p>Data / Repository</p></td>
+          <td><p>Storage, retrieval, data mapping</p></td>
+          <td><p>UI decisions and business workflow rules</p></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Plain Java Code Organization</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Product Catalog Example</h2>
+    <p>A small product catalog can be divided into classes with clear responsibilities.</p>
+    <table>
+      <thead>
+        <tr><th>Class</th><th>Area</th><th>Responsibility</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><p><code>Product</code></p></td><td><p>Domain</p></td><td><p>Represents product data</p></td></tr>
+        <tr><td><p><code>ProductController</code></p></td><td><p>Presentation</p></td><td><p>Receives input and displays results</p></td></tr>
+        <tr><td><p><code>ProductService</code></p></td><td><p>Application</p></td><td><p>Applies product rules and workflows</p></td></tr>
+        <tr><td><p><code>ProductRepository</code></p></td><td><p>Data</p></td><td><p>Stores and retrieves products</p></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Domain Object</h2>
+    <p>The domain object represents information the application works with.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record Product(int id, String name, double price) { }</code></pre>
+    <ul>
+      <li><p>It is not a button, scene, table row, SQL statement, or HTTP response.</p></li>
+      <li><p>It is the application data concept shared by the controller, service, and repository.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Presentation Code</h2>
+    <p>Presentation code receives user actions and shows results.</p>
+    <ul>
+      <li><p>Reads text fields, menu commands, buttons, or request data</p></li>
+      <li><p>Converts simple input formats when needed</p></li>
+      <li><p>Calls the service code</p></li>
+      <li><p>Displays a result or error message</p></li>
+    </ul>
+    <p>Example: read <code>"49.99"</code> from a form and pass <code>49.99</code> to the service.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Application / Service Code</h2>
+    <p>Service code owns application rules and workflows.</p>
+    <ul>
+      <li><p>Checks required business rules</p></li>
+      <li><p>Coordinates one or more data operations</p></li>
+      <li><p>Returns application results</p></li>
+      <li><p>Does not depend on UI controls</p></li>
+    </ul>
+    <p>Example rule: a product name cannot be blank, and a product price cannot be negative.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Data / Repository Code</h2>
+    <p>Repository code hides how products are stored.</p>
+    <ul>
+      <li><p>Saves new products</p></li>
+      <li><p>Finds products by id or criteria</p></li>
+      <li><p>Maps stored data into domain objects</p></li>
+      <li><p>Does not decide how the user interface should respond</p></li>
+    </ul>
+    <p>The storage can start as an in-memory list and later become a database.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Repository Interface</h2>
+    <p>The service can depend on a repository capability instead of one storage implementation.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface ProductRepository {
+    Product save(String name, double price);
+    List&lt;Product&gt; findAll();
+}</code></pre>
+    <ul>
+      <li><p><code>InMemoryProductRepository</code> can be used during early development.</p></li>
+      <li><p>A database repository can be introduced without changing the service rule itself.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+  <h2>Dependency on a Repository Interface</h2>
+  <p>The service should depend on what storage can do, not on one specific storage class.</p>
+
+ 
+      <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface ProductRepository {
+    Product save(String name, double price);
+    List&lt;Product&gt; findAll();
+}
+
+public class ProductService {
+    private final ProductRepository repository;
+
+    public ProductService(ProductRepository repository) {
+        this.repository = repository;
+    }
+}</code></pre>
+   
+      <ul>
+        <li><p><code>ProductController</code> depends on <code>ProductService</code>.</p></li>
+        <li><p><code>ProductService</code> depends on the <code>ProductRepository</code> interface.</p></li>
+        <li><p><code>InMemoryProductRepository</code> or a database repository can provide the implementation.</p></li>
+        <li><p>The service rules do not change when storage changes.</p></li>
+      </ul>
+ 
+
+  <p><strong>Code dependency direction:</strong> <code>Controller → Service → Repository interface</code></p>
+</section>
+
+  <section class="frame">
+    <h2>Manual Object Wiring</h2>
+    <p>Plain Java applications must create and connect their objects.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ProductRepository repository = new InMemoryProductRepository();
+ProductService service = new ProductService(repository);
+ProductController controller = new ProductController(service);</code></pre>
+    <p>The connected objects form an object graph: controller → service → repository.</p>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Flow and Rules</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Request Flow Through the Code</h2>
+    <p>A user action should move through the code in a clear order.</p>
+    <ol>
+      <li><p><strong>Presentation</strong> receives the action and reads input.</p></li>
+      <li><p><strong>Application / Service</strong> validates the request and applies business rules.</p></li>
+      <li><p><strong>Data / Repository</strong> stores or retrieves data.</p></li>
+      <li><p><strong>Application / Service</strong> receives the data result and prepares the application result.</p></li>
+      <li><p><strong>Presentation</strong> displays the result to the user.</p></li>
+    </ol>
+  </section>
+
+  <section class="frame">
+    <h2>Where Validation Belongs</h2>
+    <table>
+      <thead>
+        <tr><th>Validation type</th><th>Best code location</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><p>Input shape</p></td>
+          <td><p>Presentation</p></td>
+          <td><p>Can the price text become a number?</p></td>
+        </tr>
+        <tr>
+          <td><p>Business rule</p></td>
+          <td><p>Service</p></td>
+          <td><p>Price cannot be negative.</p></td>
+        </tr>
+        <tr>
+          <td><p>Storage constraint</p></td>
+          <td><p>Repository / database</p></td>
+          <td><p>Product ID must be unique.</p></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Business Rules Belong in the Service</h2>
+    <p>A business rule should be protected no matter which presentation is used.</p>
+    <ul>
+      <li><p>A JavaFX screen can call <code>ProductService</code>.</p></li>
+      <li><p>A command-line menu can call <code>ProductService</code>.</p></li>
+      <li><p>A future REST controller can call <code>ProductService</code>.</p></li>
+    </ul>
+    <p>If the rule is only inside one screen, another entry point may bypass it.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Repository Hides Storage Details</h2>
+    <div class="two-column">
+      <div>
+        <p><strong>Service sees repository operations</strong></p>
+        <ul>
+          <li><p><code>save(...)</code></p></li>
+          <li><p><code>findAll()</code></p></li>
+          <li><p><code>findById(...)</code></p></li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>Repository handles storage details</strong></p>
+        <ul>
+          <li><p>In-memory list</p></li>
+          <li><p>File storage</p></li>
+          <li><p>Database access</p></li>
+          <li><p>Mapping stored data</p></li>
+        </ul>
+      </div>
+    </div>
+    <p>The service depends on what the repository can do, not how it does it.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Example Flow: Add Product</h2>
+    <ol>
+      <li><p>Presentation receives name <code>"Keyboard"</code> and price text <code>"49.99"</code>.</p></li>
+      <li><p>Presentation converts price text to a number.</p></li>
+      <li><p>Service checks that name is not blank and price is not negative.</p></li>
+      <li><p>Repository assigns an id and stores the product.</p></li>
+      <li><p>Service returns the saved product.</p></li>
+      <li><p>Presentation displays confirmation.</p></li>
+    </ol>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Common Mistakes</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Mistake: UI Talks Directly to Data</h2>
+    <p>Incorrect code flow: Presentation → Data</p>
+    <ul>
+      <li><p>Business rules become scattered across UI screens.</p></li>
+      <li><p>Changing storage details can break presentation code.</p></li>
+      <li><p>Testing rules without the UI becomes harder.</p></li>
+    </ul>
+    <p>Prefer: Presentation → Service → Data</p>
+  </section>
+
+  <section class="frame">
+    <h2>Mistake: Fat Controller</h2>
+    <p>A controller becomes too large when it owns too many responsibilities.</p>
+    <table>
+      <thead>
+        <tr><th>Controller should do</th><th>Controller should avoid</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><p>Receive input</p></td><td><p>Business workflows</p></td></tr>
+        <tr><td><p>Call the service</p></td><td><p>Database queries</p></td></tr>
+        <tr><td><p>Choose the response</p></td><td><p>Large validation policies</p></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Mistake: Service Knows the UI</h2>
+    <p>Service code should not depend on JavaFX controls or screen details.</p>
+    <table>
+      <thead>
+        <tr><th>Wrong responsibility</th><th>Better responsibility</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><p>Service changes a <code>Label</code>.</p></td>
+          <td><p>Service returns a result; presentation displays it.</p></td>
+        </tr>
+        <tr>
+          <td><p>Service opens a dialog.</p></td>
+          <td><p>Presentation asks the user and passes the decision.</p></td>
+        </tr>
+        <tr>
+          <td><p>Service reads a text field.</p></td>
+          <td><p>Presentation reads the text field and calls the service.</p></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Mistake: Repository Owns Business Rules</h2>
+    <div class="two-column">
+      <div>
+        <p><strong>Repository should know</strong></p>
+        <ul>
+          <li><p>How to save</p></li>
+          <li><p>How to find</p></li>
+          <li><p>How to map stored data</p></li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>Repository should avoid</strong></p>
+        <ul>
+          <li><p>Whether a sale is allowed</p></li>
+          <li><p>Whether a user may perform an action</p></li>
+          <li><p>How a screen should respond</p></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Architecture in Context</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Desktop and Web Applications</h2>
+    <table>
+      <thead>
+        <tr><th>Application type</th><th>Presentation responsibility</th><th>Application responsibility</th><th>Data responsibility</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><p>Desktop</p></td>
+          <td><p>JavaFX screen</p></td>
+          <td><p>Service classes in the same app</p></td>
+          <td><p>Files or database</p></td>
+        </tr>
+        <tr>
+          <td><p>Web</p></td>
+          <td><p>Browser or controller/API boundary</p></td>
+          <td><p>Service classes on the server</p></td>
+          <td><p>Repositories and database</p></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The deployment can change while the responsibilities stay recognizable.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Security and Trust Boundaries</h2>
+    <ul>
+      <li><p>User input should not be trusted just because it came from a screen or client.</p></li>
+      <li><p>Service code should enforce important rules.</p></li>
+      <li><p>Repository code should use safe data access patterns.</p></li>
+      <li><p>Secrets and database credentials should not be exposed to presentation code.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Practice</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Classify the Responsibility</h2>
+    <p>Place each responsibility in presentation, service, or data.</p>
+    <ol>
+      <li><p>Display “Product saved” to the user.</p></li>
+      <li><p>Reject a product with a negative price.</p></li>
+      <li><p>Save the product to storage.</p></li>
+      <li><p>Convert price text from a form into a number.</p></li>
+      <li><p>Find all products cheaper than a given amount.</p></li>
+      <li><p>Decide whether a user is allowed to delete a product.</p></li>
+    </ol>
+  </section>
+
+  <section class="frame">
+    <h2>Possible Classification</h2>
+    <table>
+      <thead>
+        <tr><th>Responsibility</th><th>Area</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><p>Display “Product saved”</p></td><td><p>Presentation</p></td></tr>
+        <tr><td><p>Reject negative price</p></td><td><p>Service</p></td></tr>
+        <tr><td><p>Save product to storage</p></td><td><p>Data</p></td></tr>
+        <tr><td><p>Convert price text</p></td><td><p>Presentation</p></td></tr>
+        <tr><td><p>Find products cheaper than amount</p></td><td><p>Data query or service workflow</p></td></tr>
+        <tr><td><p>Check delete permission</p></td><td><p>Service</p></td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Summary</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Key Takeaways</h2>
+    <ul>
+      <li><p>Three-tier architecture separates presentation, application logic, and data access.</p></li>
+      <li><p>In Java code, those responsibilities often become controller, service, and repository classes.</p></li>
+      <li><p>Presentation code should handle input and output, not business rules or SQL.</p></li>
+      <li><p>Service code should protect application rules and workflows.</p></li>
+      <li><p>Repository code should hide storage details.</p></li>
+      <li><p>Clear boundaries make applications easier to test, change, and extend.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Final Mental Model</h2>
+    <table>
+      <thead>
+        <tr><th>Responsibility area</th><th>Main job</th><th>Java example</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><p>Presentation</p></td>
+          <td><p>Receive input and display results</p></td>
+          <td><p>Controller, JavaFX screen, REST endpoint</p></td>
+        </tr>
+        <tr>
+          <td><p>Application / Service</p></td>
+          <td><p>Apply rules and coordinate work</p></td>
+          <td><p>Service class</p></td>
+        </tr>
+        <tr>
+          <td><p>Data / Repository</p></td>
+          <td><p>Store, retrieve, and map data</p></td>
+          <td><p>Repository or DAO</p></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+</div>
+</div>
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+  var revealjsConfig = new Object();
+  Object.assign(revealjsConfig, {
+    "disableLayout": true,
+    "controls": true,
+    "progress": true,
+    "hash": true,
+    "center": true,
+    "transition": "slide",
+    "slideNumber": true,
+    "scrollActivationWidth": null,
+    "mouseWheel": false,
+    "width": 800,
+    "height": 540
+  });
+
+  revealjsConfig.plugins = [
+    RevealNotes, RevealHighlight, RevealMath,
+  ];
+
+  Reveal.initialize(revealjsConfig);
+</script>
+
+</body>
+</html>
