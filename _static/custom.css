@@ -649,3 +649,38 @@ html.reveal-full-page {
   --mem-sidew: 88px;
   --mem-maxh: 330px;
 }
+
+.reveal .flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  margin: 0.55em 0;
+  flex-wrap: wrap;
+}
+
+.reveal .flow-box {
+  border: 2px solid #315f8c;
+  border-radius: 8px;
+  background: #f7f9fc;
+  padding: 0.42em 0.55em;
+  text-align: center;
+  font-size: 0.82em;
+  min-width: 6.4em;
+}
+
+.reveal .flow-box.green {
+  border-color: #397843;
+  background: #f7fff8;
+}
+
+.reveal .flow-box.gray {
+  border-color: #777;
+  background: #f5f5f5;
+}
+
+.reveal .arrow {
+  color: #315f8c;
+  font-weight: 700;
+  font-size: 1.15em;
+}

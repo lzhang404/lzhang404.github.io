@@ -29,382 +29,666 @@
           </div>
         </section>
       </section>
-
       <section>
         <section class="frame">
           <h2>Overview</h2>
-          <ul>
-          <li><p>Modular development: drivers and reusable modules</p></li>
-          <li><p>C++ build pipeline: preprocessing, compiling, linking</p></li>
-          <li><p>Building with g++: one-step vs step-wise compilation</p></li>
-          <li><p>Make: targets, dependencies, recipes, and automation</p></li>
-          <li><p>Testing: test drivers, assert, and unit testing frameworks</p></li>
+<ul>
+            <li><p>Modular development: split one program into reusable pieces.</p></li>
+            <li><p>Header and source files: separate interface from implementation.</p></li>
+            <li><p>C++ build pipeline: preprocess, compile, and link.</p></li>
+            <li><p><code>g++</code>: build all at once or build step by step.</p></li>
+            <li><p><code>make</code>: rebuild the correct files automatically.</p></li>
+            <li><p>Testing: check modules before trusting the whole program.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Learning goals</h2>
-          <p>After this lecture, you should be able to</p>
-          <ul>
-          <li><p>Organize a project into drivers and modules using header and source files</p></li>
-          <li><p>Explain what preprocessing, compiling, and linking do</p></li>
-          <li><p>Build modular projects using step-wise compilation and linking</p></li>
-          <li><p>Write a basic makefile with multiple targets</p></li>
-          <li><p>Write and run simple unit tests using assert or a framework style</p></li>
+          <h2>Learning Goals</h2>
+<ul>
+            <li><p>Identify drivers, modules, headers, and source files.</p></li>
+            <li><p>Explain what belongs in a <code>.hpp</code> file.</p></li>
+            <li><p>Explain what belongs in a <code>.cpp</code> file.</p></li>
+            <li><p>Trace how source files become an executable.</p></li>
+            <li><p>Compile source files into object files with <code>-c</code>.</p></li>
+            <li><p>Link object files into one executable.</p></li>
+            <li><p>Read and write a small makefile.</p></li>
+            <li><p>Write a small test driver or unit test.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Core idea: build and test faster as projects grow</h2>
-          <ul>
-          <li><p>Separate code into modules so changes stay local</p></li>
-          <li><p>Compile modules separately so rebuilds are fast</p></li>
-          <li><p>Use make so the build is repeatable and correct</p></li>
-          <li><p>Use tests so behavior stays correct after changes</p></li>
+          <h2>Core Idea: Build in Pieces</h2>
+<ul>
+            <li><p>Small programs can live in one file.</p></li>
+            <li><p>Larger programs need clear boundaries.</p></li>
+            <li><p>A module owns one part of the program.</p></li>
+            <li><p>A build tool remembers repeated commands.</p></li>
+            <li><p>Tests check that old behavior still works.</p></li>
           </ul>
         </section>
       </section>
-
       <section>
         <section class="title-slide slide level1">
           <h1>Modular Development</h1>
         </section>
         <section class="frame">
-          <h2>What is modular development</h2>
-          <p>Modular development in C++ means splitting a program into independent, reusable components.</p>
-          <ul>
-          <li><p>A module has a clear responsibility</p></li>
-          <li><p>A header contains declarations (the interface)</p></li>
-          <li><p>A source file contains definitions (the implementation)</p></li>
-          <li><p>A driver contains main and builds an executable</p></li>
+          <h2>What Is Modular Development?</h2>
+<ul>
+            <li><p>Split code into focused parts.</p></li>
+            <li><p>Give each part one main responsibility.</p></li>
+            <li><p>Keep the public interface separate from the internal code.</p></li>
+            <li><p>Reuse the same module in more than one program.</p></li>
+            <li><p>Test one module without running the full program.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Benefits</h2>
-          <ul>
-          <li><p>Reuse the same module in many programs</p></li>
-          <li><p>Multiple people can work on different modules at the same time</p></li>
-          <li><p>Smaller rebuilds: recompile only what changed</p></li>
-          <li><p>Easier testing: test a module with a separate test driver</p></li>
-          <li><p>Cleaner code: fewer giant files, clearer responsibilities</p></li>
+          <h2>Why Split Code Into Modules?</h2>
+<ul>
+            <li><p>Avoid one giant source file.</p></li>
+            <li><p>Make each file easier to read.</p></li>
+            <li><p>Change one module with fewer side effects.</p></li>
+            <li><p>Recompile only the files affected by the change.</p></li>
+            <li><p>Let different people work on different modules.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Drivers vs modules</h2>
-          <p>Driver</p>
-          <ul>
-          <li><p>Has main</p></li>
-          <li><p>Produces an executable</p></li>
-          <li><p>Often one driver per program or per test executable</p></li>
-          </ul>
-          <p>Module</p>
-          <ul>
-          <li><p>No main</p></li>
-          <li><p>Provides reusable classes and functions</p></li>
-          <li><p>Usually a pair: something.hpp and something.cpp</p></li>
+          <h2>Driver vs. Module</h2>
+<table>
+            <thead>
+              <tr><th>Part</th><th>Main job</th><th>Usually contains</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Driver</td><td>Start one executable</td><td><code>main()</code></td></tr><tr><td>Module</td><td>Provide reusable code</td><td>Classes and functions</td></tr><tr><td>Header</td><td>Declare the module interface</td><td>Class declarations and function prototypes</td></tr><tr><td>Source</td><td>Define the implementation</td><td>Method bodies and helper code</td></tr>
+            </tbody>
+          </table>
+<ul>
+            <li><p>A driver uses modules.</p></li>
+            <li><p>A module should not contain <code>main()</code>.</p></li>
+            <li><p>One project can have more than one driver.</p></li>
+            <li><p>Example: <code>m02-module/02-store</code>.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Header guards</h2>
-          <pre><code class="language-cpp">
-#ifndef THREE_INTS_HPP
+          <h2>Example Project Layout</h2>
+<pre><code class="language-text">project/
+  include/
+    three-ints.hpp
+  src/
+    three-ints.cpp
+  main.cpp
+  test.cpp
+  makefile</code></pre>
+<ul>
+            <li><p><code>main.cpp</code> is the program driver.</p></li>
+            <li><p><code>test.cpp</code> is the test driver.</p></li>
+            <li><p><code>three-ints.hpp</code> declares the class.</p></li>
+            <li><p><code>three-ints.cpp</code> defines the methods.</p></li>
+            <li><p>Example: <code>m02-module/01-three-ints</code>.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Header File: The Interface</h2>
+<pre><code class="language-cpp">#ifndef THREE_INTS_HPP
 #define THREE_INTS_HPP
 
 class ThreeInts {
 public:
   ThreeInts(int a, int b, int c);
   int sum() const;
+
 private:
   int x_, y_, z_;
 };
 
-#endif
-            </code></pre>
+#endif</code></pre>
+<ul>
+            <li><p>The header tells other files what exists.</p></li>
+            <li><p>It declares the class name.</p></li>
+            <li><p>It declares public methods.</p></li>
+            <li><p>It declares private fields.</p></li>
+            <li><p>It does not need to show method bodies here.</p></li>
+          </ul>
         </section>
         <section class="frame">
-          <h2>Practice 1: classify files</h2>
-          <p>Project files:</p>
-          <ul>
-          <li><p>main.cpp</p></li>
-          <li><p>table.hpp, table.cpp</p></li>
-          <li><p>list.hpp, list.cpp</p></li>
+          <h2>Source File: The Implementation</h2>
+<pre><code class="language-cpp">#include &quot;three-ints.hpp&quot;
+
+ThreeInts::ThreeInts(int a, int b, int c)
+  : x_(a), y_(b), z_(c) {
+}
+
+int ThreeInts::sum() const {
+  return x_ + y_ + z_;
+}</code></pre>
+<ul>
+            <li><p>The source file includes the header.</p></li>
+            <li><p>The constructor body is defined here.</p></li>
+            <li><p>The <code>sum()</code> method body is defined here.</p></li>
+            <li><p><code>ThreeInts::</code> says the method belongs to the class.</p></li>
           </ul>
-          <p>Task:</p>
-          <ul>
-          <li><p>Which file is the driver</p></li>
-          <li><p>Which files are modules</p></li>
+        </section>
+        <section class="frame">
+          <h2>Driver File: Uses the Module</h2>
+<pre><code class="language-cpp">#include &quot;three-ints.hpp&quot;
+#include &lt;iostream&gt;
+
+int main() {
+  ThreeInts nums(1, 2, 3);
+  std::cout &lt;&lt; nums.sum() &lt;&lt; &quot;
+&quot;;
+  return 0;
+}</code></pre>
+<ul>
+            <li><p>The driver includes the module header.</p></li>
+            <li><p>The driver creates an object.</p></li>
+            <li><p>The driver calls public methods.</p></li>
+            <li><p>The driver does not need to know private fields.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Header Guards: Why They Matter</h2>
+<pre><code class="language-cpp">#ifndef THREE_INTS_HPP
+#define THREE_INTS_HPP
+
+// declarations go here
+
+#endif</code></pre>
+<ul>
+            <li><p>A header may be included more than once.</p></li>
+            <li><p>Repeated declarations can confuse the compiler.</p></li>
+            <li><p>The guard allows the header content only once per source file.</p></li>
+            <li><p><code>#ifndef</code> checks whether the name is not defined yet.</p></li>
+            <li><p><code>#define</code> marks the header as already included.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Practice 1: Classify Files</h2>
+<ul>
+            <li><p>Project files:</p></li>
+            <li><p><code>main.cpp</code></p></li>
+            <li><p><code>table.hpp</code> and <code>table.cpp</code></p></li>
+            <li><p><code>list.hpp</code> and <code>list.cpp</code></p></li>
+            <li><p>Question 1: Which file is the driver?</p></li>
+            <li><p>Question 2: Which files are modules?</p></li>
           </ul>
         </section>
         <section class="frame">
           <h2>Practice 1 Answer</h2>
-          <ul>
-          <li><p>Driver: main.cpp (contains main)</p></li>
-          <li><p>Modules: table.hpp with table.cpp, list.hpp with list.cpp</p></li>
+<ul>
+            <li><p>Driver: <code>main.cpp</code>.</p></li>
+            <li><p>Reason: it should contain <code>main()</code>.</p></li>
+            <li><p>Module 1: <code>table.hpp</code> and <code>table.cpp</code>.</p></li>
+            <li><p>Module 2: <code>list.hpp</code> and <code>list.cpp</code>.</p></li>
           </ul>
         </section>
       </section>
-
       <section>
         <section class="title-slide slide level1">
           <h1>Build Pipeline and g++</h1>
         </section>
         <section class="frame">
-          <h2>C++ build pipeline</h2>
-          <p>Building translates source code into an executable.</p>
+          <h2>C++ Build Pipeline</h2>
+          <div class="flow">
+            <div class="flow-box"><code>.cpp</code><br/>source code</div>
+            <span class="arrow">→</span>
+            <div class="flow-box">Preprocess</div>
+            <span class="arrow">→</span>
+            <div class="flow-box">Compile</div>
+            <span class="arrow">→</span>
+            <div class="flow-box"><code>.o</code><br/>object file</div>
+            <span class="arrow">→</span>
+            <div class="flow-box green">Link</div>
+            <span class="arrow">→</span>
+            <div class="flow-box green">executable</div>
+          </div>
           <ul>
-          <li><p>Preprocessing: expands includes and macros</p></li>
-          <li><p>Compiling: turns each source file into an object file</p></li>
-          <li><p>Linking: combines object files into an executable</p></li>
+            <li><p>Build means translate code into a runnable program.</p></li>
+            <li><p>Preprocessing handles <code>#include</code> and macros.</p></li>
+            <li><p>Compiling checks each <code>.cpp</code> file.</p></li>
+            <li><p>Compiling creates one <code>.o</code> file per source file.</p></li>
+            <li><p>Linking combines object files.</p></li>
+            <li><p>Linking creates the final executable.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>What Each Step Catches</h2>
+<table>
+            <thead>
+              <tr><th>Step</th><th>Common problem</th><th>Example</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Preprocess</td><td>Missing header path</td><td><code>#include</code> not found</td></tr><tr><td>Compile</td><td>Syntax or type error</td><td>Wrong parameter type</td></tr><tr><td>Link</td><td>Missing definition</td><td>Declared method has no body</td></tr>
+            </tbody>
+          </table>
+<ul>
+            <li><p>A compile error usually points to one source file.</p></li>
+            <li><p>A link error usually means a needed object file is missing.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Pipeline picture</h2>
-          <div class="center"><p><code>.cpp</code> + <code>.hpp</code> → Preprocess → Compile (<code>g++ -c</code>) → <code>.o</code> files → Link → Executable</p></div>
-          <p>Headers are included into source files; headers are not compiled by themselves.</p>
+          <h2><code>g++</code> Options You Will Use</h2>
+<table>
+            <thead>
+              <tr><th>Option</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>-std=c++14</code></td><td>Use the C++14 language standard</td></tr><tr><td><code>-Wall -Wextra</code></td><td>Show helpful warnings</td></tr><tr><td><code>-I include</code></td><td>Search the <code>include</code> folder for headers</td></tr><tr><td><code>-c</code></td><td>Compile only; do not link</td></tr><tr><td><code>-o name</code></td><td>Name the output file</td></tr>
+            </tbody>
+          </table>
         </section>
         <section class="frame">
-          <h2>g++ options you will use</h2>
-          <ul>
-          <li><p>-std=c++14 (or newer)</p></li>
-          <li><p>-Wall -Wextra</p></li>
-          <li><p>-I include</p></li>
-          <li><p>-c</p></li>
-          <li><p>-o name</p></li>
+          <h2>One-Step Build</h2>
+<pre><code class="language-bash">g++ -std=c++14 -Wall -Wextra -I include   -o main main.cpp src/three-ints.cpp</code></pre>
+<ul>
+            <li><p>This command compiles and links together.</p></li>
+            <li><p>It is simple for small projects.</p></li>
+            <li><p>It recompiles every listed source file.</p></li>
+            <li><p>It becomes repetitive as the project grows.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>One-step build</h2>
-          <pre><code class="language-bash">g++ -std=c++14 -Wall -Wextra -I include \
-            -o main main.cpp table.cpp list.cpp
-            </code></pre>
-          <p>This compiles and links in one command.</p>
+          <h2>Step-Wise Build: Compile First</h2>
+<pre><code class="language-bash">g++ -std=c++14 -Wall -Wextra -I include -c main.cpp -o main.o
+
+g++ -std=c++14 -Wall -Wextra -I include -c src/three-ints.cpp -o three-ints.o</code></pre>
+<ul>
+            <li><p><code>-c</code> creates object files.</p></li>
+            <li><p>No executable is created yet.</p></li>
+            <li><p>Each source file becomes one object file.</p></li>
+            <li><p>The object files contain compiled code.</p></li>
+          </ul>
         </section>
         <section class="frame">
-          <h2>Step-wise build</h2>
-          <p>Compile each source file into an object file:</p>
-          <pre><code class="language-bash">g++ -std=c++14 -Wall -Wextra -I include -c main.cpp
-          g++ -std=c++14 -Wall -Wextra -I include -c table.cpp
-          g++ -std=c++14 -Wall -Wextra -I include -c list.cpp
-            </code></pre>
-          <p>Link object files:</p>
-          <pre><code class="language-bash">g++ -o main main.o table.o list.o
-            </code></pre>
+          <h2>Step-Wise Build: Link Second</h2>
+<pre><code class="language-bash">g++ -o main main.o three-ints.o</code></pre>
+<ul>
+            <li><p>The linker combines object files.</p></li>
+            <li><p>The output is the executable named <code>main</code>.</p></li>
+            <li><p>All needed method definitions must be present.</p></li>
+            <li><p>Missing object files cause link errors.</p></li>
+          </ul>
         </section>
         <section class="frame">
-          <h2>Practice 2: what is wrong</h2>
-          <pre><code class="language-bash">g++ -o main main.cpp grade-book.cpp grades.hpp
-            </code></pre>
-          <ul>
-          <li><p>What is wrong (if anything)</p></li>
-          <li><p>Is this one-step or step-wise</p></li>
+          <h2>Why Step-Wise Builds Are Faster</h2>
+<table>
+            <thead>
+              <tr><th>Change made</th><th>Needs recompiling</th><th>Needs relinking</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Only <code>main.cpp</code></td><td><code>main.o</code></td><td>Yes</td></tr><tr><td>Only <code>three-ints.cpp</code></td><td><code>three-ints.o</code></td><td>Yes</td></tr><tr><td>Header used by both files</td><td>Both object files</td><td>Yes</td></tr><tr><td>No source changed</td><td>Nothing</td><td>No</td></tr>
+            </tbody>
+          </table>
+<ul>
+            <li><p>Unchanged source files can keep their old object files.</p></li>
+            <li><p>The build still relinks when an object file changes.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Practice 2: What Is Wrong?</h2>
+<pre><code class="language-bash">g++ -o main main.cpp grade-book.cpp grades.hpp</code></pre>
+<ul>
+            <li><p>Question 1: Is this one-step or step-wise?</p></li>
+            <li><p>Question 2: What should not be listed here?</p></li>
+            <li><p>Question 3: What is the corrected command?</p></li>
           </ul>
         </section>
         <section class="frame">
           <h2>Practice 2 Answer</h2>
-          <ul>
-          <li><p>This is one-step (compile and link together).</p></li>
-          <li><p>The header file should not be listed as a build input.</p></li>
-          <li><p>Better: g++ -o main main.cpp grade-book.cpp</p></li>
+<ul>
+            <li><p>This is a one-step build.</p></li>
+            <li><p><code>grades.hpp</code> should not be listed as a build input.</p></li>
+            <li><p>Headers are included by source files.</p></li>
+            <li><p>Better command: <code>g++ -o main main.cpp grade-book.cpp</code>.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Practice 3: object file mistake</h2>
-          <pre><code class="language-bash">g++ -o main.o main.cpp
-            </code></pre>
-          <ul>
-          <li><p>What does this likely produce</p></li>
-          <li><p>How do you correctly create main.o</p></li>
+          <h2>Practice 3: Object File Mistake</h2>
+<pre><code class="language-bash">g++ -o main.o main.cpp</code></pre>
+<ul>
+            <li><p>Question 1: What does this likely produce?</p></li>
+            <li><p>Question 2: What option is missing?</p></li>
+            <li><p>Question 3: How do you correctly create <code>main.o</code>?</p></li>
           </ul>
         </section>
         <section class="frame">
           <h2>Practice 3 Answer</h2>
-          <p>Without -c, this links and creates an executable named main.o.</p>
-          <p>Correct:</p>
-          <pre><code class="language-bash">g++ -std=c++14 -Wall -Wextra -c main.cpp -o main.o
-            </code></pre>
+<ul>
+            <li><p>Without <code>-c</code>, <code>g++</code> tries to link.</p></li>
+            <li><p>The output may be an executable named <code>main.o</code>.</p></li>
+            <li><p>Correct command:</p></li>
+          </ul>
+<pre><code class="language-bash">g++ -std=c++14 -Wall -Wextra -c main.cpp -o main.o</code></pre>
         </section>
         <section class="frame">
-          <h2>Practice 4: -c with -o mistake</h2>
-          <pre><code class="language-bash">g++ -c -o main.o main.cpp grade-book.cpp
-            </code></pre>
-          <ul>
-          <li><p>Why is this incorrect</p></li>
-          <li><p>Show one correct fix</p></li>
+          <h2>Practice 4: <code>-c</code> With Multiple Inputs</h2>
+<pre><code class="language-bash">g++ -c -o main.o main.cpp grade-book.cpp</code></pre>
+<ul>
+            <li><p>Question 1: Why is this incorrect?</p></li>
+            <li><p>Question 2: How many object files should be created?</p></li>
+            <li><p>Question 3: Show one correct fix.</p></li>
           </ul>
         </section>
         <section class="frame">
           <h2>Practice 4 Answer</h2>
-          <p>-c compiles each source file into its own object file. Using -o main.o tries to name a single output for multiple inputs.</p>
-          <p>Fix by compiling separately:</p>
-          <pre><code class="language-bash">g++ -c main.cpp -o main.o
-          g++ -c grade-book.cpp -o grade-book.o
-          g++ -o main main.o grade-book.o
-            </code></pre>
+<ul>
+            <li><p><code>-c</code> compiles source files separately.</p></li>
+            <li><p>Two source files should create two object files.</p></li>
+            <li><p><code>-o main.o</code> gives only one output name.</p></li>
+            <li><p>Compile each source file separately:</p></li>
+          </ul>
+<pre><code class="language-bash">g++ -c main.cpp -o main.o
+g++ -c grade-book.cpp -o grade-book.o
+g++ -o main main.o grade-book.o</code></pre>
         </section>
       </section>
-
       <section>
         <section class="title-slide slide level1">
           <h1>Make</h1>
         </section>
         <section class="frame">
-          <h2>Why use make</h2>
-          <p>Step-wise builds have repeated commands. make automates:</p>
-          <ul>
-          <li><p>build order</p></li>
-          <li><p>rebuild only what changed</p></li>
-          <li><p>shared compiler flags</p></li>
-          <li><p>multiple executables (main and tests)</p></li>
+          <h2>Why Use <code>make</code>?</h2>
+<ul>
+            <li><p>Step-wise builds require many commands.</p></li>
+            <li><p>Repeated commands are easy to mistype.</p></li>
+            <li><p><code>make</code> stores the build rules.</p></li>
+            <li><p><code>make</code> checks which files changed.</p></li>
+            <li><p><code>make</code> rebuilds only what is needed.</p></li>
+            <li><p><code>make</code> can build both the program and tests.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Make vocabulary</h2>
-          <ul>
-          <li><p>Target: output to build</p></li>
-          <li><p>Dependencies: inputs needed for the target</p></li>
-          <li><p>Recipe: commands to build the target</p></li>
-          </ul>
-          <p>Automatic variables:</p>
-          <ul>
-          <li><p><code>\$</code>$@$: target name</p></li>
-          <li><p><code>\$</code>$\hat{}$ \ \ all dependencies</p></li>
-          <li><p><code>\$</code>$&lt;$ first dependency</p></li>
+          <h2>Make Rule Vocabulary</h2>
+<table>
+            <thead>
+              <tr><th>Part</th><th>Meaning</th><th>Example</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Target</td><td>Output to build</td><td><code>main</code></td></tr><tr><td>Dependencies</td><td>Files needed by the target</td><td><code>main.o three-ints.o</code></td></tr><tr><td>Recipe</td><td>Command that builds the target</td><td><code>g++ -o main ...</code></td></tr>
+            </tbody>
+          </table>
+<ul>
+            <li><p>A rule says how to build one target.</p></li>
+            <li><p>A recipe line must start with a tab.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Makefile example: two executables</h2>
-          <p>Example: m02-multimodule/makefile <pre><code class="language-make">
-CXX := g++
+          <h2>Automatic Variables</h2>
+<table>
+            <thead>
+              <tr><th>Variable</th><th>Meaning</th><th>Common use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>$@</code></td><td>The target name</td><td>Name the output</td></tr><tr><td><code>$^</code></td><td>All dependencies</td><td>Link all object files</td></tr><tr><td><code>$&lt;</code></td><td>The first dependency</td><td>Compile one source file</td></tr>
+            </tbody>
+          </table>
+<ul>
+            <li><p>Automatic variables reduce repeated file names.</p></li>
+            <li><p>They also reduce copy-paste mistakes.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Makefile: Shared Settings</h2>
+<pre><code class="language-make">CXX := g++
+CXXFLAGS := -std=c++14 -Wall -Wextra -I include</code></pre>
+<ul>
+            <li><p><code>CXX</code> stores the compiler command.</p></li>
+            <li><p><code>CXXFLAGS</code> stores common compile options.</p></li>
+            <li><p>Changing the flags in one place updates all compile rules.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Makefile: Build Executables</h2>
+<pre><code class="language-make">all: main test
+
+main: main.o three-ints.o
+	$(CXX) -o $@ $^
+
+test: test.o three-ints.o
+	$(CXX) -o $@ $^</code></pre>
+<ul>
+            <li><p><code>all</code> builds both executables.</p></li>
+            <li><p><code>main</code> links the main driver and module object file.</p></li>
+            <li><p><code>test</code> links the test driver and module object file.</p></li>
+            <li><p><code>$@</code> becomes <code>main</code> or <code>test</code>.</p></li>
+            <li><p><code>$^</code> becomes the object-file list.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Makefile: Build Object Files</h2>
+<pre><code class="language-make">main.o: main.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $&lt; -o $@
+
+test.o: test.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $&lt; -o $@
+
+three-ints.o: src/three-ints.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $&lt; -o $@</code></pre>
+<ul>
+            <li><p>Each object file depends on one source file.</p></li>
+            <li><p>Each object file also depends on the header it includes.</p></li>
+            <li><p>Changing the header can force recompilation.</p></li>
+            <li><p><code>$&lt;</code> is the first dependency.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Makefile: Run Tests and Clean</h2>
+<pre><code class="language-make">.PHONY: test-run clean
+
+test-run: test
+	./test
+
+clean:
+	rm -rf main test *.o *.gc* *.dSYM</code></pre>
+<ul>
+            <li><p><code>test-run</code> first builds <code>test</code> if needed.</p></li>
+            <li><p><code>./test</code> runs the test executable.</p></li>
+            <li><p><code>clean</code> removes generated files.</p></li>
+            <li><p><code>.PHONY</code> marks targets that are commands, not real files.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Complete Makefile Example</h2>
+<pre><code class="language-make">CXX := g++
 CXXFLAGS := -std=c++14 -Wall -Wextra -I include
+
 all: main test
 
 main: main.o three-ints.o
-  $(CXX) -o $@ $^
-test: test.o three-ints.o
-  $(CXX) -o $@ $^
-main.o: main.cpp include/three-ints.hpp
-  $(CXX) $(CXXFLAGS) -c $&lt; -o $@
-test.o: test.cpp include/three-ints.hpp
-  $(CXX) $(CXXFLAGS) -c $&lt; -o $@
-three-ints.o: three-ints.cpp include/three-ints.hpp
-  $(CXX) $(CXXFLAGS) -c $&lt; -o $@
+	$(CXX) -o $@ $^
 
-.PHONY: clean
-# test compiled exectuable, *.dSYM debug symbol folders
-clean :
-  rm -rf test main *.o *.gc* test *.dSYM]
-            </code></pre></p>
+test: test.o three-ints.o
+	$(CXX) -o $@ $^
+
+main.o: main.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $&lt; -o $@
+
+test.o: test.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $&lt; -o $@
+
+three-ints.o: src/three-ints.cpp include/three-ints.hpp
+	$(CXX) $(CXXFLAGS) -c $&lt; -o $@
+
+.PHONY: test-run clean
+
+test-run: test
+	./test
+
+clean:
+	rm -rf main test *.o *.gc* *.dSYM</code></pre>
         </section>
         <section class="frame">
-          <h2>Common make commands</h2>
-          <ul>
-          <li><p>make</p></li>
-          <li><p>make main</p></li>
-          <li><p>make test</p></li>
-          <li><p>make clean</p></li>
+          <h2>Common <code>make</code> Commands</h2>
+<table>
+            <thead>
+              <tr><th>Command</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>make</code></td><td>Builds the first target, usually <code>all</code></td></tr><tr><td><code>make main</code></td><td>Builds only the main executable</td></tr><tr><td><code>make test</code></td><td>Builds only the test executable</td></tr><tr><td><code>make test-run</code></td><td>Builds and runs tests</td></tr><tr><td><code>make clean</code></td><td>Removes generated files</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="frame">
+          <h2>How <code>make</code> Decides What to Rebuild</h2>
+          <div class="center">
+            <p>Target missing or older than dependencies -&gt; run recipe</p>
+            <p>Target exists and is newer than dependencies -&gt; skip recipe</p>
+          </div>
+<ul>
+            <li><p>Make compares file timestamps.</p></li>
+            <li><p>A changed <code>.cpp</code> makes its <code>.o</code> outdated.</p></li>
+            <li><p>A changed header can make several <code>.o</code> files outdated.</p></li>
+            <li><p>After object files change, the executable is linked again.</p></li>
           </ul>
         </section>
       </section>
-
       <section>
         <section class="title-slide slide level1">
           <h1>Testing</h1>
         </section>
         <section class="frame">
-          <h2>Why testing</h2>
-          <ul>
-          <li><p>Manual testing does not scale</p></li>
-          <li><p>Tests describe expected behavior</p></li>
-          <li><p>Tests catch regressions after changes</p></li>
-          <li><p>Modules are easier to test than monoliths</p></li>
+          <h2>Why Testing Matters</h2>
+<ul>
+            <li><p>Manual testing is slow.</p></li>
+            <li><p>Manual testing is easy to forget.</p></li>
+            <li><p>Tests record expected behavior.</p></li>
+            <li><p>Tests catch regressions after changes.</p></li>
+            <li><p>Modules are easier to test than one large program.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Types of tests</h2>
-          <ul>
-          <li><p>Unit tests: one function or class</p></li>
-          <li><p>Integration tests: modules working together</p></li>
-          <li><p>System tests: full program behavior</p></li>
+          <h2>Types of Tests</h2>
+<table>
+            <thead>
+              <tr><th>Test type</th><th>What it checks</th><th>Example</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Unit test</td><td>One function or class</td><td><code>ThreeInts::sum()</code></td></tr><tr><td>Integration test</td><td>Multiple modules together</td><td>Parser plus gradebook</td></tr><tr><td>System test</td><td>Whole program behavior</td><td>Input file to output file</td></tr>
+            </tbody>
+          </table>
+<ul>
+            <li><p>Start with unit tests when possible.</p></li>
+            <li><p>Add larger tests after small pieces work.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Simple test driver</h2>
-<pre><code class="language-cpp">
-#include &quot;three-ints.hpp&quot;
+          <h2>Simple Test Driver</h2>
+<pre><code class="language-cpp">#include &quot;three-ints.hpp&quot;
 #include &lt;iostream&gt;
 
 int main() {
   ThreeInts t(1, 2, 3);
-  std::cout &lt;&lt; &quot;sum=&quot; &lt;&lt; t.sum() &lt;&lt; &quot;\n&quot;; // expected 6
-}
-            </code></pre>
+  std::cout &lt;&lt; &quot;sum=&quot; &lt;&lt; t.sum() &lt;&lt; &quot;
+&quot;;
+  return 0;
+}</code></pre>
+<ul>
+            <li><p>This driver uses the module without the main program.</p></li>
+            <li><p>The expected output is <code>sum=6</code>.</p></li>
+            <li><p>This is useful for quick checking.</p></li>
+            <li><p>It still requires a human to inspect the output.</p></li>
+          </ul>
         </section>
         <section class="frame">
-          <h2>Tests with assert</h2>
-          <pre><code class="language-cpp">
-#include &quot;store-item.hpp&quot;
+          <h2>Tests With <code>assert</code></h2>
+<pre><code class="language-cpp">#include &quot;three-ints.hpp&quot;
 #include &lt;cassert&gt;
 
-void testStoreItem() {
-  StoreItem a(&quot;Apple&quot;);
-  StoreItem b(&quot;apple&quot;);
-  assert(a.equals(b));
+void testSum() {
+  ThreeInts t(1, 2, 3);
+  assert(t.sum() == 6);
 }
 
 int main() {
-  testStoreItem();
-}
-            </code></pre>
+  testSum();
+  return 0;
+}</code></pre>
+<ul>
+            <li><p><code>assert</code> checks a condition.</p></li>
+            <li><p>If the condition is true, the program continues.</p></li>
+            <li><p>If the condition is false, the program stops with an error.</p></li>
+            <li><p>No output usually means the test passed.</p></li>
+          </ul>
         </section>
         <section class="frame">
-          <h2>Framework style (Catch2-like)</h2>
-          <pre><code class="language-cpp">
-#include &quot;catch.hpp&quot;
-#include &quot;store-item.hpp&quot;
+          <h2>Framework Style: Catch2-Like Tests</h2>
+<pre><code class="language-cpp">#include &quot;catch.hpp&quot;
+#include &quot;three-ints.hpp&quot;
 
-TEST_CASE(&quot;store item equality&quot;, &quot;[storeItem]&quot;) {
-  SECTION(&quot;case-insensitive comparison&quot;) {
-    StoreItem a(&quot;Apple&quot;);
-    StoreItem b(&quot;apple&quot;);
-    CHECK(a.equals(b));
-  }
-}
-            </code></pre>
+TEST_CASE(&quot;ThreeInts computes a sum&quot;, &quot;[three-ints]&quot;) {
+  ThreeInts t(1, 2, 3);
+  CHECK(t.sum() == 6);
+}</code></pre>
+<ul>
+            <li><p>A framework gives named test cases.</p></li>
+            <li><p><code>CHECK</code> reports a failed check.</p></li>
+            <li><p>The test report is easier to read.</p></li>
+            <li><p>This style scales better than one large test driver.</p></li>
+          </ul>
         </section>
         <section class="frame">
-          <h2>Run tests from make</h2>
-          <pre><code class="language-make">
-test-run: test
-            </code></pre>
-          <pre><code class="language-bash">
-make test-run
-.test
-            </code></pre>
+          <h2>What Should We Test?</h2>
+<ul>
+            <li><p>Normal cases: expected common input.</p></li>
+            <li><p>Boundary cases: smallest or largest valid values.</p></li>
+            <li><p>Error cases: invalid input, if the program handles it.</p></li>
+            <li><p>Repeated calls: make sure object state stays correct.</p></li>
+            <li><p>Bug cases: add a test when you fix a bug.</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Run Tests From <code>make</code></h2>
+<pre><code class="language-make">test-run: test
+	./test</code></pre>
+<pre><code class="language-bash">make test-run</code></pre>
+<ul>
+            <li><p><code>make test-run</code> first checks whether <code>test</code> is current.</p></li>
+            <li><p>If needed, make rebuilds the test executable.</p></li>
+            <li><p>Then make runs <code>./test</code>.</p></li>
+            <li><p>This gives one command for build and test.</p></li>
+            <li><p>Example: run <code>make test-run</code></p></li>
+          </ul>
         </section>
       </section>
-
       <section>
         <section class="title-slide slide level1">
           <h1>Review</h1>
         </section>
         <section class="frame">
           <h2>Summary</h2>
-          <ul>
-          <li><p>Modules separate interface (hpp) from implementation (cpp)</p></li>
-          <li><p>Step-wise builds compile to object files, then link</p></li>
-          <li><p>make automates dependencies and rebuilds only what changed</p></li>
-          <li><p>Tests reduce regressions and increase confidence in correctness</p></li>
+<ul>
+            <li><p>A driver contains <code>main()</code>.</p></li>
+            <li><p>A module provides reusable code.</p></li>
+            <li><p>A header contains declarations.</p></li>
+            <li><p>A source file contains definitions.</p></li>
+            <li><p>Compilation creates object files.</p></li>
+            <li><p>Linking creates the executable.</p></li>
+            <li><p><code>make</code> automates rebuild decisions.</p></li>
+            <li><p>Tests protect behavior as the project changes.</p></li>
           </ul>
         </section>
         <section class="frame">
-          <h2>Review questions</h2>
-          <ul>
-          <li><p>Why are header guards necessary</p></li>
-          <li><p>Why is step-wise compilation faster for iterative changes</p></li>
-          <li><p>What are target, dependencies, and recipe in make</p></li>
-          <li><p>What is the difference between a test driver and a unit test framework</p></li>
+          <h2>Review Questions</h2>
+<ul>
+            <li><p>Why should headers contain declarations instead of most method bodies?</p></li>
+            <li><p>Why are header guards necessary?</p></li>
+            <li><p>What does <code>g++ -c</code> create?</p></li>
+            <li><p>What does the linker combine?</p></li>
+            <li><p>What are target, dependencies, and recipe in make?</p></li>
+            <li><p>Why should a test driver be separate from the main driver?</p></li>
+          </ul>
+        </section>
+        <section class="frame">
+          <h2>Build-and-Test Workflow</h2>
+          <div class="center">
+            <p>Edit code -&gt; Run <code>make test-run</code> -&gt; Fix failures -&gt; Run <code>make</code> -&gt; Submit</p>
+          </div>
+<ul>
+            <li><p>Edit one module at a time when possible.</p></li>
+            <li><p>Run tests before trusting the executable.</p></li>
+            <li><p>Use <code>make clean</code> when generated files seem stale.</p></li>
+            <li><p>Read compiler errors before changing many files.</p></li>
           </ul>
         </section>
       </section>
-
     </div>
   </div>
 
