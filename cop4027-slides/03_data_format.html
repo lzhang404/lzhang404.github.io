@@ -815,120 +815,149 @@ categories: []</code></pre>
             <li><p><strong>Limit:</strong> </p></li>
             <ul>
               <li>indentation errors are common and can change meaning.</li>
-              <li>unquoted values may be inte</li>
+              <li>unquoted values may be interpreted as other data types.</li>
             </ul>
           </ul>
         </section>
       </section>
 
-      <section>
-        <section class="title-slide slide level1">
-          <h1>XML</h1>
-        </section>
+<section>
+  <section class="title-slide slide level1">
+    <h1>XML</h1>
+  </section>
 
-        <section>
-          <h2>XML Building Blocks</h2>
-          <pre><code data-trim data-noescape class="language-xml">&lt;product id="1" category="input"&gt;
+  <section>
+    <h2>XML Building Blocks</h2>
+    <pre><code data-trim data-noescape class="language-xml">&lt;product id="1" category="input"&gt;
   &lt;name&gt;Keyboard&lt;/name&gt;
   &lt;price currency="USD"&gt;49.99&lt;/price&gt;
   &lt;tag&gt;wired&lt;/tag&gt;
   &lt;tag&gt;mechanical&lt;/tag&gt;
 &lt;/product&gt;</code></pre>
-          <ul class="simple">
-            <li><p><code>product</code>, <code>name</code>, <code>price</code>, and <code>tag</code> are elements.</p></li>
-            <li><p><code>id</code>, <code>category</code>, and <code>currency</code> are attributes.</p></li>
-            <li><p>Repeated child elements can represent a list.</p></li>
-            <li><p>There must be exactly one root element.</p></li>
-          </ul>
-        </section>
+    <ul class="simple">
+      <li><p>Elements hold data: <code>product</code>, <code>name</code>, <code>price</code>.</p></li>
+      <li><p>Attributes describe elements: <code>id</code>, <code>category</code>, <code>currency</code>.</p></li>
+      <li><p>Repeated elements can represent a list.</p></li>
+      <li><p>Each XML document needs exactly one root element.</p></li>
+    </ul>
+  </section>
 
-        <section>
-          <h2>XML Structure</h2>
-          <ul class="simple">
-            <li><p>Use <strong>elements</strong> for main data content, values that may repeat, or values that may become nested.</p></li>
-            <li><p>Use <strong>attributes</strong> for short metadata about an element, such as an id, category, or currency.</p></li>
-            <li><p>Repeated child elements can represent a list, and element order can matter.</p></li>
-          </ul>
-          <pre><code data-trim data-noescape class="language-xml">&lt;product id="1" category="input"&gt;
-  &lt;name&gt;Keyboard&lt;/name&gt;
-  &lt;tag&gt;wired&lt;/tag&gt;
-  &lt;tag&gt;mechanical&lt;/tag&gt;
-&lt;/product&gt;</code></pre>
-          <pre><code data-trim data-noescape class="language-xml">&lt;description&gt;
-  A &lt;strong&gt;mechanical&lt;/strong&gt; keyboard
-&lt;/description&gt;</code></pre>
-        </section>
+  <section>
+    <h2>Escaping Special Characters</h2>
+    <pre><code data-trim data-noescape class="language-xml">&lt;!-- Invalid: &lt; and &amp; have special meaning --&gt;
+&lt;message&gt;A &lt; B &amp; C&lt;/message&gt;
 
-        <section>
-          <h2>XML Namespaces</h2>
-          <pre><code data-trim data-noescape class="language-xml">&lt;order xmlns:store="https://example.com/store"
+&lt;!-- Valid: use entity references --&gt;
+&lt;message&gt;A &amp;lt; B &amp;amp; C&lt;/message&gt;</code></pre>
+    <ul class="simple">
+      <li><p><code>&amp;lt;</code> means <code>&lt;</code>.</p></li>
+      <li><p><code>&amp;gt;</code> means <code>&gt;</code>.</p></li>
+      <li><p><code>&amp;amp;</code> means <code>&amp;</code>.</p></li>
+      <li><p><code>&amp;quot;</code> and <code>&amp;apos;</code> are useful inside attributes.</p></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>CDATA</h2>
+    <pre><code data-trim data-noescape class="language-xml">&lt;script&gt;&lt;![CDATA[
+if (a &lt; b &amp;&amp; c &gt; d) {
+    System.out.println("ok");
+}
+]]&gt;&lt;/script&gt;</code></pre>
+    <ul class="simple">
+      <li><p>CDATA treats text as literal text.</p></li>
+      <li><p>Markup is not parsed inside the CDATA block.</p></li>
+      <li><p>Useful when the text contains many <code>&lt;</code> or <code>&amp;</code> characters.</p></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>XML Namespaces</h2>
+    <pre><code data-trim data-noescape class="language-xml">&lt;order xmlns:store="https://example.com/store"
        xmlns:ship="https://example.com/shipping"&gt;
   &lt;store:address&gt;Store 101&lt;/store:address&gt;
   &lt;ship:address&gt;123 Main St&lt;/ship:address&gt;
 &lt;/order&gt;</code></pre>
-          <ul class="simple">
-            <li><p>A namespace gives an XML name a unique identity.</p></li>
-            <li><p>The prefix is a short label: <code>store</code>, <code>ship</code>, <code>xs</code>, or <code>fx</code>.</p></li>
-            <li><p><code>store:address</code> and <code>ship:address</code> can use the same local name without meaning the same thing.</p></li>
-            <li><p>FXML uses namespaces such as <code>xmlns:fx="http://javafx.com/fxml"</code>.</p></li>
-          </ul>
-        </section>
+    <ul class="simple">
+      <li><p><code>xmlns:store="..."</code> declares the <code>store</code> namespace prefix.</p></li>
+      <li><p><code>store</code> and <code>ship</code> are author-chosen prefix names.</p></li>
+      <li><p>The URI identifies the namespace; it does not need to be a real web page.</p></li>
+      <li><p><code>store:address</code> and <code>ship:address</code> are different XML names.</p></li>
+      <li><p>FXML also uses namespaces, such as <code>xmlns:fx="http://javafx.com/fxml"</code>.</p></li>
+    </ul>
+  </section>
 
-        <section>
-          <h2>Well-Formed vs Valid XML</h2>
-          <ul class="simple">
-            <li><p><strong>Well-formed XML</strong> follows XML syntax rules: one root element, matching tags, proper nesting, and quoted attributes.</p></li>
-            <li><p><strong>Schema-valid XML</strong> is well-formed and also follows a rule set such as XSD.</p></li>
-            <li><p><strong>Application-valid data</strong> also makes sense for the program, such as a non-empty name and a non-negative price.</p></li>
-          </ul>
-          <pre><code data-trim data-noescape class="language-text">XML text
-  -&gt; syntax check
-  -&gt; schema check
+  <section>
+    <h2>XML Rule Levels</h2>
+    <pre><code data-trim data-noescape class="language-text">XML text
+  -&gt; well-formed check
+  -&gt; schema validation
   -&gt; parse into Java
   -&gt; application validation</code></pre>
-        </section>
+    <ul class="simple">
+      <li><p><strong>Well-formed:</strong> correct XML syntax.</p></li>
+      <li><p><strong>Schema-valid:</strong> follows DTD or XSD rules.</p></li>
+      <li><p><strong>Application-valid:</strong> makes sense for the program.</p></li>
+    </ul>
+  </section>
 
-        <section>
-  <h2>DTD and XSD</h2>
+  <section>
+    <h2>Well-Formed XML</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start;">
+      <div>
+        <p>Well-formed:</p>
+        <pre><code data-trim data-noescape class="language-xml">&lt;book&gt;
+  &lt;title&gt;XML Basics&lt;/title&gt;
+  &lt;price&gt;39.99&lt;/price&gt;
+&lt;/book&gt;</code></pre>
+      </div>
+      <div>
+        <p>Malformed:</p>
+        <pre><code data-trim data-noescape class="language-xml">&lt;book&gt;
+  &lt;title&gt;XML Basics
+  &lt;price&gt;39.99&lt;/price&gt;
+&lt;/book&gt;</code></pre>
+      </div>
+    </div>
+    <ul class="simple">
+      <li><p>Tags must match.</p></li>
+      <li><p>Elements must be properly nested.</p></li>
+      <li><p>The document needs one root element.</p></li>
+    </ul>
+  </section>
 
-  <p>XML can use a schema to define what structure and values are allowed.</p>
-
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
-
-    <div>
-      <p>DTD</p>
-      <ul class="simple">
-        <li><p>Older XML validation mechanism.</p></li>
-        <li><p>Defines allowed elements, attributes, and ordering.</p></li>
-        <li><p>Uses its own syntax rather than XML syntax.</p></li>
-      </ul>
-
-      <pre><code data-trim data-noescape class="language-xml">&lt;!ELEMENT product (name, price)&gt;
+  <section>
+    <h2>DTD and XSD</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+      <div>
+        <p>DTD</p>
+        <ul class="simple">
+          <li><p>Older XML validation mechanism.</p></li>
+          <li><p>Defines elements and order.</p></li>
+          <li><p>Uses its own syntax.</p></li>
+        </ul>
+        <pre><code data-trim data-noescape class="language-xml">&lt;!ELEMENT product (name, price)&gt;
 &lt;!ELEMENT name (#PCDATA)&gt;
 &lt;!ELEMENT price (#PCDATA)&gt;</code></pre>
-    </div>
+      </div>
 
-    <div>
-      <p>XSD</p>
-      <ul class="simple">
-        <li><p>More powerful schema language.</p></li>
-        <li><p>Written using XML syntax.</p></li>
-        <li><p>Defines structure and data types.</p></li>
-        <li><p>Supports constraints such as ranges and patterns.</p></li>
-      </ul>
-
-      <pre><code data-trim data-noescape class="language-xml">&lt;xs:element
+      <div>
+        <p>XSD</p>
+        <ul class="simple">
+          <li><p>More powerful schema language.</p></li>
+          <li><p>Written using XML syntax.</p></li>
+          <li><p>Checks structure and data types.</p></li>
+        </ul>
+        <pre><code data-trim data-noescape class="language-xml">&lt;xs:element
     name="price"
     type="xs:decimal"/&gt;</code></pre>
+      </div>
     </div>
+  </section>
 
-  </div>
-</section>
-
-        <section>
-          <h2>XML Schema Definition</h2>
-          <p>XSD describes the expected structure and data types of an XML document.</p>
-          <pre><code data-trim data-noescape class="language-xml">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+  <section>
+    <h2>XML Schema Definition</h2>
+    <pre><code data-trim data-noescape class="language-xml">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
   &lt;xs:element name="product"&gt;
     &lt;xs:complexType&gt;
       &lt;xs:sequence&gt;
@@ -940,174 +969,201 @@ categories: []</code></pre>
     &lt;/xs:complexType&gt;
   &lt;/xs:element&gt;
 &lt;/xs:schema&gt;</code></pre>
-          <ul class="simple">
-            <li><p><code>xs</code> is the namespace prefix for XML Schema vocabulary.</p></li>
-            <li><p><code>xs:sequence</code> requires child elements to appear in this order.</p></li>
-            <li><p>XSD can check required elements, attributes, numbers, booleans, dates, ranges, and patterns.</p></li>
-          </ul>
-        </section>
+    <ul class="simple">
+      <li><p><code>xs</code> is the namespace prefix for XML Schema.</p></li>
+      <li><p><code>xs:sequence</code> requires child elements in this order.</p></li>
+      <li><p>XSD can check types, required fields, ranges, and patterns.</p></li>
+    </ul>
+  </section>
 
-        <section>
-          <h2>XSD Validation</h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start;">
-            <div>
-              <p>Valid structure and types:</p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;product id="1"&gt;
+  <section>
+    <h2>XSD Validation</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start;">
+      <div>
+        <p>Valid:</p>
+        <pre><code data-trim data-noescape class="language-xml">&lt;product id="1"&gt;
   &lt;name&gt;Keyboard&lt;/name&gt;
   &lt;price&gt;49.99&lt;/price&gt;
   &lt;available&gt;true&lt;/available&gt;
 &lt;/product&gt;</code></pre>
-            </div>
-            <div>
-              <p>Well-formed, but schema-invalid:</p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;product id="abc"&gt;
+      </div>
+      <div>
+        <p>Schema-invalid:</p>
+        <pre><code data-trim data-noescape class="language-xml">&lt;product id="abc"&gt;
   &lt;name&gt;Keyboard&lt;/name&gt;
   &lt;price&gt;forty-nine&lt;/price&gt;
   &lt;available&gt;yes&lt;/available&gt;
 &lt;/product&gt;</code></pre>
-            </div>
-          </div>
-          <ul class="simple">
-            <li><p>The second document has legal XML syntax, but the values do not match the XSD types.</p></li>
-          </ul>
-        </section>
+      </div>
+    </div>
+    <ul class="simple">
+      <li><p>The second document has legal XML syntax, but its values do not match the XSD types.</p></li>
+    </ul>
+  </section>
 
-        <section>
-          <h2>Validating XML in Java</h2>
-          <pre><code data-trim data-noescape class="language-java">SchemaFactory schemaFactory = SchemaFactory.newInstance(
+  <section>
+    <h2>Validating XML in Java</h2>
+    <pre><code data-trim data-noescape class="language-java">SchemaFactory schemaFactory = SchemaFactory.newInstance(
     XMLConstants.W3C_XML_SCHEMA_NS_URI
 );
 
-Schema schema = schemaFactory.newSchema(
-    new File("resources/product.xsd")
-);
+Schema schema = schemaFactory.newSchema(xsdInputStream);
 
 Validator validator = schema.newValidator();
-validator.validate(
-    new StreamSource(new File("resources/product.xml"))
-);</code></pre>
-          <ul class="simple">
-            <li><p><code>SchemaFactory</code> loads the XSD rules.</p></li>
-            <li><p><code>Validator</code> checks whether the XML document follows those rules.</p></li>
-            <li><p>Validation errors should be handled before the program trusts the data.</p></li>
-            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/XsdValidationExample.java</code></p></li>
-          </ul>
-        </section>
+validator.validate(new StreamSource(xmlInputStream));</code></pre>
+    <ul class="simple">
+      <li><p><code>SchemaFactory</code> loads the XSD rules.</p></li>
+      <li><p><code>Validator</code> checks the XML document.</p></li>
+      <li><p>Handle validation errors before trusting the data.</p></li>
+      <li><p>Example: <code>XsdValidationExample.java</code></p></li>
+    </ul>
+  </section>
 
-        <section>
-          <h2>XML Parsing</h2>
-          <ul class="simple">
-            <li><p><strong>DOM:</strong> loads the whole XML document into a tree. Good for small or medium documents that need navigation.</p></li>
-            <li><p><strong>SAX:</strong> pushes events to handler methods while reading. Good for large read-only documents.</p></li>
-            <li><p><strong>StAX:</strong> lets code pull the next event when ready. Good for large documents when the program needs more control.</p></li>
-          </ul>
-          <p>Validation checks whether the XML follows rules. Parsing converts XML into something Java can read.</p>
-        </section>
+  <section>
+    <h2>XML Parsing Approaches</h2>
+    <ul class="simple">
+      <li><p><strong>DOM:</strong> loads the whole XML document as a tree.</p></li>
+      <li><p><strong>SAX:</strong> parser pushes events to handler methods.</p></li>
+      <li><p><strong>StAX:</strong> code pulls the next event from the parser.</p></li>
+    </ul>
+    <pre><code data-trim data-noescape class="language-text">DOM  = whole tree in memory
+SAX  = push model: parser calls your code
+StAX = pull model: your code calls next()</code></pre>
+  </section>
 
-        <section>
-          <h2>DOM Parsing</h2>
-          <pre><code data-trim data-noescape class="language-java">// Factory creates a parser builder with the settings we choose.
-DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+  <section>
+    <h2>DOM Parsing</h2>
+    <pre><code data-trim data-noescape class="language-java">DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
-// Namespace-aware parsing matters when XML uses prefixes.
 factory.setNamespaceAware(true);
-
-// Safer defaults for parsing XML from untrusted sources.
 factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
 
-InputStream resource = XmlExample.class.getResourceAsStream(
-    "/data/product.xml"
-);
-if (resource == null) {
-    throw new IOException("Resource not found");
-}
+try (InputStream input =
+         XmlExample.class.getResourceAsStream("/data/product.xml")) {
 
-try (InputStream input = resource) {
-    // Parse the whole XML document into a DOM tree.
     Document document = factory.newDocumentBuilder().parse(input);
-
-    // The root element is the top-level element, here &lt;product&gt;.
     Element root = document.getDocumentElement();
 }</code></pre>
-          <ul class="simple">
-            <li><p>DOM is convenient when the whole XML document can fit comfortably in memory.</p></li>
-            <li><p>Disable external access when parsing untrusted XML.</p></li>
-            <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/XmlExample.java</code></p></li>
-          </ul>
-        </section>
+    <ul class="simple">
+      <li><p>DOM builds a tree of nodes.</p></li>
+      <li><p>Easy to search, navigate, and modify.</p></li>
+      <li><p>Best when the document fits comfortably in memory.</p></li>
+      <li><p>Example: <code>XmlExample.java</code></p></li>
+    </ul>
+  </section>
 
-        <section>
-          <h2>XML Values</h2>
-          <pre><code data-trim data-noescape class="language-java">// Read the id attribute from &lt;product id="1"&gt; and convert it.
-int id = Integer.parseInt(root.getAttribute("id"));
+  <section>
+    <h2>Reading DOM Values</h2>
+    <pre><code data-trim data-noescape class="language-java">int id = Integer.parseInt(root.getAttribute("id"));
 
-// Find the first &lt;name&gt; element and get its text content.
 String name = root
     .getElementsByTagName("name")
     .item(0)
     .getTextContent()
     .trim();
 
-// XML text is still text, so numeric values need conversion.
 double price = Double.parseDouble(
     root.getElementsByTagName("price")
         .item(0)
         .getTextContent()
         .trim()
 );</code></pre>
-          <ul class="simple">
-            <li><p>DOM gives access to XML nodes, but application code still handles conversion and validation.</p></li>
-          </ul>
-        </section>
+    <ul class="simple">
+      <li><p><code>getAttribute(...)</code> reads an attribute value.</p></li>
+      <li><p><code>getElementsByTagName(...)</code> finds child elements.</p></li>
+      <li><p>XML values are text, so Java must convert numbers manually.</p></li>
+    </ul>
+  </section>
 
-        <section>
-          <h2>Well-Formed XML</h2>
-     
-              <p>Well-formed:</p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;book&gt;
-  &lt;title&gt;XML Basics&lt;/title&gt;
-  &lt;price&gt;39.99&lt;/price&gt;
-&lt;/book&gt;</code></pre>
+  <section>
+    <h2>SAX Parsing: Push Model</h2>
+    <pre><code data-trim data-noescape class="language-java">DefaultHandler handler = new DefaultHandler() {
+    private boolean inName = false;
 
-              <p>Malformed:</p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;book&gt;
-  &lt;title&gt;XML Basics
-  &lt;price&gt;39.99&lt;/price&gt;
-&lt;/book&gt;
+    public void startElement(String uri, String localName,
+                             String qName, Attributes attrs) {
+        inName = "name".equals(qName);
+    }
 
-&lt;book&gt;&lt;title&gt;XML&lt;/book&gt;&lt;/title&gt;
+    public void characters(char[] ch, int start, int length) {
+        if (inName) {
+            System.out.println(new String(ch, start, length));
+        }
+    }
 
-&lt;book&gt;XML Basics&lt;/book&gt;
-&lt;book&gt;JSON Basics&lt;/book&gt;</code></pre>
-   
-          <ul class="simple">
-            <li><p>Every start tag needs a matching end tag, nesting must be correct, and the document needs one root element.</p></li>
-          </ul>
-        </section>
+    public void endElement(String uri, String localName, String qName) {
+        if ("name".equals(qName)) {
+            inName = false;
+        }
+    }
+};
 
-        <section>
-          <h2>XML Rule Levels</h2>
-   
-              <p>Syntax problem: XML parsing checks document syntax.</p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;!-- invalid because &amp; starts an entity reference --&gt;
-&lt;company&gt;Smith &amp; Jones&lt;/company&gt;
+parser.parse(input, handler);</code></pre>
+    <ul class="simple">
+      <li><p>SAX reads from beginning to end.</p></li>
+      <li><p>The parser calls our methods when events happen.</p></li>
+      <li><p>Good for large read-only XML files.</p></li>
+    </ul>
+  </section>
 
-&lt;!-- valid --&gt;
-&lt;company&gt;Smith &amp;amp; Jones&lt;/company&gt;</code></pre>
-      
-              <p>Application problem: schema can accept the structure, but the program may reject the meaning.</p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;product id="1"&gt;
-  &lt;name&gt;&lt;/name&gt;
-  &lt;price&gt;-25.00&lt;/price&gt;
-  &lt;available&gt;true&lt;/available&gt;
-&lt;/product&gt;</code></pre>
-          <ul class="simple">
-            <li><p>Schema validation checks structure and types. Application validation checks business meaning.</p></li>
-          </ul>
-    
-        </section>
-      </section>
+  <section>
+    <h2>StAX Parsing: Pull Model</h2>
+    <pre><code data-trim data-noescape class="language-java">XMLInputFactory factory = XMLInputFactory.newInstance();
+XMLStreamReader reader = factory.createXMLStreamReader(input);
+
+while (reader.hasNext()) {
+    int event = reader.next();
+
+    if (event == XMLStreamConstants.START_ELEMENT
+            &amp;&amp; "name".equals(reader.getLocalName())) {
+        reader.next();
+        System.out.println(reader.getText());
+    }
+}
+
+reader.close();</code></pre>
+    <ul class="simple">
+      <li><p>StAX also reads the XML as a stream.</p></li>
+      <li><p>Our code calls <code>next()</code> to move forward.</p></li>
+      <li><p>Good when the program needs more control than SAX.</p></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Choosing a Parser</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Parser</th>
+          <th>Main Idea</th>
+          <th>Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>DOM</td>
+          <td>Whole tree</td>
+          <td>Easy navigation and editing</td>
+        </tr>
+        <tr>
+          <td>SAX</td>
+          <td>Parser pushes events</td>
+          <td>Large read-only files</td>
+        </tr>
+        <tr>
+          <td>StAX</td>
+          <td>Code pulls events</td>
+          <td>Large files with more control</td>
+        </tr>
+      </tbody>
+    </table>
+    <ul class="simple">
+      <li><p>DOM is the main practical parser for this course.</p></li>
+      <li><p>SAX and StAX are important to recognize for large XML files.</p></li>
+    </ul>
+  </section>
+</section>
 
       <section>
         <section class="title-slide slide level1">
@@ -1212,18 +1268,6 @@ database.password=YOUR_PASSWORD</code></pre>
             <li><p><strong>YAML:</strong> Jackson YAML or SnakeYAML reads configuration into records, maps, or trees.</p></li>
             <li><p><strong>XML:</strong> DOM, SAX, or StAX reads documents as trees or stream events.</p></li>
             <li><p><strong>Environment variables:</strong> <code>System.getenv()</code> reads named strings from the runtime environment.</p></li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Boundary</h2>
-          <p>A JSON file or configuration file is not a substitute for a database when data becomes:</p>
-          <ul class="simple">
-            <li><p>large</p></li>
-            <li><p>frequently updated</p></li>
-            <li><p>shared by multiple users</p></li>
-            <li><p>searched and filtered often</p></li>
-            <li><p>subject to integrity constraints</p></li>
           </ul>
         </section>
 
