@@ -42,7 +42,7 @@
 <li><p>Describe the same UI with FXML and connect a controller.</p></li>
 <li><p>Manage stateful commands with menus, dialogs, files, properties, listeners, and binding.</p></li>
 <li><p>Keep the interface responsive during background work.</p></li>
-<li><p>Survey optional visual APIs and connect JavaFX to MVC.</p></li>
+<li><p>Survey optional visual APIs</p></li>
 </ol>
 </section>
 
@@ -128,14 +128,16 @@ show Stage</code></pre>
 <h2>Scene Graph</h2>
 <p>The scene graph is a tree of UI nodes.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Stage
-└── Scene
-    └── BorderPane
-        ├── top: MenuBar
-        ├── center: GridPane
-        │   ├── Label
-        │   ├── TextField
-        │   └── Button
-        └── bottom: Label</code></pre>
+└── contains Scene
+
+Scene
+└── root: BorderPane
+    ├── top: MenuBar
+    ├── center: GridPane
+    │   ├── Label
+    │   ├── TextField
+    │   └── Button
+    └── bottom: Label</code></pre>
 <ul>
 <li><p>Layouts are parent nodes that hold other nodes.</p></li>
 <li><p>Controls such as buttons and text fields are usually leaf nodes.</p></li>
@@ -299,7 +301,7 @@ Button event handler reads the controls
         ↓
 Validator checks data rules
         ↓
-ValidationResult describes success or failure
+Validator returns a message
         ↓
 GUI displays feedback</code></pre>
 <p>Controls collect and display data. Validation rules should be reusable Java logic.</p>
@@ -312,7 +314,7 @@ GUI displays feedback</code></pre>
 <tbody>
 <tr><td>Reads <code>TextField</code> values</td><td>Receives ordinary Java strings</td></tr>
 <tr><td>Handles button events</td><td>Applies reusable rules</td></tr>
-<tr><td>Shows messages and styles</td><td>Returns a result</td></tr>
+<tr><td>Shows messages and styles</td><td>Returns a feedback message</td></tr>
 <tr><td>Requires JavaFX to run</td><td>Can be tested without opening a window</td></tr>
 </tbody>
 </table>
@@ -327,50 +329,28 @@ Label feedback = new Label();
 Button submitButton = new Button("Validate Details");
 
 submitButton.setOnAction(event -> {
-    ValidationResult result = validator.validate(
+    String message = validator.validate(
         nameField.getText(), emailField.getText()
     );
 
-    feedback.setText(result.valid()
-        ? "Student details are valid."
-        : result.message());
+    feedback.setText(message);
 });</code></pre>
-</section>
-
-<section class="frame">
-<h2>Validation Result</h2>
-<p>The validator returns data that the UI can display.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">package cop4027.javafx.validation;
-
-public record ValidationResult(
-        boolean valid, String message) {
-    public static ValidationResult validResult() {
-        return new ValidationResult(true, "");
-    }
-
-    public static ValidationResult invalid(String message) {
-        return new ValidationResult(false, message);
-    }
-}</code></pre>
-<p>This class has no JavaFX imports, so it is easy to test.</p>
 </section>
 
 <section class="frame">
 <h2>Testable Validation</h2>
 <p>Keep validation rules separate from JavaFX controls.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public ValidationResult validate(String name, String email) {
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public String validate(String name, String email) {
     if (name == null || name.isBlank()) {
-        return ValidationResult.invalid("Name is required.");
+        return "Name is required.";
     }
 
     if (email == null ||
             !EMAIL_PATTERN.matcher(email.trim()).matches()) {
-        return ValidationResult.invalid(
-            "Enter a valid email address."
-        );
+        return "Enter a valid email address.";
     }
 
-    return ValidationResult.validResult();
+    return "Student details are valid.";
 }</code></pre>
 <p><strong>Example:</strong> <code>cop4027.javafx.validation.ValidatedFormApp</code> and <code>cop4027.javafx.validation.FormValidator</code></p>
 </section>
@@ -668,9 +648,18 @@ return the root node</code></pre>
 <h2>FXML Module Access</h2>
 <p>In a modular project, <code>FXMLLoader</code> needs reflective access to the controller package.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">module cop4027.javafx.examples {
+    requires java.desktop;
     requires javafx.controls;
     requires javafx.fxml;
 
+    exports cop4027.javafx.basic;
+    exports cop4027.javafx.concurrency;
+    exports cop4027.javafx.fxml;
+    exports cop4027.javafx.state;
+    exports cop4027.javafx.validation;
+    exports cop4027.javafx.visual;
+
+    // FXMLLoader uses reflection to inject @FXML fields and call handler methods.
     opens cop4027.javafx.fxml to javafx.fxml;
 }</code></pre>
 <ul>
@@ -766,6 +755,7 @@ Button submitButton = new Button("Submit");
 // Binding keeps the button state synchronized with the text field.
 submitButton.disableProperty().bind(nameField.textProperty().isEmpty());
 
+Label greetingLabel = new Label();
 // Binding can also keep displayed text synchronized.
 greetingLabel.textProperty().bind(nameField.textProperty().concat(" is typing..."));</code></pre>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TextField empty     -> Submit disabled
@@ -785,7 +775,7 @@ TextField has text  -> Submit enabled</code></pre>
 </tbody>
 </table>
 <p>Use event handlers for actions, listeners for reactions, and binding for ongoing relationships.</p>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.EventListenerBindingDemo</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.state.EventListenerBindingDemo</code></p>
 </section>
 
 <section class="frame">
@@ -833,7 +823,7 @@ menuBar.getMenus().add(fileMenu);</code></pre>
 
 exitItem.setOnAction(event -> Platform.exit());</code></pre>
 <p>The menu changes how the command is presented. The event-handler idea is the same.</p>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.MenuEventDemo</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.state.MenuEventDemo</code></p>
 </section>
 
 <section class="frame">
@@ -854,7 +844,7 @@ if (choice == ButtonType.OK) {
 <li><p><code>showAndWait()</code> displays the dialog and waits for the user's choice.</p></li>
 <li><p>The command continues only if the result says the user confirmed.</p></li>
 </ul>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.ConfirmationDialogDemo</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.state.ConfirmationDialogDemo</code></p>
 </section>
 
 <section class="frame">
@@ -875,79 +865,99 @@ Save         -> showSaveDialog(stage) + Files.writeString(...)</code></pre>
 
 File openFile = chooser.showOpenDialog(stage); // null if cancelled
 if (openFile != null) {
-    textArea.setText(Files.readString(openFile.toPath()));
+    try {
+        textArea.setText(Files.readString(openFile.toPath()));
+        statusLabel.setText("Opened: " + openFile.getName());
+    } catch (IOException ex) {
+        statusLabel.setText("Unable to open file: " + ex.getMessage());
+    }
 }
 
 File saveFile = chooser.showSaveDialog(stage); // null if cancelled
 if (saveFile != null) {
-    Files.writeString(saveFile.toPath(), textArea.getText());
+    try {
+        Files.writeString(saveFile.toPath(), textArea.getText());
+        statusLabel.setText("Saved: " + saveFile.getName());
+    } catch (IOException ex) {
+        statusLabel.setText("Unable to save file: " + ex.getMessage());
+    }
 }</code></pre>
 <ul>
 <li><p><code>showOpenDialog(...)</code> chooses an existing file to read.</p></li>
 <li><p><code>showSaveDialog(...)</code> chooses a destination file to write.</p></li>
 </ul>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.TextFileChooserDemo</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.state.TextFileChooserDemo</code></p>
 </section>
 
 <section class="frame">
 <h2>Tracking Editor State</h2>
-<p>The editor remembers the current file and whether the text has unsaved changes.</p>
-<pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private File currentFile;
-private final BooleanProperty dirty = new SimpleBooleanProperty(false);
+<p>The editor can remember whether the text has unsaved changes.</p>
+<pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">BooleanProperty dirty = new SimpleBooleanProperty(false);
 
 textArea.textProperty().addListener((observable, oldText, newText) -> {
     // Listener: editing marks the document as changed.
     dirty.set(true);
-    statusLabel.setText("Unsaved changes");
 });
 
-// Binding: Save follows dirty automatically.
-saveItem.disableProperty().bind(dirty.not());</code></pre>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">dirty = false  -> Save disabled
-dirty = true   -> Save enabled</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.basic.DirtyStateDemo</code></p>
+// Binding: the button follows dirty automatically.
+markSavedButton.disableProperty().bind(dirty.not());
+
+dirty.addListener((observable, wasDirty, isDirty) -> {
+    statusLabel.setText(isDirty ? "Unsaved changes" : "Saved");
+});</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">dirty = false  -> Mark Saved disabled
+dirty = true   -> Mark Saved enabled</code></pre>
+<p><strong>Example:</strong> <code>cop4027.javafx.state.DirtyStateDemo</code></p>
 </section>
 
 <section class="frame">
 <h2>Opening with Unsaved Changes</h2>
 <p>Opening a new file may need to protect unsaved work first.</p>
-<pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">openItem.setOnAction(event -> {
-    if (dirty.get()) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setHeaderText("Discard unsaved changes?");
-        ButtonType choice = alert.showAndWait().orElse(ButtonType.CANCEL);
-
-        if (choice != ButtonType.OK) {
-            return; // stop if the user keeps the current work
-        }
+<pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private void doOpen(Stage stage) {
+    if (!maybeSaveBeforeLosingChanges(stage)) {
+        return; // Cancel keeps the current work on screen.
     }
 
+    FileChooser chooser = new FileChooser();
     File file = chooser.showOpenDialog(stage);
-    if (file != null) {
-        textArea.setText(Files.readString(file.toPath()));
-        currentFile = file; // remember the file for later Save
-        dirty.set(false);   // loaded text matches the file
+    if (file == null) {
+        status.setText("Open cancelled");
+        return;
     }
-});</code></pre>
+
+    try {
+        editor.setText(Files.readString(file.toPath(), StandardCharsets.UTF_8));
+        currentFile = file; // remember the file for later Save
+        setDirty(false);    // loaded text matches the file
+        status.setText("Opened: " + file.getName());
+    } catch (Exception ex) {
+        status.setText("Open failed: " + file.getName());
+    }
+}</code></pre>
 </section>
 
 <section class="frame">
 <h2>Saving with Current File</h2>
 <p>Saving can reuse the current file. The first save still needs a destination.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">saveItem.setOnAction(event -> {
-    File file = currentFile;
+<pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private void doSave(Stage stage, boolean forceChoose) {
+    try {
+        File target = currentFile;
 
-    if (file == null) {
-        file = chooser.showSaveDialog(stage); // first save needs a path
-    }
+        if (forceChoose || target == null) {
+            FileChooser chooser = new FileChooser();
+            target = chooser.showSaveDialog(stage); // first save needs a path
+        }
 
-    if (file != null) {
-        Files.writeString(file.toPath(), textArea.getText());
-        currentFile = file;
-        dirty.set(false); // saved text now matches the file
-        statusLabel.setText("Saved " + file.getName());
+        if (target != null) {
+            Files.writeString(target.toPath(), editor.getText(), StandardCharsets.UTF_8);
+            currentFile = target;
+            setDirty(false); // saved text now matches the file
+            status.setText("Saved: " + target.getName());
+        }
+    } catch (Exception ex) {
+        status.setText("Save failed");
     }
-});</code></pre>
+}</code></pre>
 </section>
 
 <section class="frame">
@@ -957,17 +967,17 @@ dirty = true   -> Save enabled</code></pre>
     -> binding enables Save
 
 User chooses Save
-    -> event handler chooses a file
+    -> event handler reuses currentFile or chooses a file
     -> Files.writeString(...) saves text
     -> dirty = false
     -> binding disables Save
 
 User chooses Open
-    -> event handler checks dirty state
-    -> dialog asks if needed
+    -> event handler calls maybeSaveBeforeLosingChanges(...)
+    -> dialog asks Save / Don't Save / Cancel if needed
     -> FileChooser selects file
     -> Files.readString(...) loads text</code></pre>
-<p><strong>Putting it together:</strong> <code>cop4027.javafx.basic.TextEditorMenuDemo</code></p>
+<p><strong>Putting it together:</strong> <code>cop4027.javafx.state.TextEditorMenuDemo</code></p>
 </section>
 
 <section class="frame">
@@ -1104,7 +1114,7 @@ worker.start();</code></pre>
 
 <p><code>runLater()</code> is called from the worker, but the code inside its lambda runs on the JavaFX Application Thread.</p>
 
-<p><strong>Example:</strong> <code>cop4027.javafx.advanced.RunLaterDemo</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.concurrency.RunLaterDemo</code></p>
 </section>
 
 <section class="frame">
@@ -1194,17 +1204,11 @@ UI changes</code></pre>
 <h2>Task Properties and Binding</h2>
 <p>Controls can automatically follow the Task's observable properties.</p>
 
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">progressBar.progressProperty().bind(
-    task.progressProperty()
-);
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">progressBar.progressProperty().bind(task.progressProperty());
 
-statusLabel.textProperty().bind(
-    task.messageProperty()
-);
+statusLabel.textProperty().bind(task.messageProperty());
 
-startButton.disableProperty().bind(
-    task.runningProperty()
-);</code></pre>
+startButton.disableProperty().bind(task.runningProperty());</code></pre>
 
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">updateProgress(...)
         ↓
@@ -1239,7 +1243,7 @@ Thread
 Task properties
     expose progress and state to JavaFX controls</code></pre>
 
-<p><strong>Example:</strong> <code>cop4027.javafx.advanced.TaskProgressDemo</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.concurrency.TaskProgressDemo</code></p>
 </section>
 
 <section class="frame">
@@ -1357,7 +1361,7 @@ ImageView imageView = new ImageView(image);
 imageView.setFitWidth(200);
 imageView.setPreserveRatio(true);
 imageView.setSmooth(true);</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.advanced.ImageExample</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.visual.ImageExample</code></p>
 </section>
 
 <section class="frame">
@@ -1386,7 +1390,7 @@ imageView.setSmooth(true);</code></pre>
 
 PieChart pieChart = new PieChart(pieData);
 pieChart.setTitle("Pet Ownership");</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.advanced.ChartsDemo</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.visual.ChartsDemo</code></p>
 </section>
 
 <section class="frame">
@@ -1407,7 +1411,7 @@ scale.setAutoReverse(true);
 scale.setCycleCount(Animation.INDEFINITE);
 
 new ParallelTransition(rotate, scale).play();</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.advanced.AnimationDemo</code></p>
+<p><strong>Example:</strong> <code>cop4027.javafx.visual.AnimationDemo</code></p>
 </section>
 </section>
 
@@ -1420,7 +1424,7 @@ new ParallelTransition(rotate, scale).play();</code></pre>
 <section class="frame">
 <h2>Key Takeaways</h2>
 <ul>
-<li><p><code>Stage</code>, <code>Scene</code>, layouts, and controls form a scene graph.</p></li>
+<li><p>A Stage contains a Scene; the Scene contains a scene graph made of layouts and other nodes..</p></li>
 <li><p>Controls answer what appears; layouts answer where it goes; event handlers answer what happens.</p></li>
 <li><p>Validation rules should be separate from JavaFX controls.</p></li>
 <li><p>CSS separates appearance from Java behavior.</p></li>

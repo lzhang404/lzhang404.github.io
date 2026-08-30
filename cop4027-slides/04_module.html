@@ -71,7 +71,7 @@ generated output</code></pre>
         </section>
 
         <section>
-          <h2>Three Questions for Today</h2>
+          <h2>Questions for Today</h2>
           <table class="docutils align-default">
             <thead>
               <tr>
@@ -87,9 +87,14 @@ generated output</code></pre>
                 <td><p>Source folders, resources, dependencies, tests, packaging</p></td>
               </tr>
               <tr>
-                <td><p>How should code be separated into boundaries?</p></td>
-                <td><p>Packages and modules</p></td>
-                <td><p>Which code is public, internal, required, or exported</p></td>
+                <td><p>How should code be organized inside Java?</p></td>
+                <td><p>Packages</p></td>
+                <td><p>Which classes belong together and what namespace they use</p></td>
+              </tr>
+              <tr>
+                <td><p>How can Java enforce stronger component boundaries?</p></td>
+                <td><p>Java modules</p></td>
+                <td><p>Which packages are required, exported, or kept internal</p></td>
               </tr>
               <tr>
                 <td><p>How do we work with the project day to day?</p></td>
@@ -272,22 +277,19 @@ generated output</code></pre>
 
         <section>
           <h2>Dependencies vs Build Plugins</h2>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
-            <div>
-              <p><strong>Dependency</strong></p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;dependency&gt;
+
+          <p><strong>Dependency</strong></p>
+          <pre><code data-trim data-noescape class="language-xml">&lt;dependency&gt;
   &lt;artifactId&gt;commons-lang3&lt;/artifactId&gt;
 &lt;/dependency&gt;</code></pre>
-              <p><code>GreetingApp</code> imports and calls library code.</p>
-            </div>
-            <div>
-              <p><strong>Build plugin</strong></p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;plugin&gt;
+          <p><code>GreetingApp</code> imports and calls library code.</p>
+
+          <p><strong>Build plugin</strong></p>
+          <pre><code data-trim data-noescape class="language-xml">&lt;plugin&gt;
   &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
 &lt;/plugin&gt;</code></pre>
-              <p>Maven invokes the plugin while building the project.</p>
-            </div>
-          </div>
+          <p>Maven invokes the plugin while building the project.</p>
+
           <p>Example: <code>examples/maven-basics/pom.xml</code></p>
         </section>
 
@@ -338,11 +340,11 @@ output/</code></pre>
           <h2>Recommended Eclipse Setup</h2>
           <ul class="simple">
             <li><p>Install the course JDK: Java 21.</p></li>
+            <li><p>Install Maven so you can run Maven builds from the terminal.</p></li>
             <li><p>Install Eclipse IDE for Java Developers.</p></li>
             <li><p>Use Maven Integration for Eclipse (m2e), which is included.</p></li>
             <li><p>Clone or download <code>example-code</code> once.</p></li>
             <li><p>Import one topic folder from its <code>pom.xml</code> when we reach it.</p></li>
-            <li><p>A separate Maven installation is optional.</p></li>
           </ul>
           <p>Setup guide: <code>docs/setup-eclipse.md</code></p>
         </section>
@@ -423,24 +425,21 @@ GreetingApp.java</code></pre>
 
         <section>
           <h2>Run with Eclipse or Maven</h2>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
-            <div>
-              <p>From editor:</p>
-              <pre><code data-trim data-noescape class="language-java">public class GreetingApp {
+
+          <p>From editor:</p>
+          <pre><code data-trim data-noescape class="language-java">public class GreetingApp {
     public static void main(String[] args) {
         System.out.println(greeting(args));
     }
 }</code></pre>
-              <p>Right-click the class, then choose <strong>Run As &gt; Java Application</strong>.</p>
-            </div>
-            <div>
-              <p>Optional terminal check:</p>
-              <pre><code data-trim data-noescape class="language-bash">cd examples/maven-basics
+          <p>Right-click the class, then choose <strong>Run As &gt; Java Application</strong>.</p>
+
+          <p>Terminal check:</p>
+          <pre><code data-trim data-noescape class="language-bash">cd examples/maven-basics
 mvn test
 mvn exec:java "-Dexec.args=ada lovelace"</code></pre>
-              <p>The Maven build confirms the project works outside the editor.</p>
-            </div>
-          </div>
+          <p>The Maven build confirms the project works outside the editor.</p>
+
           <p>Example: <code>examples/maven-basics/src/main/java/cop4027/maven/GreetingApp.java</code></p>
         </section>
 
@@ -557,21 +556,25 @@ target/classes/
         </section>
 
         <section>
-          <h2>Classpath Resource Loading</h2>
+          <h2>Loading Packaged Resources</h2>
           <pre><code data-trim data-noescape class="language-java">try (InputStream input = GreetingApp.class
-        .getResourceAsStream("application.properties")) {
+        .getResourceAsStream("/application.properties")) {
     if (input == null) {
         throw new IllegalStateException("Missing resource");
     }
 
     properties.load(input);
 }</code></pre>
+
           <ul class="simple">
-            <li><p>The class loader starts at the classpath root; do not add a leading <code>/</code>.</p></li>
-            <li><p>Files in <code>src/main/resources</code> are copied into the runtime classpath.</p></li>
-            <li><p>This is different from reading an external file path.</p></li>
-            <li><p>Example: <code>examples/maven-basics/src/main/java/cop4027/maven/GreetingApp.java</code></p></li>
+            <li><p>Files in <code>src/main/resources</code> are packaged with the application.</p></li>
+            <li><p>Maven copies these files into <code>target/classes</code> during the build.</p></li>
+            <li><p><code>"/application.properties"</code> looks for the resource from the root of the packaged resources.</p></li>
+            <li><p><code>getResourceAsStream()</code> opens the resource as an input stream.</p></li>
+            <li><p>If the resource cannot be found, the method returns <code>null</code>.</p></li>
           </ul>
+
+          <p>Use this approach for files that should travel with the application, not for files chosen by the user at runtime.</p>
         </section>
 
         <section>
@@ -611,63 +614,65 @@ mvn clean verify</code></pre>
         </section>
 
         <section>
-          <h2>Modules Group Packages</h2>
-          <table class="docutils align-default">
-            <thead>
-              <tr>
-                <th><p>Concept</p></th>
-                <th><p>Responsibility</p></th>
-                <th><p>Course Example</p></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><p>Class</p></td>
-                <td><p>Defines data and behavior</p></td>
-                <td><p><code>GreetingService</code></p></td>
-              </tr>
-              <tr>
-                <td><p>Package</p></td>
-                <td><p>Groups related types and provides a namespace</p></td>
-                <td><p><code>cop4027.greeting</code></p></td>
-              </tr>
-              <tr>
-                <td><p>Java module</p></td>
-                <td><p>Groups packages and declares readable and exported APIs</p></td>
-                <td><p><code>course.greeting</code></p></td>
-              </tr>
-            </tbody>
-          </table>
-          <pre><code data-trim data-noescape class="language-text">module -&gt; packages -&gt; classes</code></pre>
-        </section>
+          <h2>Packages First</h2>
+          <pre><code data-trim data-noescape class="language-text">src/main/java/
+└── cop4027/
+    └── greeting/
+        └── GreetingService.java</code></pre>
+          <pre><code data-trim data-noescape class="language-java">package cop4027.greeting;
 
-        <section>
-          <h2>Two Module Descriptors</h2>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
-            <div>
-              <p>Library module:</p>
-              <pre><code data-trim data-noescape class="language-java">module course.greeting {
-    exports cop4027.greeting;
+public class GreetingService {
+    public String greet(String name) {
+        return "Hello, " + name + "!";
+    }
 }</code></pre>
-              <p><code>exports</code> makes the public package available to other modules.</p>
-            </div>
-            <div>
-              <p>Application module:</p>
-              <pre><code data-trim data-noescape class="language-java">module course.app {
-    requires course.greeting;
-}</code></pre>
-              <p><code>requires</code> lets this module read the exported API.</p>
-            </div>
-          </div>
           <ul class="simple">
-            <li><p>Every module implicitly requires <code>java.base</code>.</p></li>
-            <li><p>Example: <code>examples/java-modules/course-greeting/src/main/java/module-info.java</code></p></li>
-            <li><p>Example: <code>examples/java-modules/course-app/src/main/java/module-info.java</code></p></li>
+            <li><p>Packages group related classes.</p></li>
+            <li><p>Packages provide a namespace for class names.</p></li>
+            <li><p>In Eclipse, you create packages inside a Java project.</p></li>
           </ul>
         </section>
 
         <section>
-          <h2>Public Is Not Enough Across Modules</h2>
+          <h2>What a Java Module Adds</h2>
+          <pre><code data-trim data-noescape class="language-text">course-greeting/
+└── src/main/java/
+    ├── module-info.java
+    └── cop4027/greeting/
+        └── GreetingService.java</code></pre>
+          <ul class="simple">
+            <li><p>A Java module groups one or more packages.</p></li>
+            <li><p><code>module-info.java</code> defines the Java module.</p></li>
+            <li><p>The module can decide which packages are exported.</p></li>
+            <li><p>Packages that are not exported stay internal to the module.</p></li>
+          </ul>
+          <p>A Java module is a Java language feature. It is not the same thing as a Maven project.</p>
+        </section>
+
+
+        <section>
+          <h2>Java Module Descriptors</h2>
+
+          <p>Library module:</p>
+          <pre><code data-trim data-noescape class="language-java">module course.greeting {
+    exports cop4027.greeting;
+}</code></pre>
+          <p><code>exports</code> makes the public package available to other Java modules.</p>
+
+          <p>Application module:</p>
+          <pre><code data-trim data-noescape class="language-java">module course.app {
+    requires course.greeting;
+}</code></pre>
+          <p><code>requires</code> lets this Java module read the exported API.</p>
+
+          <ul class="simple">
+            <li><p>Module descriptors are written in <code>module-info.java</code>.</p></li>
+            <li><p>Every Java module implicitly requires <code>java.base</code>.</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Public Is Not Enough Across Java Modules</h2>
           <pre><code data-trim data-noescape class="language-text">course.app
   requires course.greeting
              |
@@ -679,86 +684,9 @@ course.greeting
   public GreetingService</code></pre>
           <ul class="simple">
             <li><p>The class must be <code>public</code>.</p></li>
-            <li><p>Its package must be exported.</p></li>
-            <li><p>The caller's module must require the provider module.</p></li>
-            <li><p>Example: <code>examples/java-modules/course-greeting/src/main/java/cop4027/greeting/GreetingService.java</code></p></li>
+            <li><p>Its package must be exported by its Java module.</p></li>
+            <li><p>The caller's Java module must require the provider module.</p></li>
           </ul>
-        </section>
-
-        <section>
-          <h2>Import and Run the Module Demo</h2>
-          <pre><code data-trim data-noescape class="language-text">File -&gt; Import...
-  -&gt; Maven -&gt; Existing Maven Projects
-  -&gt; choose examples/java-modules
-  -&gt; select all three POMs
-  -&gt; Finish
-
-ModuleApp.java -&gt; Run As -&gt; Java Application</code></pre>
-          <pre><code data-trim data-noescape class="language-text">Hello, Java modules!</code></pre>
-          <ul class="simple">
-            <li><p>Eclipse builds <code>course-greeting</code> before <code>course-app</code>.</p></li>
-            <li><p>Remove <code>exports</code> or <code>requires</code> temporarily and inspect the compiler error.</p></li>
-            <li><p>Example: <code>examples/java-modules/course-app/src/main/java/cop4027/app/ModuleApp.java</code></p></li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>How Maven Builds the Two Modules</h2>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;">
-            <div>
-              <p>POM:</p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;packaging&gt;pom&lt;/packaging&gt;
-&lt;modules&gt;
-  &lt;module&gt;course-greeting&lt;/module&gt;
-  &lt;module&gt;course-app&lt;/module&gt;
-&lt;/modules&gt;</code></pre>
-            </div>
-            <div>
-              <p>Application dependency:</p>
-              <pre><code data-trim data-noescape class="language-xml">&lt;dependency&gt;
-  &lt;groupId&gt;cop4027&lt;/groupId&gt;
-  &lt;artifactId&gt;course-greeting&lt;/artifactId&gt;
-  &lt;version&gt;${project.version}&lt;/version&gt;
-&lt;/dependency&gt;</code></pre>
-            </div>
-          </div>
-          <p>Example: <code>examples/java-modules/pom.xml</code></p>
-        </section>
-
-        <section>
-          <h2>Java Modules Are Not Maven Modules</h2>
-          <table class="docutils align-default">
-            <thead>
-              <tr>
-                <th><p>Term</p></th>
-                <th><p>Defined By</p></th>
-                <th><p>Purpose</p></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><p>Java module</p></td>
-                <td><p><code>module-info.java</code></p></td>
-                <td><p>Runtime and compiler boundaries</p></td>
-              </tr>
-              <tr>
-                <td><p>Maven project</p></td>
-                <td><p><code>pom.xml</code></p></td>
-                <td><p>One buildable project</p></td>
-              </tr>
-              <tr>
-                <td><p>Maven multi-module build</p></td>
-                <td><p>Parent POM with <code>&lt;modules&gt;</code></p></td>
-                <td><p>Builds several Maven projects together</p></td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Choosing the Right Tool for the Job</h1>
         </section>
 
         <section>
@@ -772,7 +700,7 @@ ModuleApp.java -&gt; Run As -&gt; Java Application</code></pre>
             </thead>
             <tbody>
               <tr>
-                <td><p>You want explicit module boundaries</p></td>
+                <td><p>You want explicit Java module boundaries</p></td>
                 <td><p>The project is a small beginner example</p></td>
               </tr>
               <tr>
@@ -785,7 +713,7 @@ ModuleApp.java -&gt; Run As -&gt; Java Application</code></pre>
               </tr>
             </tbody>
           </table>
-          <p>Modules are powerful, but Maven project structure is the more important daily workflow for this course.</p>
+          <p>Java modules are powerful, but Maven project structure is the more important daily workflow for this course.</p>
         </section>
 
         <section>
@@ -800,7 +728,7 @@ Java packages answer:
   How do I organize related classes?
 
 Java modules answer:
-  Which packages does this component require and expose?</code></pre>
+  Which packages does this Java component require and expose?</code></pre>
         </section>
 
         <section>
@@ -809,7 +737,9 @@ Java modules answer:
             <li><p>Maven gives Java projects a standard structure and repeatable build process.</p></li>
             <li><p><code>pom.xml</code> declares project identity, dependencies, plugins, and build settings.</p></li>
             <li><p>Eclipse imports each topic from the folder containing its <code>pom.xml</code>.</p></li>
+            <li><p>Java packages organize related classes inside a project.</p></li>
             <li><p>Java modules provide stronger boundaries through <code>requires</code> and <code>exports</code>.</p></li>
+            <li><p>A Java module is defined by module-info.java; Maven project structure and build behavior are defined by pom.xml.</p></li>
             <li><p>For this course, always verify your project with Maven, not only the editor run button.</p></li>
           </ul>
         </section>
