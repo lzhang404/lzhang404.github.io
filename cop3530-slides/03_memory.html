@@ -6,7 +6,7 @@
 
 <title>Memory Management</title>
 
-  <!-- Same styling pattern as your other Reveal exports (e.g., m02_lexical.html) -->
+  <!-- Same styling pattern as your other Reveal exports -->
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
@@ -46,16 +46,13 @@
         <section class="frame">
           <h2>Outline</h2>
           <ul>
-            <li><p>Overview: what memory management means in C++</p></li>
-            <li><p>Memory regions: code, static, stack, heap</p></li>
-            <li><p>Stack: automatic allocation, function calls, stack overflow</p></li>
-            <li><p>Heap: dynamic allocation with <code class="inline">new</code> and <code class="inline">delete</code></p></li>
-            <li><p>Pointer basics: address-of, dereference, <code class="inline">nullptr</code></p></li>
-            <li><p>Dynamic arrays: 1D and 2D patterns</p></li>
-            <li><p>References vs pointers</p></li>
-            <li><p>Classes owning dynamic memory: destructor, shallow copy, rule of 3</p></li>
-            <li><p>Rule of 5 and move semantics</p></li>
-            <li><p>Tools: valgrind (Linux)</p></li>
+            <li><p>Memory model: regions, stack, and lifetime</p></li>
+            <li><p>Pointers and references: addresses, dereference, <code class="inline">nullptr</code></p></li>
+            <li><p>Dynamic memory: <code class="inline">new</code>, <code class="inline">delete</code>, and common bugs</p></li>
+            <li><p>Dynamic arrays: 1D arrays and 2D layouts</p></li>
+            <li><p>Resource-owning classes: destructor and shallow copy</p></li>
+            <li><p>Copy and move semantics: rule of 3 and rule of 5</p></li>
+            <li><p>Tool support: valgrind on Linux</p></li>
           </ul>
         </section>
 
@@ -63,154 +60,203 @@
           <h2>Learning goals</h2>
           <p>After this lecture, you should be able to</p>
           <ul>
-            <li><p>Describe the major memory regions and what lives in each one</p></li>
-            <li><p>Explain stack vs heap allocation and common failure modes</p></li>
-            <li><p>Use pointers safely: initialization, dereference rules, <code class="inline">nullptr</code></p></li>
+            <li><p>Describe what lives in code, static, stack, and heap memory</p></li>
+            <li><p>Explain stack lifetime and heap lifetime</p></li>
+            <li><p>Use pointers safely: initialization, dereference rules, and <code class="inline">nullptr</code></p></li>
+            <li><p>Choose between references and pointers for function parameters</p></li>
             <li><p>Allocate and free single objects and arrays correctly</p></li>
-            <li><p>Build dynamic arrays (1D) and 2D arrays on the heap</p></li>
-            <li><p>Explain memory bugs: leaks, double delete, use-after-free, out-of-bounds</p></li>
-            <li><p>Explain shallow copy and why it breaks resource-owning classes</p></li>
-            <li><p>Implement rule of 3 and describe rule of 5 at a high level</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Overview</h2>
-          <p>
-            Definition: memory management in C++ is allocating and deallocating memory for objects
-            and data structures during program execution.
-          </p>
-
-          <p><strong>Motivation:</strong></p>
-          <ul>
-            <li><p>Optimize memory usage</p></li>
-            <li><p>Avoid memory leaks</p></li>
-            <li><p>Avoid dangling pointers</p></li>
-            <li><p>Avoid stack overflow</p></li>
+            <li><p>Explain leaks, double delete, use-after-free, and out-of-bounds access</p></li>
+            <li><p>Explain why shallow copy breaks resource-owning classes</p></li>
+            <li><p>Describe rule of 3 and rule of 5 at a high level</p></li>
           </ul>
         </section>
       </section>
 
       <!-- =========================================================
-           Section: Memory Regions
+           Section: Memory Model
            ========================================================= -->
       <section>
-        <section>
-          <h2>Memory Regions</h2>
+        <section class="title-slide slide level1">
+          <h1>Memory Model</h1>
         </section>
 
         <section class="frame">
-          <h2>Four regions</h2>
-          <ul>
-            <li><p><strong>Code</strong>: compiled program instructions</p></li>
-            <li><p><strong>Static</strong>: global and static variables</p></li>
-            <li><p><strong>Stack</strong>: local variables and function parameters</p></li>
-            <li><p><strong>Heap</strong>: dynamically allocated memory</p></li>
-          </ul>
-          <p class="small-note">Each region has different lifetime and management rules.</p>
-        </section>
-
-        <section class="frame">
-          <h2>Memory addresses</h2>
-          <p>In RAM, memory is a big sequence of numbered slots.</p>
-          <ul>
-            <li><p>Each slot has an address (like house numbers)</p></li>
-            <li><p>Lowest memory address is a small number</p></li>
-            <li><p>Highest memory address is a large number</p></li>
-            <li><p>A pointer stores an address</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Typical layout intuition</h2>
-          <p>Common mental model:</p>
-          <ul>
-            <li><p>Stack and heap share a free region between them</p></li>
-            <li><p>Stack grows as functions call functions</p></li>
-            <li><p>Heap grows as you allocate dynamic memory</p></li>
-            <li><p>If they collide: crash (stack overflow or out of memory)</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Memory regions at a glance</h2>
-          <div class="two-col">
-            <div>
-              <ul>
-                <li><p><strong>Code</strong>: instructions (read-only on many systems)</p></li>
-                <li><p><strong>Static</strong>: globals/static (entire program)</p></li>
-                <li><p><strong>Stack</strong>: locals/params (per call)</p></li>
-                <li><p><strong>Heap</strong>: dynamic objects (until freed)</p></li>
-              </ul>
-            </div>
-            <div class="small-note">
-              <p><strong>Key idea:</strong></p>
-              <ul>
-                <li><p>Stack: automatic, limited size</p></li>
-                <li><p>Heap: manual, flexible size (but easy to misuse)</p></li>
-              </ul>
-              <p>Layout varies by OS/compiler, but these roles are consistent.</p>
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Typical address space picture</h2>
-
-          <table class="slide-table">
+          <h2>Memory regions</h2>
+          <table class="slide-table" style="table-layout: fixed; width: 100%;">
+          <colgroup>
+            <col style="width: 16%;">
+            <col style="width: 50%;">
+            <col style="width: 34%;">
+          </colgroup>
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Usually contains</th>
+                <th>Lifetime</th>
+              </tr>
+            </thead>
             <tbody>
               <tr>
-                <td><strong>Higher addresses</strong></td>
-                <td>Stack region (often grows downward as calls happen)</td>
+                <td><strong>Code</strong></td>
+                <td>Compiled program instructions</td>
+                <td>Entire program</td>
               </tr>
               <tr>
-                <td></td>
-                <td>Free space between stack and heap (shrinks as both grow)</td>
+                <td><strong>Static</strong></td>
+                <td>Global and static variables</td>
+                <td>Entire program</td>
               </tr>
               <tr>
-                <td></td>
-                <td>Heap region (often grows upward as allocations happen)</td>
+                <td><strong>Stack</strong></td>
+                <td>Local variables and function parameters</td>
+                <td>Function/block lifetime</td>
               </tr>
               <tr>
-                <td></td>
-                <td>Static region (globals and static variables)</td>
-              </tr>
-              <tr>
-                <td><strong>Lower addresses</strong></td>
-                <td>Code region (program instructions)</td>
+                <td><strong>Heap</strong></td>
+                <td>Dynamically allocated objects and arrays</td>
+                <td>Until released</td>
               </tr>
             </tbody>
           </table>
-
-          <p class="small-note">
-            Use this picture to explain collisions: stack overflow, out-of-memory, or stack/heap meeting.
-          </p>
-        </section>
-
-        <section class="frame">
-          <h2>Stack memory management</h2>
+          <p class="small-note">Key idea: each region has different lifetime and management rules.</p>
           <ul>
-            <li><p>Stack is LIFO: last in, first out</p></li>
-            <li><p>The runtime maintains a call stack</p></li>
-            <li><p>Stores local variables and function parameters</p></li>
-            <li><p>Automatically managed: allocation and deallocation happen for you</p></li>
-            <li><p>Stack overflow happens when the stack cannot grow further.</p></li>
-            <ul>
-              <li><p>Infinite recursion (no base case)</p></li>
-              <li><p>Huge local arrays on the stack</p></li>
-              <li>Deep recursion with large stack frames</li>
-            </ul>
+            <li><p>Example: <code class="inline">m03-mem-management/show_memo.cpp</code></p></li>
           </ul>
         </section>
 
-        <!-- Practice 1 -->
         <section class="frame">
-          <h2>Practice 1: identify stack overflow risk</h2>
-          <p>Predict what can go wrong.</p>
+  <h2>Typical memory layout</h2>
 
+  <div style="display:flex; gap: 1.2rem; align-items:flex-start;">
+            <div style="flex: 1 1 50%; min-width: 300px;">
+      <ul>
+        <li><p>Stack grows as functions call functions</p></li>
+        <li><p>Heap grows as dynamic memory is allocated</p></li>
+        <li><p>Exact layout depends on the OS and compiler</p></li>
+      </ul>
+    </div>
+    <div style="flex: 1 1 80%; min-width: 260px;">
+      <img
+        src="../_static/images/cop3530/memory/memory_region.png"
+        alt="Typical memory layout"
+        style="width:50%; height:auto; display:block; margin-top:0.2rem;"
+      />
+    </div>
+  </div>
+</section>
+
+<section class="frame">
+  <h2>Stack memory and stack frames</h2>
+
+  <div style="display:flex; gap:1.2rem; align-items:flex-start;">
+    <div style="flex:1 1 50%; min-width:300px;">
+      <p>Each function call creates one <strong>stack frame</strong>.</p>
+
+      <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+           data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">int squarePlusOne(int x) {
+  int y = x * x;
+  return y + 1;
+}
+
+int main() {
+  int result = squarePlusOne(4);
+}</code></pre>
+
+      <ul>
+        <li><p>Call pushes a new frame onto the stack</p></li>
+        <li><p>Return pops that frame off the stack</p></li>
+        <li><p>Stack is LIFO: last call returns first</p></li>
+      </ul>
+    </div>
+
+    <div style="flex:1 1 50%; min-width:260px;">
+      <p>
+        <strong>
+          Call stack while inside
+          <code class="inline">squarePlusOne(4)</code>
+        </strong>
+      </p>
+
+      <div style="
+        border:2px solid #333;
+        padding:0.5rem;
+        font-size:0.72em;
+        line-height:1.25;
+      ">
+
+        <div style="
+          text-align:center;
+          font-weight:bold;
+          margin-bottom:0.3rem;
+          font-size:1em;
+        ">
+          Top of stack
+        </div>
+
+        <div style="
+          border:2px solid #2b6cb0;
+          padding:0.45rem;
+          margin-bottom:0.45rem;
+          background:#eef6ff;
+        ">
+          <p style="margin:0; font-size:1em;">
+            <strong>Frame: squarePlusOne</strong>
+          </p>
+
+          <ul style="margin-top:0.3rem;">
+            <li style="font-size:1em;">
+              parameter:
+              <code class="inline" style="font-size:1em;">x = 4</code>
+            </li>
+            <li style="font-size:1em;">
+              local variable:
+              <code class="inline" style="font-size:1em;">y = 16</code>
+            </li>
+            <li style="font-size:1em;">
+              return location: back to
+              <code class="inline" style="font-size:1em;">main</code>
+            </li>
+          </ul>
+        </div>
+
+        <div style="
+          border:2px solid #555;
+          padding:0.45rem;
+          background:#f7f7f7;
+        ">
+          <p style="margin:0; font-size:1em;">
+            <strong>Frame: main</strong>
+          </p>
+
+          <ul style="margin-top:0.3rem;">
+            <li style="font-size:1em;">
+              local variable:
+              <code class="inline" style="font-size:1em;">result</code>
+            </li>
+            <li style="font-size:1em;">
+              waiting for function return value
+            </li>
+          </ul>
+        </div>
+
+        <div style="
+          text-align:center;
+          font-weight:bold;
+          margin-top:0.3rem;
+          font-size:1em;
+        ">
+          Bottom of stack
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+        <section class="frame">
+          <h2>Practice 1: stack overflow risk</h2>
+          <p>Predict what can go wrong.</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">
-int f(int n) {
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int f(int n) {
   int big[1000000];
   if (n <= 0) return 0;
   return big[0] + f(n - 1);
@@ -218,7 +264,6 @@ int f(int n) {
 int main() {
   return f(10);
 }</code></pre>
-
           <ul>
             <li><p>What is the risk?</p></li>
             <li><p>What is one safer redesign?</p></li>
@@ -228,99 +273,101 @@ int main() {
         <section class="frame">
           <h2>Practice 1 Answer</h2>
           <ul>
-            <li><p><strong>Risk:</strong> <code class="inline">big</code> is allocated on the stack for every recursive call. This can overflow quickly.</p></li>
+            <li><p><strong>Risk:</strong> <code class="inline">big</code> is allocated on the stack for every recursive call.</p></li>
+            <li><p>This can overflow quickly because each call needs a large stack frame.</p></li>
             <li><p><strong>Safer redesign:</strong></p>
               <ul>
-                <li><p>Move large memory to the heap once, reuse it</p></li>
-                <li><p>Or redesign to iterative</p></li>
-                <li><p>Or reduce stack frame size</p></li>
+                <li><p>Move large memory to the heap once and reuse it</p></li>
+                <li><p>Or redesign to use a loop</p></li>
+                <li><p>Or reduce the stack frame size</p></li>
               </ul>
             </li>
           </ul>
         </section>
       </section>
 
-
       <!-- =========================================================
-           Section: Pointers
+           Section: Pointers and References
            ========================================================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Pointers</h1>
+          <h1>Pointers and References</h1>
         </section>
 
         <section class="frame">
-          <h2>Pointer definition</h2>
+          <h2>Memory addresses</h2>
+          <p>In RAM, memory is a large sequence of numbered locations.</p>
+          <ul>
+            <li><p>Each location has an address</p></li>
+            <li><p>A variable has a value and an address</p></li>
+            <li><p>A pointer stores the address of another object</p></li>
+            <li><p>The object at that address is called the pointee</p></li>
+          </ul>
+          <p class="small-note">This is why pointer syntax always talks about addresses and dereferencing.</p>
+        </section>
 
-          <div style="display:flex; gap: 1.2rem; align-items:flex-start;">
-            <!-- Left: text -->
-            <div style="flex: 1 1 50%; min-width: 300px;">
-              <p>A pointer is a variable that stores an address of an object of some type.</p>
-
+        <section class="frame">
+          <h2>Pointer definition and basic syntax</h2>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div style="flex:1 1 52%; min-width:0;">
+              <pre style="font-size:0.62em;" data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+                   data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int x = 10;
+int* ptr = &x;
+*ptr = 30;</code></pre>
               <ul>
-                <li><p>The pointee is the object that lives at that address</p></li>
-                <li><p>The pointer variable itself also has an address</p></li>
-                <li>
-                  <p>Use cases:</p>
-                  <ul>
-                    <li><p>dynamic-size data</p></li>
-                    <li><p>share data without copying</p></li>
-                    <li><p>build linked structures</p></li>
-                  </ul>
-                </li>
+                <li><p><code class="inline">&amp;x</code> gets the address of <code class="inline">x</code></p></li>
+                <li><p><code class="inline">ptr</code> stores that address</p></li>
+                <li><p><code class="inline">*ptr</code> accesses or changes <code class="inline">x</code></p></li>
+                <li><p>Example: <code class="inline">m03-mem-management/pointer.cpp</code></p></li>
               </ul>
             </div>
-
-            <!-- Right: image -->
-            <div style="flex: 1 1 50%; min-width: 260px;">
+            <div style="flex:1 1 30%; min-width:0;">
               <img
-                src="../_static/images/pointer.png"
-                alt="An example of pointer value and address"
-                style="width:100%; height:auto; display:block; margin-top:0.2rem;"
+                src="../_static/images/cop3530/memory/pointer.png"
+                alt="A pointer storing the address of an integer"
+                style="width:90%; height:auto; display:block; margin:0 auto;"
               />
+              <p class="small-note">Dereference only when the pointer identifies a valid object.</p>
             </div>
           </div>
         </section>
 
         <section class="frame">
-          <h2>Pointer basic syntax</h2>
+          <h2><code class="inline">nullptr</code></h2>
+          <p><code class="inline">nullptr</code> means this pointer currently points to no object.</p>
+          <ul>
+            <li><p>Initialize a pointer to <code class="inline">nullptr</code> when it has no target yet</p></li>
+            <li><p>Check before dereferencing when a pointer may be empty</p></li>
+            <li><p>Dereferencing <code class="inline">nullptr</code> is undefined behavior</p></li>
+          </ul>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int x = 22;
-int* ptr = &x;   // ptr stores address of x
-*ptr = 30;       // dereference: modify x through ptr</code></pre>
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int* p = nullptr;
 
-          <ul>
-            <li><code>*</code> is called the dereference operator. It gives us access to the value stored at the memory address ptr is pointing to </li>
-            <li><p>Rule: never dereference a pointer until you know it is valid.</p></li>
-          </ul>
-          <p>Initialize pointers to <code class="inline">nullptr</code> to mean no object.</p>
-          <ul>
-            <li><p>Checking before dereference can prevent crashes</p></li>
-            <li><p><code class="inline">delete</code> and <code class="inline">delete[]</code> on <code class="inline">nullptr</code> does nothing</p></li>
-          </ul>
-          <p>Example: m03-mem-management/pointer.cpp</p>
+if (p != nullptr) {
+  *p = 5;
+}</code></pre>
         </section>
 
-
-        <!-- Practice 3 -->
         <section class="frame">
-          <h2>Practice 3: nullptr crash</h2>
+          <h2>Practice 2: nullptr crash</h2>
           <p>What happens, and how do you fix it?</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int main() {
   int* p = nullptr;
   *p = 5;
 }</code></pre>
-        <p>Example: m03-mem-management/nullptr-crash.cpp</p>
+          <ul>
+            <li><p>Example: <code class="inline">m03-mem-management/nullptr-crash.cpp</code></p></li>
+          </ul>
         </section>
 
         <section class="frame">
-          <h2>Practice 3 Answer</h2>
+          <h2>Practice 2 Answer</h2>
           <ul>
-            <li><p>Dereferencing <code class="inline">nullptr</code> crashes (undefined behavior).</p></li>
+            <li><p>Dereferencing <code class="inline">nullptr</code> is undefined behavior.</p></li>
+            <li><p>A common result is a crash.</p></li>
             <li><p>Fix: point to a real object before dereference.</p></li>
           </ul>
-
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int main() {
   int x = 0;
@@ -328,53 +375,140 @@ int* ptr = &x;   // ptr stores address of x
   *p = 5;
 }</code></pre>
         </section>
+
+        <section class="frame">
+          <h2>Reference vs pointer</h2>
+          <div class="two-col">
+            <div>
+              <p><strong>Reference <code class="inline">&</code></strong></p>
+              <ul>
+                <li><p>Alias for another variable</p></li>
+                <li><p>Must bind to something at creation</p></li>
+                <li><p>Cannot be <code class="inline">nullptr</code></p></li>
+                <li><p>Cannot be reseated later</p></li>
+              </ul>
+            </div>
+            <div>
+              <p><strong>Pointer <code class="inline">*</code></strong></p>
+              <ul>
+                <li><p>Stores an address</p></li>
+                <li><p>Can be <code class="inline">nullptr</code></p></li>
+                <li><p>Can be reseated to point elsewhere</p></li>
+                <li><p>Requires dereference to access the pointed value</p></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Two meanings of <code class="inline">&</code></h2>
+          <ul>
+            <li><p>Address-of operator in an expression: type of <code class="inline">&x</code> is <code class="inline">int*</code></p></li>
+            <li><p>Reference declaration in a variable declaration: <code class="inline">int&</code> means reference to <code class="inline">int</code></p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">int x = 10;
+
+// ref is another name for x
+int& ref = x;
+ref = 20;      // changes x too
+cout << x;     // prints 20
+
+int a = 10;
+
+// ptr stores address of a
+int* ptr = &a;
+*ptr = 20;     // changes a
+cout << a;     // prints 20
+
+ptr = &x;      // pointer can be reseated</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Function parameters: pointer vs reference</h2>
+          <div style="display:flex; gap:1.2rem; align-items:flex-start;">
+            <div style="flex:1 1 50%; min-width:0;">
+              <p><strong>Pointer parameter</strong></p>
+              <pre style="font-size:0.62em;" data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+                   data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">void swapByPointer(int* left, int* right) {
+  if (left == nullptr || right == nullptr) {
+    return;
+  }
+
+  int temporary = *left;
+  *left = *right;
+  *right = temporary;
+}
+
+swapByPointer(&amp;a, &amp;b);</code></pre>
+              <ul>
+                <li><p>Call with addresses</p></li>
+                <li><p>Can receive <code class="inline">nullptr</code></p></li>
+                <li><p>Check before dereferencing</p></li>
+              </ul>
+            </div>
+            <div style="flex:1 1 50%; min-width:0;">
+              <p><strong>Reference parameter</strong></p>
+              <pre style="font-size:0.62em;" data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+                   data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">void swapByReference(int& left, int& right) {
+  int temporary = left;
+  left = right;
+  right = temporary;
+}
+
+swapByReference(a, b);</code></pre>
+              <ul>
+                <li><p>Call with variables</p></li>
+                <li><p>Must refer to valid objects</p></li>
+                <li><p>No dereference syntax</p></li>
+              </ul>
+            </div>
+          </div>
+          <ul>
+            <li><p>Example: <code class="inline">m03-mem-management/ref-vs-ptr-params.cpp</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 3: choose pointer or reference</h2>
+          <p>You are writing a function that may modify an integer.</p>
+          <ul>
+            <li><p>If the function must always receive a valid integer, what is a good choice?</p></li>
+            <li><p>If the function should allow no integer, what is a good choice?</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 3 Answer</h2>
+          <ul>
+            <li><p>Always valid integer: <strong>reference</strong> is a good choice.</p></li>
+            <li><p>Allow no integer: <strong>pointer</strong> is a good choice, because <code class="inline">nullptr</code> can represent no object.</p></li>
+          </ul>
+        </section>
       </section>
 
-
-      <!--
-      Section: Heap Memory Manegment
-      -->
+      <!-- =========================================================
+           Section: Dynamic Memory
+           ========================================================= -->
       <section>
+        <section class="title-slide slide level1">
+          <h1>Dynamic Memory</h1>
+        </section>
+
         <section class="frame">
-          <h2>Heap memory management</h2>
+          <h2>Heap memory</h2>
           <ul>
             <li><p>Heap is used for dynamic memory</p></li>
-            <li><p>Managed manually by the programmer</p></li>
-            <li><p>Allocate with <code class="inline">new</code></p></li>
-            <li><p>Deallocate with <code class="inline">delete</code></p></li>
-            <li><p>Dynamic objects are accessed through pointers</p></li>
+            <li><p>Dynamic memory is accessed through pointers</p></li>
+            <li><p><code class="inline">new</code> allocates memory and returns an address</p></li>
+            <li><p><code class="inline">delete</code> releases a single object</p></li>
+            <li><p><code class="inline">delete[]</code> releases an array</p></li>
+            <li><p>The programmer is responsible for matching allocation and cleanup</p></li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>Dynamic data facts and rules</h2>
-          <ul>
-            <li><p>A pointer is not the object: it stores the address of the object</p></li>
-            <li><p>The dynamic object lives on the heap until you destroy it</p></li>
-            <li><p><code class="inline">delete</code> on <code class="inline">nullptr</code> does nothing</p></li>
-            <li><p>Match form to form:</p>
-              <ul>
-                <li><p><code class="inline">new</code> with <code class="inline">delete</code></p></li>
-                <li><p><code class="inline">new[]</code> with <code class="inline">delete[]</code></p></li>
-              </ul>
-            </li>
-            <li><p>Each allocation must be freed exactly once</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Typical bugs to avoid</h2>
-          <ul>
-            <li><p>Memory leak: forget to delete</p></li>
-            <li><p>Double delete: delete same block twice</p></li>
-            <li><p>Use after free: use pointer after deleting it</p></li>
-            <li><p>Out of bounds access: write past allocated size</p></li>
-            <li><p>Invalid pointer casts: reinterpret addresses incorrectly</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Single object vs array allocation</h2>
+          <h2><code class="inline">new</code> and <code class="inline">delete</code></h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">// single object
 MyClass* p = new MyClass();
@@ -383,11 +517,37 @@ delete p;
 // array
 int* a = new int[10];
 delete[] a;</code></pre>
+          <ul>
+            <li><p><code class="inline">new</code> must match <code class="inline">delete</code></p></li>
+            <li><p><code class="inline">new[]</code> must match <code class="inline">delete[]</code></p></li>
+            <li><p><code class="inline">delete</code> and <code class="inline">delete[]</code> on <code class="inline">nullptr</code> do nothing</p></li>
+          </ul>
         </section>
 
-        <!-- Practice 2 -->
         <section class="frame">
-          <h2>Practice 2: leak or not</h2>
+          <h2>Ownership and cleanup rules</h2>
+          <ul>
+            <li><p>A pointer is not the object; it stores the address of the object</p></li>
+            <li><p>The dynamic object lives on the heap until it is destroyed</p></li>
+            <li><p>Each allocation should be freed exactly once</p></li>
+            <li><p>After deleting a pointer, do not use it to access the old object</p></li>
+            <li><p>A common habit: set the pointer to <code class="inline">nullptr</code> after cleanup</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Typical memory bugs</h2>
+          <ul>
+            <li><p><strong>Memory leak:</strong> forget to delete</p></li>
+            <li><p><strong>Double delete:</strong> delete the same block twice</p></li>
+            <li><p><strong>Use after free:</strong> use a pointer after deleting it</p></li>
+            <li><p><strong>Out of bounds:</strong> read or write past the allocated size</p></li>
+            <li><p><strong>Dangling pointer:</strong> pointer still stores an address for an object that no longer exists</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 4: leak or not</h2>
           <p>Identify the bug.</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int* makeArray(int n) {
@@ -400,7 +560,6 @@ int main() {
   // use p
   return 0;
 }</code></pre>
-
           <ul>
             <li><p>What is wrong?</p></li>
             <li><p>Show one fix.</p></li>
@@ -408,355 +567,166 @@ int main() {
         </section>
 
         <section class="frame">
-          <h2>Practice 2 Answer</h2>
+          <h2>Practice 4 Answer</h2>
           <p><strong>What is wrong:</strong></p>
           <ul>
             <li><p><code class="inline">p</code> points to dynamic memory that is never freed.</p></li>
           </ul>
-
           <p><strong>One fix:</strong></p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int main() {
   int* p = makeArray(100);
   // use p
   delete[] p;
+  p = nullptr;
   return 0;
 }</code></pre>
         </section>
       </section>
 
-
       <!-- =========================================================
-           Section: Dynamic 1D Arrays
+           Section: Dynamic Arrays
            ========================================================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Dynamic 1D Arrays</h1>
+          <h1>Dynamic Arrays</h1>
         </section>
 
         <section class="frame">
-          <h2>Dynamic 1D array idea</h2>
-          <p>Static arrays have compile-time fixed size.</p>
+          <h2>Dynamic 1D array</h2>
           <ul>
-            <li><p>Example: <code class="inline">int arr[10];</code></p></li>
-            <li><p>Sometimes size is only known at runtime</p></li>
-            <li><p>Dynamic arrays allocate memory on the heap</p></li>
+            <li><p>A fixed array such as <code class="inline">int arr[10]</code> has a compile-time size</p></li>
+            <li><p>When size is known only at runtime, allocate the array on the heap</p></li>
           </ul>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int n = 0;
 cin >> n;
 int* arr = new int[n];
 
-for (int i = 0; i < n; i++) arr[i] = i * i;
+for (int i = 0; i < n; i++){
+  arr[i] = i * i;
+} 
 
 delete[] arr;
 arr = nullptr;</code></pre>
+          <ul>
+            <li><p>Example: <code class="inline">m03-mem-management/array-1D.cpp</code></p></li>
+          </ul>
+           <img
+                src="../_static/images/cop3530/memory/dynamic1d_array.png"
+                alt="dynamic 1d array with one contigious block on heap"
+                style="width:50%; height:auto; display:block; margin:0 1 1 0.4rem;"
+              />
         </section>
 
         <section class="frame">
-          <h2>Two approaches for dynamic arrays of objects</h2>
+          <h2>Dynamic arrays of objects</h2>
+          <p>For objects, one common pattern is one contiguous block.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">size_t N = 3;
+State* states = new State[N];
+
+for (size_t i = 0; i < N; i++) {
+  states[i] = State("Alabama");
+}
+
+cout << states[0].getName() << "\n";
+
+delete[] states;
+states = nullptr;</code></pre>
+<img
+                src="../_static/images/cop3530/memory/dynamic_array_objects.png"
+                alt="dynamic array of objects"
+                style="width:60%; height:auto; display:block; margin:0  0.4rem;"
+              />
           
+        </section>
+
+        <section class="frame">
+          <h2>Fixed 2D array</h2>
           <ul>
-            <li><p><strong>Contiguous block</strong>: one allocation for N objects</p></li>
-            <li><p><strong>Pointer table</strong>: one allocation for N pointers, then N allocations for objects</p></li>
-  
-
-          <li><p>Tradeoff</p></li>
-          <ul>
-            <li><p>Contiguous is cache-friendly and easier to delete</p></li>
-            <li><p>Pointer table supports per-element lifetime flexibility, but is more complex</p></li>
-          </ul>
-          </ul>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">class State {
-private:
-  string name;
-public:
-  State() : name("") {}
-  State(const string& n) : name(n) {}
-  string getName() const { return name; }
-};</code></pre>
-        <p>Example: array-1D.cpp</p>
-        </section>
-
-        <section class="frame">
-          <h2>Dynamic 1D objects: contiguous block</h2>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">size_t N = 3;
-State* states1 = new State[N];
-
-for (size_t i = 0; i < N; i++) {
-  states1[i] = State("Alabama");
-}
-
-cout << states1[0].getName() << "\n";
-
-delete[] states1;
-states1 = nullptr;</code></pre>
-
-  <div class="mem-card" style="--mem-scale:0.86; --mem-maxh:250px; --mem-sidew:88px;">
-    <div class="mem-title">Heap: contiguous block of <span class="mem-mono">State</span> objects</div>
-
-    <div class="mem-scroll"><div class="mem-inner">
-      <div class="mem-index-row" style="--cols:3;">
-        <div></div>
-        <div class="mem-cell mem-mono">[0]</div>
-        <div class="mem-cell mem-mono">[1]</div>
-        <div class="mem-cell mem-mono">[2]</div>
-      </div>
-
-      <div class="mem-grid" style="--cols:3;">
-        <div class="mem-side">value</div>
-        <div class="mem-cell">State("Alabama")</div>
-        <div class="mem-cell">State("Alabama")</div>
-        <div class="mem-cell">State("Alabama")</div>
-
-        <div class="mem-side">address</div>
-        <div class="mem-cell mem-mono">0x5000</div>
-        <div class="mem-cell mem-mono">0x5000 + sizeof(State)</div>
-        <div class="mem-cell mem-mono">0x5000 + 2*sizeof(State)</div>
-      </div>
-    </div></div>
-
-    <div class="mem-note">
-      <span class="mem-mono">states1</span> (on stack) holds base address <span class="mem-mono">0x5000</span>. One <span class="mem-mono">delete[]</span>.
-    </div>
-  </div>
-        </section>
-
-        <section class="frame">
-          <h2>Dynamic 1D objects: pointer table</h2>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">size_t N = 3;
-State** states2 = new State*[N]();
-
-for (size_t i = 0; i < N; i++) {
-  states2[i] = new State("Alabama");
-}
-
-cout << states2[0]->getName() << "\n";
-
-for (size_t i = 0; i < N; i++) {
-  delete states2[i];
-}
-delete[] states2;
-states2 = nullptr;</code></pre>
-
-        </section>
-        <section class="frame">
-          <h2>Dynamic 1D objects: pointer table</h2>
-
-<div class="mem-card" style="--mem-scale:0.8; --mem-maxh:200px; --mem-sidew:88px;">
-  <div class="mem-title">Heap: pointer table + separate objects (not contiguous overall)</div>
-
-  <div class="mem-title" style="font-size:0.95em; margin-top:0.4rem;">
-    1) Pointer table (<span class="mem-mono">State*</span> array)
-  </div>
-
-  <div class="mem-scroll"><div class="mem-inner">
-    <div class="mem-index-row" style="--cols:3;">
-      <div></div>
-      <div class="mem-cell mem-mono">[0]</div>
-      <div class="mem-cell mem-mono">[1]</div>
-      <div class="mem-cell mem-mono">[2]</div>
-    </div>
-
-    <div class="mem-grid" style="--cols:3;">
-      <div class="mem-side">value</div>
-      <div class="mem-cell mem-mono">0x9000</div>
-      <div class="mem-cell mem-mono">0x7400</div>
-      <div class="mem-cell mem-mono">0xA200</div>
-
-      <div class="mem-side">address</div>
-      <div class="mem-cell mem-mono">0x6000</div>
-      <div class="mem-cell mem-mono">0x6008</div>
-      <div class="mem-cell mem-mono">0x6010</div>
-    </div>
-  </div></div>
-
-  <div class="mem-title" style="font-size:0.95em; margin-top:0.3rem;">
-    2) Objects (each from its own <span class="mem-mono">new State</span>)
-  </div>
-
-  <div class="mem-map">
-    <div class="mem-map-item">
-      <span class="mem-mono">states2[0]</span> <span class="mem-arrow">→</span>
-      <span class="mem-mono">0x9000</span> : <span>State("Alabama")</span>
-    </div>
-    <div class="mem-map-item">
-      <span class="mem-mono">states2[1]</span> <span class="mem-arrow">→</span>
-      <span class="mem-mono">0x7400</span> : <span>State("Alabama")</span>
-    </div>
-    <div class="mem-map-item">
-      <span class="mem-mono">states2[2]</span> <span class="mem-arrow">→</span>
-      <span class="mem-mono">0xA200</span> : <span>State("Alabama")</span>
-    </div>
-  </div>
-
-  <div class="mem-note">
-    Cleanup: <span class="mem-mono">delete states2[i]</span> for each object, then <span class="mem-mono">delete[] states2</span>.
-  </div>
-</div>
-
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Section: 2D Arrays
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>2D Arrays</h1>
-        </section>
-
-        <section class="frame">
-          <h2>2D arrays on the stack</h2>
-          <ul>
-            <li><p>Fixed-size 2D array is contiguous in row-major order</p></li>
-            <li><p>Column count must be compile-time constant for typical function parameters</p></li>
+            <li><p>Fixed-size 2D arrays are contiguous in row-major order</p></li>
             <li><p>Works well when dimensions are known at compile time</p></li>
+            <li><p>Column count must be known for many function-parameter forms</p></li>
           </ul>
-        </section>
-
-        <section class="frame">
-          <h2>2D array on stack example</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">const int ROWS = 2;
-const int COLS = 5;
+const int COLS = 3;
 
 double mat[ROWS][COLS] = {
-  {1, 2, 3, 4, 5},
-  {6, 7, 8, 9, 10}
+  {1, 2, 3},
+  {4, 5, 6}
 };
 
 cout << mat[1][2] << "\n";</code></pre>
-<div class="mem-card" style="--mem-scale:0.8; --mem-side-w:70px;">
-  <div class="mem-title">Stack: 2D array is one contiguous block (row-major)</div>
+       
+              <img
+                src="../_static/images/cop3530/memory/stack2darray.png"
+                alt="fixed 2D array with one continous memory block in stack"
+                style="width:50%; height:auto; display:block; margin:0  0.4rem;"
+              />
+        </section>
 
-  <div class="mem-index-row" style="--cols:5;">
-    <div></div>
-    <div class="mem-cell mem-mono">[0]</div>
-    <div class="mem-cell mem-mono">[1]</div>
-    <div class="mem-cell mem-mono">[2]</div>
-    <div class="mem-cell mem-mono">[3]</div>
-    <div class="mem-cell mem-mono">[4]</div>
-  </div>
 
-  <div class="mem-title" style="font-size:0.95em; margin-top:0.2rem;">Row 0</div>
-  <div class="mem-grid" style="--cols:5;">
-    <div class="mem-side">value</div>
-    <div class="mem-cell">1</div><div class="mem-cell">2</div><div class="mem-cell">3</div><div class="mem-cell">4</div><div class="mem-cell">5</div>
+        <section class="frame">
+          <h2>Dynamic 2D arrays: two layouts</h2>
+          <ul>
+            <li><p><strong>One contiguous block:</strong> </p></li>
+            <ul>
+              <li>Allocate <code class="inline">rows * cols</code> as one 1D array</li>
+              <li><p>One block is contiguous overall and needs one <code class="inline">delete[]</code></p></li>
+            </ul>
+            <li><p><strong>Pointer-to-pointer:</strong> </p></li>
+            <ul>
+              <li>Allocate row pointers, then allocate each row</li>
+              <li><p>Pointer-to-pointer is not contiguous overall and needs cleanup for each row</p></li>
+            </ul>
+            
+          
+            <li><p>Example: <code class="inline">m03-mem-management/array-2D.cpp</code></p></li>
 
-    <div class="mem-side">address</div>
-    <div class="mem-cell mem-mono">0x2000</div>
-    <div class="mem-cell mem-mono">0x2008</div>
-    <div class="mem-cell mem-mono">0x2010</div>
-    <div class="mem-cell mem-mono">0x2018</div>
-    <div class="mem-cell mem-mono">0x2020</div>
-  </div>
-
-  <div class="mem-title" style="font-size:0.95em; margin-top:0.7rem;">Row 1</div>
-  <div class="mem-grid" style="--cols:5;">
-    <div class="mem-side">value</div>
-    <div class="mem-cell">6</div><div class="mem-cell">7</div><div class="mem-cell">8</div><div class="mem-cell">9</div><div class="mem-cell">10</div>
-
-    <div class="mem-side">address</div>
-    <div class="mem-cell mem-mono">0x2028</div>
-    <div class="mem-cell mem-mono">0x2030</div>
-    <div class="mem-cell mem-mono">0x2038</div>
-    <div class="mem-cell mem-mono">0x2040</div>
-    <div class="mem-cell mem-mono">0x2048</div>
-  </div>
-
-  <div class="mem-note">
-    Addresses keep increasing across row boundaries: <span class="mem-mono">mat[r][c]</span> is laid out like a flat array.
-  </div>
-</div>
-
+            </ul>
         </section>
 
         <section class="frame">
-          <h2>2D arrays on heap: two common patterns</h2>
-          <ul>
-            <li><p>One contiguous block: allocate <code class="inline">rows * cols</code> as one 1D array</p></li>
-            <li><p>Pointer-to-pointer: allocate an array of row pointers, then allocate each row</p></li>
-          </ul>
-
-          <p><strong>Key difference:</strong></p>
-          <ul>
-            <li><p>One block is contiguous overall</p></li>
-            <li><p>Pointer-to-pointer is not contiguous overall</p></li>
-          </ul>
-          <li><p>Example: array-2D.cpp</p></li>
-          </section>
-
-        <section class="frame">
-          <h2>Heap 2D as one contiguous block</h2>
+          <h2>Dynamic 2D: one contiguous block</h2>
+          <div style="display:flex; align-items:flex-start;">
+            <div style="flex:1 1 45%; min-width:0;">
           <p>Manual indexing: <code class="inline">index = r * COLS + c</code></p>
-
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">size_t ROWS = 2;
-size_t COLS = 5;
+size_t COLS = 3;
 
-double* block = new double[ROWS * COLS];
+double* data = new double[ROWS * COLS];
 
 for (size_t r = 0; r < ROWS; r++) {
   for (size_t c = 0; c < COLS; c++) {
-    block[r * COLS + c] = r * COLS + c + 1;
+    data[r * COLS + c] = r * COLS + c + 1;
   }
 }
 
-cout << block[1 * COLS + 2] << "\n";
+cout << data[1 * COLS + 2] << "\n";
 
 delete[] block;
 block = nullptr;</code></pre>
-<div class="mem-card" style="--mem-scale:0.87;">
-  <div class="mem-title">Heap: contiguous block (ROWS*COLS)</div>
-
-  <div class="mem-scroll">
-    <div class="mem-inner">
-      <!-- index row -->
-      <div class="mem-index-row" style="--cols:12;">
-        <div></div>
-        <div class="mem-cell mem-mono">[0]</div>
-        <div class="mem-cell mem-mono">[1]</div>
-        <div class="mem-cell mem-mono">[2]</div>
-        <div class="mem-cell mem-mono">[3]</div>
-        <div class="mem-cell mem-mono">[4]</div>
-        <div class="mem-cell mem-mono">[5]</div>
-        <div class="mem-cell mem-mono">[6]</div>
-        <div class="mem-cell mem-mono">[7]</div>
-        <div class="mem-cell mem-mono">[8]</div>
-        <div class="mem-cell mem-mono">[9]</div>
-        <div class="mem-cell mem-mono">[10]</div>
-        <div class="mem-cell mem-mono">[11]</div>
-      </div>
-
-      <!-- grid -->
-      <div class="mem-grid" style="--cols:12;">
-        <div class="mem-side">value</div>
-        <div class="mem-cell mem-mono">1</div><div class="mem-cell mem-mono">2</div><div class="mem-cell mem-mono">3</div>
-        <div class="mem-cell mem-mono">4</div><div class="mem-cell mem-mono">5</div><div class="mem-cell mem-mono">6</div>
-        <div class="mem-cell mem-mono">7</div><div class="mem-cell mem-mono">8</div><div class="mem-cell mem-mono">9</div>
-        <div class="mem-cell mem-mono">10</div><div class="mem-cell mem-mono">11</div><div class="mem-cell mem-mono">12</div>
-
-        <div class="mem-side">address</div>
-        <div class="mem-cell mem-mono">0x8000</div><div class="mem-cell mem-mono">0x8008</div><div class="mem-cell mem-mono">0x8010</div>
-        <div class="mem-cell mem-mono">0x8018</div><div class="mem-cell mem-mono">0x8020</div><div class="mem-cell mem-mono">0x8028</div>
-        <div class="mem-cell mem-mono">0x8030</div><div class="mem-cell mem-mono">0x8038</div><div class="mem-cell mem-mono">0x8040</div>
-        <div class="mem-cell mem-mono">0x8048</div><div class="mem-cell mem-mono">0x8050</div><div class="mem-cell mem-mono">0x8058</div>
-      </div>
-    </div>
-  </div>
 </div>
-
+         <div style="flex:1 1 55%; min-width:0;">
+              <img
+                src="../_static/images/cop3530/memory/dynamic2D_array_one_block.png"
+                alt="Dynamic 2D array with one continous memory block"
+                style="width:70%; height:auto; display:block; margin:0  0.4rem;"
+              />
+              
+            </div>
+            </div>
         </section>
 
         <section class="frame">
-          <h2>Heap 2D via pointer-to-pointer</h2>
+          <h2>Dynamic 2D: pointer-to-pointer</h2>
+
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">size_t ROWS = 2;
-size_t COLS = 5;
+size_t COLS = 3;
 
 double** dyn = new double*[ROWS];
 
@@ -775,133 +745,18 @@ for (size_t r = 0; r < ROWS; r++) {
 delete[] dyn;
 dyn = nullptr;</code></pre>
 
+              <img
+                src="../_static/images/cop3530/memory/dynamic2D_pointer2pointer.png"
+                alt="Dynamic 2D array with pointer 2 pointer"
+                style="width:50%; height:auto; display:block; margin:0  0.2rem;"
+              />
+              
+     
         </section>
 
+
         <section class="frame">
-          <h2>Heap 2D via pointer-to-pointer Memory Layout</h2>
-          <div class="mem-compact">
-  <div class="mem-card" style="--mem-maxh:320px;">
-    <div class="mem-title">Heap: pointer-to-pointer (rows may be non-contiguous)</div>
-
-    <div class="mem-scroll">
-      <div class="mem-inner">
-
-        <!-- 1) Row pointer table -->
-        <div class="mem-title" style="font-size:0.95em; margin-top:0.4rem;">
-          1) Row pointer table (<span class="mem-mono">double*</span> array)
-        </div>
-
-        <div class="mem-index-row" style="--cols:2;">
-          <div></div>
-          <div class="mem-cell mem-mono">[0]</div>
-          <div class="mem-cell mem-mono">[1]</div>
-        </div>
-
-        <div class="mem-grid" style="--cols:2;">
-          <div class="mem-side">value</div>
-          <div class="mem-cell mem-mono">0x9100</div>
-          <div class="mem-cell mem-mono">0xA800</div>
-
-          <div class="mem-side">address</div>
-          <div class="mem-cell mem-mono">0x9000</div>
-          <div class="mem-cell mem-mono">0x9008</div>
-        </div>
-
-        <!-- 2) Mapping -->
-        <div class="mem-title" style="font-size:0.95em; margin-top:0.8rem;">
-          2) Each pointer targets a separate row array (<span class="mem-mono">new double[COLS]</span>)
-        </div>
-
-        <div class="mem-map">
-          <div class="mem-map-item">
-            <span class="mem-mono">dyn[0]</span> <span class="mem-arrow">→</span>
-            <span class="mem-mono">0x9100</span> <span style="opacity:0.7;">(row 0 base)</span>
-          </div>
-          <div class="mem-map-item">
-            <span class="mem-mono">dyn[1]</span> <span class="mem-arrow">→</span>
-            <span class="mem-mono">0xA800</span> <span style="opacity:0.7;">(row 1 base)</span>
-          </div>
-        </div>
-
-        <!-- Row 0 -->
-        <div class="mem-rowblock">
-          <div class="mem-rowlabel">
-            <span class="mem-mono">dyn[0]</span> row array at <span class="mem-mono">0x9100</span>
-          </div>
-
-          <div class="mem-index-row" style="--cols:5;">
-            <div></div>
-            <div class="mem-cell mem-mono">[0]</div>
-            <div class="mem-cell mem-mono">[1]</div>
-            <div class="mem-cell mem-mono">[2]</div>
-            <div class="mem-cell mem-mono">[3]</div>
-            <div class="mem-cell mem-mono">[4]</div>
-          </div>
-
-          <div class="mem-grid" style="--cols:5;">
-            <div class="mem-side">value</div>
-            <div class="mem-cell mem-mono">1.0</div>
-            <div class="mem-cell mem-mono">2.0</div>
-            <div class="mem-cell mem-mono">3.0</div>
-            <div class="mem-cell mem-mono">4.0</div>
-            <div class="mem-cell mem-mono">5.0</div>
-
-            <div class="mem-side">address</div>
-            <div class="mem-cell mem-mono">0x9100</div>
-            <div class="mem-cell mem-mono">0x9108</div>
-            <div class="mem-cell mem-mono">0x9110</div>
-            <div class="mem-cell mem-mono">0x9118</div>
-            <div class="mem-cell mem-mono">0x9120</div>
-          </div>
-        </div>
-
-        <!-- Row 1 -->
-        <div class="mem-rowblock">
-          <div class="mem-rowlabel">
-            <span class="mem-mono">dyn[1]</span> row array at <span class="mem-mono">0xA800</span>
-          </div>
-
-          <div class="mem-index-row" style="--cols:5;">
-            <div></div>
-            <div class="mem-cell mem-mono">[0]</div>
-            <div class="mem-cell mem-mono">[1]</div>
-            <div class="mem-cell mem-mono">[2]</div>
-            <div class="mem-cell mem-mono">[3]</div>
-            <div class="mem-cell mem-mono">[4]</div>
-          </div>
-
-          <div class="mem-grid" style="--cols:5;">
-            <div class="mem-side">value</div>
-            <div class="mem-cell mem-mono">6.0</div>
-            <div class="mem-cell mem-mono">7.0</div>
-            <div class="mem-cell mem-mono">8.0</div>
-            <div class="mem-cell mem-mono">9.0</div>
-            <div class="mem-cell mem-mono">10.0</div>
-
-            <div class="mem-side">address</div>
-            <div class="mem-cell mem-mono">0xA800</div>
-            <div class="mem-cell mem-mono">0xA808</div>
-            <div class="mem-cell mem-mono">0xA810</div>
-            <div class="mem-cell mem-mono">0xA818</div>
-            <div class="mem-cell mem-mono">0xA820</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Keep note OUTSIDE scroll if you want it always visible -->
-    <div class="mem-note">
-      Pointer table is contiguous; each row is a separate allocation. Cleanup: delete each row, then delete the table.
-    </div>
-  </div>
-</div>
-
-        </section>
-
-        <!-- Practice 4 -->
-        <section class="frame">
-          <h2>Practice 4: missing cleanup</h2>
+          <h2>Practice 5: missing cleanup</h2>
           <p>What is missing?</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">double** make2D(size_t rows, size_t cols) {
@@ -916,7 +771,6 @@ int main() {
   // use m
   delete[] m;
 }</code></pre>
-
           <ul>
             <li><p>What bug occurs?</p></li>
             <li><p>How do you fix the cleanup?</p></li>
@@ -924,12 +778,11 @@ int main() {
         </section>
 
         <section class="frame">
-          <h2>Practice 4 Answer</h2>
+          <h2>Practice 5 Answer</h2>
           <ul>
             <li><p><strong>Bug:</strong> each row allocation leaks because only the outer pointer array is freed.</p></li>
             <li><p><strong>Fix:</strong> delete each row first, then delete the pointer table.</p></li>
           </ul>
-
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int main() {
   double** m = make2D(3, 4);
@@ -944,133 +797,38 @@ int main() {
       </section>
 
       <!-- =========================================================
-           Section: References vs Pointers
+           Section: Resource-Owning Classes
            ========================================================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>References vs Pointers</h1>
+          <h1>Resource-Owning Classes</h1>
         </section>
 
         <section class="frame">
-          <h2>Reference vs pointer</h2>
-
-          <div class="two-col">
-            <div>
-              <p><strong>Reference &</strong></p>
-              <ul>
-                <li><p>Alias for another variable</p></li>
-                <li><p>Must bind to something at creation</p></li>
-                <li><p>Cannot be <code class="inline">nullptr</code>. Cannot be reseated later</p></li>
-
-              </ul>
-            </div>
-            <div>
-              <p><strong>Pointer * </strong></p>
-              <ul>
-                <li><p>Stores an address. Can be <code class="inline">nullptr</code></p></li>
-                <li><p>Can be reseated to point elsewhere</p></li>
-                <li><p>Requires dereference to access the pointed value</p></li>
-              </ul>
+          <h2>What does ownership mean?</h2>
+          <p>A pointer does not automatically mean ownership.</p>
+          <ul>
+            <li><p>Here, <code class="inline">List::arr</code> owns the heap array</p></li>
+            <li><p>The owner is responsible for releasing the resource</p></li>
+            <li><p>When the owner object dies, the owned resource should be released</p></li>
+            <li><p>This is why resource-owning classes need special member functions</p></li>
+          </ul>
+          <div class="mem-card" style="--mem-scale:0.92; --mem-maxh:210px;">
+            <div class="mem-title">Ownership picture</div>
+            <div class="mem-map">
+              <div class="mem-map-item"><span class="mem-mono">List object</span> owns <span class="mem-mono">arr</span> <span class="mem-arrow">-></span> <span class="mem-mono">heap array</span></div>
+              <div class="mem-map-item"><span class="mem-mono">~List()</span> releases the heap array with <span class="mem-mono">delete[] arr</span></div>
             </div>
           </div>
-        </section>
-
-        <section class = "frame">
-          <h2> Two meanings of &</h2>
-          <ul>
-            <li><p>Address of operator (used in expressions): Type of &x is int*
-</p></li>
-            <li><p>Reference declaration (used in variable declaration): <code class="inline">int& </code>means “reference to int”
- </p></li>
-          </ul>
-        <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">
-int x = 10;
-// ref is another name for x
-// int& means “reference to int”
-int& ref = x; 
-//ref = b doesn’t reseat ref 
-ref = 20; // changes x too
-cout << x; // prints 20
-
-int a = 10;
-// ptr stores address of x
-int* ptr = &a; 
-*ptr = 20; // changes x too
-cout << a; // prints 20
-ptr = &x; // reseated</code></pre>
-
-        </section>
-        <section class="frame">
-          <h2>Example: swap with pointers vs references</h2>
-
-          <p><strong>Pointer version:</strong></p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">void swapPtr(int* p1, int* p2) {
-  int tmp = *p1;
-  *p1 = *p2;
-  *p2 = tmp;
-}</code></pre>
-
-          <p><strong>Reference version:</strong></p>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">void swapRef(int& a, int& b) {
-  int tmp = a;
-  a = b;
-  b = tmp;
-}</code></pre>
-<p>Example: ref-vs-ptr-params.cpp</p>
-        </section>
-
-        <!-- Practice 5 -->
-        <section class="frame">
-          <h2>Practice 5: choose pointer or reference</h2>
-          <p>You are writing a function that may or may not modify an integer.</p>
-          <ul>
-            <li><p>If the function must always receive a valid integer, what is a good choice?</p></li>
-            <li><p>If the function should allow no integer (no object), what is a good choice?</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Practice 5 Answer</h2>
-          <ul>
-            <li><p>Always valid integer: <strong>reference</strong> is a good choice</p></li>
-            <li><p>Allow no integer: <strong>pointer</strong> is a good choice, because <code class="inline">nullptr</code> can represent no object</p></li>
-          </ul>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Section: Classes Owning Dynamic Memory
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Classes Owning Dynamic Memory</h1>
-        </section>
-
-        <section class="frame">
-          <h2>Typical fields for a dynamic array class</h2>
-          <p>For a vector-like class using a dynamic array:</p>
-          <ul>
-            <li><p>pointer field: address of dynamic array</p></li>
-            <li><p>size field: number of elements currently stored</p></li>
-            <li><p>capacity field: total elements that can fit before growing</p></li>
-            <li><p>Growth Strategy</p></li>
-            <ul>
-              <li><p>Expanding by +1 each time is expensive</p></li>
-              <li><p>Common approach: double capacity when full</p></li>
-              <li><p>This gives amortized constant-time <code class="inline">push_back</code> behavior</p></li>
-            </ul>
-          </ul>
         </section>
 
         <section class="frame">
           <h2>Destructor idea</h2>
           <p>A destructor runs automatically when an object is destroyed.</p>
           <ul>
-            <li><p>Resource-owning classes should release dynamic memory in the destructor</p></li>
+            <li><p>Resource-owning classes release dynamic memory in the destructor</p></li>
             <li><p>Arrays allocated with <code class="inline">new[]</code> must be destroyed with <code class="inline">delete[]</code></p></li>
+            <li><p>Destructors make cleanup tied to object lifetime</p></li>
           </ul>
         </section>
 
@@ -1098,18 +856,32 @@ public:
 
         <section class="frame">
           <h2>Shallow copy problem</h2>
-          <p>Default copy behavior for a class with a pointer:</p>
+          <div style="display:flex; gap:1.2rem; align-items:flex-start;">
+            <div style="flex:1 1 45%; min-width:0;">
+              <ul>
+                <li><p>Default copy copies pointer values only</p></li>
+                <li><p>Two objects share one heap block</p></li>
+                <li><p>Both destructors try to release it</p></li>
+                <li><p>Result: double delete and shared-state surprises</p></li>
+              </ul>
+              <pre style="font-size:0.7em;" data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+                   data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int* a = new int[3]{1, 2, 3};
+int* b = a;</code></pre>
+            </div>
+            <div style="flex:1 1 55%; min-width:0;">
+              <img
+                src="../_static/images/cop3530/memory/shallow_copy.png"
+                alt="Two objects pointing to the same heap array"
+                style="width:50%; height:auto; display:block; margin:0 auto 0.4rem;"
+              />
+              
+            </div>
+          </div>
           <ul>
-            <li><p>Copy constructor copies pointer value only</p></li>
-            <li><p>Copy assignment copies pointer value only</p></li>
-            <li><p>Two objects now share one heap block</p></li>
-            <li><p>Destructor runs twice on same block</p></li>
+            <li><p>Example: <code class="inline">m03-mem-man-class/shallow-copy.cpp</code></p></li>
           </ul>
-          <p>Result: double delete crash and shared-state surprises.</p>
-          <p>Example: shallow-copy.cpp</p>
         </section>
 
-        <!-- Practice 6 -->
         <section class="frame">
           <h2>Practice 6: predict the crash</h2>
           <p>What goes wrong?</p>
@@ -1126,7 +898,6 @@ int main() {
   Bag a(5);
   Bag b = a;
 }</code></pre>
-
           <ul>
             <li><p>What is the bug?</p></li>
             <li><p>What rule do we need?</p></li>
@@ -1136,121 +907,94 @@ int main() {
         <section class="frame">
           <h2>Practice 6 Answer</h2>
           <ul>
-            <li><p><strong>Bug:</strong> default copy makes a shallow copy. <code class="inline">a</code> and <code class="inline">b</code> share the same <code class="inline">data</code> pointer.</p></li>
+            <li><p><strong>Bug:</strong> default copy makes a shallow copy.</p></li>
+            <li><p><code class="inline">a</code> and <code class="inline">b</code> share the same <code class="inline">data</code> pointer.</p></li>
             <li><p>When both destructors run, <code class="inline">delete[]</code> happens twice.</p></li>
-            <li><p><strong>Fix:</strong> rule of 3 (deep copy) for resource-owning classes.</p></li>
+            <li><p><strong>Fix:</strong> rule of 3 with deep copy.</p></li>
           </ul>
         </section>
       </section>
 
       <!-- =========================================================
-           Section: Rule of 3
+           Section: Copy and Move Semantics
            ========================================================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Rule of 3</h1>
+          <h1>Copy and Move Semantics</h1>
         </section>
 
         <section class="frame">
           <h2>Rule of 3</h2>
-          <p>If a class owns a resource (dynamic memory), you typically need:</p>
+          <p>If a class owns a resource, compiler-generated copying is usually unsafe. These three functions work together:</p>
           <ul>
-            <li><p>Destructor</p></li>
-            <li><p>Copy constructor</p></li>
-            <li><p>Copy assignment operator</p></li>
+            <li><p><strong>Destructor:</strong> release this object's resource</p></li>
+            <li><p><strong>Copy constructor:</strong> create a new object as a deep copy</p></li>
+            <li><p><strong>Copy assignment operator:</strong> replace an existing object with a deep copy</p></li>
           </ul>
-          <p class="small-note">Goal: deep copy so each object owns its own heap block.</p>
+          <p class="small-note">Goal: each object owns its own heap block.</p>
         </section>
 
         <section class="frame">
-          <h2>Deep copy: copy constructor</h2>
+          <h2>Copy constructor</h2>
+          <p>Used when a new object is created from an existing object.</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">class List {
-  int size;
-  int* arr;
-public:
-  List() : size(0), arr(nullptr) {}
-  List(int count, int value = 0) {
-    size = count;
-    arr = new int[count];
-    for (int i = 0; i < count; i++) arr[i] = value;
-  }
-  ~List() { delete[] arr; }
-  List(const List& other) {
-    size = other.size;
-    arr = new int[size];
-    for (int i = 0; i < size; i++) arr[i] = other.arr[i];
-  }
-};</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Deep copy: copy assignment operator</h2>
-          <p>Must handle self-assignment and existing memory.</p>
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List a(5);
+List b = a;   // copy constructor</code></pre>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\scriptsize" data-tabsize="1"><code class="language-cpp">class List {
-  int size;
-  int* arr;
-public:
-  List() : size(0), arr(nullptr) {}
-  List(int count, int value = 0) {
-    size = count;
-    arr = new int[count];
-    for (int i = 0; i < count; i++) arr[i] = value;
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List(const List& other) {
+  size = other.size;
+  arr = new int[size];
+  for (int i = 0; i < size; i++) {
+    arr[i] = other.arr[i];
   }
-  ~List() { delete[] arr; }
-  List(const List& other) {
-    size = other.size;
-    arr = new int[size];
-    for (int i = 0; i < size; i++) arr[i] = other.arr[i];
-  }
-  List& operator=(const List& other) {
-    if (this == &other) return *this;
-    delete[] arr;
-    size = other.size;
-    arr = new int[size];
-    for (int i = 0; i < size; i++) arr[i] = other.arr[i];
-    return *this;
-  }
-};</code></pre>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Section: Rule of 5
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Rule of 5</h1>
+}</code></pre>
         </section>
 
         <section class="frame">
-          <h2>Why add move operations</h2>
-          <p>Rule of 3 is correct, but copies can be expensive.</p>
+          <h2>Copy assignment operator</h2>
+          <p>Used when an existing object is assigned from another existing object.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List a(5);
+List b(10);
+b = a;        // copy assignment</code></pre>
           <ul>
-            <li><p>Copy duplicates the entire dynamic array</p></li>
-            <li><p>Temporary objects and returns-by-value can cause copies</p></li>
-            <li><p>Move semantics allow stealing the resource pointer</p></li>
+            <li><p>Protect against <code class="inline">b = b</code></p></li>
+            <li><p>Allocate and fill a replacement array</p></li>
+            <li><p>Release <code class="inline">b</code>'s old array</p></li>
+            <li><p>Store the replacement and return <code class="inline">*this</code></p></li>
+            <li><p>Example: <code class="inline">m03-mem-man-class/rule-of-3.cpp</code></p></li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>Rule of 5</h2>
-          <p>Rule of 5 adds:</p>
+          <h2>From rule of 3 to rule of 5</h2>
+          <div style="display:flex; gap:1.2rem; align-items:flex-start;">
+            <div style="flex:1 1 50%; min-width:0;">
+              <p><strong>Rule of 3</strong></p>
+              <ul>
+                <li><p>Destructor</p></li>
+                <li><p>Copy constructor</p></li>
+                <li><p>Copy assignment operator</p></li>
+              </ul>
+            </div>
+            <div style="flex:1 1 50%; min-width:0;">
+              <p><strong>Rule of 5 adds</strong></p>
+              <ul>
+                <li><p>Move constructor</p></li>
+                <li><p>Move assignment operator</p></li>
+              </ul>
+            </div>
+          </div>
           <ul>
-            <li><p>Move constructor</p></li>
-            <li><p>Move assignment operator</p></li>
-          </ul>
-
-          <p><strong>Idea:</strong></p>
-          <ul>
-            <li><p>Steal pointer from a temporary</p></li>
-            <li><p>Set the source pointer to <code class="inline">nullptr</code> so its destructor is safe</p></li>
+            <li><p>A deep copy allocates a new heap block and copies every element</p></li>
+            <li><p>If the source is about to be discarded, that copying is unnecessary</p></li>
+            <li><p>A move transfers ownership and leaves the source safe to destroy</p></li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>Move constructor example</h2>
+          <h2>Move constructor</h2>
+          <p>A move constructor steals the resource from a temporary or movable object.</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List(List&& other) {
   size = other.size;
@@ -1259,74 +1003,83 @@ public:
   other.size = 0;
   other.arr = nullptr;
 }</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Move assignment example</h2>
-          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List& operator=(List&& other) {
-  if (this == &other) return *this;
-
-  delete[] arr;
-
-  size = other.size;
-  arr = other.arr;
-
-  other.size = 0;
-  other.arr = nullptr;
-
-  return *this;
-}</code></pre>
-        </section>
-
-        <!-- Practice 8 -->
-        <section class="frame">
-          <h2>Practice 8: what must be true after a move</h2>
-          <p>After moving from an object, what properties should the moved-from object have?</p>
           <ul>
-            <li><p>It should be safe to destroy</p></li>
-            <li><p>It should not own the resource anymore</p></li>
-            <li><p>It should be in a valid state for assignment</p></li>
+            <li><p>The new object takes the heap block</p></li>
+            <li><p>The source object is left safe to destroy</p></li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>Practice 8 Answer</h2>
+          <h2>Move assignment operator</h2>
+          <p>Move assignment replaces this object's resource, then steals another object's resource.</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List target(5);
+List source(10);
+target = std::move(source);</code></pre>
+          <ul>
+            <li><p>Release <code class="inline">target</code>'s old array</p></li>
+            <li><p>Transfer the pointer and size from <code class="inline">source</code></p></li>
+            <li><p>Set <code class="inline">source.arr</code> to <code class="inline">nullptr</code> and its size to 0</p></li>
+            <li><p>Example: <code class="inline">m03-mem-man-class/rule-of-5.cpp</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 7: after a move</h2>
+          <p>After this line, what should be true?</p>
+          <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">#include &lt;utility&gt;
+
+List a(5);
+List b = std::move(a);</code></pre>
+          <ul>
+            <li><p>Who owns the array now?</p></li>
+            <li><p>What should happen to <code class="inline">a.arr</code>?</p></li>
+            <li><p>Why must <code class="inline">a</code> still be safe to destroy?</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice 7 Answer</h2>
           <p>A common safe moved-from state:</p>
           <ul>
-            <li><p>pointer is <code class="inline">nullptr</code></p></li>
-            <li><p>size becomes 0</p></li>
-            <li><p>destructor does nothing harmful</p></li>
-            <li><p>assignment can later give it a new resource</p></li>
+            <li><p><code class="inline">b</code> owns the heap array now</p></li>
+            <li><p><code class="inline">a.arr</code> becomes <code class="inline">nullptr</code></p></li>
+            <li><p><code class="inline">a.size</code> becomes 0</p></li>
+            <li><p><code class="inline">a</code>'s destructor does nothing harmful</p></li>
+            <li><p><code class="inline">a</code> can later receive a new resource by assignment</p></li>
           </ul>
         </section>
       </section>
 
       <!-- =========================================================
-           Section: Tools
+           Section: Finding Memory Errors
            ========================================================= -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Tools</h1>
+          <h1>Finding Memory Errors</h1>
         </section>
 
         <section class="frame">
           <h2>valgrind on Linux</h2>
-          <p>valgrind can detect most memory management problems.</p>
+          <p>valgrind can detect many memory management problems.</p>
           <ul>
             <li><p>Memory leaks</p></li>
             <li><p>Use-after-free</p></li>
             <li><p>Invalid reads and writes</p></li>
           </ul>
-          <p class="small-note">Note: not natively available on macOS in many setups.</p>
+          <p class="small-note">Note: valgrind is not natively available on macOS in many setups.</p>
         </section>
 
         <section class="frame">
-          <h2>valgrind commands</h2>
+          <h2>valgrind command</h2>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-bash">valgrind --tool=memcheck --leak-check=yes ./main
-valgrind --tool=memcheck --leak-check=yes --show-leak-kinds=all ./main
-valgrind --tool=memcheck --leak-check=yes --show-leak-kinds=all --track-origins=yes ./main</code></pre>
+               data-fontsize="\small" data-tabsize="1"><code class="language-bash">valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all ./main</code></pre>
+          <ul>
+            <li><p>Run it after compiling your program</p></li>
+            <li><p>Read the report for leaks and invalid memory access</p></li>
+            <li><p>Add <code class="inline">--track-origins=yes</code> when tracing where an invalid value came from</p></li>
+          </ul>
         </section>
       </section>
 
@@ -1344,10 +1097,11 @@ valgrind --tool=memcheck --leak-check=yes --show-leak-kinds=all --track-origins=
             <li><p>Stack memory is automatic and tied to function calls</p></li>
             <li><p>Heap memory is manual: <code class="inline">new</code> allocates and <code class="inline">delete</code> frees</p></li>
             <li><p>Pointers store addresses; dereference only when valid</p></li>
-            <li><p><code class="inline">new</code> matches <code class="inline">delete</code>, <code class="inline">new[]</code> matches <code class="inline">delete[]</code></p></li>
-            <li><p>Dynamic arrays need correct cleanup patterns</p></li>
+            <li><p>References are aliases; pointers can represent no object with <code class="inline">nullptr</code></p></li>
+            <li><p><code class="inline">new</code> matches <code class="inline">delete</code>, and <code class="inline">new[]</code> matches <code class="inline">delete[]</code></p></li>
+            <li><p>Dynamic 2D arrays can be one block or pointer-to-pointer</p></li>
             <li><p>Resource-owning classes must avoid shallow copy</p></li>
-            <li><p>Rule of 3 makes copies safe; rule of 5 makes temporaries fast</p></li>
+            <li><p>Rule of 3 makes copies safe; rule of 5 makes moves efficient</p></li>
             <li><p>Tools like valgrind help locate memory errors</p></li>
           </ul>
         </section>
@@ -1357,6 +1111,7 @@ valgrind --tool=memcheck --leak-check=yes --show-leak-kinds=all --track-origins=
           <ul>
             <li><p>What lives on the stack and what lives on the heap?</p></li>
             <li><p>What does <code class="inline">nullptr</code> represent, and why is it useful?</p></li>
+            <li><p>When would you choose a reference instead of a pointer?</p></li>
             <li><p>Why must <code class="inline">new[]</code> be paired with <code class="inline">delete[]</code>?</p></li>
             <li><p>What is the shallow copy problem?</p></li>
             <li><p>What are the three members in rule of 3?</p></li>
@@ -1369,10 +1124,11 @@ valgrind --tool=memcheck --leak-check=yes --show-leak-kinds=all --track-origins=
           <ul>
             <li><p><strong>Stack:</strong> locals and parameters. <strong>Heap:</strong> dynamically allocated objects and arrays.</p></li>
             <li><p><code class="inline">nullptr</code> means no object; it helps represent optional pointers safely.</p></li>
+            <li><p>Use a reference when the function must receive a valid object and does not need no-object as an option.</p></li>
             <li><p><code class="inline">new[]</code> allocates an array; <code class="inline">delete[]</code> destroys the array correctly.</p></li>
-            <li><p>Shallow copy copies pointer values, making multiple objects share one heap block.</p></li>
+            <li><p>Shallow copy copies pointer values, so multiple objects share one heap block.</p></li>
             <li><p>Rule of 3: destructor, copy constructor, copy assignment operator.</p></li>
-            <li><p>Move semantics steals the resource pointer from a temporary and nulls out the source.</p></li>
+            <li><p>Move semantics transfers the resource pointer and leaves the source safe to destroy.</p></li>
           </ul>
         </section>
       </section>
