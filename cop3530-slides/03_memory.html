@@ -257,8 +257,8 @@ int main() {
           <p>Predict what can go wrong.</p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int f(int n) {
-  int big[1000000];
-  if (n <= 0) return 0;
+  int big[1000000]{};
+  if (n <= 0) {return 0};
   return big[0] + f(n - 1);
 }
 int main() {
@@ -707,7 +707,7 @@ for (size_t r = 0; r < ROWS; r++) {
 
 cout << data[1 * COLS + 2] << "\n";
 
-delete[] block;
+delete[] data;
 block = nullptr;</code></pre>
 </div>
          <div style="flex:1 1 55%; min-width:0;">
