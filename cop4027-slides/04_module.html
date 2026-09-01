@@ -340,7 +340,6 @@ output/</code></pre>
           <h2>Recommended Eclipse Setup</h2>
           <ul class="simple">
             <li><p>Install the course JDK: Java 21.</p></li>
-            <li><p>Install Maven so you can run Maven builds from the terminal.</p></li>
             <li><p>Install Eclipse IDE for Java Developers.</p></li>
             <li><p>Use Maven Integration for Eclipse (m2e), which is included.</p></li>
             <li><p>Clone or download <code>example-code</code> once.</p></li>
@@ -433,12 +432,6 @@ GreetingApp.java</code></pre>
     }
 }</code></pre>
           <p>Right-click the class, then choose <strong>Run As &gt; Java Application</strong>.</p>
-
-          <p>Terminal check:</p>
-          <pre><code data-trim data-noescape class="language-bash">cd examples/maven-basics
-mvn test
-mvn exec:java "-Dexec.args=ada lovelace"</code></pre>
-          <p>The Maven build confirms the project works outside the editor.</p>
 
           <p>Example: <code>examples/maven-basics/src/main/java/cop4027/maven/GreetingApp.java</code></p>
         </section>
@@ -592,20 +585,7 @@ target/classes/
           </ul>
         </section>
 
-        <section>
-          <h2>Pre-Submission Build Check</h2>
-          <pre><code data-trim data-noescape class="language-bash">java -version
-javac -version
-mvn -version
-mvn clean verify</code></pre>
-          <ul class="simple">
-            <li><p>Check that the terminal uses the expected JDK.</p></li>
-            <li><p>Check that Maven is available.</p></li>
-            <li><p>The Java line in <code>mvn -version</code> must also report Java 21.</p></li>
-            <li><p>Use <code>mvn clean verify</code> before submitting a project.</p></li>
-            <li><p>If it only works in the editor but fails with Maven, fix the Maven build.</p></li>
-          </ul>
-        </section>
+      
       </section>
 
       <section>

@@ -690,8 +690,7 @@ cout << mat[1][2] << "\n";</code></pre>
 
         <section class="frame">
           <h2>Dynamic 2D: one contiguous block</h2>
-          <div style="display:flex; align-items:flex-start;">
-            <div style="flex:1 1 45%; min-width:0;">
+
           <p>Manual indexing: <code class="inline">index = r * COLS + c</code></p>
           <pre data-xleftmargin="3pt" data-linenos="" data-numbersep="0.5em" data-frame="leftline"
                data-fontsize="\small" data-tabsize="1"><code class="language-cpp">size_t ROWS = 2;
@@ -709,16 +708,12 @@ cout << data[1 * COLS + 2] << "\n";
 
 delete[] data;
 block = nullptr;</code></pre>
-</div>
-         <div style="flex:1 1 55%; min-width:0;">
+
               <img
                 src="../_static/images/cop3530/memory/dynamic2D_array_one_block.png"
                 alt="Dynamic 2D array with one continous memory block"
                 style="width:70%; height:auto; display:block; margin:0  0.4rem;"
               />
-              
-            </div>
-            </div>
         </section>
 
         <section class="frame">
@@ -748,7 +743,7 @@ dyn = nullptr;</code></pre>
               <img
                 src="../_static/images/cop3530/memory/dynamic2D_pointer2pointer.png"
                 alt="Dynamic 2D array with pointer 2 pointer"
-                style="width:50%; height:auto; display:block; margin:0  0.2rem;"
+                style="width:70%; height:auto; display:block; margin:0  0.2rem;"
               />
               
      
@@ -872,7 +867,7 @@ int* b = a;</code></pre>
               <img
                 src="../_static/images/cop3530/memory/shallow_copy.png"
                 alt="Two objects pointing to the same heap array"
-                style="width:50%; height:auto; display:block; margin:0 auto 0.4rem;"
+                style="width:70%; height:auto; display:block; margin:0 auto 0.4rem;"
               />
               
             </div>
