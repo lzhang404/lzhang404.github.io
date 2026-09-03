@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="An interactive C++ pointer and dynamic-array memory playground for COP3530." />
+  <title>Memory Playground | COP3530</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="back-link" href="../../cop3530-slides/03_memory.html">&larr; Module 3 slides</a>
+    <div>
+      <p class="course-label">COP3530 &middot; Memory management</p>
+      <h1>Memory Playground</h1>
+      <p class="subtitle">Follow the address, not the arrow symbol. Change the memory and watch the C++ expression update.</p>
+    </div>
+  </header>
+
+  <main>
+    <nav class="lesson-tabs" aria-label="Memory lessons" role="tablist">
+      <button type="button" role="tab" data-lesson="pointer">1. Pointer</button>
+      <button type="button" role="tab" data-lesson="array1d">2. Dynamic 1D array</button>
+      <button type="button" role="tab" data-lesson="array2d">3. Dynamic 2D array</button>
+    </nav>
+
+    <section class="lesson-heading" aria-labelledby="lesson-title">
+      <div>
+        <p class="lesson-kicker" id="lesson-kicker"></p>
+        <h2 id="lesson-title"></h2>
+      </div>
+      <p id="lesson-goal" hidden></p>
+    </section>
+
+    <div class="layout-choice" id="layout-choice" aria-label="Choose a dynamic 2D layout" hidden>
+      <span>2D layout:</span>
+      <button type="button" data-2d-layout="contiguous">Contiguous block</button>
+      <button type="button" data-2d-layout="pointer">Pointer-to-pointer</button>
+    </div>
+
+    <section class="walkthrough" aria-labelledby="walkthrough-title">
+      <div class="walkthrough-heading">
+        <div>
+          <p class="panel-label">Guided walkthrough</p>
+          <h3 id="walkthrough-title"><span id="step-position"></span> <span id="step-title"></span></h3>
+        </div>
+        <div class="step-actions">
+          <button type="button" class="step-action" id="previous-step">&larr; Previous</button>
+          <button type="button" class="step-action next" id="next-step">Next &rarr;</button>
+        </div>
+      </div>
+      <div class="step-list" id="step-list" aria-label="Walkthrough steps" hidden></div>
+      <p class="step-instruction" id="step-instruction" aria-live="polite"></p>
+    </section>
+
+    <section class="workspace" aria-label="Interactive memory workspace">
+      <article class="panel code-panel">
+        <div class="panel-heading">
+          <p class="panel-label">C++ program &middot; current line highlighted</p>
+          <span class="state-badge" id="state-badge"></span>
+        </div>
+        <pre class="code-view" aria-label="C++ code"><code id="code-lines"></code></pre>
+        <div class="controls" id="lesson-controls" aria-label="Lesson controls" hidden></div>
+      </article>
+
+      <article class="panel memory-panel">
+        <div class="panel-heading">
+          <p class="panel-label">Memory after the highlighted line</p>
+          <div class="memory-legend" aria-label="Memory legend" hidden>
+            <span><i class="legend-box stack-swatch"></i>Stack</span>
+            <span><i class="legend-box heap-swatch"></i>Heap</span>
+          </div>
+        </div>
+        <div class="memory-stage" id="memory-stage"></div>
+      </article>
+    </section>
+
+    <section class="trace-panel" aria-live="polite" aria-atomic="true" hidden>
+      <div class="expression-block">
+        <span>Expression</span>
+        <code id="active-expression"></code>
+      </div>
+      <p id="trace-message"></p>
+    </section>
+
+    <section class="quick-check" aria-labelledby="check-title" hidden>
+      <div>
+        <p class="panel-label">Predict before revealing</p>
+        <h2 id="check-title">Quick check</h2>
+        <p id="check-question"></p>
+      </div>
+      <div class="answer-options" id="answer-options"></div>
+      <p class="answer-feedback" id="answer-feedback" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <noscript>This playground needs JavaScript enabled so the memory diagrams can respond to your choices.</noscript>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
