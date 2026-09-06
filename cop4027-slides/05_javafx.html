@@ -401,174 +401,212 @@ signInButton.getStyleClass().add("primary-button");</code></pre>
 <section class="title-slide slide level1">
 <h1>FXML and Controllers</h1>
 </section>
+
 <section class="frame">
 <h2>Why FXML?</h2>
-<p>FXML describes a JavaFX scene graph using XML. It moves view construction out of Java code; it does not replace Java.</p>
-<table>
-<thead><tr><th>Java code</th><th>FXML</th></tr></thead>
-<tbody>
-<tr><td><code>new GridPane()</code></td><td><code>&lt;GridPane&gt;</code></td></tr>
-<tr><td><code>new Label("Welcome")</code></td><td><code>&lt;Label text="Welcome"/&gt;</code></td></tr>
-<tr><td><code>grid.setHgap(10)</code></td><td><code>hgap="10"</code></td></tr>
-<tr><td><code>new TextField()</code></td><td><code>&lt;TextField/&gt;</code></td></tr>
-<tr><td><code>grid.add(node, 1, 2)</code></td><td><code>GridPane.columnIndex="1"</code><br/><code>GridPane.rowIndex="2"</code></td></tr>
-</tbody>
-</table>
+
+<p>So far, Java code has created the UI objects directly.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">GridPane grid = new GridPane();
+Label label = new Label("Welcome");
+Button button = new Button("Sign In");
+
+grid.add(label, 0, 0);
+grid.add(button, 0, 1);</code></pre>
+
+<p>FXML lets us describe the same UI structure in an XML file instead.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;GridPane&gt;
+    &lt;Label text="Welcome"/&gt;
+    &lt;Button text="Sign In"/&gt;
+&lt;/GridPane&gt;</code></pre>
+
 <ul>
-<li><p>FXML describes controls and layouts.</p></li>
-<li><p>The Java controller handles behavior.</p></li>
-<li><p>Large screens keep <code>start(...)</code> cleaner.</p></li>
+<li><p><strong>FXML</strong> describes the UI structure.</p></li>
+<li><p><strong>CSS</strong> controls appearance.</p></li>
+<li><p><strong>Java controller</strong> handles behavior.</p></li>
+<li><p><strong>Main application</strong> loads the FXML and shows the window.</p></li>
 </ul>
 </section>
 
+
 <section class="frame">
-<h2>Reading an FXML File</h2>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size: 0.62em;"><code class="language-xml">&lt;?import javafx.scene.control.*?&gt;
+<h2>How CSS, FXML, and Java Work Together</h2>
+
+<img
+    src="../_static/images/cop4027/fxml_diagram.png"
+    alt="Diagram showing the relationships among MainApp.java, login.fxml, LoginController.java, Login.css, and the runtime JavaFX window"
+    style="display:block; margin:0 auto; max-width:96%; max-height:78vh;"
+/>
+</section>
+
+
+<section class="frame">
+<h2>FXML Creates JavaFX Objects</h2>
+
+<p>FXML is not a picture of the interface. JavaFX reads it and creates real JavaFX objects.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;?import javafx.scene.control.*?&gt;
 &lt;?import javafx.scene.layout.*?&gt;
 
 &lt;GridPane hgap="10" vgap="10"&gt;
     &lt;Label text="User Name:"
            GridPane.columnIndex="0"
-           GridPane.rowIndex="1"/&gt;
+           GridPane.rowIndex="0"/&gt;
 
     &lt;TextField
            GridPane.columnIndex="1"
-           GridPane.rowIndex="1"/&gt;
+           GridPane.rowIndex="0"/&gt;
 &lt;/GridPane&gt;</code></pre>
-<table>
-<thead><tr><th>FXML part</th><th>JavaFX meaning</th></tr></thead>
-<tbody>
-<tr><td><code>&lt;?import ...?&gt;</code></td><td>Make Java classes available by short name.</td></tr>
-<tr><td><code>&lt;GridPane&gt;</code></td><td>Create a <code>GridPane</code>.</td></tr>
-<tr><td><code>hgap="10"</code></td><td>Set a property on the <code>GridPane</code>.</td></tr>
-<tr><td><code>&lt;Label&gt;</code> / <code>&lt;TextField&gt;</code></td><td>Create child nodes.</td></tr>
-<tr><td><code>GridPane.rowIndex</code></td><td>Set a layout constraint for the child.</td></tr>
-</tbody>
-</table>
-<p>Nested FXML elements create nested JavaFX objects, just like adding child nodes in Java.</p>
+
+<ul>
+<li><p><code>&lt;GridPane&gt;</code> creates a <code>GridPane</code> object.</p></li>
+<li><p><code>&lt;Label&gt;</code> and <code>&lt;TextField&gt;</code> create child objects.</p></li>
+<li><p>Attributes such as <code>hgap="10"</code> set properties on those objects.</p></li>
+<li><p>Nested elements become nested objects in the scene graph.</p></li>
+</ul>
+
+<p>The result is the same kind of JavaFX object tree that we previously created with Java code.</p>
 </section>
 
-<section class="frame">
-<h2>Object-Valued Properties</h2>
-<p>Some FXML elements set a property whose value is another object.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;GridPane hgap="10" vgap="10"&gt;
-    &lt;padding&gt;
-        &lt;Insets top="25"
-                right="25"
-                bottom="10"
-                left="25"/&gt;
-    &lt;/padding&gt;
-&lt;/GridPane&gt;</code></pre>
-<p>Java equivalent:</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">grid.setPadding(
-    new Insets(25, 25, 10, 25)
-);</code></pre>
-</section>
-<section class="frame">
-<h2>Identifying and Styling Nodes</h2>
-<p>FXML has several ways to name or classify a node.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;PasswordField
-    fx:id="passwordField"
-    id="password-input"
-    styleClass="input-field"/&gt;</code></pre>
-<table>
-<thead><tr><th>FXML</th><th>Purpose</th><th>Connects to</th></tr></thead>
-<tbody>
-<tr><td><code>fx:id</code></td><td>Controller access</td><td><code>@FXML private PasswordField passwordField;</code></td></tr>
-<tr><td><code>id</code></td><td>JavaFX node ID</td><td><code>#password-input</code> in CSS</td></tr>
-<tr><td><code>styleClass</code></td><td>Reusable CSS class</td><td><code>.input-field</code> in CSS</td></tr>
-</tbody>
-</table>
-<p>FXML can also attach a stylesheet:</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;stylesheets&gt;
-    &lt;URL value="@Login.css"/&gt;
-&lt;/stylesheets&gt;</code></pre>
-<p>The <code>@</code> prefix identifies a resource location relative to the FXML file.</p>
-</section>
 
 <section class="frame">
-<h2>FXML Controller</h2>
-<p>The <code>fx:controller</code> attribute names the Java class that controls this view.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;GridPane
+<h2>Connecting FXML to a Controller</h2>
+
+<p>FXML can connect the UI objects it creates to a Java controller.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size:0.60em;"><code class="language-xml">&lt;GridPane
     fx:controller="cop4027.javafx.fxml.FXMLExampleController"
     xmlns:fx="http://javafx.com/fxml"&gt;
+
+    &lt;PasswordField fx:id="passwordField"/&gt;
 
     &lt;Button text="Sign In"
             onAction="#handleSubmitButtonAction"/&gt;
 
     &lt;Label fx:id="actiontarget"/&gt;
+
 &lt;/GridPane&gt;</code></pre>
-<p>The <code>fx</code> namespace marks FXML-specific instructions such as <code>fx:controller</code> and <code>fx:id</code>.</p>
-</section>
-<section class="frame">
-<h2>Controller Fields and Methods</h2>
-<p><code>FXMLLoader</code> uses <code>fx:id</code> to inject UI objects and <code>onAction</code> to connect events.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">
-public class FXMLExampleController {
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size:0.60em;"><code class="language-java">public class FXMLExampleController {
+
+    @FXML
+    private PasswordField passwordField;
+
     @FXML
     private Label actiontarget;
 
     @FXML
     private void handleSubmitButtonAction(ActionEvent event) {
-        actiontarget.setText("Sign in button pressed");
+        String pwd = passwordField.getText();
+        actiontarget.setText("Sign in pressed");
     }
 }</code></pre>
-<table>
-<thead><tr><th>FXML connection</th><th>Controller connection</th></tr></thead>
-<tbody>
-<tr>
-<td><code>&lt;Label fx:id="actiontarget"/&gt;</code></td>
-<td><code>@FXML private Label actiontarget;</code></td>
-</tr>
-<tr>
-<td><code>onAction="#handleSubmitButtonAction"</code></td>
-<td><code>@FXML private void handleSubmitButtonAction(...)</code></td>
-</tr>
-</tbody>
-</table>
+
 <ul>
-<li><p>A node only needs <code>fx:id</code> when the controller needs a direct reference to it.</p></li>
-<li><p>A button only needs <code>onAction</code> when it should call a controller method.</p></li>
-<li><p>Nodes without <code>fx:id</code> still exist in the scene graph.</p></li>
+<li><p><code>fx:controller</code> tells JavaFX which controller class belongs to this FXML file.</p></li>
+<li><p><code>fx:id="passwordField"</code> connects that UI object to the controller field with the same name.</p></li>
+<li><p><code>onAction="#handleSubmitButtonAction"</code> connects the button event to the controller method.</p></li>
 </ul>
 </section>
+
+
 <section class="frame">
-<h2>What FXMLLoader Does</h2>
-<p><code>FXMLLoader</code> turns the FXML file into JavaFX objects.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">FXMLLoader.load(...)
-        ↓
-read the FXML file
-        ↓
-create GridPane, Labels, Buttons, fields...
-        ↓
-create the controller
-        ↓
-inject fields that match fx:id
-        ↓
-connect event handlers named by onAction
-        ↓
-return the root node</code></pre>
+<h2>fx:id and @FXML</h2>
+
+<p><code>fx:id</code> lets the controller get a reference to a JavaFX object created from FXML.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;Label fx:id="actiontarget"/&gt;</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@FXML
+private Label actiontarget;</code></pre>
+
+<p>After the FXML is loaded, <code>actiontarget</code> refers to the same <code>Label</code> object that appears in the runtime UI.</p>
+
+<ul>
+<li><p>Use <code>fx:id</code> only when Java needs a direct reference to the node.</p></li>
+<li><p>A node without <code>fx:id</code> still exists in the scene graph.</p></li>
+<li><p><code>@FXML</code> allows <code>FXMLLoader</code> to inject private fields and connect private handler methods.</p></li>
+</ul>
 </section>
+
+
 <section class="frame">
-<h2>Loading FXML</h2>
-<p>The main application no longer builds every control manually.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size: 0.64em;"><code class="language-java">public class FXMLExample extends Application {
+<h2>Connecting FXML to CSS</h2>
+
+<p>FXML can also identify nodes for CSS and attach a stylesheet.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;PasswordField
+    fx:id="passwordField"
+    id="password-input"
+    styleClass="input-field"/&gt;
+
+&lt;stylesheets&gt;
+    &lt;URL value="@Login.css"/&gt;
+&lt;/stylesheets&gt;</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-css">#password-input {
+    -fx-background-color: white;
+}
+
+.input-field {
+    -fx-font-size: 14px;
+}</code></pre>
+
+<ul>
+<li><p><code>fx:id</code> → connects the node to the Java controller.</p></li>
+<li><p><code>id</code> → can be selected with <code>#password-input</code> in CSS.</p></li>
+<li><p><code>styleClass</code> → can be selected with <code>.input-field</code> in CSS.</p></li>
+<li><p><code>@Login.css</code> tells FXML where to find the stylesheet.</p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Loading the FXML</h2>
+
+<p>The main application starts the process by asking <code>FXMLLoader</code> to load the FXML file.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt" style="font-size:0.62em;"><code class="language-java">public class FXMLExample extends Application {
+
     @Override
     public void start(Stage stage) throws Exception {
+
         Parent root = FXMLLoader.load(
             getClass().getResource("/fxml_example.fxml")
         );
 
+        Scene scene = new Scene(root, 300, 275);
+
+        stage.setScene(scene);
         stage.setTitle("FXML Welcome");
-        stage.setScene(new Scene(root, 300, 275));
         stage.show();
     }
 }</code></pre>
-<p><strong>Example:</strong> <code>cop4027.javafx.fxml.FXMLExample</code></p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Main application
+      ↓
+FXMLLoader reads the FXML
+      ↓
+creates the JavaFX objects
+      ↓
+creates the controller
+      ↓
+connects fx:id and onAction
+      ↓
+returns the root node
+      ↓
+Main application puts the root in a Scene
+      ↓
+Stage shows the UI</code></pre>
 </section>
+
+
 <section class="frame">
 <h2>FXML Module Access</h2>
-<p>In a modular JavaFX project, other JavaFX modules need controlled access to our code.</p>
+
+<p>FXML loading happens at runtime, so the JavaFX runtime needs access to the controller package.</p>
+
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">module cop4027.javafx.examples {
     requires java.desktop;
     requires javafx.controls;
@@ -581,39 +619,58 @@ return the root node</code></pre>
     exports cop4027.javafx.validation;
     exports cop4027.javafx.visual;
 
-    // FXMLLoader uses reflection to inject @FXML fields and call handler methods.
     opens cop4027.javafx.fxml to javafx.fxml;
 }</code></pre>
+
 <ul>
-<li><p><code>requires javafx.fxml</code> lets our module use the FXML API.</p></li>
-<li><p><code>exports ...</code> lets the JavaFX runtime access public application classes when launching them.</p></li>
-<li><p><code>opens ... to javafx.fxml</code> lets <code>FXMLLoader</code> inject private <code>@FXML</code> fields and call private <code>@FXML</code> methods.</p></li>
+<li><p><code>requires javafx.fxml</code> lets our code use the FXML API.</p></li>
+<li><p><code>exports ...</code> makes the public application classes available to other modules at runtime.</p></li>
+<li><p><code>opens ... to javafx.fxml</code> gives <code>FXMLLoader</code> reflective access to private <code>@FXML</code> fields and methods.</p></li>
 </ul>
+
+<p>Even if our own Java code never directly accesses these classes from another package, the JavaFX runtime still needs this access while the application is running.</p>
 </section>
+
+
 <section class="frame">
 <h2>Common FXML Mistakes</h2>
-<p>Most FXML errors come from broken connections.</p>
+
+<p>Most FXML problems happen when one of the connections is broken.</p>
+
 <ul>
-<li><p><strong>Wrong resource path:</strong> <code>getResource(...)</code> returns <code>null</code>.</p></li>
-<li><p><strong>Wrong controller package:</strong> <code>fx:controller</code> does not match the Java class.</p></li>
-<li><p><strong>Wrong <code>fx:id</code>:</strong> the FXML id does not match the controller field name.</p></li>
-<li><p><strong>Missing <code>@FXML</code>:</strong> private fields or methods are not visible to the loader.</p></li>
-<li><p><strong>Wrong method signature:</strong> <code>onAction</code> points to a method that does not exist.</p></li>
+<li><p><strong>FXML file not found:</strong> the path passed to <code>getResource(...)</code> is wrong.</p></li>
+
+<li><p><strong>Controller not found:</strong> <code>fx:controller</code> does not contain the correct class name.</p></li>
+
+<li><p><strong>Field not injected:</strong> <code>fx:id</code> does not match the <code>@FXML</code> field name.</p></li>
+
+<li><p><strong>Handler not found:</strong> <code>onAction</code> does not match an <code>@FXML</code> method.</p></li>
+
+<li><p><strong>Access error:</strong> the controller package is not opened to <code>javafx.fxml</code>.</p></li>
+
+<li><p><strong>Style missing:</strong> the stylesheet path, <code>id</code>, or <code>styleClass</code> does not match.</p></li>
 </ul>
 </section>
+
+
 <section class="frame">
 <h2>Scene Builder</h2>
-<p>Scene Builder is a visual editor for FXML files.</p>
+
+<p>Scene Builder is a visual editor that creates and modifies FXML.</p>
+
 <ol>
-<li><p>Create or open an FXML file.</p></li>
-<li><p>Drag controls from the library panel.</p></li>
-<li><p>Set layout positions and properties.</p></li>
-<li><p>Assign <code>fx:id</code> values for controls the controller needs.</p></li>
-<li><p>Assign event handler names such as <code>#handleSubmitButtonAction</code>.</p></li>
-<li><p>Save the FXML and run the JavaFX application.</p></li>
+<li><p>Open or create an FXML file.</p></li>
+<li><p>Drag layouts and controls into the interface.</p></li>
+<li><p>Set properties such as text, spacing, and position.</p></li>
+<li><p>Set <code>fx:id</code> for controls the controller needs.</p></li>
+<li><p>Set event handlers such as <code>#handleSubmitButtonAction</code>.</p></li>
+<li><p>Set CSS IDs, style classes, or stylesheets when needed.</p></li>
+<li><p>Save the file and run the JavaFX application.</p></li>
 </ol>
-<p>Scene Builder changes the FXML file. Java controller logic still belongs in Java.</p>
+
+<p>Scene Builder edits the FXML view. Application behavior still belongs in Java.</p>
 </section>
+
 </section>
 <section>
 <section class="title-slide slide level1">
