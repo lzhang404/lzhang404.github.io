@@ -61,6 +61,7 @@ html.reveal-full-page {
 .reveal {
   overflow: visible;
   width: 100%;
+  min-width: 960px !important;
   max-width: 100vw;
   box-sizing: border-box; }
 
@@ -70,9 +71,14 @@ html.reveal-full-page {
   max-width: 100%;
   box-sizing: border-box; }
 
-.reveal:not(.overview) .slides > section:not(.present),
-.reveal:not(.overview) .slides > section > section:not(.present) {
+html:not(.zoomed) .reveal:not(.overview) .slides > section:not(.present),
+html:not(.zoomed) .reveal:not(.overview) .slides > section > section:not(.present) {
   display: none !important; }
+
+html.zoomed body.reveal-viewport {
+  max-width: none;
+  min-width: 200vw;
+  min-height: 200vh; }
 
 .reveal .slides > section.present,
 .reveal .slides > section > section.present {
@@ -379,6 +385,16 @@ html.reveal-full-page {
 
 .reveal img {
   margin: var(--r-block-margin) 0; }
+
+.reveal .media-col img {
+  width: 11em;
+  max-width: none;
+  height: auto;
+}
+
+.reveal .media-col.tight img {
+  width: 9.5em;
+}
 
 /*********************************************
  * LINKS
