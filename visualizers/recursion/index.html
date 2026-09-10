@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recursion Call Stack Explorer</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="back-link" href="../../cop3530-slides/05_recursion.html">&larr; Recursion slides</a>
+    <div>
+      <p class="course-label">COP3530 &middot; Recursion</p>
+      <h1>Call Stack Explorer</h1>
+      <p class="subtitle">Step through <code>factorial(4)</code> and follow every frame and returned value.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="lesson-heading" aria-labelledby="step-title">
+      <div>
+        <p class="phase-label" id="phase-label">Ready</p>
+        <h2 id="step-title">Before the recursive call</h2>
+      </div>
+      <p class="step-counter" id="step-counter">Step 1 of 10</p>
+    </section>
+
+    <section class="workspace">
+      <article class="panel code-panel" aria-labelledby="code-title">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-label">C++ code</p>
+            <h2 id="code-title">What runs now?</h2>
+          </div>
+          <span class="line-badge" id="line-badge">Line 10</span>
+        </div>
+        <pre class="code-view" aria-label="Factorial function and main function"><code id="code-lines"><span class="code-line" data-line="1">long long factorial(int n) {</span>
+<span class="code-line" data-line="2">  if (n &lt;= 1) {</span>
+<span class="code-line" data-line="3">    return 1;</span>
+<span class="code-line" data-line="4">  }</span>
+<span class="code-line" data-line="5"></span>
+<span class="code-line" data-line="6">  return n * factorial(n - 1);</span>
+<span class="code-line" data-line="7">}</span>
+<span class="code-line" data-line="8"></span>
+<span class="code-line" data-line="9">int main() {</span>
+<span class="code-line" data-line="10">  long long answer = factorial(4);</span>
+<span class="code-line" data-line="11">  cout &lt;&lt; answer &lt;&lt; endl;</span>
+<span class="code-line" data-line="12">}</span></code></pre>
+        <div class="code-key">
+          <span><i class="key-mark call-mark"></i>call / push</span>
+          <span><i class="key-mark active-mark"></i>running frame</span>
+          <span><i class="key-mark return-mark"></i>return / pop</span>
+        </div>
+      </article>
+
+      <article class="panel stack-panel" aria-labelledby="stack-title">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-label">Runtime memory</p>
+            <h2 id="stack-title">Call stack</h2>
+          </div>
+          <span class="depth-badge" id="depth-badge">1 active frame</span>
+        </div>
+
+        <div class="event-flow" id="event-flow" aria-hidden="true"></div>
+
+        <div class="stack-stage">
+          <span class="stack-edge top-edge">Top &mdash; runs first</span>
+          <div class="frames" id="frames"></div>
+          <span class="stack-edge bottom-edge">Bottom &mdash; oldest call</span>
+        </div>
+        <p class="stack-summary sr-only" id="stack-summary" aria-live="polite"></p>
+      </article>
+    </section>
+
+    <section class="explanation" aria-live="polite" aria-atomic="true">
+      <p id="step-message"></p>
+    </section>
+
+    <nav class="step-controls" aria-label="Recursion trace controls">
+      <button class="button" id="previous-step" type="button">&larr; Previous</button>
+      <div class="step-dots" id="step-dots" aria-label="Jump to a step"></div>
+      <button class="button primary-button" id="next-step" type="button">Next &rarr;</button>
+    </nav>
+  </main>
+
+  <noscript>This explorer needs JavaScript enabled to step through the call stack.</noscript>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

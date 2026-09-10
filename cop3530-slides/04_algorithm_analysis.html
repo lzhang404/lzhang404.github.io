@@ -58,35 +58,44 @@
         <section>
           <h2>What problem are we solving?</h2>
           <ul class="simple">
-            <li><p>Different algorithms can solve the same task (searching, sorting, etc.).</p></li>
-            <li><p>We want a fair comparison that does not depend on a specific machine.</p></li>
-            <li><p>We care about how runtime/memory grows as input size grows.</p></li>
+            <li><p>Different algorithms can solve the same task.</p></li>
+            <li><p>Timing one run is not enough: machines and inputs differ.</p></li>
+            <li><p>Algorithm analysis asks: how does cost grow as the input grows?</p></li>
           </ul>
 
           <p style="margin-top:0.6em;">
-            Example question: If the input size doubles, does time double, quadruple, or barely change?
+            Example question: if the input doubles, does the work double, quadruple, or only add one more step?
           </p>
         </section>
 
         <section>
           <h2>Learning goals</h2>
           <ul class="simple">
-            <li><p>Explain empirical vs theoretical analysis</p></li>
-            <li><p>Define the model: T(N) and S(N)</p></li>
-            <li><p>Count operations carefully</p></li>
-            <li><p>Use O, Ω, Θ correctly</p></li>
-            <li><p>Analyze examples: linear search, binary search, selection sort</p></li>
+            <li><p>Choose the input size: usually written as \(N\)</p></li>
+            <li><p>Define a cost model: what counts as one step?</p></li>
+            <li><p>Write an exact cost function: \(T_{\text{case}}(N)\)</p></li>
+            <li><p>Choose a case: best, worst, or average</p></li>
+            <li><p>Only then: summarize how that function grows</p></li>
           </ul>
+
+          <p style="margin-top:0.6em;">
+            We count first. The growth notation comes later in this module.
+          </p>
         </section>
 
         <section>
-          <h2>Big picture</h2>
-          <ul class="simple">
-            <li><p>Pick a meaningful input size \(N\)</p></li>
-            <li><p>Write a cost function: \(T(N)\) (time), sometimes \(S(N)\) (space)</p></li>
-            <li><p>Count operations precisely, then simplify</p></li>
-            <li><p>Report growth using asymptotic notation</p></li>
-          </ul>
+          <h2>The analysis workflow</h2>
+          <ol class="arabic simple">
+            <li><p>Pick the input size \(N\).</p></li>
+            <li><p>Pick the cost model: comparisons, loop iterations, assignments, etc.</p></li>
+            <li><p>Pick the case: best, worst, or average.</p></li>
+            <li><p>Derive the cost function, such as \(T_{\text{worst}}(N)=3N+3\).</p></li>
+            <li><p>Summarize how that function grows for large \(N\).</p></li>
+          </ol>
+
+          <p style="margin-top:0.6em;">
+            Steps 1–4 are counting. Step 5 is where the growth notation appears.
+          </p>
         </section>
       </section>
 
@@ -127,177 +136,105 @@ std::cout &lt;&lt; ms &lt;&lt; " ms\n";</code></pre>
           </ul>
 
           <p style="margin-top:0.6em;">
-            Outcome: a function like \(T(N)\), then a growth class like \(O(N \log N)\).
+            Outcome: a counting function \(T(N)\), which we later summarize as a growth class.
           </p>
         </section>
       </section>
 
       <!-- =========================================================
-           Section 2: Cost model + problem size (renamed)
+           Section 2: Cost functions (no growth notation yet)
       ========================================================== -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Cost model and problem size</h1>
+          <h1>Input size, cost model, cost function</h1>
+        </section>
+
+        <section>
+          <h2>Three things we must define</h2>
+          <table style="font-size:0.78em; width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Term</th>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Meaning</th>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:6px;">Input size</td>
+                <td style="padding:6px;">How large the input is</td>
+                <td style="padding:6px;">\(N\) array elements</td>
+              </tr>
+              <tr>
+                <td style="padding:6px;">Cost model</td>
+                <td style="padding:6px;">What we count as work</td>
+                <td style="padding:6px;">comparisons</td>
+              </tr>
+              <tr>
+                <td style="padding:6px;">Cost function</td>
+                <td style="padding:6px;">Work as a function of size</td>
+                <td style="padding:6px;">\(T_{\text{worst}}(N)=N\)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p style="margin-top:0.6em;">
+            Define all three before talking about growth rates.
+          </p>
         </section>
 
         <section>
           <h2>What is the input size \(N\)?</h2>
           <ul class="simple">
-            <li><p>\(N\) must match the problem:</p>
-              <ul>
-                <li><p>array algorithms: \(N\) = number of elements</p></li>
-                <li><p>string algorithms: \(N\) = number of characters</p></li>
-                <li><p>graphs: sometimes two parameters (\(V\) vertices, \(E\) edges)</p></li>
-              </ul>
-            </li>
-            <li><p>Choosing \(N\) correctly is step 1 of analysis.</p></li>
+            <li><p>Array algorithm: \(N\) = number of elements.</p></li>
+            <li><p>String algorithm: \(N\) = number of characters.</p></li>
+            <li><p>Graph algorithm: often two sizes, \(V\) vertices and \(E\) edges.</p></li>
+            <li><p>Choose the size that actually controls the amount of work.</p></li>
           </ul>
         </section>
 
         <section>
-          <h2>Define \(T(N)\) and \(S(N)\)</h2>
+          <h2>What is a cost model?</h2>
+          <p>A cost model says what counts as one basic step.</p>
           <ul class="simple">
-            <li><p>\(T(N)\) = time cost as a function of input size \(N\)</p></li>
-            <li><p>\(S(N)\) = extra space cost as a function of input size \(N\)</p></li>
-            <li><p>We will talk about \(T(N)\) most of the time, but space matters too.</p></li>
+            <li><p>Linear search: count key comparisons, <code>arr[i] == key</code>.</p></li>
+            <li><p>Sorting: often count element comparisons and swaps.</p></li>
+            <li><p>Loop examples: count iterations or constant-time statements.</p></li>
           </ul>
 
           <p style="margin-top:0.6em;">
-            Note: \(T(N)\) is often a count like comparisons or loop iterations, not wall-clock time.
+            Different reasonable models may change constants, but usually not the final growth class.
           </p>
         </section>
 
         <section>
-          <h2>What counts as a “basic step”?</h2>
-          <p>We approximate by counting constant-time operations (each is \(O(1)\)).</p>
+          <h2>What counts as a basic step?</h2>
+          <p>We approximate by counting constant-time operations.</p>
           <ul class="simple">
             <li><p>assignment: <code>x = 10</code></p></li>
-            <li><p>arithmetic (fixed-size ints): <code>x + y</code>, <code>x * y</code></p></li>
+            <li><p>arithmetic on fixed-size values: <code>x + y</code></p></li>
             <li><p>comparison: <code>a &gt; b</code>, <code>a == b</code></p></li>
             <li><p>array indexing: <code>arr[i]</code></p></li>
           </ul>
           <p style="margin-top:0.6em;">
-            Not constant: loops, recursion, or operations that scale with data (e.g., copying a long string).
+            Not constant: loops, recursion, copying long strings, or resizing arrays.
           </p>
         </section>
 
         <section>
-          <h2>What we do in practice</h2>
+          <h2>What is a cost function?</h2>
           <ul class="simple">
-            <li><p>Write \(T(N)\) as an exact expression first (example: \(3N + 3\)).</p></li>
-            <li><p>Then simplify to focus on growth (example: \(\Theta(N)\)).</p></li>
-            <li><p>We will do both: exact counting and asymptotic simplification.</p></li>
+            <li><p>\(T(N)\) means time cost as a function of input size.</p></li>
+            <li><p>\(S(N)\) means extra space cost as a function of input size.</p></li>
+            <li><p>\(T(N)\) is an exact count, not yet a growth class. For example: \(T(N)=3N+3\).</p></li>
           </ul>
+
+          <p>Our next job is to derive functions like this by counting. Simplifying them comes after.</p>
         </section>
       </section>
 
       <!-- =========================================================
-           Section 3: Cases vs bounds
-      ========================================================== -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Cases vs bounds</h1>
-        </section>
-
-        <section>
-          <h2>Best / worst / average case</h2>
-          <ul class="simple">
-            <li><p>Best case: minimum work for inputs of size \(N\)</p></li>
-            <li><p>Worst case: maximum work for inputs of size \(N\)</p></li>
-            <li><p>Average case: expected work (needs an input distribution assumption)</p></li>
-          </ul>
-          <p style="margin-top:0.6em;">
-            Example (linear search): best = found immediately, worst = not found or last element.
-          </p>
-        </section>
-
-        <section>
-          <h2>Bounds (O, Ω, Θ) are different</h2>
-          <ul class="simple">
-            <li><p>Cases describe which inputs we consider.</p></li>
-            <li><p>Bounds describe how we describe growth of \(T(N)\).</p></li>
-          </ul>
-
-          <p style="margin-top:0.6em;">
-            Workflow: choose a case → derive \(T(N)\) → then express growth using O/Ω/Θ.
-          </p>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Section 4: Asymptotic notation (combined into one slide)
-      ========================================================== -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Asymptotic notation</h1>
-        </section>
-
-        <section>
-          <h2>Why asymptotic notation?</h2>
-          <ul class="simple">
-            <li><p>Exact \(T(N)\) can be messy (constants and low-order terms).</p></li>
-            <li><p>We want the dominant growth as \(N\) becomes large.</p></li>
-          </ul>
-        </section>
-
-        <!-- Combined O / Ω / Θ into ONE slide, without the formal quantifier definitions -->
-        <section>
-          <h2>Big-O, Big-Ω, Big-Θ (intuition)</h2>
-          <ul class="simple">
-            <li><p>\(O(f(N))\): an upper bound (grows no faster than \(f(N)\), up to constants)</p></li>
-            <li><p>\(\Omega(f(N))\): a lower bound (grows at least as fast as \(f(N)\), up to constants)</p></li>
-            <li><p>\(\Theta(f(N))\): a tight bound (both an upper and lower bound)</p></li>
-          </ul>
-
-          <p style="margin-top:0.6em;">
-            We will usually: compute an exact (or nearly exact) \(T(N)\), then summarize it with \(O\), \(\Omega\), or \(\Theta\).
-          </p>
-        </section>
-        <section>
-  <h2>Common growth classes</h2>
-
-  <div style="display:flex; gap:5px; align-items:flex-start;">
-    <!-- Left column: text -->
-    <div style="flex:1; min-width: 320px;">
-      <ul class="simple">
-        <li><p>\(O(1)\): constant</p></li>
-        <li><p>\(O(\log N)\): logarithmic</p></li>
-        <li><p>\(O(N)\): linear</p></li>
-        <li><p>\(O(N \log N)\): linearithmic</p></li>
-        <li><p>\(O(N^2)\): quadratic</p></li>
-        <li><p>\(O(2^N)\): exponential</p></li>
-      </ul>
-      <p style="margin-top:0.6em;">
-        Notice how quickly \(N^2\) and \(2^N\) grow.
-      </p>
-    </div>
-
-    <!-- Right column: plot -->
-    <div style="flex:1; min-width: 320px;">
-      <img
-        src="../_static/images/growth_chart.png"
-        alt="Big-O growth chart"
-        style="display:block; width:100%; height:auto; max-height:420px; object-fit:contain;"
-      >
-    </div>
-  </div>
-</section>
-
-        <section>
-          <h2>Key simplification rules</h2>
-          <ul class="simple">
-            <li><p>Drop constants: \(7N + 3 \in \Theta(N)\)</p></li>
-            <li><p>Keep dominant term: \(N^2 + 100N + 5 \in \Theta(N^2)\)</p></li>
-            <li><p>\(\log_a N\) vs \(\log_b N\): same growth (constant factor difference)</p></li>
-          </ul>
-          <p style="margin-top:0.6em;">
-            We still start with careful counting so you understand where the formula comes from.
-          </p>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Section 5: LOOP COUNTING IN DETAIL (N+1, exact counts)
+           Section 3: LOOP COUNTING IN DETAIL (N+1, exact counts)
       ========================================================== -->
       <section>
         <section class="title-slide slide level1">
@@ -325,13 +262,9 @@ std::cout &lt;&lt; ms &lt;&lt; " ms\n";</code></pre>
             <li><p>Before the first iteration, we check: <code>i &lt; N</code> (1st check)</p></li>
             <li><p>Each iteration ends with <code>++i</code>, then we check again</p></li>
             <li><p>After the \(N\)-th iteration, <code>i</code> becomes \(N\), we check one more time and fail</p></li>
+            <li><p>\[\text{#condition checks} = N + 1\]</p></li>
           </ul>
 
-          <div class="math-left">
-            \[
-              \text{#condition checks} = N + 1
-            \]
-          </div>
         </section>
 
         <section>
@@ -348,14 +281,9 @@ for (int i = 0; i < N; ++i) {  // (B)
             <li><p>(B) condition <code>i &lt; N</code>: \(N+1\)</p></li>
             <li><p>(C) body statement: \(N\)</p></li>
             <li><p>(B) increment <code>++i</code>: \(N\)</p></li>
+            <li><p>\[T(N) = 1 + 1 + (N+1) + N + N = 3N + 3\]</p></li>
           </ul>
-
-          <div class="math-left">
-            \[
-              T(N) = 1 + 1 + (N+1) + N + N = 3N + 3
-            \]
-          </div>
-          <p>So \(T(N) \in \Theta(N)\).</p>
+    <p>Keep this exact form for now. We will simplify it soon.</p>
         </section>
 
         <section>
@@ -392,12 +320,12 @@ for (int i = 0; i < N; ++i) {  // (B)
           </ul>
 
           <p style="margin-top:0.6em;">
-            If you want exact checks, each loop has \((N+1)\) condition checks. Understand it first, then simplify to \(\Theta(N^2)\).
+            If you want exact checks, each loop has \((N+1)\) condition checks. Understand the count first; the summary notation comes later.
           </p>
         </section>
 
         <section>
-          <h2>Logarithmic loops (why \(\log N\) appears)</h2>
+          <h2>Halving loops (why \(\log N\) appears)</h2>
           <pre><code data-trim data-noescape class="language-cpp">int x = N;
 while (x > 1) {
   x = x / 2;
@@ -406,38 +334,71 @@ while (x > 1) {
           <ul class="simple">
             <li><p>Each iteration halves \(x\): \(N \to N/2 \to N/4 \to \cdots \to 1\)</p></li>
             <li><p>How many times can we divide by 2 until we reach 1?</p></li>
-          </ul>
-
-          <div class="math-left">
-            \[
+            <li><p>\[
               \frac{N}{2^k} \le 1 \Rightarrow 2^k \ge N \Rightarrow k \ge \log_2 N
-            \]
-          </div>
-
-          <p>So \(T(N) \in \Theta(\log N)\).</p>
+            \]</p></li>
+          <p>So the loop runs about \(\log_2 N\) times.</p>
+          </ul>
         </section>
       </section>
 
       <!-- =========================================================
-           Section 6: Searching examples (linear vs binary)
+           Section 4: Cases (which input?)
       ========================================================== -->
       <section>
         <section class="title-slide slide level1">
-          <h1>Examples: searching</h1>
+          <h1>Cases: which input do we mean?</h1>
         </section>
 
         <section>
-          <h2>Linear search (idea)</h2>
-          <p>Scan elements left to right until you find the key or run out of elements.</p>
+          <h2>Cases are about which input happens</h2>
+          <table style="font-size:0.78em; width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Case</th>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Question</th>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Linear search example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:6px;">Best</td>
+                <td style="padding:6px;">What input is easiest?</td>
+                <td style="padding:6px;">key at index 0</td>
+              </tr>
+              <tr>
+                <td style="padding:6px;">Worst</td>
+                <td style="padding:6px;">What input is hardest?</td>
+                <td style="padding:6px;">key missing or last</td>
+              </tr>
+              <tr>
+                <td style="padding:6px;">Average</td>
+                <td style="padding:6px;">What happens in expectation?</td>
+                <td style="padding:6px;">needs a probability model</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p style="margin-top:0.6em;">
+            A case selects a version of the cost function: \(T_{\text{best}}\), \(T_{\text{worst}}\), or \(T_{\text{avg}}\).
+          </p>
+        </section>
+
+        <section>
+          <h2>Cases need separate cost functions</h2>
           <ul class="simple">
-            <li><p>Best case: key is at index 0 ⇒ about 1 comparison ⇒ \(T(N) \in \Theta(1)\)</p></li>
-            <li><p>Worst case: key is last or not present ⇒ about \(N\) comparisons ⇒ \(T(N) \in \Theta(N)\)</p></li>
-            <li><p>Average case: depends on distribution; usually still \(\Theta(N)\)</p></li>
+            <li><p>\(T_{\text{best}}(N)\): least work over inputs of size \(N\)</p></li>
+            <li><p>\(T_{\text{worst}}(N)\): most work over inputs of size \(N\)</p></li>
+            <li><p>\(T_{\text{avg}}(N)\): expected work, after assuming an input distribution</p></li>
           </ul>
+
+          <p style="margin-top:0.6em;">
+            For the same algorithm, these functions can be different.
+          </p>
         </section>
 
         <section>
-          <h2>Linear search (code + what we count)</h2>
+          <h2>Example: linear search counts</h2>
           <pre><code data-trim data-noescape class="language-cpp">int linearSearch(const int* arr, int size, int key) {
   for (int i = 0; i < size; ++i) {
     if (arr[i] == key) return i;
@@ -446,27 +407,261 @@ while (x > 1) {
 }</code></pre>
 
           <ul class="simple">
-            <li><p>Input size: \(N = \text{size}\)</p></li>
-            <li><p>Main cost: how many times we execute <code>arr[i] == key</code></p></li>
-            <li><p>Worst-case comparisons: \(N\)</p></li>
+            <li><p>Input size: \(N = \text{size}\); cost model: runs of <code>arr[i] == key</code></p></li>
+            <li><p>Best case (key at index 0): \(T_{\text{best}}(N)=1\)</p></li>
+            <li><p>Worst case (key last or missing): \(T_{\text{worst}}(N)=N\)</p></li>
+            <li><p>Average case: about \(N/2\), given a probability model</p></li>
+          </ul>
+
+          <p style="margin-top:0.6em;">
+            Three inputs, three functions. Next we describe how such functions grow.
+          </p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 5: Asymptotic notation (now defined)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Asymptotic notation</h1>
+        </section>
+
+        <section>
+          <h2>Why asymptotic notation?</h2>
+          <ul class="simple">
+            <li><p>Exact cost functions can include many constants.</p></li>
+            <li><p>For large \(N\), the dominant term matters most.</p></li>
+            <li><p>Asymptotic notation describes growth, not seconds on a clock.</p></li>
+            <li><p>\[
+              7N^2 + 20N + 100 \quad \text{grows like} \quad N^2
+            \]</p></li>
           </ul>
         </section>
 
         <section>
-          <h2>Binary search (idea)</h2>
-          <ul class="simple">
-            <li><p>Works only on a sorted array.</p></li>
-            <li><p>Each step checks the middle and halves the search range.</p></li>
-            <li><p>So the problem size shrinks like: \(N, N/2, N/4, \dots\)</p></li>
+          <h2>The three bounds</h2>
+          <table style="font-size:0.72em; width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Notation</th>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Meaning</th>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Question it answers</th>
+  
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:6px;">\(O(f(N))\)</td>
+                <td style="padding:6px;">upper bound</td>
+                <td style="padding:6px;">Is the growth no more than \(f(N)\)?</td>
+      
+              </tr>
+              <tr>
+                <td style="padding:6px;">\(\Omega(f(N))\)</td>
+                <td style="padding:6px;">lower bound</td>
+                <td style="padding:6px;">Is the growth at least \(f(N)\)?</td>
+     
+              </tr>
+              <tr>
+                <td style="padding:6px;">\(\Theta(f(N))\)</td>
+                <td style="padding:6px;">tight bound</td>
+                <td style="padding:6px;">Is \(f(N)\) the exact growth?</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ul class="simple" style="margin-top:0.6em;">
+            <li><p>Prefer \(\Theta\) when you know the tight growth.</p></li>
           </ul>
+          <div style="display:flex; gap:5px; align-items:flex-start;">
+            <div style="flex:1; min-width: 320px;">
+          <img
+                src="../_static/images/cop3530/asymptotic_notation.png"
+                alt="Big-O growth chart"
+                style="display:block; width:100%; height:auto; max-height:420px; object-fit:contain;"
+              >
+              </div>
+              <div style="flex:1; min-width: 320px;">
+              <img
+                src="../_static/images/cop3530/asymptotic_notation1.png"
+                alt="Big-O growth chart"
+                style="display:block; width:100%; height:auto; max-height:420px; object-fit:contain;"
+              >
+              </div>
+              </div>
+        </section>
+
+        <section>
+          <h2>From a case to a bound</h2>
+          <ol class="arabic simple">
+            <li><p>Choose the case, for example the worst case.</p></li>
+            <li><p>Count exactly: our loop gave \(T(N)=3N+3\); linear search gave \(T_{\text{worst}}(N)=N\).</p></li>
+            <li><p>Drop constants and smaller terms.</p></li>
+            <li><p>Report the growth: \(\Theta(N)\) in both examples.</p></li>
+          </ol>
 
           <p style="margin-top:0.6em;">
-            Worst-case steps is about how many times you can halve \(N\) until it becomes 1: \(\Theta(\log N)\).
+            Because \(\Theta(N)\) is tight, it also implies \(O(N)\) and \(\Omega(N)\).
+            Careful counting explains where the formula comes from; asymptotic notation summarizes it.
+          </p>
+        </section>
+
+              <section>
+          <h2>How do I know my bound is tight?</h2>
+          <ul class="simple">
+            <li><p>\(\Theta(f)\) means both directions hold at the same \(f\): \(T \in O(f)\) and \(T \in \Omega(f)\).</p></li>
+            <li><p>If your count is exact, you already have both. Drop constants and lower terms, and that is the tight bound.</p></li>
+            <li><p>\(T(N)=3N+3\) is exact \(\Rightarrow T(N) \in \Theta(N)\).</p></li>
+            <li><p>\(T(N) \in O(N^2)\) is also true, but loose: \(3N+3 \notin \Omega(N^2)\), so it is not \(\Theta(N^2)\).</p></li>
+          </ul>
+ 
+          <p style="margin-top:0.6em;">
+            Give the tightest simple bound unless the question asks otherwise.
+          </p>
+        </section>
+ 
+        <section>
+          <h2>When do I use \(O\), \(\Omega\), or \(\Theta\)?</h2>
+          <table style="font-size:0.72em; width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">What you actually know</th>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Say</th>
+                <th style="text-align:left; padding:6px; border-bottom:1px solid #999;">Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:6px;">An exact count for one case</td>
+                <td style="padding:6px;">\(\Theta\)</td>
+                <td style="padding:6px;">\(T_{\text{worst}}(N)=N \Rightarrow \Theta(N)\)</td>
+              </tr>
+              <tr>
+                <td style="padding:6px;">Only “no more than”, or one claim covering every input</td>
+                <td style="padding:6px;">\(O\)</td>
+                <td style="padding:6px;">linear search is \(O(N)\)</td>
+              </tr>
+              <tr>
+                <td style="padding:6px;">Only “no less than”</td>
+                <td style="padding:6px;">\(\Omega\)</td>
+                <td style="padding:6px;">any comparison sort needs \(\Omega(N \log N)\)</td>
+              </tr>
+            </tbody>
+          </table>
+ 
+          <p style="margin-top:0.6em;">
+            In this course most answers are \(\Theta\), because we count first.
+          </p>
+        </section>
+ 
+        <section>
+          <h2>Why we sometimes can only say \(O\)</h2>
+          <ul class="simple">
+            <li><p>Linear search: \(T_{\text{best}}(N)=1 \Rightarrow \Theta(1)\), and \(T_{\text{worst}}(N)=N \Rightarrow \Theta(N)\).</p></li>
+            <li><p>Average case: about \(N/2\) comparisons \(\Rightarrow \Theta(N)\), the same growth as the worst case, because constants are dropped.</p></li>
+            <li><p>“Linear search is \(\Theta(N)\)” is wrong: some inputs finish after 1 comparison.</p></li>
+            <li><p>“Linear search is \(O(N)\)” is right: no input ever costs more than \(N\).</p></li>
+          </ul>
+ 
+          <p style="margin-top:0.6em;">
+            Fix the case and you usually get a \(\Theta\). Speak about all inputs at once and often only \(O\) is available.
           </p>
         </section>
 
         <section>
-          <h2>Binary search (code)</h2>
+          <h2>Common growth classes</h2>
+
+          <div style="display:flex; gap:5px; align-items:flex-start;">
+            <div style="flex:1; min-width: 320px;">
+              <ul class="simple">
+                <li><p>\(\Theta(1)\): constant</p></li>
+                <li><p>\(\Theta(\log N)\): logarithmic</p></li>
+                <li><p>\(\Theta(N)\): linear</p></li>
+                <li><p>\(\Theta(N \log N)\): linearithmic</p></li>
+                <li><p>\(\Theta(N^2)\): quadratic</p></li>
+                <li><p>\(\Theta(2^N)\): exponential</p></li>
+              </ul>
+              <p style="margin-top:0.6em;">
+                The same growth names can be used with \(O\), \(\Omega\), or \(\Theta\).
+              </p>
+            </div>
+
+            <div style="flex:1; min-width: 320px;">
+              <img
+                src="../_static/images/cop3530/growth_chart.png"
+                alt="Big-O growth chart"
+                style="display:block; width:100%; height:auto; max-height:420px; object-fit:contain;"
+              >
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Key simplification rules</h2>
+          <ul class="simple">
+            <li><p>Drop constants: \(7N + 3 \in \Theta(N)\)</p></li>
+            <li><p>Keep dominant term: \(N^2 + 100N + 5 \in \Theta(N^2)\)</p></li>
+            <li><p>Log base usually does not matter: \(\log_2 N\) and \(\log_{10} N\) differ by a constant factor.</p></li>
+          </ul>
+
+          <p style="margin-top:0.6em;">
+            The halving loop we counted ran about \(\log_2 N\) times, so it is \(\Theta(\log N)\).
+          </p>
+        </section>
+
+
+
+
+        <section>
+          <h2>Common confusion</h2>
+          <ul class="simple">
+            <li><p>Worst case is not the same thing as Big-O.</p></li>
+            <li><p>Best case is not the same thing as Big-Ω.</p></li>
+            <li><p>You can give an upper bound for a best-case function.</p></li>
+            <li><p>You can give a lower bound for a worst-case function.</p></li>
+          </ul>
+
+          <p style="margin-top:0.6em;">
+            In many courses, “Big-O analysis” often means “worst-case upper bound,” but those are two separate ideas.
+          </p>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           Section 7: Searching examples (linear vs binary)
+      ========================================================== -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Examples: searching</h1>
+        </section>
+
+        <section>
+          <h2>Binary search: cases and functions</h2>
+          <ul class="simple">
+            <li><p>Requires a sorted array.</p></li>
+            <li><p>Each step checks the middle element.</p></li>
+            <li><p>If not found, the remaining search range is cut in half.</p></li>
+          </ul>
+
+          <table style="font-size:0.78em; width:100%; border-collapse:collapse; margin-top:0.5em;">
+            <tbody>
+              <tr>
+                <td style="padding:6px; border-bottom:1px solid #ddd;">Best case</td>
+                <td style="padding:6px; border-bottom:1px solid #ddd;">key is the first middle checked</td>
+                <td style="padding:6px; border-bottom:1px solid #ddd;">\(T_{\text{best}}(N) \in \Theta(1)\)</td>
+              </tr>
+              <tr>
+                <td style="padding:6px;">Worst case</td>
+                <td style="padding:6px;">keep halving until empty</td>
+                <td style="padding:6px;">\(T_{\text{worst}}(N) \in \Theta(\log N)\)</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>Binary search: why the worst case is logarithmic</h2>
           <pre><code data-trim data-noescape class="language-cpp">int binarySearch(const int* arr, int size, int key) {
   int low = 0, high = size - 1;
   while (low <= high) {
@@ -478,48 +673,38 @@ while (x > 1) {
   return -1;
 }</code></pre>
           <ul class="simple">
-            <li><p>Worst-case loop iterations: \(\Theta(\log N)\)</p></li>
-            <li><p>Each iteration does constant work ⇒ \(T(N) \in \Theta(\log N)\)</p></li>
+            <li><p>Cost model: loop iterations or middle-element comparisons.</p></li>
+            <li><p>After \(k\) failed steps, about \(N/2^k\) elements remain.</p></li>
+            <li><p>Same halving argument as our while-loop example.</p></li>
           </ul>
         </section>
 
         <section>
           <h2>Binary search as a recurrence (optional math view)</h2>
-          <p>In the worst case, each step halves the remaining elements:</p>
-          <div class="math-left">
-            \[
+          <ul>
+            <li> <p>In the worst case, each step halves the remaining elements:</p></li>
+             <li><p>\[
               T(N) = T(N/2) + c
-            \]
-          </div>
-          <p>Stop when \(N/2^k \le 1\):</p>
-          <div class="math-left">
+            \]</p></li>
+            <li><p>Stop when \(N/2^k \le 1\):</p></li>
+
+          <li><p>
             \[
               2^k \ge N \Rightarrow k \ge \log_2 N
             \]
-          </div>
-          <p>So \(T(N) \in \Theta(\log N)\).</p>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Section 7: Sorting example (selection sort)
-      ========================================================== -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Example: selection sort</h1>
+          </p></li>
+          <li><p>So \(T(N) \in \Theta(\log N)\).</p></li>
+          </ul>
         </section>
 
         <section>
-          <h2>Selection sort (what it does)</h2>
+          <h2>Selection sort </h2>
           <ul class="simple">
             <li><p>For each position \(i\), find the smallest element in the remaining unsorted part.</p></li>
             <li><p>Swap it into position \(i\).</p></li>
             <li><p>Repeat until sorted.</p></li>
           </ul>
-        </section>
-
-        <section>
-          <h2>Selection sort (code)</h2>
+  
           <pre><code data-trim data-noescape class="language-cpp">void selectionSort(int* arr, int size) {
   for (int i = 0; i < size - 1; ++i) {
     int min = i;
@@ -542,48 +727,14 @@ while (x > 1) {
             <li><p>When \(i = 1\): \(N-2\) comparisons</p></li>
             <li><p>...</p></li>
             <li><p>When \(i = N-2\): 1 comparison</p></li>
-          </ul>
-
-          <div class="math-left">
-            \[
+            <li><p>\[
               (N-1) + (N-2) + \cdots + 1 = \frac{N(N-1)}{2}
-            \]
-          </div>
+            \]</p></li>
+          </ul>
           <p>Therefore comparisons are \(\Theta(N^2)\).</p>
         </section>
 
-        <section>
-          <h2>Swaps and space</h2>
-          <ul class="simple">
-            <li><p>Swaps happen at most \(N-1\) times ⇒ \(O(N)\)</p></li>
-            <li><p>Comparisons dominate ⇒ overall time \(\Theta(N^2)\)</p></li>
-            <li><p>Extra space is constant ⇒ \(S(N) \in \Theta(1)\)</p></li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Selection sort: cases</h2>
-          <ul class="simple">
-            <li><p>Even if the array is already sorted, we still scan to find the min each time.</p></li>
-            <li><p>So best, worst, average are all quadratic.</p></li>
-          </ul>
-          <div class="math-left">
-            \[
-              T(N) \in \Theta(N^2)
-            \]
-          </div>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Section 8: Space complexity
-      ========================================================== -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Space complexity</h1>
-        </section>
-
-        <section>
+                <section>
           <h2>What does \(S(N)\) mean?</h2>
           <ul class="simple">
             <li><p>\(S(N)\) is extra memory used in addition to the input.</p></li>
@@ -600,10 +751,33 @@ while (x > 1) {
             <li><p>Mergesort: \(S(N) \in \Theta(N)\)</p></li>
           </ul>
         </section>
+
+        <section>
+          <h2>Swaps and space</h2>
+          <ul class="simple">
+            <li><p>Swaps happen at most \(N-1\) times ⇒ \(O(N)\)</p></li>
+            <li><p>Comparisons dominate ⇒ overall time \(\Theta(N^2)\)</p></li>
+            <li><p>Extra space is constant ⇒ \(S(N) \in \Theta(1)\)</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Selection sort: cases</h2>
+          <ul class="simple">
+            <li><p>The loops do not stop early when the array is already sorted.</p></li>
+            <li><p>The comparison count is always \((N-1)+(N-2)+\cdots+1\).</p></li>
+            <li><p>So best, worst, and average comparison costs are all \(\Theta(N^2)\).</p></li>
+            <li><p>Swaps may differ by input, but comparisons dominate the time analysis.</p></li>
+            <li><p>\[
+              T_{\text{best}}(N),\ T_{\text{worst}}(N),\ T_{\text{avg}}(N) \in \Theta(N^2)
+            \]</p></li>
+          </ul>
+        </section>
       </section>
 
+
       <!-- =========================================================
-           Section 9: Amortized analysis
+           Section 10: Amortized analysis
       ========================================================== -->
       <section>
         <section class="title-slide slide level1">
@@ -649,27 +823,51 @@ while (x > 1) {
         <section class="title-slide slide level1">
           <h1>Wrap-up</h1>
         </section>
-
         <section>
-          <h2>What you should be able to do</h2>
-          <ul class="simple">
-            <li><p>Choose the correct input size \(N\)</p></li>
-            <li><p>Write and interpret \(T(N)\) and \(S(N)\)</p></li>
-            <li><p>Count loops accurately (including why condition checks are \(N+1\))</p></li>
-            <li><p>Convert an exact \(T(N)\) into \(O\), \(\Omega\), \(\Theta\)</p></li>
-            <li><p>Recognize common growth: \(1\), \(\log N\), \(N\), \(N\log N\), \(N^2\)</p></li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Key examples</h2>
-          <ul class="simple">
-            <li><p>Linear search: worst-case \(T(N) \in \Theta(N)\)</p></li>
-            <li><p>Binary search: worst-case \(T(N) \in \Theta(\log N)\)</p></li>
-            <li><p>Selection sort comparisons: \(\frac{N(N-1)}{2}\) ⇒ \(\Theta(N^2)\)</p></li>
-          </ul>
+          <h2>Summary</h2>
+          <table style="font-size:0.72em; width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:5px; border-bottom:1px solid #999;">Step</th>
+                <th style="text-align:left; padding:5px; border-bottom:1px solid #999;">Answers this question</th>
+                <th style="text-align:left; padding:5px; border-bottom:1px solid #999;">Linear search</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:5px;">Input size \(N\)</td>
+                <td style="padding:5px;">How big is the input?</td>
+                <td style="padding:5px;">array length</td>
+              </tr>
+              <tr>
+                <td style="padding:5px;">Cost model</td>
+                <td style="padding:5px;">What operation are we counting?</td>
+                <td style="padding:5px;">key comparisons</td>
+              </tr>
+              <tr>
+                <td style="padding:5px;">Case</td>
+                <td style="padding:5px;">Which input of size \(N\)?</td>
+                <td style="padding:5px;">worst: key missing</td>
+              </tr>
+              <tr>
+                <td style="padding:5px;">Cost function</td>
+                <td style="padding:5px;">How much work does that case do?</td>
+                <td style="padding:5px;">\(T_{\text{worst}}(N)=N\)</td>
+              </tr>
+              <tr>
+                <td style="padding:5px;">O / \(\Omega\) / \(\Theta\)</td>
+                <td style="padding:5px;">How does that function grow?</td>
+                <td style="padding:5px;">\(\Theta(N)\)</td>
+              </tr>
+            </tbody>
+          </table>
+ 
+          <p style="margin-top:0.6em;">
+            Count first, then simplify. Cases pick the input; bounds describe the function.
+          </p>
         </section>
       </section>
+
 
     </div>
   </div>

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Generics</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<style>
+.reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+</style>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+<section data-background-color="white"
+         data-background-image="../_static/logo.png"
+         data-background-position="top center"
+         data-background-repeat="no-repeat"
+         data-background-size="50%">
+<h1>Generics</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+
+
+<section>
+<section class="frame">
+<h2>Learning Goals</h2>
+<ul>
+<li><p>Explain why Java uses generics.</p></li>
+<li><p>Read common generic types such as <code>List&lt;String&gt;</code> and <code>Map&lt;K, V&gt;</code>.</p></li>
+<li><p>Recognize generic classes and generic methods.</p></li>
+<li><p>Understand basic type bounds.</p></li>
+<li><p>Explain type erasure and why raw types should be avoided.</p></li>
+</ul>
+<p>Main goal: comfortably read generic Java APIs that we will use throughout the course.</p>
+</section>
+</section>
+
+
+<section>
+<section class="title-slide slide level1">
+<h1>Why Generics</h1>
+</section>
+
+<section class="frame">
+<h2>The Problem Without Generics</h2>
+<p>Before generics, collections stored values as <code>Object</code>.</p>
+<ul>
+<li><p>The collection did not remember what type it was supposed to contain.</p></li>
+<li><p>Different types could accidentally be placed in the same collection.</p></li>
+<li><p>Values had to be cast when they were retrieved.</p></li>
+<li><p>A wrong type might not fail until runtime.</p></li>
+</ul>
+<p>Generics allow Java to catch many of these mistakes during compilation.</p>
+</section>
+
+
+<section class="frame">
+<h2>Raw Type Problem</h2>
+<p>A raw collection does not protect the type of its contents.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List accounts = new ArrayList();
+
+accounts.add(new BankAccount());
+accounts.add("my savings");   // Allowed by the compiler.
+
+BankAccount b =
+    (BankAccount) accounts.get(1);</code></pre>
+
+<p>The cast compiles, but the program fails at runtime because the object is actually a <code>String</code>.</p>
+</section>
+
+
+<section class="frame">
+<h2>Parameterized Collections</h2>
+<p>A parameterized collection states what type it should contain.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;BankAccount&gt; accounts = new ArrayList&lt;&gt;();
+
+accounts.add(new BankAccount());
+
+accounts.add("my savings");   // Compile-time error.
+
+BankAccount b = accounts.get(0);</code></pre>
+
+<ul>
+<li><p>The compiler knows that <code>accounts</code> should contain <code>BankAccount</code> objects.</p></li>
+<li><p>An invalid insertion is rejected immediately.</p></li>
+<li><p>No cast is needed when retrieving an element.</p></li>
+</ul>
+<ul>
+<li><p>Example: <code>RawVsGeneric.java</code></p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Generics Move Errors Earlier</h2>
+<p>The main benefit is compile-time type checking.</p>
+
+<table>
+<thead>
+<tr>
+<th>Without Generics</th>
+<th>With Generics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Values treated as <code>Object</code></td>
+<td>Expected type is known</td>
+</tr>
+<tr>
+<td>Manual casts required</td>
+<td>Usually no cast needed</td>
+</tr>
+<tr>
+<td>Wrong type may fail at runtime</td>
+<td>Wrong type usually fails at compile time</td>
+</tr>
+<tr>
+<td>Less readable intent</td>
+<td>Type is visible in the declaration</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Key idea:</strong> generics make reusable code safer without giving up type checking.</p>
+</section>
+</section>
+
+
+<section>
+<section class="title-slide slide level1">
+<h1>Type Parameters</h1>
+</section>
+
+<section class="frame">
+<h2>Reading Type Parameters</h2>
+<p>The name inside angle brackets is a placeholder for a type.</p>
+
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Common Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>E</code></td>
+<td>Element</td>
+<td><code>ArrayList&lt;E&gt;</code></td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>Type</td>
+<td><code>Box&lt;T&gt;</code></td>
+</tr>
+<tr>
+<td><code>K</code></td>
+<td>Key</td>
+<td><code>Map&lt;K, V&gt;</code></td>
+</tr>
+<tr>
+<td><code>V</code></td>
+<td>Value</td>
+<td><code>Map&lt;K, V&gt;</code></td>
+</tr>
+</tbody>
+</table>
+
+<p><code>List&lt;String&gt;</code> means a list whose element type is <code>String</code>.</p>
+</section>
+
+
+<section class="frame">
+<h2>Using Generic Types</h2>
+<p>A concrete type replaces the type parameter when the generic type is used.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ArrayList&lt;BankAccount&gt; accounts =
+    new ArrayList&lt;&gt;();
+
+HashMap&lt;String, Integer&gt; scores =
+    new HashMap&lt;&gt;();</code></pre>
+
+<ul>
+<li><p>For <code>ArrayList&lt;BankAccount&gt;</code>, the element type is <code>BankAccount</code>.</p></li>
+<li><p>For <code>HashMap&lt;String, Integer&gt;</code>, keys are <code>String</code> and values are <code>Integer</code>.</p></li>
+<li><p>The diamond <code>&lt;&gt;</code> lets the compiler infer the type on the right side.</p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Reference Types Only</h2>
+<p>Generic type arguments must be reference types.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;Integer&gt; numbers = new ArrayList&lt;&gt;();
+List&lt;Double&gt; prices = new ArrayList&lt;&gt;();
+
+// Not allowed:
+// List&lt;int&gt; values = new ArrayList&lt;&gt;();</code></pre>
+
+<p>Use wrapper classes such as <code>Integer</code>, <code>Double</code>, and <code>Boolean</code> instead of primitive types.</p>
+</section>
+</section>
+
+
+<section>
+<section class="title-slide slide level1">
+<h1>Generic Classes and Methods</h1>
+</section>
+
+<section class="frame">
+<h2>Generic Class</h2>
+<p>A generic class can work with different types without rewriting the class.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class Pair&lt;T, U&gt; {
+    private T first;
+    private U second;
+
+    public Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+
+    public T getFirst() {
+        return first;
+    }
+
+    public U getSecond() {
+        return second;
+    }
+}</code></pre>
+</section>
+
+
+<section class="frame">
+<h2>Using a Generic Class</h2>
+<p>The type parameters become concrete types when an object is declared.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Pair&lt;String, BankAccount&gt; result =
+    new Pair&lt;&gt;("Harry", harrysChecking);
+
+String name = result.getFirst();
+
+BankAccount account = result.getSecond();</code></pre>
+
+<ul>
+<li><p><code>T</code> becomes <code>String</code>.</p></li>
+<li><p><code>U</code> becomes <code>BankAccount</code>.</p></li>
+<li><p>The compiler checks both types.</p></li>
+</ul>
+<ul>
+<li><p>Example: <code>Pair.java</code></p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Generic Method</h2>
+<p>A method can declare its own type parameter.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static &lt;T&gt; void printArray(T[] values) {
+    for (T value : values) {
+        System.out.println(value);
+    }
+}</code></pre>
+
+<p>The <code>&lt;T&gt;</code> before the return type declares the method's type parameter.</p>
+</section>
+
+
+<section class="frame">
+<h2>Calling a Generic Method</h2>
+<p>The compiler usually infers the type from the argument.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String[] names = {"Alice", "Bob"};
+
+Integer[] scores = {90, 85};
+
+printArray(names);   // T = String
+
+printArray(scores);  // T = Integer</code></pre>
+
+<p>The same method works safely with different reference types.</p>
+<ul>
+<li><p>Example: <code>GenericMethodDemo.java</code></p></li>
+</ul>
+</section>
+</section>
+
+
+<section>
+<section class="title-slide slide level1">
+<h1>Bounds and Wildcards</h1>
+</section>
+
+<section class="frame">
+<h2>Type Bounds</h2>
+<p>A bound restricts which types can replace a type parameter.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class Box&lt;T extends Number&gt; {
+    private T value;
+
+    public Box(T value) {
+        this.value = value;
+    }
+
+    public double asDouble() {
+        return value.doubleValue();
+    }
+}</code></pre>
+
+<p><code>T extends Number</code> means that <code>T</code> must be <code>Number</code> or one of its subclasses.</p>
+</section>
+
+
+<section class="frame">
+<h2>Why Use a Bound?</h2>
+<p>A bound tells the compiler what operations are safe for the type parameter.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Box&lt;Integer&gt; count = new Box&lt;&gt;(10);
+
+Box&lt;Double&gt; price = new Box&lt;&gt;(12.5);
+
+// Not allowed:
+// Box&lt;String&gt; name = new Box&lt;&gt;("Alice");</code></pre>
+
+<p>Because every allowed type is a <code>Number</code>, the class can safely call methods such as <code>doubleValue()</code>.</p>
+<ul>
+<li><p>Example: <code>Box.java</code></p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Wildcards</h2>
+<p>A wildcard means that the exact generic type is not specified here.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Class&lt;?&gt; clazz = String.class;
+
+List&lt;? extends Number&gt; numbers =
+    List.of(1, 2, 3);
+
+Number n = numbers.get(0);</code></pre>
+
+<ul>
+<li><p><code>?</code> means an unknown type.</p></li>
+<li><p><code>? extends Number</code> means some type that is <code>Number</code> or a subtype of <code>Number</code>.</p></li>
+<li><p>You will often see wildcards when reading framework and reflection APIs.</p></li>
+</ul>
+<ul>
+<li><p>Example: <code>Box.java</code></p></li>
+</ul>
+</section>
+</section>
+
+
+<section>
+<section class="title-slide slide level1">
+<h1>Type Erasure</h1>
+</section>
+
+<section class="frame">
+<h2>Compile Time vs Runtime</h2>
+<p>Most generic type checking happens during compilation.</p>
+
+<ul>
+<li><p>The compiler uses generic information to check types.</p></li>
+<li><p>At runtime, much of the type-parameter information is erased.</p></li>
+<li><p>An unbounded type variable such as <code>T</code> is generally erased to <code>Object</code>.</p></li>
+<li><p>A bounded type variable is erased to its bound.</p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Type Erasure Example</h2>
+<p>An unbounded type variable is replaced by <code>Object</code> after erasure.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Box&lt;T&gt; {
+    T value;
+}</code></pre>
+
+<p>Conceptually, the runtime representation is similar to:</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Box {
+    Object value;
+}</code></pre>
+
+<p>The compiler still uses the original generic declaration to enforce type safety in your source code.</p>
+</section>
+
+
+<section class="frame">
+<h2>Erasure With a Bound</h2>
+<p>If a type variable has a bound, the bound is used during erasure.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Box&lt;T extends Number&gt; {
+    T value;
+}</code></pre>
+
+<p>Conceptually, the erased field is similar to:</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Box {
+    Number value;
+}</code></pre>
+
+<p>This is one reason generic type information behaves differently at runtime than normal class information.</p>
+</section>
+
+
+<section class="frame">
+<h2>Runtime Type Checking</h2>
+<p>Because the element type is erased, Java cannot normally test it directly at runtime.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">if (obj instanceof List&lt;?&gt; list) {
+    System.out.println("This object is a List.");
+}
+
+// Not allowed:
+// obj instanceof List&lt;String&gt;</code></pre>
+
+<p>At runtime, Java can determine that the object is a <code>List</code>, but not reliably that it is specifically a <code>List&lt;String&gt;</code>.</p>
+<ul>
+<li><p>Example: <code>TypeErasureDemo.java</code></p></li>
+</ul>
+</section>
+</section>
+
+
+<section>
+<section class="title-slide slide level1">
+<h1>Raw Types</h1>
+</section>
+
+<section class="frame">
+<h2>What Is a Raw Type?</h2>
+<p>A raw type uses a generic class without specifying its type parameter.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List list = new ArrayList();              // Raw type
+
+List&lt;String&gt; names = new ArrayList&lt;&gt;();  // Parameterized type</code></pre>
+
+<p>Raw types mainly exist for compatibility with Java code written before generics were introduced.</p>
+</section>
+
+
+<section class="frame">
+<h2>Why Raw Types Are Dangerous</h2>
+<p>Raw types remove much of the compile-time type checking provided by generics.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;String&gt; names = new ArrayList&lt;&gt;();
+
+List raw = names;
+
+raw.add(123);   // Warning, but allowed.
+
+String first = names.get(0);</code></pre>
+
+<p>The collection was intended to contain strings, but using the raw reference allowed another type to enter it.</p>
+<ul>
+<li><p>Example: <code>RawVsGeneric.java</code></p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Best Practice</h2>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Preferred
+List&lt;String&gt; names = new ArrayList&lt;&gt;();
+
+Map&lt;String, Integer&gt; scores = new HashMap&lt;&gt;();
+
+// Avoid
+List names2 = new ArrayList();
+
+Map scores2 = new HashMap();</code></pre>
+
+<p><strong>Rule:</strong> use parameterized types unless you are working with legacy code that requires a raw type.</p>
+</section>
+</section>
+
+
+<section>
+<section class="title-slide slide level1">
+<h1>Generics in This Course</h1>
+</section>
+
+<section class="frame">
+<h2>You Have Already Seen Generics</h2>
+<p>Generics appear throughout Java libraries and frameworks.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;String&gt; words;
+
+ObservableList&lt;PieChart.Data&gt; pieData;
+
+EventHandler&lt;ActionEvent&gt; handler;
+
+Class&lt;?&gt; clazz;</code></pre>
+
+<p>The angle brackets are not special syntax for one library. They all use the same Java generics system.</p>
+</section>
+
+
+<section class="frame">
+<h2>Generics in the Course</h2>
+
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reflection</td>
+<td><code>Class&lt;?&gt;</code></td>
+</tr>
+<tr>
+<td>Spring / REST</td>
+<td><code>List&lt;Product&gt;</code>, <code>ResponseEntity&lt;Product&gt;</code></td>
+</tr>
+<tr>
+<td>Persistence</td>
+<td><code>List&lt;Entity&gt;</code>, repository result types</td>
+</tr>
+<tr>
+<td>Concurrency</td>
+<td><code>Callable&lt;T&gt;</code>, <code>Future&lt;T&gt;</code></td>
+</tr>
+</tbody>
+</table>
+
+<p>The important skill is being able to read what the type parameter represents.</p>
+</section>
+
+
+<section class="frame">
+<h2>Reading a Generic API</h2>
+<p>When you encounter an unfamiliar generic class, first identify what each type parameter represents.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Future&lt;String&gt; result;
+
+Callable&lt;Integer&gt; task;
+
+Map&lt;String, List&lt;Student&gt;&gt; courses;</code></pre>
+
+<ul>
+<li><p><code>Future&lt;String&gt;</code>: the future result will be a <code>String</code>.</p></li>
+<li><p><code>Callable&lt;Integer&gt;</code>: the task produces an <code>Integer</code>.</p></li>
+<li><p><code>Map&lt;String, List&lt;Student&gt;&gt;</code>: each string key maps to a list of students.</p></li>
+</ul>
+</section>
+</section>
+
+
+<section>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>Generics provide compile-time type safety for reusable classes and methods.</p></li>
+<li><p>Type parameters such as <code>T</code>, <code>E</code>, <code>K</code>, and <code>V</code> stand for types supplied later.</p></li>
+<li><p>A generic class defines type parameters for the class; a generic method can define its own.</p></li>
+<li><p>Bounds restrict which types are allowed.</p></li>
+<li><p>Type erasure means much of the generic type information is not available directly at runtime.</p></li>
+<li><p>Avoid raw types because they remove useful compiler checks.</p></li>
+</ul>
+</section>
+
+</section>
+
+
+</div>
+</div>
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+
+    revealjsConfig.plugins = [
+      RevealNotes,
+      RevealHighlight,
+      RevealMath
+    ];
+
+    Reveal.initialize(revealjsConfig);
+</script>
+</body>
+</html>

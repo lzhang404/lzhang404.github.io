@@ -600,12 +600,18 @@ body.image-viewer-open {
 .reveal li {
   font-size: 95%; }
 
+/* Let display math sit directly in a list item without a wrapper div. */
+.reveal li .MathJax_Display,
+.reveal li mjx-container[display="true"],
+.reveal li .katex-display {
+  text-align: left !important; }
+
 .reveal ul ul,
 .reveal ul ol,
 .reveal ol ul,
 .reveal ol ol,
 .reveal dd {
-  margin-left: 20px;
+  margin-left: 40px;
   padding-left: 0px; }
 
 .reveal .vcenter {
