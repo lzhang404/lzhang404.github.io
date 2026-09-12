@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html data-content_root="../" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport" />
+  <title>Serialization and Data Boundaries</title>
+  <link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css" />
+  <link href="../_static/custom.css" rel="stylesheet" type="text/css" />
+  <link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css" />
+  <link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css" />
+  <link href="../_static/graphviz.css" rel="stylesheet" type="text/css" />
+  <script src="../_static/design-tabs.js?v=f930bc37"></script>
+  <style>
+    .reveal pre[data-fontsize="small"] {
+      font-size: 0.68em;
+    }
+
+    .reveal pre[data-fontsize="xsmall"] {
+      font-size: 0.58em;
+    }
+
+    .reveal table.compact {
+      font-size: 0.78em;
+    }
+
+    .reveal table.tight {
+      font-size: 0.72em;
+    }
+
+    .reveal .two-col {
+      display: flex;
+      gap: 1.2rem;
+      align-items: flex-start;
+    }
+
+    .reveal .two-col > div {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  </style>
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style" />
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+      <section>
+        <section class="title-slide" data-background-color="white" data-background-image="../_static/logo.png"
+          data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%">
+          <h1>Serialization and Data Boundaries</h1>
+          <div class="subtitle docutils container">
+            <p>Liting Zhang</p>
+            <p>University of West Florida</p>
+          </div>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>State Crossing a Boundary</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Serialization Boundaries</h2>
+          <table class="compact">
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Java object stream</th>
+                <th>JSON or XML</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Saved state</td>
+                <td>Reachable object graph</td>
+                <td>Selected fields</td>
+              </tr>
+              <tr>
+                <td>Reader</td>
+                <td>Java with matching classes</td>
+                <td>Any format-aware system</td>
+              </tr>
+              <tr>
+                <td>Best use</td>
+                <td>Private Java snapshots</td>
+                <td>Files and API messages</td>
+              </tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Objects disappear when a program stops.</p></li>
+            <li><p>Object streams rebuild Java objects.</p></li>
+            <li><p>JSON and XML expose selected data.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Serializable Task List</h2>
+          <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskList implements Serializable { ... }
+public final class Task implements Serializable { ... }
+
+TaskList week = new TaskList("Week 6");
+week.add(new Task("Read"));
+week.add(new Task("Practice"));</code></pre>
+          <ul>
+            <li><p><code>Serializable</code> is a marker interface.</p></li>
+            <li><p>It has no methods to implement.</p></li>
+            <li><p>A <code>TaskList</code> reaches its <code>Task</code> objects.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Java Object Serialization</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Object Streams and Graphs</h2>
+          <ul>
+            <li><p>The root is the object passed to <code>writeObject</code>.</p></li>
+            <li><p>Java follows reachable fields.</p></li>
+            <li><p>Nested and shared references are preserved.</p></li>
+            <li><p>Each reached object must be serializable.</p></li>
+            <li><p>Unsupported values cause <code>NotSerializableException</code>.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Shared References Stay Shared</h2>
+          <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Task sharedTask = new Task("Read");
+TaskList original = new TaskList("Week 6");
+original.add(sharedTask);
+original.add(sharedTask);
+
+// After save and load:
+restored.tasks().get(0) == restored.tasks().get(1)  // true</code></pre>
+          <ul>
+            <li><p>One object may have several references.</p></li>
+            <li><p>The restored graph keeps that identity.</p></li>
+            <li><p>Example: <code>SharedReferenceExample.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Writing an Object Stream</h2>
+          <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskList original = new TaskList("Week 6");
+original.add(new Task("Read"));
+
+try (ObjectOutputStream out = new ObjectOutputStream(
+        Files.newOutputStream(file))) {
+    out.writeObject(original);
+}</code></pre>
+          <ul>
+            <li><p><code>original</code> is the graph root.</p></li>
+            <li><p>The stream follows its saved fields.</p></li>
+            <li><p><code>try</code>-with-resources closes the stream.</p></li>
+            <li><p>Example: <code>BasicObjectStreamExample.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Reading and Round Trip</h2>
+          <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskList restored;
+try (ObjectInputStream in = new ObjectInputStream(
+        Files.newInputStream(file))) {
+    Object value = in.readObject();
+    if (!(value instanceof TaskList taskList)) {
+        throw new InvalidObjectException("Expected TaskList");
+    }
+    restored = taskList;
+}</code></pre>
+          <ul>
+            <li><p>Check the <code>Object</code> returned by <code>readObject()</code>.</p></li>
+            <li><p>Matching classes must be available.</p></li>
+            <li><p>A round trip restores state in a new object graph.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>What Gets Saved?</h2>
+          <pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskList implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final String name;              // saved
+    private final List&lt;Task&gt; tasks = new ArrayList&lt;&gt;(); // followed
+    private transient Path sourceFile;      // excluded
+    private transient int completedCount;   // excluded
+}
+
+public final class Task implements Serializable {
+    private static int nextId = 1000;       // not saved
+    private final int id;                   // saved
+    private final String title;             // saved
+    private boolean done;                   // saved
+}</code></pre>
+          <ul>
+            <li><p>Instance fields are saved by default.</p></li>
+            <li><p><code>static</code> fields belong to the class.</p></li>
+            <li><p><code>transient</code> fields are excluded.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Transient Fields After Loading</h2>
+          <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Had source file before save? true
+Has source file after load? false
+Completed count after load: 1</code></pre>
+          <ul>
+            <li><p>Transient fields return to default values.</p></li>
+            <li><p><code>sourceFile</code> returns as <code>null</code>.</p></li>
+            <li><p><code>readObject()</code> rebuilds <code>completedCount</code>.</p></li>
+            <li><p>Example: <code>TransientFieldsExample.java</code></p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Restored-State Validation</h2>
+          <pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+
+    if (name == null || name.isBlank()) {
+        throw new InvalidObjectException(
+                "Task list name must not be blank");
+    }
+    if (tasks == null || tasks.contains(null)) {
+        throw new InvalidObjectException("Task collection is invalid");
+    }
+
+    // Rebuild completedCount from tasks.
+}</code></pre>
+          <ul>
+            <li><p>Normal loading skips constructor checks.</p></li>
+            <li><p><code>defaultReadObject()</code> restores saved fields.</p></li>
+            <li><p>Then validate fields and rebuild transient state.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Versioning and Safety</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Version Compatibility</h2>
+          <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private static final long serialVersionUID = 1L;</code></pre>
+          <ul>
+            <li><p>Saved files may outlive current code.</p></li>
+            <li><p>The stream stores this class version.</p></li>
+            <li><p>A mismatch causes <code>InvalidClassException</code>.</p></li>
+            <li><p>The value does not migrate changed data.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Common Compatibility Changes</h2>
+          <table class="compact">
+            <thead>
+              <tr>
+                <th>Change</th>
+                <th>What to think about</th>
+                <th>Safer approach</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Add a field</td>
+                <td>Old data will not have it</td>
+                <td>Make it optional or provide a default</td>
+              </tr>
+              <tr>
+                <td>Rename a field</td>
+                <td>Old names may no longer map</td>
+                <td>Accept old and new names during migration</td>
+              </tr>
+              <tr>
+                <td>Remove a field</td>
+                <td>Old data may still contain it</td>
+                <td>Ignore it intentionally or migrate the data</td>
+              </tr>
+              <tr>
+                <td>Change meaning</td>
+                <td>Syntax may still parse but logic may be wrong</td>
+                <td>Use a version field and explicit migration</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Testing Old Files</h2>
+          <ul>
+            <li><p>A current round trip tests only current code.</p></li>
+            <li><p>Keep small files from supported versions.</p></li>
+            <li><p>Load them with current code.</p></li>
+            <li><p>Check defaults and rebuilt fields.</p></li>
+            <li><p>Reject unsupported versions clearly.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Deserialization Risks</h2>
+          <ul>
+            <li><p>Input may request unexpected classes.</p></li>
+            <li><p>Large graphs can exhaust resources.</p></li>
+            <li><p>Loading hooks may run.</p></li>
+            <li><p>Never deserialize unknown network input.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Deserialization Filter</h2>
+          <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ObjectInputFilter filter = ObjectInputFilter.Config.createFilter(
+    "maxdepth=20;maxrefs=10000;maxbytes=1000000;" +
+    "cop4027.serialization.TaskList;" +
+    "java.base/*;!*");
+
+try (ObjectInputStream in = new ObjectInputStream(
+        Files.newInputStream(file))) {
+    in.setObjectInputFilter(filter);
+    in.readObject();
+}</code></pre>
+          <ul>
+            <li><p>The filter omits <code>Task</code>.</p></li>
+            <li><p>The incomplete allowlist rejects the graph.</p></li>
+            <li><p>A complete filter lists every expected graph class.</p></li>
+            <li><p>Example: <code>FilteredDeserializationExample.java</code></p></li>
+          </ul>
+        </section>
+
+      </section>
+
+      <section>
+        <section class="frame">
+          <h2>Serialization Checklist</h2>
+          <ul>
+            <li><p>Private Java snapshot: filtered object stream</p></li>
+            <li><p>Public boundary: JSON or XML</p></li>
+            <li><p>Every reached class implements <code>Serializable</code>.</p></li>
+            <li><p><code>transient</code> excludes runtime state.</p></li>
+            <li><p>Loading validates fields and rebuilds derived state.</p></li>
+            <li><p>Supported old files remain in compatibility tests.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Review Questions</h2>
+          <ol>
+            <li><p>Why is saving a whole object graph different from saving selected fields?</p></li>
+            <li><p>What happens to <code>static</code> and <code>transient</code> fields after loading?</p></li>
+            <li><p>Why are constructor checks not enough for a normal class?</p></li>
+            <li><p>How does <code>serialVersionUID</code> affect old files?</p></li>
+            <li><p>Why must a filter allow every expected graph class?</p></li>
+          </ol>
+        </section>
+      </section>
+    </div>
+  </div>
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, {
+      "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+
+</html>

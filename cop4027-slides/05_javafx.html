@@ -936,108 +936,124 @@ User chooses Open
 <section class="title-slide slide level1">
 <h1>Responsive Apps</h1>
 </section>
+
 <section class="frame">
-<h2>FX Thread and Worker Thread</h2>
+<h2>One Thread, Two Rules</h2>
 <p>JavaFX uses one special thread for UI work: the <strong>JavaFX Application Thread</strong>.</p>
 <ul>
 <li><p>It renders controls, handles user events, and updates the scene graph.</p></li>
-<li><p>Event handlers already run on this thread.</p></li>
-<li><p>Slow work should run on a background worker.</p></li>
-<li><p>Workers should not directly update JavaFX controls.</p></li>
+<li><p><strong>Rule 1:</strong> Do not run slow work on the JavaFX Application Thread.</p></li>
+<li><p><strong>Rule 2:</strong> Background workers should not directly update JavaFX controls.</p></li>
 </ul>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">System.out.println("Button handler: " + Thread.currentThread().getName());
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX Application Thread
+    handles UI and user events
 
-Thread worker = new Thread(() -&gt; {
-    System.out.println("Worker: " + Thread.currentThread().getName());
-}, "background-worker");
+Background worker
+    performs slow work
 
-worker.start();</code></pre>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Button handler: JavaFX Application Thread
-Worker: background-worker</code></pre>
+Slow work must leave the FX thread.
+UI updates must come back to the FX thread.</code></pre>
 </section>
 
 <section class="frame">
 <h2>Why the UI Freezes</h2>
-<p>This code runs slow work directly inside the button handler.</p>
+<p>This button handler blocks the JavaFX Application Thread for five seconds.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">startButton.setOnAction(event -&gt; {
-    for (int step = 1; step &lt;= 100; step++) {
-        doSlowStep(step);
-        progressLabel.setText("Step " + step);
+    try {
+        for (int step = 1; step &lt;= 5; step++) {
+            statusLabel.setText("Step " + step + " of 5");
+            Thread.sleep(1000); // blocks the UI thread
+        }
+    } catch (InterruptedException ex) {
+        return;
     }
 });</code></pre>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Button click
     ↓
 JavaFX Application Thread enters slow loop
     ↓
-cannot process repaint or input events
+cannot repaint or process input events
     ↓
 window appears frozen
     ↓
 loop finishes
     ↓
 JavaFX can process events again</code></pre>
-<p>The problem is not the loop itself. The problem is that the UI thread is doing the slow work.</p>
+<p>After clicking <strong>Start Blocking Work</strong>, try the <strong>Test UI</strong> button. It cannot respond until the loop finishes.</p>
+<p><strong>Example:</strong> <code>cop4027.javafx.concurrency.FrozenUiDemo</code></p>
 </section>
+
 <section class="frame">
-<h2>Move Slow Work Off the UI Thread</h2>
-<p>A worker thread lets the JavaFX Application Thread remain available for the interface.</p>
+<h2>Moving the Work Is Not Enough</h2>
+<p>We can move the slow work to another thread, but there is still a problem.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Thread worker = new Thread(() -&gt; {
-    doSlowWork();
+
+    for (int step = 1; step &lt;= 100; step++) {
+        doSlowStep(step);
+
+        progressLabel.setText("Step " + step); // wrong thread
+    }
+
 }, "background-worker");
 
-worker.setDaemon(true);
 worker.start();</code></pre>
 <ul>
-<li><p><code>new Thread(...)</code> creates another thread of execution.</p></li>
-<li><p><code>start()</code> begins executing the worker.</p></li>
-<li><p>The UI thread remains free to repaint and handle events.</p></li>
+<li><p>The slow loop no longer blocks the JavaFX Application Thread.</p></li>
+<li><p>But the worker is now trying to change a JavaFX control.</p></li>
+<li><p>UI changes need to be performed by the JavaFX Application Thread.</p></li>
 </ul>
-<p>But the worker should not directly change JavaFX controls.</p>
+<p>We need a way for the worker to send a UI update back to the FX thread.</p>
 </section>
+
 <section class="frame">
 <h2>Platform.runLater</h2>
-<p>A worker can ask the JavaFX Application Thread to perform a small UI update.</p>
+<p><code>Platform.runLater(...)</code> schedules a small piece of code to run on the JavaFX Application Thread.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Thread worker = new Thread(() -&gt; {
 
     doSlowWork(); // runs on background-worker
 
     Platform.runLater(() -&gt; {
         statusLabel.setText("Work finished");
-        System.out.println("UI update: " + Thread.currentThread().getName());
     });
 
 }, "background-worker");
 
 worker.setDaemon(true);
 worker.start();</code></pre>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">background-worker → Platform.runLater(...) → JavaFX event queue
-                   → JavaFX Application Thread → UI changes</code></pre>
-<p><code>runLater()</code> schedules the UI code. It does not move the entire worker onto the UI thread.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">background-worker
+        |
+        | slow work
+        v
+Platform.runLater(...)
+        |
+        v
+JavaFX Application Thread
+        |
+        v
+update the UI</code></pre>
+<p><code>runLater()</code> moves only the UI update back to the FX thread. The slow work stays on the worker.</p>
+<p>The <strong>Test UI</strong> button remains clickable while the worker runs.</p>
 <p><strong>Example:</strong> <code>cop4027.javafx.concurrency.RunLaterDemo</code></p>
 </section>
 
-
 <section class="frame">
 <h2>JavaFX Task</h2>
-<p><code>Task</code> represents a background job and exposes JavaFX properties describing that job.</p>
+<p><code>Platform.runLater()</code> works well for occasional UI updates. For a background job with progress or status, JavaFX provides <code>Task</code>.</p>
 <ul>
 <li><p><code>call()</code> contains the background work.</p></li>
-<li><p><code>progressProperty()</code> represents current progress.</p></li>
+<li><p><code>progressProperty()</code> represents the job's progress.</p></li>
 <li><p><code>messageProperty()</code> represents a status message.</p></li>
-<li><p><code>runningProperty()</code> indicates whether the task is currently executing.</p></li>
+<li><p><code>runningProperty()</code> indicates whether the task is running.</p></li>
 </ul>
-<p>A <code>Task</code> describes the work. A thread still executes the task.</p>
+<p>A <code>Task</code> describes the background job. A thread still executes the task.</p>
 </section>
+
 <section class="frame">
 <h2>Background Work in call()</h2>
 <p>The slow operation goes inside <code>call()</code>.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Task&lt;Void&gt; task = new Task&lt;&gt;() {
     @Override
     protected Void call() throws InterruptedException {
-
-        System.out.println(
-            "Task runs on: " + Thread.currentThread().getName()
-        );
 
         for (int step = 1; step &lt;= 5; step++) {
             Thread.sleep(500); // simulate slow work
@@ -1051,13 +1067,15 @@ worker.start();</code></pre>
 };</code></pre>
 <ul>
 <li><p><code>call()</code> runs on the worker thread.</p></li>
-<li><p><code>updateProgress(...)</code> changes the Task's progress state.</p></li>
-<li><p><code>updateMessage(...)</code> changes the Task's message state.</p></li>
+<li><p>Do not directly change JavaFX controls inside <code>call()</code>.</p></li>
+<li><p><code>updateProgress(...)</code> safely updates the Task's progress state.</p></li>
+<li><p><code>updateMessage(...)</code> safely updates the Task's message state.</p></li>
 </ul>
 </section>
+
 <section class="frame">
 <h2>Task Properties and Binding</h2>
-<p>Controls can automatically follow the Task's observable properties.</p>
+<p>JavaFX controls can automatically follow the Task's observable properties.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">progressBar.progressProperty().bind(task.progressProperty());
 
 statusLabel.textProperty().bind(task.messageProperty());
@@ -1074,25 +1092,31 @@ updateMessage(...)
 task.messageProperty()
         ↓ binding
 Label</code></pre>
-<p>The controls follow Task state without manually updating them after every step.</p>
+<p>The controls follow the Task's state automatically, so we do not need a <code>runLater()</code> call for each update.</p>
+<p>The <strong>Test UI</strong> button remains clickable while progress changes.</p>
 </section>
+
 <section class="frame">
 <h2>Starting a Task</h2>
-<p>A <code>Task</code> contains the work, but something must execute it.</p>
+<p>A <code>Task</code> defines the work, but a thread must execute it.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Thread worker = new Thread(task, "task-worker");
 
 worker.setDaemon(true);
 worker.start();</code></pre>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Task
     describes the background work
-
+        ↓
 Thread
     executes the Task
-
+        ↓
 Task properties
-    expose progress and state to JavaFX controls</code></pre>
+    report progress and state
+        ↓
+Bindings
+    update JavaFX controls</code></pre>
 <p><strong>Example:</strong> <code>cop4027.javafx.concurrency.TaskProgressDemo</code></p>
 </section>
+
 <section class="frame">
 <h2>Task Completion</h2>
 <p>A Task can notify the application when its work finishes.</p>
@@ -1105,27 +1129,35 @@ Task properties
   v
 RUNNING
   |
-  +----&gt; SUCCEEDED
-  |
-  +----&gt; FAILED
-  |
-  +----&gt; CANCELLED</code></pre>
-<p>Task event handlers such as <code>setOnSucceeded(...)</code> run on the JavaFX Application Thread, so they can safely update controls.</p>
+  v
+SUCCEEDED</code></pre>
+<ul>
+<li><p><code>setOnSucceeded(...)</code> runs after <code>call()</code> finishes successfully.</p></li>
+<li><p>The handler runs on the JavaFX Application Thread.</p></li>
+<li><p>Because the label was bound to the Task, we unbind it before setting its final text.</p></li>
+</ul>
 </section>
+
 <section class="frame">
 <h2>Choosing runLater or Task</h2>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User event
     ↓
 Is the work short?
     |
-    +-- Yes → handle it on the JavaFX Application Thread
+    +-- Yes → run it on the JavaFX Application Thread
     |
-    +-- No  → run the slow work in the background
+    +-- No  → run slow work in the background
                   |
-                  +-- one small UI update → Platform.runLater(...)
+                  +-- one small UI update
+                  |       → Platform.runLater(...)
                   |
-                  +-- progress / messages / state → Task</code></pre>
-<p>Both approaches follow the same rule: slow work stays off the JavaFX Application Thread, while UI changes happen on it.</p>
+                  +-- progress / messages / state
+                          → Task + binding</code></pre>
+<p>Both approaches follow the same two rules:</p>
+<ul>
+<li><p>Slow work stays off the JavaFX Application Thread.</p></li>
+<li><p>JavaFX controls are updated through the JavaFX Application Thread.</p></li>
+</ul>
 </section>
 
 </section>

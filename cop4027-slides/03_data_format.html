@@ -41,13 +41,13 @@
 
         <section>
           <h2>Learning Goals</h2>
-          <p>After this topic, you should be able to:</p>
+          <p>You should be able to:</p>
           <ul class="simple">
-            <li><p>Explain why programs keep configuration and data outside source code.</p></li>
-            <li><p>Recognize the basic syntax of properties, JSON, YAML, and XML.</p></li>
-            <li><p>Choose an appropriate Java reading strategy: key-value, object mapping, tree model, or streaming.</p></li>
-            <li><p>Convert parsed text values into useful Java types and validate them.</p></li>
-            <li><p>Describe how schemas, namespaces, and application rules help keep external data safe and predictable.</p></li>
+            <li><p>External configuration and data</p></li>
+            <li><p>Properties, JSON, YAML, and XML syntax</p></li>
+            <li><p>Key-value, object mapping, tree, and streaming strategies</p></li>
+            <li><p>Text conversion and validation</p></li>
+            <li><p>Schemas, namespaces, and application rules</p></li>
           </ul>
         </section>
 
@@ -83,7 +83,7 @@ String dataFile = "products.json";</code></pre>
   -&gt; represent it in Java
   -&gt; validate the meaning
   -&gt; use it or write it back</code></pre>
-              <p>This topic prepares us for JavaFX FXML, Spring Boot, REST APIs, databases, and containers.</p>
+              <p>These formats appear in JavaFX, Spring Boot, REST APIs, databases, and containers.</p>
             </div>
           </div>
         </section>
@@ -124,8 +124,8 @@ data.file=products.json</code></pre>
           <h2>Data Sources</h2>
           <p>External text can come from several places:</p>
           <ul class="simple">
-            <li><p><strong>Classpath resources:</strong> files packaged with the application, commonly under <code>src/main/resources</code>.</p></li>
-            <li><p><strong>External files:</strong> files stored outside the application, such as a config folder on the machine.</p></li>
+            <li><p><strong>Classpath resources:</strong> packaged under <code>src/main/resources</code>.</p></li>
+            <li><p><strong>External files:</strong> stored outside the application.</p></li>
             <li><p><strong>Runtime settings:</strong> environment variables and command-line arguments.</p></li>
             <li><p><strong>Remote or persistent sources:</strong> API responses, network requests, and databases.</p></li>
           </ul>
@@ -306,8 +306,8 @@ categories:
           <ul class="simple">
             <li><p>Use <strong>properties</strong> for a few simple Java settings.</p></li>
             <li><p>Use <strong>JSON</strong> for REST API requests, responses, and structured application data.</p></li>
-            <li><p>Use <strong>YAML</strong> for readable nested configuration, especially deployment and Spring-style config.</p></li>
-            <li><p>Use <strong>XML</strong> when the document needs elements, attributes, namespaces, or schema validation.</p></li>
+            <li><p>Use <strong>YAML</strong> for readable, nested configuration.</p></li>
+            <li><p>Use <strong>XML</strong> for elements, attributes, namespaces, and schemas.</p></li>
           </ul>
           <p>The best format depends on the data shape, who edits it, and how strictly it must be validated.</p>
         </section>
@@ -404,7 +404,7 @@ categories=Books,, Electronics</code></pre>
               </ul>
               <ul>
                 <li><strong>Strengths</strong>: simple syntax, built into Java and easy to edit</li>
-                <li><strong>Limits</strong>: flat structure, no native ojects or arrays, values need conversion</li>
+                <li><strong>Limits</strong>: flat structure, no native objects or arrays, values need conversion</li>
 
               </ul>
         </section>
@@ -473,7 +473,7 @@ categories=Books,, Electronics</code></pre>
 ]</code></pre>
 
           <ul class="simple">
-            <li><p>JSON allows mixed arrays, but strongly typed Java code is easier with consistent element shapes.</p></li>
+            <li><p>JSON allows mixed arrays; Java works best with one element shape.</p></li>
           </ul>
         </section>
 
@@ -523,7 +523,7 @@ categories=Books,, Electronics</code></pre>
               <ul class="simple">
                 <li><p>The file is converted into generic nodes.</p></li>
                 <li><p>The code chooses which nodes to inspect.</p></li>
-                <li><p>Best when the structure is flexible or only a few fields are needed.</p></li>
+                <li><p>Best for flexible structures or partial reads.</p></li>
               </ul>
               <pre><code data-trim data-noescape class="language-java">JsonNode root = mapper.readTree(input);
 String name = root.path("name").asText();</code></pre>
@@ -541,7 +541,7 @@ String name = root.path("name").asText();</code></pre>
           <ul class="simple">
             <li><p>Each record component matches a JSON field.</p></li>
             <li><p>A record is compact for data with a known shape.</p></li>
-            <li><p>A regular class is still useful when objects need setters, inheritance, or complex behavior.</p></li>
+            <li><p>Use a class for setters, inheritance, or complex behavior.</p></li>
             <li><p>Example: <code>examples/data-formats/src/main/java/cop4027/data/Product.java</code></p></li>
           </ul>
         </section>
@@ -569,7 +569,7 @@ try (InputStream input = resource) {
 }</code></pre>
           <ul class="simple">
             <li><p>Object mapping is best when the JSON shape is known and stable.</p></li>
-            <li><p>The rest of the program works with normal Java data, not raw JSON.</p></li>
+            <li><p>Application code uses Java data, not raw JSON.</p></li>
           </ul>
         </section>
 
@@ -597,7 +597,7 @@ try (InputStream input = resource) {
         .asText("(missing)");
 }</code></pre>
           <ul class="simple">
-            <li><p>Use the tree model when the JSON structure is flexible or only a few fields are needed.</p></li>
+            <li><p>Use a tree for flexible JSON or partial reads.</p></li>
           </ul>
         </section>
 
@@ -615,7 +615,7 @@ try (InputStream input = resource) {
               <li>fields are optional</li>
               <li>the program only needs part of the data</li>
             </ul>
-            <li><p>Both approaches still need validation. Parsing does not prove that the values make sense for the application.</p></li>
+            <li><p>Parsing checks syntax; validation checks application meaning.</p></li>
           </ul>
           <pre><code data-trim data-noescape class="language-text">Known shape      -&gt; Product or List&lt;Product&gt;
 Flexible shape   -&gt; JsonNode tree
@@ -702,7 +702,7 @@ categories:             # list
         
           <ul class="simple">
             <li><p>Indentation creates hierarchy.</p></li>
-            <li><p>A scalar is a single value; a map stores key-value pairs; a list stores ordered items.</p></li>
+            <li><p>A scalar is one value; maps use keys; lists use order.</p></li>
           </ul>
         </section>
 
@@ -880,8 +880,8 @@ if (a &lt; b &amp;&amp; c &gt; d) {
 &lt;/order&gt;</code></pre>
     <ul class="simple">
       <li><p><code>xmlns:store="..."</code> declares the <code>store</code> namespace prefix.</p></li>
-      <li><p><code>store</code> and <code>ship</code> are author-chosen prefix names.</p></li>
-      <li><p>The URI identifies the namespace; it does not need to be a real web page.</p></li>
+      <li><p><code>store</code> and <code>ship</code> are application-defined prefixes.</p></li>
+      <li><p>A namespace URI does not need to be a real web page.</p></li>
       <li><p><code>store:address</code> and <code>ship:address</code> are different XML names.</p></li>
       <li><p>FXML also uses namespaces, such as <code>xmlns:fx="http://javafx.com/fxml"</code>.</p></li>
     </ul>
@@ -997,7 +997,7 @@ if (a &lt; b &amp;&amp; c &gt; d) {
       </div>
     </div>
     <ul class="simple">
-      <li><p>The second document has legal XML syntax, but its values do not match the XSD types.</p></li>
+      <li><p>The second document is well-formed but violates the XSD types.</p></li>
     </ul>
   </section>
 
@@ -1102,7 +1102,7 @@ double price = Double.parseDouble(
 parser.parse(input, handler);</code></pre>
     <ul class="simple">
       <li><p>SAX reads from beginning to end.</p></li>
-      <li><p>The parser calls our methods when events happen.</p></li>
+      <li><p>The parser calls handler methods for each event.</p></li>
       <li><p>Good for large read-only XML files.</p></li>
     </ul>
   </section>
@@ -1125,7 +1125,7 @@ while (reader.hasNext()) {
 reader.close();</code></pre>
     <ul class="simple">
       <li><p>StAX also reads the XML as a stream.</p></li>
-      <li><p>Our code calls <code>next()</code> to move forward.</p></li>
+      <li><p>Code calls <code>next()</code> to move forward.</p></li>
       <li><p>Good when the program needs more control than SAX.</p></li>
     </ul>
   </section>
@@ -1263,11 +1263,11 @@ database.password=YOUR_PASSWORD</code></pre>
         <section>
           <h2>Format to Java</h2>
           <ul class="simple">
-            <li><p><strong>Properties:</strong> <code>Properties.load()</code> reads key-value strings, then code converts and validates values.</p></li>
+            <li><p><strong>Properties:</strong> read strings, then convert and validate them.</p></li>
             <li><p><strong>JSON:</strong> Jackson <code>ObjectMapper</code> reads objects, lists, or <code>JsonNode</code> trees.</p></li>
-            <li><p><strong>YAML:</strong> Jackson YAML or SnakeYAML reads configuration into records, maps, or trees.</p></li>
+            <li><p><strong>YAML:</strong> maps to records, maps, or trees.</p></li>
             <li><p><strong>XML:</strong> DOM, SAX, or StAX reads documents as trees or stream events.</p></li>
-            <li><p><strong>Environment variables:</strong> <code>System.getenv()</code> reads named strings from the runtime environment.</p></li>
+            <li><p><strong>Environment variables:</strong> <code>System.getenv()</code> reads runtime strings.</p></li>
           </ul>
         </section>
 
@@ -1277,15 +1277,15 @@ database.password=YOUR_PASSWORD</code></pre>
             <li><p><strong>JavaFX:</strong> FXML is XML-based, and CSS controls styling.</p></li>
             <li><p><strong>Spring Boot:</strong> applications commonly use properties or YAML configuration.</p></li>
             <li><p><strong>REST APIs:</strong> request and response bodies commonly use JSON.</p></li>
-            <li><p><strong>Containers and deployment:</strong> tools commonly use YAML, environment variables, and secrets.</p></li>
-            <li><p><strong>Databases:</strong> structured files are useful, but shared persistent data needs database support.</p></li>
+            <li><p><strong>Deployment:</strong> commonly uses YAML, environment variables, and secrets.</p></li>
+            <li><p><strong>Databases:</strong> support shared persistent data.</p></li>
           </ul>
         </section>
 
         <section>
           <h2>Takeaway</h2>
           <ul class="simple">
-            <li><p>Configuration controls how an application runs; application data represents what it processes.</p></li>
+            <li><p>Configuration controls behavior; application data represents content.</p></li>
             <li><p>Before parsing, decide what Java representation you want.</p></li>
             <li><p>Parsing a file is not the same as validating its meaning.</p></li>
             <li><p>Secrets should stay out of source control and AI prompts.</p></li>
