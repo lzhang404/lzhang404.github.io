@@ -46,10 +46,7 @@
 <li><p>Predict compile-time and runtime failures.</p></li>
 <li><p>Explain the limits caused by type erasure.</p></li>
 </ul>
-<ul>
-<li><p>You already use <code>List&lt;String&gt;</code>.</p></li>
-<li><p>Today: harder generic signatures.</p></li>
-</ul>
+
 </section>
 
 
@@ -141,111 +138,55 @@ public static &lt;T&gt; void printAll(T[] values) {   // Declared before the
 </section>
 </section>
 
-
-<section>
-<section class="title-slide slide level1">
-<h1>Variance</h1>
-</section>
-
-<section class="frame">
-<h2>Invariance of Generic Types</h2>
-
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;String&gt; names = new ArrayList&lt;&gt;();
-
-List&lt;Object&gt; objs = names;   // Compile-time error.
-
-// If Java allowed the line above:
-objs.add(42);                // Looks fine: Integer is an Object.
-String first = names.get(0); // But this would return an Integer.</code></pre>
-
-<ul>
-<li><p><code>String</code> is a subtype of <code>Object</code>.</p></li>
-<li><p><code>List&lt;String&gt;</code> is <em>not</em> a subtype of <code>List&lt;Object&gt;</code>.</p></li>
-</ul>
-<ul>
-<li><p>This restriction is invariance.</p></li>
-<li><p>Wildcards provide controlled flexibility.</p></li>
-</ul>
-<ul>
-<li><p>Example: <code>VarianceDemo.java</code></p></li>
-</ul>
-</section>
-
-
-<section class="frame">
-<h2>Arrays vs Generics</h2>
-
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Arrays: covariant, checked when the program runs.
-Object[] arr = new String[2];
-arr[0] = 42;                                 // ArrayStoreException.
-
-// Generics: invariant, checked when the program compiles.
-List&lt;Object&gt; list = new ArrayList&lt;String&gt;(); // Rejected by javac.</code></pre>
-
-<table>
-<thead>
-<tr>
-<th></th>
-<th>Arrays</th>
-<th>Generics</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Subtyping</td>
-<td>Covariant</td>
-<td>Invariant</td>
-</tr>
-<tr>
-<td>Element type at runtime</td>
-<td>Kept</td>
-<td>Erased</td>
-</tr>
-<tr>
-<td>Wrong type detected</td>
-<td>At runtime</td>
-<td>At compile time</td>
-</tr>
-</tbody>
-</table>
-
-<ul>
-<li><p>Arrays keep the element type and check at runtime.</p></li>
-<li><p>Generics erase type arguments and check at compile time.</p></li>
-</ul>
-<ul>
-<li><p>Example: <code>VarianceDemo.java</code></p></li>
-</ul>
-</section>
-</section>
-
-
 <section>
 <section class="title-slide slide level1">
 <h1>Bounds and Wildcards</h1>
 </section>
 
 <section class="frame">
-<h2>Type Bounds</h2>
+<h2>Two Kinds of Bounds</h2>
+
+<p>A bound limits what type is allowed.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Type parameter bound: declares and restricts T.
+&lt;T extends Number&gt;
+
+// Wildcard upper bound: unknown type, Number or below.
+? extends Number
+
+// Wildcard lower bound: unknown type, Integer or above.
+? super Integer</code></pre>
+
+<ul>
+<li><p><code>&lt;T extends Number&gt;</code> gives a class or method its own named type variable.</p></li>
+<li><p><code>? extends Number</code> and <code>? super Integer</code> are wildcard bounds inside a parameterized type.</p></li>
+<li><p>Type parameter bounds use <code>extends</code>; wildcard bounds can use <code>extends</code> or <code>super</code>.</p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Upper Bound Example</h2>
+
+<p>A type parameter bound lets generic code use methods from the bound.</p>
 
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class Box&lt;T extends Number&gt; {
     private final T value;
 
-    public Box(T value) { this.value = value; }
+    public Box(T value) {
+        this.value = value;
+    }
 
     public double asDouble() {
-        return value.doubleValue();   // Safe because of the bound.
+        return value.doubleValue();
     }
-}
-
-Box&lt;Integer&gt; count = new Box&lt;&gt;(10);
-Box&lt;Double&gt; price  = new Box&lt;&gt;(12.5);
-
-// Box&lt;String&gt; name = new Box&lt;&gt;("Alice");   // Rejected.</code></pre>
+}</code></pre>
 
 <ul>
-<li><p>Without the bound, <code>T</code> is only an <code>Object</code>.</p></li>
-<li><p><code>Object</code> has no <code>doubleValue()</code> method.</p></li>
+<li><p><code>T</code> must be <code>Number</code> or a subclass of <code>Number</code>.</p></li>
+<li><p><code>Box&lt;Integer&gt;</code> and <code>Box&lt;Double&gt;</code> are allowed.</p></li>
+<li><p><code>Box&lt;String&gt;</code> is rejected.</p></li>
+<li><p>The bound is what makes <code>doubleValue()</code> available.</p></li>
 </ul>
 <ul>
 <li><p>Example: <code>Box.java</code></p></li>
@@ -254,25 +195,26 @@ Box&lt;Double&gt; price  = new Box&lt;&gt;(12.5);
 
 
 <section class="frame">
-<h2>Self-Bounded Types</h2>
+<h2>Type Parameter Bound: Comparable Values</h2>
+
+<p>A method that finds the maximum value needs values that know how to compare themselves.</p>
 
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static &lt;T extends Comparable&lt;T&gt;&gt; T max(List&lt;T&gt; items) {
     T best = items.get(0);
+
     for (T item : items) {
         if (item.compareTo(best) &gt; 0) {
             best = item;
         }
     }
+
     return best;
 }</code></pre>
 
 <ul>
-<li><p><code>T extends Comparable&lt;T&gt;</code> reads as: <code>T</code> can be compared to other <code>T</code> values.</p></li>
-<li><p>The bound is what makes <code>compareTo</code> available inside the method.</p></li>
-</ul>
-<ul>
-<li><p>The JDK uses <code>Comparable&lt;? super T&gt;</code>.</p></li>
-<li><p>Compare it with the wildcard slides next.</p></li>
+<li><p><code>T extends Comparable&lt;T&gt;</code> means <code>T</code> can compare itself to another <code>T</code>.</p></li>
+<li><p>The bound is what makes <code>compareTo</code> available.</p></li>
+<li><p>The JDK uses a more flexible version: <code>Comparable&lt;? super T&gt;</code>.</p></li>
 </ul>
 <ul>
 <li><p>Example: <code>GenericMethodDemo.java</code></p></li>
@@ -281,25 +223,57 @@ Box&lt;Double&gt; price  = new Box&lt;&gt;(12.5);
 
 
 <section class="frame">
-<h2>Producer: <code>? extends T</code></h2>
+<h2>Why Wildcard Bounds?</h2>
+
+<p>Ordinary generic types are invariant, so related element types do not automatically make related list types.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Animal { }
+class Dog extends Animal { }
+class Cat extends Animal { }
+
+// Arrays are covariant.
+Dog[] dogs = new Dog[2];
+Animal[] animals = dogs;       // Allowed.
+animals[0] = new Cat();        // Runtime error.
+
+// Generic lists are invariant.
+List&lt;Dog&gt; dogList = new ArrayList&lt;&gt;();
+List&lt;Animal&gt; animalList = dogList;  // Compile-time error.
+
+// Wildcard bound gives a controlled view.
+List&lt;? extends Animal&gt; animalView = dogList;  // Allowed for reading.</code></pre>
+
+<ul>
+<li><p><strong>Covariant:</strong> same direction, such as <code>Dog[]</code> used as <code>Animal[]</code>.</p></li>
+<li><p><strong>Invariant:</strong> no subtype relationship, such as <code>List&lt;Dog&gt;</code> and <code>List&lt;Animal&gt;</code>.</p></li>
+<li><p>Wildcards provide controlled flexibility without making <code>List&lt;T&gt;</code> itself covariant.</p></li>
+</ul>
+</section>
+
+
+<section class="frame">
+<h2>Wildcard Upper Bound: <code>? extends T</code></h2>
+
+<p>Use <code>? extends T</code> when the parameter mainly produces values for your method to read.</p>
 
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static double sum(List&lt;? extends Number&gt; numbers) {
     double total = 0;
-    for (Number n : numbers) {   // Reading out as Number is safe.
+
+    for (Number n : numbers) {
         total += n.doubleValue();
     }
+
+    // numbers.add(1);      // Compile-time error.
     return total;
 }
 
-sum(List.of(1, 2, 3));      // List&lt;Integer&gt;
-sum(List.of(1.5, 2.5));     // List&lt;Double&gt;
-
-// numbers.add(1);          // Rejected.</code></pre>
+sum(List.of(1, 2, 3));      // List<Integer>
+sum(List.of(1.5, 2.5));     // List<Double></code></pre>
 
 <ul>
-<li><p>The list might be a <code>List&lt;Double&gt;</code>.</p></li>
+<li><p>The list contains some unknown subtype of <code>Number</code>.</p></li>
 <li><p>Reading as <code>Number</code> is safe.</p></li>
-<li><p>Adding a non-null <code>Number</code> is unsafe.</p></li>
+<li><p>Adding a non-null value is unsafe because the exact list type is unknown.</p></li>
 </ul>
 <ul>
 <li><p>Example: <code>WildcardsDemo.java</code></p></li>
@@ -308,13 +282,15 @@ sum(List.of(1.5, 2.5));     // List&lt;Double&gt;
 
 
 <section class="frame">
-<h2>Consumer: <code>? super T</code></h2>
+<h2>Wildcard Lower Bound: <code>? super T</code></h2>
+
+<p>Use <code>? super T</code> when the parameter mainly consumes values written by your method.</p>
 
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static void addIntegers(List&lt;? super Integer&gt; target) {
     target.add(1);
-    target.add(2);              // Writing an Integer is safe.
+    target.add(2);
 
-    Object o = target.get(0);   // Reads come back only as Object.
+    Object o = target.get(0);
 }
 
 addIntegers(new ArrayList&lt;Integer&gt;());
@@ -322,9 +298,9 @@ addIntegers(new ArrayList&lt;Number&gt;());
 addIntegers(new ArrayList&lt;Object&gt;());</code></pre>
 
 <ul>
-<li><p>The element type is <code>Integer</code> or a supertype.</p></li>
-<li><p>Adding an <code>Integer</code> is safe.</p></li>
-<li><p>Reading yields only <code>Object</code>.</p></li>
+<li><p>The list element type is <code>Integer</code> or a supertype of <code>Integer</code>.</p></li>
+<li><p>Adding an <code>Integer</code> is safe in all three cases.</p></li>
+<li><p>Reading yields only <code>Object</code> because the exact list type is unknown.</p></li>
 </ul>
 <ul>
 <li><p>Example: <code>WildcardsDemo.java</code></p></li>
@@ -377,7 +353,7 @@ addIntegers(new ArrayList&lt;Object&gt;());</code></pre>
 
 
 <section class="frame">
-<h2>Exercise: Wildcards</h2>
+<h2>Exercise: Wildcard Bounds</h2>
 
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// 1. Print every element.
 static &lt;T&gt; void printAll(List&lt;___&gt; items)
@@ -391,6 +367,7 @@ static &lt;T&gt; void forEach(List&lt;___&gt; items, Consumer&lt;___&gt; action)
 <ul>
 <li><p>Does the method read from this parameter?</p></li>
 <li><p>Does the method write to it?</p></li>
+<li><p>Choose an upper bound, lower bound, or exact <code>T</code>.</p></li>
 </ul>
 </section>
 
@@ -406,8 +383,8 @@ static &lt;T&gt; void forEach(List&lt;? extends T&gt; items,
                         Consumer&lt;? super T&gt; action)</code></pre>
 
 <ul>
-<li><p>1. The list is only read from, so it is a producer.</p></li>
-<li><p>2. The list is only written to, so it is a consumer.</p></li>
+<li><p>1. The list is only read from, so it uses an upper bound.</p></li>
+<li><p>2. The list is only written to, so it uses a lower bound.</p></li>
 <li><p>3. The list produces values; the <code>Consumer</code> receives them.</p></li>
 </ul>
 <ul>
@@ -417,28 +394,39 @@ static &lt;T&gt; void forEach(List&lt;? extends T&gt; items,
 </section>
 </section>
 
-
 <section>
 <section class="title-slide slide level1">
 <h1>Type Erasure</h1>
 </section>
 
 <section class="frame">
-<h2>Erasure of Type Variables</h2>
-<p>The compiler checks type arguments, then generates executable code using erased types.</p>
+<h2>Type Erasure</h2>
 
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Box&lt;T&gt; {                  class Box {
-    T value;          ---&gt;          Object value;
-}                               }
+<p>Java checks generic types at compile time, but most generic type information is removed before the program runs.</p>
 
-class Box&lt;T extends Number&gt; {   class Box {
-    T value;          ---&gt;          Number value;
-}                               }</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// No bound: T erases to Object
+class Box&lt;T&gt; {
+    T value;
+}
+
+// Conceptually at runtime:
+class Box {
+    Object value;
+}</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// With a bound: T erases to the bound
+class NumberBox&lt;T extends Number&gt; {
+    T value;
+}
+
+// Conceptually at runtime:
+class NumberBox {
+    Number value;
+}</code></pre>
 
 <ul>
-<li><p>An unbounded type variable erases to <code>Object</code>.</p></li>
-<li><p>A bounded type variable erases to its bound.</p></li>
-<li><p>The compiler inserts the casts your source code no longer has to write.</p></li>
+<li><p>An unbounded type parameter such as <code>T</code> erases to <code>Object</code>.</p></li>
+<li><p>A bounded type parameter such as <code>T extends Number</code> erases to <code>Number</code>.</p></li>
 </ul>
 </section>
 
@@ -459,12 +447,10 @@ if (obj instanceof List&lt;?&gt; list) { }      // Allowed.
 // void f(List&lt;Integer&gt; i) { }            // Same erasure: name clash.</code></pre>
 
 <ul>
-<li><p>No runtime <code>T</code> or constructor guarantee: no <code>new T()</code>.</p></li>
-<li><p>No reified component type: no <code>new T[]</code>.</p></li>
-<li><p>Erasure removes the <code>List&lt;String&gt;</code> runtime test.</p></li>
-<li><p>Erased overloads have the same signature.</p></li>
-<li><p><code>static T</code> fails for a different reason.</p></li>
-<li><p>Class type parameters are unavailable in a static context.</p></li>
+<li><p>At runtime, Java does not know the exact type argument for <code>T</code>.</p></li>
+<li><p><code>List&lt;String&gt;</code> is not reifiable, so Java cannot test it with <code>instanceof</code>.</p></li>
+<li><p>Overloads that differ only by generic type arguments erase to the same method signature.</p></li>
+<li><p>Class type parameters cannot be used in static members.</p></li>
 </ul>
 <ul>
 <li><p>Example: <code>ErasureLimits.java</code></p></li>
@@ -477,23 +463,18 @@ if (obj instanceof List&lt;?&gt; list) { }      // Allowed.
 
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;String&gt; names = new ArrayList&lt;&gt;();
 
-List raw = names;
+List raw = names;              // Raw alias to the same list.
 
 raw.add(123);                  // Unchecked warning, but it compiles.
 
 String first = names.get(0);   // ClassCastException here.</code></pre>
 
 <ul>
-<li><p><code>names</code> is declared as <code>List&lt;String&gt;</code>.</p></li>
-<li><p>The raw alias inserts an <code>Integer</code>.</p></li>
-<li><p>This mismatch is heap pollution.</p></li>
-<li><p>The failure appears at the read, far from the line that caused it.</p></li>
+<li><p><strong>Heap pollution:</strong> a parameterized variable refers to data that does not match its declared type.</p></li>
+<li><p><strong>Unchecked warning:</strong> the compiler cannot fully verify type safety.</p></li>
+<li><p><code>@SuppressWarnings("unchecked")</code> hides the warning only when you have manually verified safety.</p></li>
 </ul>
-<ul>
-<li><p>An unchecked warning signals a type-safety risk.</p></li>
-<li><p><code>@SuppressWarnings("unchecked")</code> hides the warning.</p></li>
-<li><p>It does not remove the risk.</p></li>
-</ul>
+
 <ul>
 <li><p>Example: <code>RawVsGeneric.java</code></p></li>
 </ul>
@@ -523,25 +504,24 @@ System.out.println(new ArrayList&lt;String&gt;().getClass()
 
 
 <section class="frame">
-<h2>Type Tokens: <code>Class&lt;T&gt;</code></h2>
+<h2>Keeping a Type at Runtime: <code>Class&lt;T&gt;</code></h2>
 
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Class&lt;?&gt; unknown = String.class;       // Some class, type unspecified.
-Class&lt;String&gt; known = String.class;    // Known to describe String.
+<p>Generic type <code>T</code> is mostly erased at runtime. If a method needs the actual class, we can pass it explicitly.</p>
 
-static &lt;T&gt; T cast(Object value, Class&lt;T&gt; type) {
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static &lt;T&gt; T cast(Object value, Class&lt;T&gt; type) {
     return type.cast(value);
 }
 
-String name = cast("Alice", String.class);   // T = String.</code></pre>
+String name = cast("Alice", String.class);</code></pre>
 
 <ul>
-<li><p><code>Class&lt;T&gt;</code> supplies one runtime class.</p></li>
-<li><p>It does not restore <code>String</code> in <code>List&lt;String&gt;</code>.</p></li>
-<li><p>Reflection, Spring, and JSON APIs use this pattern.</p></li>
+<li><p><code>String.class</code> is an object that represents the <code>String</code> class at runtime.</p></li>
+<li><p>Its type is <code>Class&lt;String&gt;</code>.</p></li>
+<li><p>Passing <code>String.class</code> tells the method that <code>T</code> is <code>String</code>.</p></li>
 </ul>
-<ul>
-<li><p>Example: <code>TypeErasureDemo.java</code></p></li>
-</ul>
+
+<p><strong>Important:</strong> <code>List.class</code> tells us only that something is a <code>List</code>. It does not preserve <code>String</code> from <code>List&lt;String&gt;</code>.</p>
+
 </section>
 </section>
 
@@ -554,9 +534,9 @@ String name = cast("Alice", String.class);   // T = String.</code></pre>
 <section class="frame">
 <h2>Key Takeaways</h2>
 <ul>
-<li><p>Generic types are invariant.</p></li>
+<li><p>Parameterized generic types are invariant.</p></li>
 <li><p><code>List&lt;String&gt;</code> is not a <code>List&lt;Object&gt;</code>.</p></li>
-<li><p>Arrays are covariant and reified; generics are invariant and erased.</p></li>
+<li><p>Arrays are covariant and reified; parameterized generic types are invariant and erased.</p></li>
 <li><p>Bounds tell the compiler which operations are safe on a type parameter.</p></li>
 <li><p>Producer Extends, Consumer Super. Wildcards describe how a parameter is used.</p></li>
 <li><p>Erasure rules out <code>new T()</code> and <code>new T[]</code>.</p></li>
@@ -567,31 +547,6 @@ String name = cast("Alice", String.class);   // T = String.</code></pre>
 </section>
 
 
-<section class="frame">
-<h2>Exit Check</h2>
-<ul>
-<li><p><code>Collections.sort</code> accepts a <code>Comparator&lt;? super T&gt;</code>. Why <code>super</code> rather than <code>extends</code>?</p></li>
-<li><p><code>new T[10]</code> is rejected, but <code>(T[]) new Object[10]</code> compiles with a warning. What changed?</p></li>
-</ul>
-<p>Both questions are about something the compiler knows and the runtime does not.</p>
-</section>
-
-
-<section class="frame">
-<h2>Exit Check: Answers</h2>
-<ul>
-<li><p>The comparator only consumes <code>T</code>.</p></li>
-<li><p>A <code>Comparator&lt;Object&gt;</code> can compare strings.</p></li>
-<li><p>It can sort a <code>List&lt;String&gt;</code>.</p></li>
-<li><p>Using <code>extends</code> would reject it.</p></li>
-<li><p>The array cast is still unchecked.</p></li>
-<li><p>The array is still an <code>Object[]</code>.</p></li>
-<li><p>A later use may throw <code>ClassCastException</code>.</p></li>
-</ul>
-<ul>
-<li><p>In both cases, the runtime type argument is gone.</p></li>
-</ul>
-</section>
 
 </section>
 

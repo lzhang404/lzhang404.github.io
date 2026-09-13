@@ -945,14 +945,6 @@ User chooses Open
 <li><p><strong>Rule 1:</strong> Do not run slow work on the JavaFX Application Thread.</p></li>
 <li><p><strong>Rule 2:</strong> Background workers should not directly update JavaFX controls.</p></li>
 </ul>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX Application Thread
-    handles UI and user events
-
-Background worker
-    performs slow work
-
-Slow work must leave the FX thread.
-UI updates must come back to the FX thread.</code></pre>
 </section>
 
 <section class="frame">
@@ -968,18 +960,6 @@ UI updates must come back to the FX thread.</code></pre>
         return;
     }
 });</code></pre>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Button click
-    ↓
-JavaFX Application Thread enters slow loop
-    ↓
-cannot repaint or process input events
-    ↓
-window appears frozen
-    ↓
-loop finishes
-    ↓
-JavaFX can process events again</code></pre>
-<p>After clicking <strong>Start Blocking Work</strong>, try the <strong>Test UI</strong> button. It cannot respond until the loop finishes.</p>
 <p><strong>Example:</strong> <code>cop4027.javafx.concurrency.FrozenUiDemo</code></p>
 </section>
 
@@ -1011,7 +991,7 @@ worker.start();</code></pre>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Thread worker = new Thread(() -&gt; {
 
     doSlowWork(); // runs on background-worker
-
+    //schedule to run on the fx thread
     Platform.runLater(() -&gt; {
         statusLabel.setText("Work finished");
     });
@@ -1020,19 +1000,9 @@ worker.start();</code></pre>
 
 worker.setDaemon(true);
 worker.start();</code></pre>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">background-worker
-        |
-        | slow work
-        v
-Platform.runLater(...)
-        |
-        v
-JavaFX Application Thread
-        |
-        v
-update the UI</code></pre>
+
 <p><code>runLater()</code> moves only the UI update back to the FX thread. The slow work stays on the worker.</p>
-<p>The <strong>Test UI</strong> button remains clickable while the worker runs.</p>
+
 <p><strong>Example:</strong> <code>cop4027.javafx.concurrency.RunLaterDemo</code></p>
 </section>
 
@@ -1093,7 +1063,7 @@ task.messageProperty()
         ↓ binding
 Label</code></pre>
 <p>The controls follow the Task's state automatically, so we do not need a <code>runLater()</code> call for each update.</p>
-<p>The <strong>Test UI</strong> button remains clickable while progress changes.</p>
+
 </section>
 
 <section class="frame">
