@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>COP4027 Midterm Review</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<style>
+.reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+.reveal pre[data-fontsize="xsmall"] { font-size: 0.56em; }
+.reveal table.compact { font-size: 0.78em; }
+.reveal table.tight { font-size: 0.72em; }
+</style>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+  <section data-background-color="white" data-background-image="../_static/logo.png"
+           data-background-position="top center" data-background-repeat="no-repeat"
+           data-background-size="50%" class="title-slide">
+    <h1>Midterm Review</h1>
+    <div class="subtitle docutils container">
+      <p><strong>COP4027 Advanced Programming</strong></p>
+      <p>Liting Zhang</p>
+    </div>
+  </section>
+</section>
+
+<section>
+  <section class="frame">
+    <h2>Roadmap</h2>
+    <ol>
+      <li><p>Java projects, Maven, and modules</p></li>
+      <li><p>Reflection and annotations</p></li>
+      <li><p>Data and configuration formats</p></li>
+      <li><p>JavaFX</p></li>
+      <li><p>Generics</p></li>
+    </ol>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>1. Java Projects, Maven, and Modules</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Course Project Mental Model</h2>
+    <table class="compact">
+      <thead><tr><th>Concern</th><th>Main Tool or File</th><th>Responsibility</th></tr></thead>
+      <tbody>
+        <tr><td>Build</td><td><code>Maven</code> and <code>pom.xml</code></td><td>Compile, test, package, and download libraries</td></tr>
+        <tr><td>Project layout</td><td>Maven directories</td><td>Separate source, resources, tests, and generated output</td></tr>
+        <tr><td>Organization</td><td>Packages</td><td>Group related classes and provide namespaces</td></tr>
+        <tr><td>Strong boundary</td><td><code>module-info.java</code></td><td>Declare required modules and exposed packages</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Maven Layout and Resource Flow</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">project/
+├── pom.xml
+├── src/main/java/       Java source
+├── src/main/resources/  packaged files
+├── src/test/java/       test source
+└── target/              generated output</code></pre>
+    <ul>
+      <li><p>Maven copies resources to the runtime classpath under <code>target/classes</code>.</p></li>
+      <li><p><code>target</code> is generated. Edit files under <code>src</code>.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Dependencies and Module Boundaries</h2>
+    <table class="compact">
+      <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>Direct dependency</td><td>A library declared in <code>pom.xml</code></td></tr>
+        <tr><td>Transitive dependency</td><td>A library required by another dependency</td></tr>
+        <tr><td>Local repository</td><td>The <code>.m2</code> cache for downloaded artifacts</td></tr>
+        <tr><td><code>requires</code></td><td>Names a module this module needs</td></tr>
+        <tr><td><code>exports</code></td><td>Exposes a package to other modules</td></tr>
+      </tbody>
+    </table>
+    <p>A public class must also be inside an exported package for cross-module access.</p>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>2. Reflection and Annotations</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Direct Calls and Runtime Discovery</h2>
+    <table class="compact">
+      <thead><tr><th>Situation</th><th>Approach</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Class and method are known while writing the code</td><td>Direct construction and calls</td><td>The compiler checks names and types</td></tr>
+        <tr><td>A class name comes from configuration</td><td>Reflection behind a loader</td><td>The choice is made while the program runs</td></tr>
+        <tr><td>A framework discovers marked methods</td><td>Annotations plus reflection</td><td>Metadata identifies allowed elements</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Class Metadata and Member Lookup</h2>
+    <pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Class&lt;?&gt; a = Report.class;
+Class&lt;?&gt; b = report.getClass();
+Class&lt;?&gt; c = Class.forName(className);
+
+Method m = c.getMethod("run", String.class);</code></pre>
+    <ul>
+      <li><p><code>getMethods()</code> returns public methods, including inherited methods.</p></li>
+      <li><p><code>getDeclaredMethods()</code> returns methods declared directly in the class.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Create and Invoke at Runtime</h2>
+    <pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Class&lt;?&gt; rawType = Class.forName(className);
+Class&lt;? extends ReportTask&gt; type =
+    rawType.asSubclass(ReportTask.class);
+ReportTask task = type.getDeclaredConstructor()
+                      .newInstance();
+Method method = type.getMethod(
+    "run", String.class);
+Object result = method.invoke(task, "weekly");</code></pre>
+    <ul>
+      <li><p>Lookup fails when the class, constructor, or method does not exist.</p></li>
+      <li><p><code>InvocationTargetException</code> wraps an exception thrown by the invoked method.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Runtime Annotations</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Command {
+    String value();
+}</code></pre>
+    <ul>
+      <li><p><code>RUNTIME</code> makes the annotation visible to reflection.</p></li>
+      <li><p><code>METHOD</code> limits where the annotation may appear.</p></li>
+      <li><p>The runner discovers marked methods, validates them, and invokes accepted methods.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>3. Data and Configuration Formats</h1>
+  </section>
+
+  <section class="frame">
+    <h2>External Text to Validated Java</h2>
+    <pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (InputStream in = App.class
+        .getResourceAsStream("/app.properties")) {
+    Properties p = new Properties();
+    p.load(in);
+    String text = p.getProperty("server.port");
+    int port = Integer.parseInt(text);
+}</code></pre>
+    <ul>
+      <li><p>A classpath resource travels with the application.</p></li>
+      <li><p><code>Properties</code> stores keys and values as strings.</p></li>
+      <li><p>Convert the text, then validate the application rules.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Choosing a Text Format</h2>
+    <table class="compact">
+      <thead><tr><th>Format</th><th>Natural Shape</th><th>Typical Use</th><th>Main Caution</th></tr></thead>
+      <tbody>
+        <tr><td>Properties</td><td>Flat key and value pairs</td><td>Small configuration</td><td>Values begin as strings</td></tr>
+        <tr><td>JSON</td><td>Objects and arrays</td><td>APIs and structured data</td><td>Exact punctuation and root shape</td></tr>
+        <tr><td>YAML</td><td>Indented maps and lists</td><td>Human-edited configuration</td><td>Whitespace changes structure</td></tr>
+        <tr><td>XML</td><td>Elements and attributes</td><td>Document data and validated exchange</td><td>Namespaces and schema rules</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>JSON Structure and Java Representations</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-json">{
+  "name": "Harbor Store",
+  "open": true,
+  "items": [
+    { "sku": "A17", "price": 12.5 }
+  ]
+}</code></pre>
+    <ul>
+      <li><p>Use object mapping for a stable shape.</p></li>
+      <li><p>Use <code>JsonNode</code> for a flexible shape or selected fields.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>YAML Structure</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-yaml">store:
+  name: "Harbor Store"
+  open: true
+  tags:
+    - local
+    - "open late"</code></pre>
+    <ul>
+      <li><p>Indentation expresses nesting.</p></li>
+      <li><p>A dash starts a list item.</p></li>
+      <li><p>Quotes protect text that may be interpreted as another type.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Reading an XSD</h2>
+    <pre data-fontsize="xsmall" data-frame="leftline"><code class="language-xml">&lt;xs:element name="book"&gt;
+  &lt;xs:complexType&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:element name="title" type="xs:string"/&gt;
+      &lt;xs:element name="pages" type="xs:positiveInteger"/&gt;
+    &lt;/xs:sequence&gt;
+    &lt;xs:attribute name="id" type="xs:string" use="required"/&gt;
+  &lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</code></pre>
+    <ul>
+      <li><p>The root element is <code>book</code>.</p></li>
+      <li><p><code>title</code> comes before a positive <code>pages</code> value.</p></li>
+      <li><p>The <code>id</code> attribute is required.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Valid XML Instance</h2>
+    <pre data-fontsize="small" data-frame="leftline"><code class="language-xml">&lt;book id="B7"&gt;
+  &lt;title&gt;Clean Code&lt;/title&gt;
+  &lt;pages&gt;464&lt;/pages&gt;
+&lt;/book&gt;</code></pre>
+    <ul>
+      <li><p>Well-formed XML follows XML syntax.</p></li>
+      <li><p>Schema-valid XML also follows the required structure, types, and attributes.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>4. JavaFX</h1>
+  </section>
+
+  <section class="frame">
+    <h2>JavaFX Runtime Mental Model</h2>
+    <table>
+      <thead><tr><th>Object</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>Stage</code></td><td>Top-level window</td></tr>
+        <tr><td><code>Scene</code></td><td>Content area placed in the window</td></tr>
+        <tr><td><code>VBox</code></td><td>Layout node that arranges children vertically</td></tr>
+        <tr><td><code>Button</code></td><td>Control that can fire an action event</td></tr>
+      </tbody>
+    </table>
+    <p>The scene graph is a tree of layouts, controls, and other nodes.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Controls, Layouts, and Events</h2>
+    <table class="compact">
+      <tbody>
+        <tr><td>Controls</td><td>What appears</td><td><code>Label</code>, <code>TextField</code>, <code>Button</code></td></tr>
+        <tr><td>Layouts</td><td>Where nodes go</td><td><code>VBox</code>, <code>HBox</code>, <code>GridPane</code></td></tr>
+        <tr><td>Event handlers</td><td>What happens</td><td>React to user actions</td></tr>
+      </tbody>
+    </table>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">saveButton.setOnAction(event -&gt; {
+    String name = nameField.getText();
+    if (name.isBlank()) {
+        messageLabel.setText("Name required");
+        return;
+    }
+    save(name);
+});</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>FXML, Controllers, and CSS</h2>
+    <pre data-fontsize="xsmall" data-frame="leftline"><code class="language-xml">&lt;VBox fx:controller="app.EditorController"&gt;
+  &lt;TextArea fx:id="editor" id="mainEditor"/&gt;
+  &lt;Button text="Save" onAction="#save"/&gt;
+&lt;/VBox&gt;</code></pre>
+    <table class="tight">
+      <tbody>
+        <tr><td><code>FXMLLoader</code></td><td>Builds the object graph from FXML</td></tr>
+        <tr><td><code>fx:id</code></td><td>Connects an object to an <code>@FXML</code> controller field</td></tr>
+        <tr><td><code>id</code></td><td>Supports a CSS <code>#mainEditor</code> selector</td></tr>
+        <tr><td><code>onAction="#save"</code></td><td>Connects an event to an <code>@FXML</code> method</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Properties, Listeners, and Binding</h2>
+    <table class="compact">
+      <thead><tr><th>Tool</th><th>Use It For</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Event handler</td><td>A discrete user action</td><td>Run code after a button click</td></tr>
+        <tr><td>Listener</td><td>React to a value changing</td><td>Mark a document dirty when text changes</td></tr>
+        <tr><td>Binding</td><td>Keep one value derived from another</td><td>Disable Save while the document is unchanged</td></tr>
+      </tbody>
+    </table>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">saveButton.disableProperty().bind(dirty.not());
+
+editor.textProperty().addListener(
+    (observable, oldText, newText) -&gt; dirty.set(true));</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>Files and Application State</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">File file = chooser.showOpenDialog(stage);
+if (file != null) {
+    String text = Files.readString(file.toPath());
+    editor.setText(text);
+    currentFile = file.toPath();
+    dirty.set(false);
+}</code></pre>
+    <ul>
+      <li><p>A file chooser returns <code>null</code> when the user cancels.</p></li>
+      <li><p>Track the current file and whether edits are unsaved.</p></li>
+      <li><p>File operations can fail and need a useful message.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Responsive JavaFX Applications</h2>
+    <pre data-fontsize="xsmall" data-frame="leftline" style="font-size:0.50em;"><code class="language-java">Task&lt;Report&gt; task = new Task&lt;&gt;() {
+    @Override
+    protected Report call() throws Exception {
+        return buildReport();
+    }
+};
+
+progress.progressProperty().bind(task.progressProperty());
+task.setOnSucceeded(e -&gt; showReport(task.getValue()));
+new Thread(task).start();</code></pre>
+    <ul>
+      <li><p><code>Task.call()</code> performs slow work away from the JavaFX Application Thread.</p></li>
+      <li><p>Task properties report state. Completion handlers update the interface.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>5. Generics</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Generic Types, Methods, and Bounds</h2>
+    <pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Box&lt;String&gt; name = new Box&lt;&gt;();
+
+static &lt;T extends Comparable&lt;T&gt;&gt; T max(T a, T b) {
+    return a.compareTo(b) &gt;= 0 ? a : b;
+}</code></pre>
+    <ul>
+      <li><p>The compiler checks the selected type and removes many casts.</p></li>
+      <li><p>A bound states which operations are safe for <code>T</code>.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Generic Invariance</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;Integer&gt; integers = new ArrayList&lt;&gt;();
+// List&lt;Number&gt; numbers = integers;  // compile-time error</code></pre>
+    <ul>
+      <li><p><code>Integer</code> is a subtype of <code>Number</code>.</p></li>
+      <li><p><code>List&lt;Integer&gt;</code> is not a subtype of <code>List&lt;Number&gt;</code>.</p></li>
+      <li><p>Otherwise, code could add a <code>Double</code> to a list of integers.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Wildcard Read and Write Rules</h2>
+    <table class="compact">
+      <thead><tr><th>Parameter</th><th>Safe Read</th><th>Safe Write</th><th>Best Fit</th></tr></thead>
+      <tbody>
+        <tr><td><code>List&lt;? extends Number&gt;</code></td><td>Read as <code>Number</code></td><td>Cannot add a specific number</td><td>The method mainly reads values</td></tr>
+        <tr><td><code>List&lt;? super Integer&gt;</code></td><td>Read only as <code>Object</code></td><td>May add an <code>Integer</code></td><td>The method writes integer values</td></tr>
+      </tbody>
+    </table>
+    <p>Reading needs a safe upper type. Writing needs a destination known to accept the value.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Copying Between Related Lists</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static &lt;T&gt; void copy(
+        List&lt;? super T&gt; destination,
+        List&lt;? extends T&gt; source) {
+    for (T value : source) {
+        destination.add(value);
+    }
+}</code></pre>
+    <p>The source supplies <code>T</code> values. The destination accepts <code>T</code> values.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Type Erasure and Runtime Limits</h2>
+    <table class="compact">
+      <thead><tr><th>Generic form</th><th>Runtime result or restriction</th></tr></thead>
+      <tbody>
+        <tr><td>Unbounded <code>T</code></td><td>Erases to <code>Object</code></td></tr>
+        <tr><td><code>T extends Number</code></td><td>Erases to <code>Number</code></td></tr>
+        <tr><td><code>new T()</code> and <code>new T[]</code></td><td>Not allowed</td></tr>
+        <tr><td><code>instanceof List&lt;String&gt;</code></td><td>Not allowed</td></tr>
+        <tr><td><code>instanceof List&lt;?&gt;</code></td><td>Allowed because it checks only the list type</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="frame">
+    <h2>Five Mental Models</h2>
+    <table class="compact">
+      <tbody>
+        <tr><td><strong>Projects</strong></td><td>Source and resources flow through Maven into generated output.</td></tr>
+        <tr><td><strong>Reflection</strong></td><td>Discover at runtime, validate the contract, then return to normal Java types.</td></tr>
+        <tr><td><strong>Formats</strong></td><td>Parse syntax, represent the data, convert values, then validate meaning.</td></tr>
+        <tr><td><strong>JavaFX</strong></td><td>User events change state and UI while slow work stays off the UI thread.</td></tr>
+        <tr><td><strong>Generics</strong></td><td>Type relationships determine what can be read, written, and known at runtime.</td></tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+</div>
+</div>
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+  var revealjsConfig = new Object();
+  Object.assign(revealjsConfig, {
+    "disableLayout": true,
+    "controls": true,
+    "progress": true,
+    "hash": true,
+    "center": true,
+    "transition": "slide",
+    "slideNumber": true,
+    "scrollActivationWidth": 1,
+    "mouseWheel": false,
+    "width": 960,
+    "height": 540
+  });
+  revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+  Reveal.initialize(revealjsConfig);
+</script>
+</body>
+</html>

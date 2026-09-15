@@ -43,27 +43,27 @@
       <section>
         <section class="frame">
           <h2>Today's Roadmap</h2>
-          <p>We start with normal function calls, then use the same stack-frame idea to understand recursion.</p>
+          <p>We use normal function calls first, then use the same stack idea to understand recursion.</p>
           <ul>
-            <li><p>What happens during a normal function call</p></li>
-            <li><p>What a stack frame stores</p></li>
-            <li><p>How recursive calls create more stack frames</p></li>
-            <li><p>Base case, recursive case, and progress</p></li>
-            <li><p>Tracing countdown and factorial</p></li>
-            <li><p>Writing recursive functions for arrays and binary search</p></li>
-            <li><p>Repeated work, stack overflow, and debugging</p></li>
+            <li><p>Function calls and stack frames</p></li>
+            <li><p>What recursion adds</p></li>
+            <li><p>Countdown: a first recursive trace</p></li>
+            <li><p>Factorial: returning values through recursive calls</p></li>
+            <li><p>Array sum and binary search</p></li>
+            <li><p>Cost, repeated work, and debugging</p></li>
+            <li><p>When recursion is the clearer choice</p></li>
           </ul>
         </section>
 
         <section class="frame">
           <h2>What You Should Be Able To Do</h2>
           <ul>
-            <li><p>Explain what happens when a function is called</p></li>
             <li><p>Explain why each active call has its own stack frame</p></li>
-            <li><p>Identify the base case and recursive case</p></li>
-            <li><p>Explain how each call moves closer to stopping</p></li>
+            <li><p>Identify the base case, progress step, and recursive case</p></li>
             <li><p>Trace a short recursive call by hand</p></li>
+            <li><p>Explain what happens when the stack grows and unwinds</p></li>
             <li><p>Write a recursive function with correct termination</p></li>
+            <li><p>Recognize when recursion repeats too much work</p></li>
           </ul>
         </section>
       </section>
@@ -79,25 +79,26 @@
         <section class="frame">
           <h2>What Is a Stack Frame?</h2>
           <p>A stack frame is the temporary memory space for one active function call.</p>
-          <table class="docutils align-default">
-            <thead>
-              <tr><th>Part of a frame</th><th>What it means</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Parameters</td><td>Values passed into this call</td></tr>
-              <tr><td>Local variables</td><td>Variables created inside this call</td></tr>
-              <tr><td>Return location</td><td>Where the program continues after the call finishes</td></tr>
-            </tbody>
-          </table>
+
+          <p>Each stack frame stores:</p>
+          <ul>
+            <li><p><strong>Parameters:</strong> values passed into this call</p></li>
+            <li><p><strong>Local variables:</strong> variables created inside this call</p></li>
+            <li><p><strong>Return location:</strong> where the program continues after the call finishes</p></li>
+          </ul>
+
+          <p>On the call stack:</p>
           <ul>
             <li><p>Each active function call has its own frame</p></li>
-            <li><p>Frames are stored on the call stack</p></li>
             <li><p>The newest frame is placed on top</p></li>
+            <li><p>The top frame is the function currently running</p></li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>Example Function Call</h2>
+          <h2>Function Call and Stack Frame Snapshot</h2>
+          <p>When <code>doubleValue(x)</code> runs, a new stack frame is placed above <code>main</code>.</p>
+
           <div style="display:flex;gap:1em;align-items:flex-start;">
             <div style="flex:1;min-width:0;">
               <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">int doubleValue(int num) {
@@ -110,24 +111,14 @@ int main() {
   int answer = doubleValue(x);
   cout &lt;&lt; answer &lt;&lt; endl;
 }</code></pre>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <p>When this line runs:</p>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">int answer = doubleValue(x);</code></pre>
               <ul>
                 <li><p><code>main</code> keeps its own variables</p></li>
                 <li><p><code>doubleValue</code> gets a new frame</p></li>
                 <li><p><code>num</code> receives a copy of <code>x</code></p></li>
-                <li><p><code>main</code> waits for the returned value</p></li>
+                <li><p>After return, <code>answer = 10</code></p></li>
               </ul>
             </div>
-          </div>
-        </section>
 
-        <section class="frame">
-          <h2>Stack Frame Snapshot</h2>
-          <p>While <code>doubleValue(x)</code> is running, both frames are active.</p>
-          <div style="display:flex;gap:1em;align-items:flex-start;">
             <div style="flex:1;min-width:0;">
               <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">Top of stack
 +-----------------------------+
@@ -139,21 +130,8 @@ int main() {
 | main()                      |
 | local: x = 5                |
 | local: answer = waiting     |
-| return to operating system  |
 +-----------------------------+
 Bottom of stack</code></pre>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>The bottom frame is <code>main</code></p></li>
-                <li><p><code>main</code> still stores its local values</p></li>
-                <li><p>The top frame is the function currently running</p></li>
-                <li><p>When <code>doubleValue</code> returns, its frame is removed</p></li>
-              </ul>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">After return:
-main frame has
-x = 5
-answer = 10</code></pre>
             </div>
           </div>
         </section>
@@ -195,51 +173,34 @@ answer = 10</code></pre>
 
         <section class="frame">
           <h2>Three Questions Before Writing Recursion</h2>
-          <table class="docutils align-default">
-            <thead>
-              <tr><th>Question</th><th>Code part</th><th>Countdown example</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>When do I stop?</td><td><strong>Base case</strong></td><td><code>count &lt;= 0</code></td></tr>
-              <tr><td>How do I make it smaller?</td><td><strong>Progress step</strong></td><td><code>count - 1</code></td></tr>
-              <tr><td>What happens otherwise?</td><td><strong>Recursive case</strong></td><td>print, then call again</td></tr>
-            </tbody>
-          </table>
-          <ul>
-            <li><p>Without a base case, the calls do not stop</p></li>
-            <li><p>Without progress, the stack keeps growing</p></li>
-            <li><p>Answer these before writing the recursive call, not after</p></li>
-          </ul>
-        </section>
 
-        <section class="frame">
-          <h2>Make the Problem Smaller</h2>
-          <p>The recursive call must move closer to the base case.</p>
-          <div style="display:flex;gap:1em;align-items:flex-start;">
-            <div style="flex:1;min-width:0;">
-              <p><strong>Countdown</strong></p>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">count = 3
-count = 2
-count = 1
-count = 0   base case</code></pre>
+          <ol>
+            <li>
+              <p><strong>When do I stop?</strong></p>
               <ul>
-                <li><p>Progress step: <code>count - 1</code></p></li>
+                <li><p>This is the <strong>base case</strong></p></li>
+                <li><p>The base case gives a direct answer</p></li>
               </ul>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <p><strong>Factorial</strong></p>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">n = 4
-n = 3
-n = 2
-n = 1   base case</code></pre>
-              <ul>
-                <li><p>Progress step: <code>n - 1</code></p></li>
-              </ul>
-            </div>
-          </div>
-        </section>
+            </li>
 
-     </section>
+            <li>
+              <p><strong>How do I make the problem smaller?</strong></p>
+              <ul>
+                <li><p>This is the <strong>progress step</strong></p></li>
+                <li><p>Each call must move closer to the base case</p></li>
+              </ul>
+            </li>
+
+            <li>
+              <p><strong>What happens otherwise?</strong></p>
+              <ul>
+                <li><p>This is the <strong>recursive case</strong></p></li>
+                <li><p>The function does some work and calls itself again</p></li>
+              </ul>
+            </li>
+          </ol>
+        </section>
+      </section>
 
       <!-- =========================================================
            First Example
@@ -250,8 +211,32 @@ n = 1   base case</code></pre>
         </section>
 
         <section class="frame">
-          <h2>Countdown: Identify the Parts</h2>
+          <h2>Countdown: Build the Recursive Function</h2>
+
           <div style="display:flex;gap:1em;align-items:flex-start;">
+            <div style="flex:1;min-width:0;">
+              <p>Suppose we want:</p>
+
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">countDown(3)
+
+3
+2
+1
+Go!</code></pre>
+
+              <p><strong>Ask the three questions:</strong></p>
+              <ol>
+                <li><p><strong>When do we stop?</strong><br>
+                <code>count &lt;= 0</code></p></li>
+
+                <li><p><strong>How do we make it smaller?</strong><br>
+                Use <code>count - 1</code></p></li>
+
+                <li><p><strong>What happens otherwise?</strong><br>
+                Print, then call again</p></li>
+              </ol>
+            </div>
+
             <div style="flex:1;min-width:0;">
               <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">void countDown(int count) {
   if (count &lt;= 0) {
@@ -262,113 +247,105 @@ n = 1   base case</code></pre>
     countDown(count - 1);
   }
 }</code></pre>
-            </div>
-            <div style="flex:1;min-width:0;">
+
               <ul>
-                <li><p><strong>Base case:</strong> <code>count &lt;= 0</code></p></li>
-                <li><p><strong>Direct answer:</strong> print <code>Go!</code></p></li>
-                <li><p><strong>Recursive case:</strong> the <code>else</code> block</p></li>
-                <li><p><strong>Progress:</strong> call <code>countDown(count - 1)</code></p></li>
+                <li><p><code>count &lt;= 0</code> is the base case</p></li>
+                <li><p><code>count - 1</code> is the progress step</p></li>
+                <li><p><code>countDown(count - 1)</code> is the recursive call</p></li>
               </ul>
             </div>
           </div>
         </section>
 
         <section class="frame">
-          <h2>Recursive Calls Create More Frames</h2>
-          <div style="display:flex;gap:1em;align-items:flex-start;">
-            <div style="flex:1;min-width:0;">
-              <p>Trace <code>countDown(3)</code> at the moment <code>countDown(0)</code> starts.</p>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">Top of stack
-+-------------------------+
-| countDown(0), count = 0 |
-+-------------------------+
-| countDown(1), count = 1 |
-+-------------------------+
-| countDown(2), count = 2 |
-+-------------------------+
-| countDown(3), count = 3 |
-+-------------------------+
-| main()                  |
-+-------------------------+
-Bottom of stack</code></pre>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>These frames are all for the same function</p></li>
-                <li><p>They are still separate active calls</p></li>
-                <li><p>Each frame has its own <code>count</code></p></li>
-                <li><p>The top frame reaches the base case first</p></li>
-              </ul>
-            </div>
-          </div>
-        </section>
-         <section class="frame">
-          <h2>Call Phase: Going Down</h2>
-          <p>Before the base case, each call may create one more call.</p>
+          <h2>Trace <code>countDown(3)</code></h2>
+          <p>Each recursive call gets its own stack frame.</p>
+
           <div style="display:flex;gap:1em;align-items:flex-start;">
             <div style="flex:1;min-width:0;">
               <p><strong>Calls created</strong></p>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">main
-  countDown(3)
-    countDown(2)
-      countDown(1)
-        countDown(0)</code></pre>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <p><strong>Output during the calls</strong></p>
+
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">countDown(3)
+    |
+    v
+countDown(2)
+    |
+    v
+countDown(1)
+    |
+    v
+countDown(0)  &lt;- base case</code></pre>
+
+              <p><strong>Output while going down:</strong></p>
+
               <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">3
 2
 1
 Go!</code></pre>
+            </div>
+
+            <div style="flex:1;min-width:0;">
+              <p><strong>Stack when <code>countDown(0)</code> starts</strong></p>
+
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">Top
++-------------------------+
+| countDown(0): count = 0 |
++-------------------------+
+| countDown(1): count = 1 |
++-------------------------+
+| countDown(2): count = 2 |
++-------------------------+
+| countDown(3): count = 3 |
++-------------------------+
+| main()                  |
++-------------------------+
+Bottom</code></pre>
+
               <ul>
-                <li><p>The print happens before the recursive call</p></li>
-                <li><p>The numbers print while the stack is growing</p></li>
+                <li><p>Same function, but separate calls</p></li>
+                <li><p>Each frame has its own <code>count</code></p></li>
+                <li><p>The stack grows until the base case is reached</p></li>
               </ul>
             </div>
           </div>
         </section>
 
         <section class="frame">
-          <h2>Return Phase: Coming Back</h2>
-          <p>After the base case finishes, the stack unwinds.</p>
+          <h2>The Stack Grows, Then Unwinds</h2>
+
           <div style="display:flex;gap:1em;align-items:flex-start;">
             <div style="flex:1;min-width:0;">
-              <p><strong>Return order</strong></p>
+              <p><strong>Going down: calls are added</strong></p>
+
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">countDown(3)
+  -> countDown(2)
+      -> countDown(1)
+          -> countDown(0)
+              -> base case</code></pre>
+
+              <ul>
+                <li><p>Each call adds a new stack frame</p></li>
+                <li><p>The recursive call moves toward the base case</p></li>
+              </ul>
+            </div>
+
+            <div style="flex:1;min-width:0;">
+              <p><strong>Coming back: calls finish</strong></p>
+
               <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">countDown(0) finishes
 countDown(1) finishes
 countDown(2) finishes
 countDown(3) finishes
 main continues</code></pre>
-            </div>
-            <div style="flex:1;min-width:0;">
+
               <ul>
-                <li><p>The newest call returns first</p></li>
-                <li><p>Older calls were waiting below it on the stack</p></li>
-                <li><p>For <code>countDown</code>, there is no extra work after the recursive call</p></li>
+                <li><p>The newest frame is removed first</p></li>
+                <li><p>For this example, there is no extra work after the recursive call</p></li>
               </ul>
             </div>
           </div>
         </section>
-
-        <section class="frame">
-          <h2>Loop vs Recursive Call</h2>
-          <table class="docutils align-default">
-            <thead>
-              <tr><th>Loop</th><th>Recursion</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Repeats inside one function call</td><td>Repeats by making more function calls</td></tr>
-              <tr><td>Usually reuses the same local variables</td><td>Each call has its own frame</td></tr>
-            </tbody>
-          </table>
-          <ul>
-            <li><p>Countdown can be written either way. We trace the recursive version because the stack-frame behavior is easy to see</p></li>
-            <li><p>Which one to prefer comes at the end of this module</p></li>
-          </ul>
-        </section>
       </section>
-
 
       <!-- =========================================================
            Returning Values
@@ -392,7 +369,8 @@ main continues</code></pre>
 }</code></pre>
               <ul>
                 <li><p>Base case: <code>n &lt;= 1</code></p></li>
-                <li><p>Progress: <code>n - 1</code></p></li>
+                <li><p>Progress step: <code>n - 1</code></p></li>
+                <li><p>The older call uses the value returned by the newer call</p></li>
               </ul>
             </div>
             <div style="flex:1;min-width:0;">
@@ -403,7 +381,6 @@ main continues</code></pre>
 = 4 * 3 * 2 * factorial(1)
 = 4 * 3 * 2 * 1
 = 24</code></pre>
-              <p>The returned value is used by the older call.</p>
             </div>
           </div>
         </section>
@@ -472,7 +449,7 @@ void up(int n) {
 = 12</code></pre>
               <ul>
                 <li><p>Base case: <code>index == n</code></p></li>
-                <li><p>Progress: <code>index + 1</code></p></li>
+                <li><p>Progress step: <code>index + 1</code></p></li>
               </ul>
             </div>
           </div>
@@ -544,23 +521,41 @@ found at index 5</code></pre>
             <li><p>That shrinking range is the recursive progress</p></li>
           </ul>
         </section>
+      </section>
+
+      <!-- =========================================================
+           Patterns Across Examples
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Patterns Across Examples</h1>
+        </section>
 
         <section class="frame">
-          <h2>Map the Three Questions to Code</h2>
-          <table class="docutils align-default">
-            <thead>
-              <tr><th>Problem</th><th>Stop when...</th><th>Smaller problem</th><th>Use result by...</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Countdown</td><td><code>count &lt;= 0</code></td><td><code>count - 1</code></td><td>printing</td></tr>
-              <tr><td>Factorial</td><td><code>n &lt;= 1</code></td><td><code>n - 1</code></td><td>multiplying</td></tr>
-              <tr><td>Array sum</td><td><code>index == n</code></td><td><code>index + 1</code></td><td>adding</td></tr>
-              <tr><td>Binary search</td><td>empty range</td><td>left or right half</td><td>returning index</td></tr>
-            </tbody>
-          </table>
+          <h2>Same Three Questions, Different Details</h2>
+
           <ul>
-            <li><p>This is more useful than forcing every problem into one generic template</p></li>
+            <li><p><strong>Countdown:</strong> stop at <code>count &lt;= 0</code>; use <code>count - 1</code>; print values</p></li>
+            <li><p><strong>Factorial:</strong> stop at <code>n &lt;= 1</code>; use <code>n - 1</code>; multiply by the returned value</p></li>
+            <li><p><strong>Array sum:</strong> stop at <code>index == n</code>; use <code>index + 1</code>; add the returned value</p></li>
+            <li><p><strong>Binary search:</strong> stop when the range is empty or the target is found; search one smaller half</p></li>
           </ul>
+
+          <p>The questions stay the same, but the base case and progress step depend on the problem.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Loop vs Recursive Call</h2>
+          <p>Both can repeat work, but they repeat in different ways.</p>
+
+          <ul>
+            <li><p><strong>Loop:</strong> repeats inside one function call</p></li>
+            <li><p><strong>Recursion:</strong> repeats by making more function calls</p></li>
+            <li><p><strong>Loop:</strong> usually reuses the same local variables</p></li>
+            <li><p><strong>Recursion:</strong> each call has its own stack frame</p></li>
+          </ul>
+
+          <p>Use recursion when the problem naturally contains smaller versions of itself.</p>
         </section>
       </section>
 
@@ -570,6 +565,35 @@ found at index 5</code></pre>
       <section>
         <section class="title-slide slide level1">
           <h1>Performance and Repeated Work</h1>
+        </section>
+
+        <section class="frame">
+          <h2>Recursion Tree: Binary Search</h2>
+          <p>Each node shows the work done by one call.</p>
+
+          <div style="display:flex;gap:1em;align-items:flex-start;">
+            <div style="flex:1;min-width:0;">
+              <p>Binary search checks the middle, then searches one half:</p>
+
+              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">T(N) = k + T(N / 2)</code></pre>
+
+              <ul>
+                <li><p>32\(k\): constant work in one call</p></li>
+                <li><p>Only one recursive call is made</p></li>
+                <li><p>The input size is cut in half each time</p></li>
+                <li><p>About \(\log_2 N\) calls reach the base case</p></li>
+                <li><p>Total time: \(\Theta(\log N)\)</p></li>
+              </ul>
+            </div>
+
+            <div style="flex:1;min-width:0;">
+              <img
+                src="../_static/images/cop3530/recursion_tree_chain.svg"
+                alt="Recursion tree for binary search: one chain with log N levels"
+                style="display:block; width:100%; height:auto; max-height:500px; object-fit:contain;"
+              >
+            </div>
+          </div>
         </section>
 
         <section class="frame">
@@ -597,7 +621,7 @@ found at index 5</code></pre>
 = 5</code></pre>
               <ul>
                 <li><p>The code follows the math definition</p></li>
-                <li><p>Each call makes two more calls, so the tree branches</p></li>
+                <li><p>Each call may make two more calls</p></li>
                 <li><p><code>fib(2)</code> already appears twice</p></li>
               </ul>
             </div>
@@ -621,32 +645,6 @@ found at index 5</code></pre>
         </section>
 
         <section class="frame">
-          <h2>Recursion Trees</h2>
-          <p>That picture becomes a cost tool if each node holds the work done <em>in that call only</em>, not counting its recursive calls, written in terms of that call's own input size.</p>
-          <div style="display:flex;gap:1em;align-items:flex-start;">
-            
-            <div style="flex:1;min-width:0;">
-              <p>Binary search does \(k\) operations, then one call on half the range:</p>
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">T(N) = k + T(N / 2)</code></pre>
-              <ul>
-                <li><p>\(k\) is constant work: one middle element is checked whether the range holds 7 or 7 million</p></li>
-                <li><p>One recursive call per node, so the tree is a chain</p></li>
-                <li><p>Halving reaches the base case after about \(\log_2 N\) levels</p></li>
-                <li><p>Total = work per level \(\times\) levels = \(k \cdot \log_2 N\), so \(\Theta(\log N)\)</p></li>
-                <li><p>Every active call holds a frame, so the longest path is also the extra space</p></li>
-              </ul>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <img
-                src="../_static/images/cop3530/recursion_tree_chain.svg"
-                alt="Recursion tree for T(N) = k + T(N/2): a chain of k nodes, log N levels deep"
-                style="display:block; width:100%; height:auto; max-height:500px; object-fit:contain;"
-              >
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
           <h2>Not All Recursion Is Slow</h2>
           <p>Some recursive functions shrink the problem quickly.</p>
           <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">long long powFast(long long x, int n) {
@@ -664,30 +662,36 @@ found at index 5</code></pre>
         </section>
 
         <section class="frame">
-          <h2>Four Tree Shapes</h2>
-          
-          <table class="docutils align-default">
-            <thead>
-              <tr><th>Recurrence</th><th>Tree shape</th><th>Cost</th><th>Where we saw it</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>\(k + T(N-1)\)</td><td>chain, \(N\) levels</td><td>\(\Theta(N)\)</td><td>countdown, factorial, <code>sumFrom</code></td></tr>
-              <tr><td>\(k + T(N/2)\)</td><td>chain, \(\log_2 N\) levels</td><td>\(\Theta(\log N)\)</td><td><code>binSearch</code>, <code>powFast</code></td></tr>
-              <tr><td>\(N + T(N-1)\)</td><td>chain, work shrinks each level</td><td>\(\Theta(N^2)\)</td><td>selection sort, Module 4</td></tr>
-              <tr><td>\(k + T(n-1) + T(n-2)\)</td><td>branching</td><td>exponential</td><td>naive <code>fib</code></td></tr>
-            </tbody>
-          </table>
-          <img
-            src="../_static/images/cop3530/recursion_tree_shapes.svg"
-            alt="Four recursion tree shapes: two chains and two branching trees"
-            style="display:block; width:100%; height:auto; max-height:200px; object-fit:contain;"
-          >
-          <ul>
-            <li><p>The node label is re-read at each level: \(k\) stays \(k\), but \(N\) becomes \(N-1\), then \(N-2\), on the way down</p></li>
-            <li><p>Same chain, same \(N\) levels: flat work gives \(k \cdot N\), shrinking work gives \(N + (N-1) + \cdots + 1 = \frac{N(N+1)}{2}\)</p></li>
-            <li><p>A chain makes one recursive call per node; branching makes more, so nodes multiply level by level. <code>fib</code> splits unevenly (\(n-1\) and \(n-2\)), so count doubling rather than summing equal levels</p></li>
-          </ul>
-        </section>
+  <h2>Common Recursion Tree Shapes</h2>
+  <p>The tree shape tells us how many calls are made. The node label tells us the work inside each call.</p>
+
+  <div style="display:flex;gap:1.5em;align-items:flex-start;">
+    <div style="flex:1;min-width:0;">
+      <p><strong>One recursive call per node</strong></p>
+      <ul>
+        <li><p>\(k + T(N - 1)\): \(N\) levels, constant work each level, \(\Theta(N)\)</p></li>
+        <li><p>\(k + T(N / 2)\): \(\log_2 N\) levels, constant work each level, \(\Theta(\log N)\)</p></li>
+        <li><p>\(N + T(N - 1)\): \(N\) levels, shrinking work, \(\Theta(N^2)\)</p></li>
+      </ul>
+            <p><strong>More than one recursive call per node</strong></p>
+      <ul>
+        <li><p>Calls branch into more calls</p></li>
+        <li><p>The number of nodes can grow very quickly</p></li>
+        <li><p>\(k + T(n - 1) + T(n - 2)\): naive Fibonacci, exponential</p></li>
+      </ul>
+    </div>
+
+    <div style="flex:1;min-width:0;">
+  <img
+    src="../_static/images/cop3530/recursion_tree_shapes.svg"
+    alt="Common recursion tree shapes: linear chain, logarithmic chain, quadratic chain, and branching tree"
+    style="display:block; width:100%; height:auto; max-height:230px; object-fit:contain;"
+  >
+    </div>
+  </div>
+
+
+</section>
       </section>
 
       <!-- =========================================================
@@ -753,21 +757,14 @@ found at index 5</code></pre>
 
         <section class="frame">
           <h2>Choose the Clearer Approach</h2>
-          <table class="docutils align-default">
-            <thead>
-              <tr><th>Problem Type</th><th>Usually Clearer Choice</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Simple counting</td><td>Loop</td></tr>
-              <tr><td>Array sum</td><td>Loop or recursion</td></tr>
-              <tr><td>Factorial formula</td><td>Loop or recursion</td></tr>
-              <tr><td>Binary search</td><td>Loop or recursion</td></tr>
-              <tr><td>Trees, nested choices, backtracking</td><td>Recursion</td></tr>
-            </tbody>
-          </table>
+          <p>Recursion is not automatically better than a loop.</p>
+
           <ul>
-            <li><p>Use recursion when the problem naturally contains smaller versions of itself</p></li>
-            <li><p>Use a loop when simple repetition is easier to read</p></li>
+            <li><p><strong>Simple counting:</strong> a loop is usually clearer</p></li>
+            <li><p><strong>Array sum:</strong> either a loop or recursion can work</p></li>
+            <li><p><strong>Factorial:</strong> either a loop or recursion can work</p></li>
+            <li><p><strong>Binary search:</strong> either a loop or recursion can work</p></li>
+            <li><p><strong>Trees, nested choices, and backtracking:</strong> recursion is often clearer</p></li>
           </ul>
         </section>
 

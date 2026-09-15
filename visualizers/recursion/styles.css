@@ -50,6 +50,7 @@ body {
   background: var(--page);
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1.05rem;
   line-height: 1.5;
 }
 
@@ -104,7 +105,7 @@ p {
 .panel-label {
   margin-bottom: 0.25rem;
   color: var(--blue);
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -125,6 +126,7 @@ h2 {
 .step-counter {
   margin-bottom: 0;
   color: var(--muted);
+  font-size: 1.02rem;
 }
 
 main {
@@ -179,7 +181,7 @@ main {
 .frame-state,
 .value-pill {
   border-radius: 999px;
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   font-weight: 800;
   white-space: nowrap;
 }
@@ -192,19 +194,23 @@ main {
 }
 
 .code-view {
-  min-height: 26.75rem;
   margin: 0;
   overflow-x: auto;
-  padding: 1rem 0;
+  padding: 0.8rem 0;
   background: var(--code);
   color: var(--code-text);
-  font-size: 0.9rem;
-  line-height: 1.75;
+  font-size: 1.08rem;
+  line-height: 1.45;
+}
+
+#code-lines {
+  display: flex;
+  flex-direction: column;
 }
 
 .code-line {
   display: block;
-  min-height: 1.75em;
+  min-height: 1.45em;
   padding: 0 1rem 0 3.2rem;
   position: relative;
   white-space: pre;
@@ -236,7 +242,7 @@ main {
   padding: 0.8rem 1rem;
   border-top: 1px solid var(--border);
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.96rem;
 }
 
 .key-mark {
@@ -279,6 +285,7 @@ main {
 
 .event-node {
   min-width: 0;
+  font-size: 1.02rem;
   font-weight: 750;
 }
 
@@ -318,7 +325,7 @@ main {
 }
 
 .event-label {
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -341,7 +348,7 @@ main {
 .stack-edge {
   display: block;
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.84rem;
   font-weight: 750;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -407,6 +414,7 @@ main {
 
 .frame-header code {
   overflow-wrap: anywhere;
+  font-size: 1.05rem;
   font-weight: 800;
 }
 
@@ -441,7 +449,7 @@ main {
 .frame-field span {
   display: block;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -450,7 +458,7 @@ main {
 .frame-field code {
   display: block;
   overflow-wrap: anywhere;
-  font-size: 0.86rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
@@ -462,7 +470,7 @@ main {
   grid-column: 1 / -1;
   margin: 0;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.93rem;
 }
 
 .return-connector {
@@ -472,7 +480,7 @@ main {
   gap: 0.45rem;
   min-height: 1.55rem;
   color: var(--green);
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   font-weight: 800;
 }
 
@@ -496,6 +504,7 @@ main {
 
 .explanation p {
   margin-bottom: 0;
+  font-size: 1.03rem;
   font-weight: 650;
 }
 
@@ -682,7 +691,7 @@ main {
 
 @media (max-width: 390px) {
   .code-view {
-    font-size: 0.78rem;
+    font-size: 0.96rem;
   }
 
   .code-line {

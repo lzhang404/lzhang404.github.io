@@ -40,7 +40,7 @@ const steps = [
   {
     phase: "Call phase",
     title: "Create the factorial(4) frame",
-    line: 2,
+    line: 6,
     newFrame: "factorial(4)",
     frames: [
       mainFrame("waiting", "waiting", "Paused until factorial(4) returns."),
@@ -52,7 +52,7 @@ const steps = [
   {
     phase: "Call phase",
     title: "Create the factorial(3) frame",
-    line: 2,
+    line: 6,
     newFrame: "factorial(3)",
     frames: [
       mainFrame("waiting", "waiting", "Paused until factorial(4) returns."),
@@ -65,7 +65,7 @@ const steps = [
   {
     phase: "Call phase",
     title: "Create the factorial(2) frame",
-    line: 2,
+    line: 6,
     newFrame: "factorial(2)",
     frames: [
       mainFrame("waiting", "waiting", "Paused until factorial(4) returns."),
