@@ -37,6 +37,20 @@
 
 <section>
   <section class="frame">
+    <h2>Exam Overview</h2>
+    <ul>
+      <li><p><strong>When:</strong> Monday, September 21, for 75 minutes</p></li>
+      <li><p><strong>Delivery:</strong> LockDown Browser is required</p></li>
+      <li><p><strong>Question types:</strong> Multiple choice, multiple answer, fill in the blank, short answer, code reading, and code writing</p></li>
+      <li><p><strong>Code writing:</strong> Write short Java code without running it. Use correct syntax, types, APIs, and control flow.</p></li>
+      <li><p><strong>Cheat sheet:</strong> One letter-size sheet (8.5 × 11 in.), double-sided, printed or handwritten</p></li>
+      <li><p><strong>Electronic devices:</strong> Only the computer running LockDown Browser may be visible. Any other visible electronic device will be treated as cheating.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="frame">
     <h2>Roadmap</h2>
     <ol>
       <li><p>Java projects, Maven, and modules</p></li>
@@ -55,15 +69,12 @@
 
   <section class="frame">
     <h2>Course Project Mental Model</h2>
-    <table class="compact">
-      <thead><tr><th>Concern</th><th>Main Tool or File</th><th>Responsibility</th></tr></thead>
-      <tbody>
-        <tr><td>Build</td><td><code>Maven</code> and <code>pom.xml</code></td><td>Compile, test, package, and download libraries</td></tr>
-        <tr><td>Project layout</td><td>Maven directories</td><td>Separate source, resources, tests, and generated output</td></tr>
-        <tr><td>Organization</td><td>Packages</td><td>Group related classes and provide namespaces</td></tr>
-        <tr><td>Strong boundary</td><td><code>module-info.java</code></td><td>Declare required modules and exposed packages</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><strong>Build:</strong> <code>Maven</code> and <code>pom.xml</code> compile, test, package, and download libraries.</p></li>
+      <li><p><strong>Project layout:</strong> Maven directories separate source, resources, tests, and generated output.</p></li>
+      <li><p><strong>Organization:</strong> Packages group related classes and provide namespaces.</p></li>
+      <li><p><strong>Strong boundary:</strong> <code>module-info.java</code> declares required modules and exposed packages.</p></li>
+    </ul>
   </section>
 
   <section class="frame">
@@ -82,16 +93,21 @@
 
   <section class="frame">
     <h2>Dependencies and Module Boundaries</h2>
-    <table class="compact">
-      <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
-      <tbody>
-        <tr><td>Direct dependency</td><td>A library declared in <code>pom.xml</code></td></tr>
-        <tr><td>Transitive dependency</td><td>A library required by another dependency</td></tr>
-        <tr><td>Local repository</td><td>The <code>.m2</code> cache for downloaded artifacts</td></tr>
-        <tr><td><code>requires</code></td><td>Names a module this module needs</td></tr>
-        <tr><td><code>exports</code></td><td>Exposes a package to other modules</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><strong>Maven dependencies</strong></p>
+        <ul>
+          <li><p>A <strong>direct dependency</strong> is declared in <code>pom.xml</code>.</p></li>
+          <li><p>A <strong>transitive dependency</strong> is required by another dependency.</p></li>
+          <li><p>The <strong>local repository</strong> is the <code>.m2</code> cache for downloaded artifacts.</p></li>
+        </ul>
+      </li>
+      <li><p><strong>Module boundaries</strong></p>
+        <ul>
+          <li><p><code>requires</code> names a module this module needs.</p></li>
+          <li><p><code>exports</code> exposes a package to other modules.</p></li>
+        </ul>
+      </li>
+    </ul>
     <p>A public class must also be inside an exported package for cross-module access.</p>
   </section>
 </section>
@@ -103,14 +119,11 @@
 
   <section class="frame">
     <h2>Direct Calls and Runtime Discovery</h2>
-    <table class="compact">
-      <thead><tr><th>Situation</th><th>Approach</th><th>Reason</th></tr></thead>
-      <tbody>
-        <tr><td>Class and method are known while writing the code</td><td>Direct construction and calls</td><td>The compiler checks names and types</td></tr>
-        <tr><td>A class name comes from configuration</td><td>Reflection behind a loader</td><td>The choice is made while the program runs</td></tr>
-        <tr><td>A framework discovers marked methods</td><td>Annotations plus reflection</td><td>Metadata identifies allowed elements</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><strong>Direct construction and calls:</strong> Use them when the class and method are known while writing the code. The compiler checks names and types.</p></li>
+      <li><p><strong>Reflection behind a loader:</strong> Use it when a class name comes from configuration and the program chooses the class at runtime.</p></li>
+      <li><p><strong>Annotations plus reflection:</strong> A framework can discover marked methods and use metadata to identify allowed elements.</p></li>
+    </ul>
   </section>
 
   <section class="frame">
@@ -259,27 +272,22 @@ public @interface Command {
 
   <section class="frame">
     <h2>JavaFX Runtime Mental Model</h2>
-    <table>
-      <thead><tr><th>Object</th><th>Role</th></tr></thead>
-      <tbody>
-        <tr><td><code>Stage</code></td><td>Top-level window</td></tr>
-        <tr><td><code>Scene</code></td><td>Content area placed in the window</td></tr>
-        <tr><td><code>VBox</code></td><td>Layout node that arranges children vertically</td></tr>
-        <tr><td><code>Button</code></td><td>Control that can fire an action event</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><code>Stage</code>: the top-level window.</p></li>
+      <li><p><code>Scene</code>: the content area placed in the window.</p></li>
+      <li><p><code>VBox</code>: a layout node that arranges children vertically.</p></li>
+      <li><p><code>Button</code>: a control that can fire an action event.</p></li>
+    </ul>
     <p>The scene graph is a tree of layouts, controls, and other nodes.</p>
   </section>
 
   <section class="frame">
     <h2>Controls, Layouts, and Events</h2>
-    <table class="compact">
-      <tbody>
-        <tr><td>Controls</td><td>What appears</td><td><code>Label</code>, <code>TextField</code>, <code>Button</code></td></tr>
-        <tr><td>Layouts</td><td>Where nodes go</td><td><code>VBox</code>, <code>HBox</code>, <code>GridPane</code></td></tr>
-        <tr><td>Event handlers</td><td>What happens</td><td>React to user actions</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><strong>Controls</strong> define what appears, such as <code>Label</code>, <code>TextField</code>, and <code>Button</code>.</p></li>
+      <li><p><strong>Layouts</strong> determine where nodes go, such as <code>VBox</code>, <code>HBox</code>, and <code>GridPane</code>.</p></li>
+      <li><p><strong>Event handlers</strong> define what happens after a user action.</p></li>
+    </ul>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">saveButton.setOnAction(event -&gt; {
     String name = nameField.getText();
     if (name.isBlank()) {
@@ -296,26 +304,21 @@ public @interface Command {
   &lt;TextArea fx:id="editor" id="mainEditor"/&gt;
   &lt;Button text="Save" onAction="#save"/&gt;
 &lt;/VBox&gt;</code></pre>
-    <table class="tight">
-      <tbody>
-        <tr><td><code>FXMLLoader</code></td><td>Builds the object graph from FXML</td></tr>
-        <tr><td><code>fx:id</code></td><td>Connects an object to an <code>@FXML</code> controller field</td></tr>
-        <tr><td><code>id</code></td><td>Supports a CSS <code>#mainEditor</code> selector</td></tr>
-        <tr><td><code>onAction="#save"</code></td><td>Connects an event to an <code>@FXML</code> method</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><code>FXMLLoader</code> builds the object graph from FXML.</p></li>
+      <li><p><code>fx:id</code> connects an object to an <code>@FXML</code> controller field.</p></li>
+      <li><p><code>id</code> supports a CSS <code>#mainEditor</code> selector.</p></li>
+      <li><p><code>onAction="#save"</code> connects an event to an <code>@FXML</code> method.</p></li>
+    </ul>
   </section>
 
   <section class="frame">
     <h2>Properties, Listeners, and Binding</h2>
-    <table class="compact">
-      <thead><tr><th>Tool</th><th>Use It For</th><th>Example</th></tr></thead>
-      <tbody>
-        <tr><td>Event handler</td><td>A discrete user action</td><td>Run code after a button click</td></tr>
-        <tr><td>Listener</td><td>React to a value changing</td><td>Mark a document dirty when text changes</td></tr>
-        <tr><td>Binding</td><td>Keep one value derived from another</td><td>Disable Save while the document is unchanged</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><strong>Event handler:</strong> React to a discrete user action, such as a button click.</p></li>
+      <li><p><strong>Listener:</strong> React to a value changing, such as marking a document dirty when its text changes.</p></li>
+      <li><p><strong>Binding:</strong> Keep one value derived from another, such as disabling Save while the document is unchanged.</p></li>
+    </ul>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">saveButton.disableProperty().bind(dirty.not());
 
 editor.textProperty().addListener(
@@ -412,29 +415,32 @@ static &lt;T extends Comparable&lt;T&gt;&gt; T max(T a, T b) {
 
   <section class="frame">
     <h2>Type Erasure and Runtime Limits</h2>
-    <table class="compact">
-      <thead><tr><th>Generic form</th><th>Runtime result or restriction</th></tr></thead>
-      <tbody>
-        <tr><td>Unbounded <code>T</code></td><td>Erases to <code>Object</code></td></tr>
-        <tr><td><code>T extends Number</code></td><td>Erases to <code>Number</code></td></tr>
-        <tr><td><code>new T()</code> and <code>new T[]</code></td><td>Not allowed</td></tr>
-        <tr><td><code>instanceof List&lt;String&gt;</code></td><td>Not allowed</td></tr>
-        <tr><td><code>instanceof List&lt;?&gt;</code></td><td>Allowed because it checks only the list type</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><strong>Erasure</strong></p>
+        <ul>
+          <li><p>Unbounded <code>T</code> erases to <code>Object</code>.</p></li>
+          <li><p><code>T extends Number</code> erases to <code>Number</code>.</p></li>
+        </ul>
+      </li>
+      <li><p><strong>Runtime limits</strong></p>
+        <ul>
+          <li><p><code>new T()</code> and <code>new T[]</code> are not allowed.</p></li>
+          <li><p><code>instanceof List&lt;String&gt;</code> is not allowed.</p></li>
+          <li><p><code>instanceof List&lt;?&gt;</code> is allowed because it checks only the list type.</p></li>
+        </ul>
+      </li>
+    </ul>
   </section>
 
   <section class="frame">
     <h2>Five Mental Models</h2>
-    <table class="compact">
-      <tbody>
-        <tr><td><strong>Projects</strong></td><td>Source and resources flow through Maven into generated output.</td></tr>
-        <tr><td><strong>Reflection</strong></td><td>Discover at runtime, validate the contract, then return to normal Java types.</td></tr>
-        <tr><td><strong>Formats</strong></td><td>Parse syntax, represent the data, convert values, then validate meaning.</td></tr>
-        <tr><td><strong>JavaFX</strong></td><td>User events change state and UI while slow work stays off the UI thread.</td></tr>
-        <tr><td><strong>Generics</strong></td><td>Type relationships determine what can be read, written, and known at runtime.</td></tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><p><strong>Projects:</strong> Source and resources flow through Maven into generated output.</p></li>
+      <li><p><strong>Reflection:</strong> Discover at runtime, validate the contract, then return to normal Java types.</p></li>
+      <li><p><strong>Formats:</strong> Parse syntax, represent the data, convert values, then validate meaning.</p></li>
+      <li><p><strong>JavaFX:</strong> User events change state and UI while slow work stays off the UI thread.</p></li>
+      <li><p><strong>Generics:</strong> Type relationships determine what can be read, written, and known at runtime.</p></li>
+    </ul>
   </section>
 </section>
 
