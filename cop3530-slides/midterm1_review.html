@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
   <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
   <script src="../_static/design-tabs.js?v=f930bc37"></script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,427 +19,231 @@
   <div class="reveal">
     <div class="slides" role="main">
 
-      <!-- Title -->
       <section>
         <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
           data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
           <h1>Midterm 1 Review</h1>
-
         </section>
       </section>
 
       <!-- =========================================================
-           SECTION: Roadmap
+           SECTION: Review Map
            ========================================================= -->
       <section>
-        <section>
-          <h2>Roadmap</h2>
+        <section class="title-slide slide level1">
+          <h1>Review Map</h1>
         </section>
 
-        <section id="review-roadmap" class="frame">
-          <h2>What we’ll review</h2>
+        <section id="exam-overview" class="frame">
+          <h2>Midterm 1 overview</h2>
           <ul>
-            <li><p>Core concepts: algorithm, data structure, ADT</p></li>
-            <li><p>Environment + command line basics</p></li>
-            <li><p>Compilation + modular compilation</p></li>
-            <li><p>Make/Makefile + Git basics</p></li>
-            <li><p>Memory management + pointers + dynamic arrays</p></li>
-            <li><p>Rule of Three (Big Three) in classes</p></li>
-            <li><p>Algorithm analysis (Big-O, Θ, Ω)</p></li>
-            <li><p>Recursion concepts + typical exam tasks</p></li>
-          </ul>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           SECTION: Core Concepts
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Core Concepts</h2>
-        </section>
-
-        <section id="core-algorithm" class="frame">
-          <h2>Algorithm</h2>
-          <ul>
-            <li><p>An algorithm is a step-by-step process to solve a problem.</p></li>
-            <li><p>We judge algorithms by correctness + efficiency (time/space).</p></li>
-          </ul>
-          <p><strong>Example</strong></p>
-          <ul>
-            <li><p>Find the maximum number in an array.</p></li>
+            <li><p><strong>Date, time, and room:</strong> Tuesday, September 22 at 4:00 PM in Room 248 (75 minutes)</p></li>
+            <li><p><strong>Required:</strong> LockDown Browser</p></li>
+            <li><p><strong>Electronic devices:</strong> No other electronic devices are allowed. Any visible electronic device will be considered cheating.</p></li>
+            <li><p><strong>Question types:</strong> True/False, multiple choice, multiple answers, dropdown, and essay</p></li>
+            <li><p><strong>Resources:</strong> Closed book and closed notes</p></li>
+            <li><p><strong>Scratch paper:</strong> Allowed and will not be collected</p></li>
+            <li><p><strong>Study materials:</strong> Practice exam and review slides</p></li>
           </ul>
         </section>
 
-        <section id="core-data-structure" class="frame">
-          <h2>Data Structure</h2>
+        <section id="review-focus" class="frame">
+          <h2>Concepts to review</h2>
           <ul>
-            <li><p>A way to store and organize data in memory.</p></li>
-            <li><p>Choice of structure affects performance and code complexity.</p></li>
+            <li><p>Modular C++ programs, compilation, linking, Makefiles, and unit tests</p></li>
+            <li><p>Stack and heap memory, dynamic arrays, and memory leaks</p></li>
+            <li><p>Resource ownership and the Rule of Three</p></li>
+            <li><p>Exact operation counts and asymptotic analysis</p></li>
+            <li><p>Recursive design, call stacks, progress, and runtime</p></li>
           </ul>
-          <p><strong>Examples</strong></p>
-          <ul>
-            <li><p>Array, Linked List, Stack, Queue</p></li>
-          </ul>
+          <p>The examples in this review practice the same concepts with different code and values.</p>
         </section>
 
-        <section id="core-adt" class="frame">
-          <h2>Abstract Data Type (ADT)</h2>
+        <section id="review-skills" class="frame">
+          <h2>What you should be able to do</h2>
           <ul>
-            <li><p>A <strong>logical description</strong> of a data type + the operations you can do.</p></li>
-            <li><p>ADT focuses on <em>what</em> operations exist, not <em>how</em> implemented.</p></li>
-          </ul>
-          <ul>
-            <li><p><strong>Stack ADT</strong>: push, pop, peek</p></li>
-            <li><p><strong>Queue ADT</strong>: enqueue, dequeue</p></li>
+            <li><p><strong>Explain:</strong> state why a design, command, or complexity claim is correct.</p></li>
+            <li><p><strong>Read:</strong> infer required declarations and definitions from code that uses them.</p></li>
+            <li><p><strong>Trace:</strong> follow loops, function calls, and recursive calls step by step.</p></li>
+            <li><p><strong>Write:</strong> complete short C++ functions and resource-management methods.</p></li>
           </ul>
         </section>
       </section>
 
       <!-- =========================================================
-           SECTION: Environment & Command Line
+           SECTION: Modular Programs and Testing
            ========================================================= -->
       <section>
-        <section>
-          <h2>Environment &amp; Command Line</h2>
+        <section class="title-slide slide level1">
+          <h1>Modular Programs and Testing</h1>
         </section>
 
-        <section id="env-cli" class="frame">
-          <h2>CLI (Command Line Interface)</h2>
+        <section id="module-roles" class="frame">
+          <h2>Header, source, and driver roles</h2>
           <ul>
-            <li><p>Interact with the computer using text commands.</p></li>
-            <li><p>Prefix <code>./</code> to run a program in the current directory.</p></li>
+            <li><p>A <strong>header</strong> declares the interface: classes, fields, constructors, and methods.</p></li>
+            <li><p>A <strong>source file</strong> contains non-inline method and function definitions.</p></li>
+            <li><p>A <strong>driver</strong> contains <code>main()</code> and uses one or more modules.</p></li>
+            <li><p>A driver such as <code>main.cpp</code> or <code>test.cpp</code> does not need a paired header.</p></li>
+            <li><p>Focused files are easier to reuse, test, compile, and maintain than one large file.</p></li>
           </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-text">./a.out   # runs executable named a.out</code></pre>
+          <p><strong>Related course slide:</strong> <code>02_module.html</code></p>
         </section>
 
-        <section id="env-basic-commands" class="frame">
-          <h2>Basic Linux / Bash commands</h2>
-          <ul>
-            <li><p><code>ls</code>: list files</p></li>
-            <li><p><code>mkdir dir</code>: make directory</p></li>
-            <li><p><code>cd dir</code>: change directory</p></li>
-            <li><p><code>rm file</code>: remove file</p></li>
-            <li><p><code>mv file1 file2</code>: move/rename</p></li>
-            <li><p><code>vi filename</code> / <code>vim filename</code>: edit text file</p></li>
-            <li><p><code>ssh user@server</code>: connect to another machine</p></li>
-          </ul>
-        </section>
-      </section>
+        <section id="module-guard" class="frame">
+          <h2>Header guards</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">#ifndef SCORE_HPP
+#define SCORE_HPP
 
-      <!-- =========================================================
-           SECTION: Compilation
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Compilation</h2>
-        </section>
-
-        <section id="compile-command" class="frame">
-          <h2>Compiler command (g++)</h2>
-          <ul>
-            <li><p>Typical command starts with <code>g++</code></p></li>
-            <li><p><code>-o</code> names the output executable</p></li>
-            <li><p><code>-c</code> compiles only (no linking)</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-bash">g++ main.cpp -o main
-g++ -c point.cpp   # produces point.o (no linking)</code></pre>
-        </section>
-
-        <section id="compile-stages" class="frame">
-          <h2>3 stages of compilation</h2>
-          <ul>
-            <li><p><strong>Preprocessing</strong>: handle directives (<code>#include</code>, <code>#define</code>)</p></li>
-            <li><p><strong>Compilation</strong>: compile <code>.cpp</code> into <code>.o</code> object file</p></li>
-            <li><p><strong>Linking</strong>: combine <code>.o</code> files into an executable</p></li>
-          </ul>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           SECTION: Modular Compilation
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Modular Compilation</h2>
-        </section>
-
-        <section id="modular-hpp" class="frame">
-          <h2>Header files (.hpp)</h2>
-          <ul>
-            <li><p>Public declarations: classes, function prototypes</p></li>
-            <li><p>May include inline methods</p></li>
-            <li><p>Can include other headers</p></li>
-            <li><p>Must have a <strong>header guard</strong></p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-cpp">#ifndef FILE_HPP
-#define FILE_HPP
-
-// declarations here
+class Score {
+  // declarations
+};
 
 #endif</code></pre>
-        </section>
-
-        <section id="modular-cpp" class="frame">
-          <h2>Implementation files (.cpp)</h2>
           <ul>
-            <li><p>Function definitions / implementations</p></li>
-            <li><p>Include its own header + other headers it uses</p></li>
+            <li><p><code>#ifndef</code> checks whether the guard name is not defined.</p></li>
+            <li><p><code>#define</code> marks the header as included.</p></li>
+            <li><p><code>#endif</code> closes the conditional block.</p></li>
+            <li><p>The guard prevents duplicate declarations when several files include the same header.</p></li>
           </ul>
         </section>
 
-        <section id="modular-include" class="frame">
-          <h2>Preprocessor directives</h2>
+        <section id="compile-link" class="frame">
+          <h2>Compile first, then link</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-bash">g++ -c main.cpp -o main.o
+g++ -c score.cpp -o score.o
+g++ -o app main.o score.o</code></pre>
           <ul>
-            <li><p><code>#include "filename.hpp"</code>: local file</p></li>
-            <li><p><code>#include &lt;system_library&gt;</code>: system header</p></li>
-            <li><p>Header guards prevent multiple-include issues</p></li>
+            <li><p><code>-c</code> compiles one source file into an object file without linking.</p></li>
+            <li><p>The linker combines object files into an executable.</p></li>
+            <li><p>Link object files when they have already been compiled.</p></li>
           </ul>
         </section>
 
-        <section id="modular-driver" class="frame">
-          <h2>Multi-file compilation: common pattern</h2>
-          <ul>
-            <li><p>Module = <code>.hpp</code>/<code>.cpp</code> pair (often one per class)</p></li>
-            <li><p>Driver file (<code>main.cpp</code>, <code>test.cpp</code>) contains <code>main()</code></p></li>
-            <li><p>Driver files do <strong>not</strong> have a matching <code>.hpp</code></p></li>
-          </ul>
-        </section>
-      </section>
+        <section id="make-rules" class="frame">
+          <h2>Read a Makefile rule</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-makefile">app: main.o score.o
+	g++ -o app main.o score.o
 
-      <!-- =========================================================
-           SECTION: Make & Makefile
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Make &amp; Makefile</h2>
-        </section>
-
-        <section id="make-why" class="frame">
-          <h2>Why use make?</h2>
+clean:
+	rm -f app *.o</code></pre>
           <ul>
-            <li><p>Automates compilation steps</p></li>
-            <li><p>Only rebuilds what changed (saves time)</p></li>
+            <li><p><strong>Target:</strong> the output or action before <code>:</code></p></li>
+            <li><p><strong>Dependencies:</strong> files needed to build the target</p></li>
+            <li><p><strong>Recipe:</strong> the tab-indented command</p></li>
+            <li><p><code>make</code> builds the first target; <code>make app</code> and <code>make clean</code> name targets directly.</p></li>
           </ul>
         </section>
 
-        <section id="make-syntax" class="frame">
-          <h2>Makefile syntax</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-makefile">&lt;target&gt; : &lt;dependencies&gt;
-    &lt;commands&gt;</code></pre>
-          <p><strong>Example</strong></p>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-makefile">main : main.o lib1.o
-    g++ -o main main.o lib1.o</code></pre>
-          <ul>
-            <li><p><code>make</code> builds first target</p></li>
-            <li><p><code>make targetName</code> builds specific target</p></li>
-            <li><p>Often includes <code>clean</code> target</p></li>
-          </ul>
-        </section>
-      </section>
+        <section id="unit-tests" class="frame">
+          <h2>Unit tests</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">#include "score.hpp"
+#include &lt;cassert&gt;
 
-      <!-- =========================================================
-           SECTION: Git Basics
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Git Basics</h2>
-        </section>
-
-        <section id="git-commands" class="frame">
-          <h2>Core commands to know</h2>
-          <ul>
-            <li><p><code>git clone</code>: download remote repository</p></li>
-            <li><p><code>git add</code>: stage changes</p></li>
-            <li><p><code>git status</code>: view staged/modified files</p></li>
-            <li><p><code>git commit -m "..."</code>: save snapshot</p></li>
-            <li><p><code>git push origin main</code>: upload commits</p></li>
-          </ul>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-bash">git clone https://github.com/user/repo.git
-git add file.cpp
-git status
-git commit -m "Added new function"
-git push origin main</code></pre>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           SECTION: Memory Management
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Memory Management in C++</h2>
-        </section>
-
-        <section id="mem-regions" class="frame">
-          <h2>Memory regions</h2>
-          <ul>
-            <li><p><strong>Static</strong>: globals, constants</p></li>
-            <li><p><strong>Code</strong>: program instructions</p></li>
-            <li><p><strong>Stack</strong>: local variables, function calls (stack frames)</p></li>
-            <li><p><strong>Heap</strong>: dynamic allocation (<code>new</code>/<code>delete</code>)</p></li>
-          </ul>
-        </section>
-
-        <section id="mem-pointers" class="frame">
-          <h2>Pointers</h2>
-          <ul>
-            <li><p>A pointer stores a memory address.</p></li>
-            <li><p><code>&amp;</code> gets the address, <code>*</code> dereferences (reads/writes the pointed-to value).</p></li>
-            <li><p>Use <code>nullptr</code> when a pointer points to nothing.</p></li>
-          </ul>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int *p;        // pointer to int
-int x = 10;
-p = &x;        // p stores address of x
-std::cout &lt;&lt; *p; // dereference → prints 10</code></pre>
-        </section>
-
-        <section id="mem-dynamic-arrays" class="frame">
-          <h2>Dynamic allocation (new / delete)</h2>
-          <ul>
-            <li><p>Allocate single object vs array differently</p></li>
-            <li><p>Deallocate with matching form: <code>delete</code> vs <code>delete[]</code></p></li>
-            <li><p><strong>Memory leak</strong> happens when <code>new</code> has no matching <code>delete</code></p></li>
-          </ul>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int *p = new int;
-int *arr = new int[10];
-MyClass *obj = new MyClass();
-
-delete p;
-delete[] arr;
-delete obj;</code></pre>
-        </section>
-
-        <section id="mem-in-class" class="frame">
-          <h2>Memory inside a class</h2>
-          <ul>
-            <li><p>If your class owns heap memory, the default copy is usually a <strong>shallow copy</strong>.</p></li>
-            <li><p>Shallow copy can cause double-delete bugs and shared-pointer bugs.</p></li>
-            <li><p>That’s why we implement the <strong>Big Three</strong> (Rule of Three):</p></li>
-            <li><p>Destructor, Copy Constructor, Copy Assignment Operator</p></li>
-          </ul>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           SECTION: Rule of Three (Big Three)
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Rule of Three</h2>
-        </section>
-
-        <section id="rot-destructor" class="frame">
-          <h2>Destructor</h2>
-          <ul>
-            <li><p>Frees allocated memory</p></li>
-            <li><p>Prevents memory leaks</p></li>
-          </ul>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-cpp">class List {
-  int size;
-  int *arr;
-public:
-  List() { size = 0; arr = nullptr; }
-
-  List(int count) {
-    this-&gt;size = count;
-    arr = new int[count];
-  }
-
-  List(int count, int value = 0) {
-    this-&gt;size = count;
-    arr = new int[count];
-    for (int i = 0; i &lt; count; ++i) arr[i] = value;
-  }
-
-  ~List() {
-    delete[] arr;
-  }
-};</code></pre>
-        </section>
-
-        <section id="rot-copy-ctor" class="frame">
-          <h2>Copy constructor (deep copy)</h2>
-          <ul>
-            <li><p>Goal: two objects do <strong>not</strong> share the same dynamic array pointer</p></li>
-            <li><p>Allocate new memory and copy values over</p></li>
-          </ul>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List(const List&amp; other) {
-  size = other.size;
-  arr = new int[size];
-  for (int i = 0; i &lt; size; ++i) {
-    arr[i] = other.arr[i];
-  }
+int main() {
+  Score s(7);
+  assert(s.value() == 7);
 }</code></pre>
+          <ul>
+            <li><p>A unit test checks one small function or class behavior.</p></li>
+            <li><p>Tests provide quick, repeatable checks after code changes.</p></li>
+            <li><p>Tests do not change an algorithm's runtime or replace implementation code.</p></li>
+          </ul>
         </section>
 
-        <section id="rot-assign" class="frame">
-          <h2>Copy assignment operator (deep copy, self-safe)</h2>
+        <section id="infer-interface" class="frame">
+          <h2>Infer an interface from usage</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">#include "book.hpp"
+
+int main() {
+  Book text("Algorithms", 320);
+  return text.pages() &gt; 0 ? 0 : 1;
+}</code></pre>
           <ul>
-            <li><p>Handle self-assignment</p></li>
-            <li><p>Free existing memory, then allocate and copy</p></li>
-            <li><p>Return <code>*this</code> by reference</p></li>
+            <li><p>The include requires a file named <code>book.hpp</code>.</p></li>
+            <li><p>The type name requires a class named <code>Book</code>.</p></li>
+            <li><p>The construction requires a matching two-parameter constructor.</p></li>
+            <li><p>The call requires a member named <code>pages</code> with a usable return value.</p></li>
+            <li><p>Do not invent copy or cleanup methods unless ownership evidence requires them.</p></li>
           </ul>
+        </section>
+      </section>
 
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List&amp; operator=(const List&amp; other) {
-  if (this == &amp;other) return *this;
+      <!-- =========================================================
+           SECTION: Memory and Resource Ownership
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Memory and Resource Ownership</h1>
+        </section>
 
-  size = other.size;
-  delete[] arr;
+        <section id="memory-regions" class="frame">
+          <h2>Stack and heap</h2>
+          <ul>
+            <li><p>Each active function call has a <strong>stack frame</strong>.</p></li>
+            <li><p>A stack frame stores parameters, local variables, and a return location.</p></li>
+            <li><p>The heap stores objects and arrays created with <code>new</code> or <code>new[]</code>.</p></li>
+            <li><p>Unbounded function calls can exhaust stack space.</p></li>
+          </ul>
+          <p><strong>Related course slides:</strong> <code>03_memory.html</code> and <code>05_recursion.html</code></p>
+        </section>
 
-  arr = new int[size];
-  for (int i = 0; i &lt; size; ++i) {
-    arr[i] = other.arr[i];
-  }
+        <section id="memory-allocation" class="frame">
+          <h2>Match allocation and deallocation</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">int* value = new int;
+int* values = new int[20];
 
-  std::cout &lt;&lt; "Copy Assignment called\n";
+delete value;
+delete[] values;
+
+value = nullptr;
+values = nullptr;</code></pre>
+          <ul>
+            <li><p>Use <code>delete</code> for one object created with <code>new</code>.</p></li>
+            <li><p>Use <code>delete[]</code> for an array created with <code>new[]</code>.</p></li>
+            <li><p>A <strong>memory leak</strong> occurs when owned heap memory is no longer reachable and was not released.</p></li>
+          </ul>
+        </section>
+
+        <section id="rule-three-when" class="frame">
+          <h2>When the Rule of Three is needed</h2>
+          <ul>
+            <li><p>A class that owns a raw resource usually needs custom copying and cleanup.</p></li>
+            <li><p>The three methods are the destructor, copy constructor, and copy-assignment operator.</p></li>
+            <li><p>A class with ordinary value members and no owned resource usually can use compiler-generated methods.</p></li>
+            <li><p>Getters, setters, and debug flags do not replace ownership operations.</p></li>
+          </ul>
+        </section>
+
+        <section id="rule-three-syntax" class="frame">
+          <h2>Non-inline Rule of Three syntax</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">Buffer::Buffer(const Buffer&amp; other) {
+  /* construct a deep copy */
+}
+
+Buffer&amp; Buffer::operator=(const Buffer&amp; other) {
+  /* replace existing state safely */
   return *this;
-}</code></pre>
-        </section>
+}
 
-        <section id="rot-usage" class="frame">
-          <h2>Rule of Three: triggered by usage</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-cpp">List list(5, 10);     // constructor (count, value)
-List list2(list);     // copy constructor
-List list3;           // default constructor
-list3 = list;         // copy assignment operator</code></pre>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           SECTION: References
-           ========================================================= -->
-      <section>
-        <section>
-          <h2>Reference Type</h2>
-        </section>
-
-        <section id="ref-definition" class="frame">
-          <h2>References (C++)</h2>
+Buffer::~Buffer() { delete[] data; }</code></pre>
           <ul>
-            <li><p>A reference is an <strong>alias</strong> for another variable (stores address implicitly).</p></li>
-            <li><p>Must be bound when created; cannot be <code>nullptr</code>.</p></li>
-            <li><p>Cannot be re-bound to a different variable later.</p></li>
-            <li><p>Accessed like the original variable (no <code>*</code> needed).</p></li>
-            <li><p>Common use: function parameters/returns to avoid copies.</p></li>
+            <li><p>A destructor has no return type.</p></li>
+            <li><p>Outside the class, use <code>ClassName::methodName</code>.</p></li>
+            <li><p>Copy assignment returns the current object by reference.</p></li>
           </ul>
+        </section>
+
+        <section id="rule-three-deep-copy" class="frame">
+          <h2>Deep-copy checklist</h2>
+          <ul>
+            <li><p><strong>Copy constructor:</strong> allocate new storage, copy size/state, then copy elements.</p></li>
+            <li><p><strong>Copy assignment:</strong> handle self-assignment and preserve a valid owned resource.</p></li>
+            <li><p><strong>Destructor:</strong> release the resource exactly once.</p></li>
+            <li><p>A shallow pointer copy makes two objects refer to the same allocation and risks double deletion.</p></li>
+          </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">allocate replacement -> copy elements -> release old memory
+-> store replacement -> copy size -> return *this</code></pre>
         </section>
       </section>
 
@@ -448,57 +251,69 @@ list3 = list;         // copy assignment operator</code></pre>
            SECTION: Algorithm Analysis
            ========================================================= -->
       <section>
-        <section>
-          <h2>Algorithm Analysis</h2>
+        <section class="title-slide slide level1">
+          <h1>Algorithm Analysis</h1>
         </section>
 
-        <section id="analysis-why" class="frame">
-          <h2>Why analyze?</h2>
+        <section id="analysis-resources" class="frame">
+          <h2>Time, space, and the cost model</h2>
           <ul>
-            <li><p>Compare efficiency of algorithms</p></li>
-            <li><p>Focus on time <code>T(N)</code> and space <code>S(N)</code></p></li>
+            <li><p><strong>Time complexity</strong> describes how executed work grows with input size.</p></li>
+            <li><p><strong>Space complexity</strong> describes how memory use grows with input size.</p></li>
+            <li><p>An exact count starts by deciding which statements or expressions count as one step.</p></li>
+            <li><p>State the input size and assumptions before counting.</p></li>
+          </ul>
+          <p><strong>Related course slide:</strong> <code>04_algorithm_analysis.html</code></p>
+        </section>
+
+        <section id="analysis-counting" class="frame">
+          <h2>Count a loop carefully</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">int matches = 0;
+for (int i = 0; i &lt; n; ++i) {
+  if (data[i] &gt; 10) {
+    ++matches;
+  }
+}</code></pre>
+          <ul>
+            <li><p>Initialization runs once.</p></li>
+            <li><p>The loop condition runs <code>n + 1</code> times.</p></li>
+            <li><p>The update and <code>if</code> condition run <code>n</code> times.</p></li>
+            <li><p>The conditional body runs only as often as its condition is true.</p></li>
+            <li><p>An exact <code>T(n)</code> may require a stated input assumption.</p></li>
           </ul>
         </section>
 
-        <section id="analysis-cases" class="frame">
-          <h2>Complexity cases</h2>
+        <section id="analysis-structure" class="frame">
+          <h2>Sequential, nested, and conditional work</h2>
           <ul>
-            <li><p><strong>Best case</strong>: fastest input</p></li>
-            <li><p><strong>Worst case</strong>: slowest input (most important)</p></li>
-            <li><p><strong>Average case</strong>: expected behavior</p></li>
+            <li><p><strong>Sequential blocks:</strong> add their costs.</p></li>
+            <li><p><strong>Nested loops:</strong> multiply iterations when the inner loop runs for each outer iteration.</p></li>
+            <li><p><strong>If/else:</strong> one branch runs per condition evaluation; do not count both on the same pass.</p></li>
+            <li><p>If every outer iteration runs one linear branch, the total can still be quadratic.</p></li>
           </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">two sequential linear loops:  n + 3n -> Θ(n)
+n iterations × one n-step branch: n × n -> Θ(n²)</code></pre>
         </section>
 
         <section id="analysis-bounds" class="frame">
-          <h2>Growth bounds</h2>
+          <h2>Growth bounds and dominant terms</h2>
           <ul>
-            <li><p><strong>Big-O</strong> (<code>O</code>): upper bound (commonly used)</p></li>
-            <li><p><strong>Big-Omega</strong> (<code>Ω</code>): lower bound</p></li>
-            <li><p><strong>Big-Theta</strong> (<code>Θ</code>): tight / exact growth bound</p></li>
+            <li><p><strong>Big-O:</strong> an asymptotic upper bound</p></li>
+            <li><p><strong>Big-Omega:</strong> an asymptotic lower bound</p></li>
+            <li><p><strong>Big-Theta:</strong> a tight asymptotic bound</p></li>
+            <li><p>Drop constant factors and lower-order terms when simplifying a tight bound.</p></li>
           </ul>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">6n² + n log n + 4n + 9 -> Θ(n²)</code></pre>
         </section>
 
-        <section id="analysis-simplify" class="frame">
-          <h2>Big-O analysis: simplification rules</h2>
+        <section id="analysis-growth" class="frame">
+          <h2>Recognize common growth patterns</h2>
           <ul>
-            <li><p>Treat each statement/expression as constant time</p></li>
-            <li><p>Keep only dominant term</p></li>
-            <li><p>Addition vs multiplication matters</p></li>
-          </ul>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-text">3n^2 + 5n + 10  = Θ(n^2)
-Θ(n) + Θ(log n) = Θ(n)
-Θ(n) × Θ(log n) = Θ(n log n)</code></pre>
-        </section>
-
-        <section id="analysis-examples" class="frame">
-          <h2>Common examples</h2>
-          <ul>
-            <li><p>Linear search: <code>O(n)</code></p></li>
-            <li><p>Binary search: <code>O(log n)</code></p></li>
-            <li><p>Merge sort: <code>O(n log n)</code></p></li>
-            <li><p>Bubble sort: <code>O(n^2)</code></p></li>
+            <li><p>A fixed number of statements: <code>Θ(1)</code></p></li>
+            <li><p>One full pass through <code>n</code> values: <code>Θ(n)</code></p></li>
+            <li><p>A full <code>n</code>-step loop inside another: <code>Θ(n²)</code></p></li>
+            <li><p>Repeatedly halve the remaining problem: <code>Θ(log n)</code></p></li>
+            <li><p>Changing the numeric value of <code>n</code> does not make fixed straight-line code linear.</p></li>
           </ul>
         </section>
       </section>
@@ -507,100 +322,106 @@ data-fontsize="\small" data-tabsize="1"><code class="language-text">3n^2 + 5n + 
            SECTION: Recursion
            ========================================================= -->
       <section>
-        <section>
-          <h2>Recursion</h2>
+        <section class="title-slide slide level1">
+          <h1>Recursion</h1>
         </section>
 
-        <section id="rec-stack-frame" class="frame">
-          <h2>Function calls &amp; stack frames</h2>
+        <section id="recursion-three-questions" class="frame">
+          <h2>Three questions for every recursive function</h2>
+          <ol>
+            <li><p><strong>Base case:</strong> when can the function answer directly?</p></li>
+            <li><p><strong>Progress:</strong> how does each call move toward the base case?</p></li>
+            <li><p><strong>Combination:</strong> how is the current work combined with the recursive result?</p></li>
+          </ol>
           <ul>
-            <li><p>Each function call creates a <strong>stack frame</strong> in memory.</p></li>
-            <li><p>Stack frame stores local variables + parameters + return address.</p></li>
-            <li><p>Too many calls → possible <strong>stack overflow</strong>.</p></li>
+            <li><p>Each recursive call creates its own stack frame.</p></li>
+            <li><p>Frames remain active until deeper calls return and the stack unwinds.</p></li>
+          </ul>
+          <p><strong>Related course slide:</strong> <code>05_recursion.html</code></p>
+        </section>
+
+        <section id="recursion-reachable" class="frame">
+          <h2>The base case must be reachable</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">int steps(int n) {
+  if (n == 0) return 0;
+  return 1 + steps(n - 3);
+}</code></pre>
+          <ul>
+            <li><p>A call such as <code>steps(8)</code> follows <code>8, 5, 2, -1, ...</code>.</p></li>
+            <li><p>The code has a base case, but that input never reaches it.</p></li>
+            <li><p>Missing or unreachable base cases can cause stack overflow.</p></li>
+            <li><p>Trace parameter values to verify progress.</p></li>
           </ul>
         </section>
 
-        <section id="rec-definition" class="frame">
-          <h2>Recursive functions</h2>
+        <section id="recursion-helper" class="frame">
+          <h2>Helpers are optional</h2>
           <ul>
-            <li><p>A function calls itself (directly or indirectly).</p></li>
-            <li><p>Can replace loops in some cases.</p></li>
-            <li><p>Must have:</p></li>
-            <li><p><strong>Base case</strong> (stopping point)</p></li>
-            <li><p><strong>Recursive case</strong> (smaller problem)</p></li>
-            <li><p>Sometimes multiple base/recursive cases or helper functions.</p></li>
+            <li><p>A function may call itself directly without another function.</p></li>
+            <li><p>Use a helper when recursion needs state that should not appear in the public interface.</p></li>
+            <li><p>An index, remaining size, or pair of bounds can record progress.</p></li>
+            <li><p>The helper and wrapper must agree on the first subproblem.</p></li>
           </ul>
         </section>
 
-        <section id="rec-examples" class="frame">
-          <h2>Typical recursion examples</h2>
+        <section id="recursion-array" class="frame">
+          <h2>Recursive array pattern</h2>
+          <p>This parallel example counts positive values instead of computing a sum.</p>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">int countPositive(const int values[], int size) {
+  if (size == 0) return 0;
+
+  int current = values[size - 1] &gt; 0 ? 1 : 0;
+  return current + countPositive(values, size - 1);
+}</code></pre>
           <ul>
-            <li><p>Factorial</p></li>
-            <li><p>Fibonacci</p></li>
-            <li><p>Binary search</p></li>
-            <li><p>Merge sort</p></li>
+            <li><p>Base case: an empty prefix contributes zero.</p></li>
+            <li><p>Progress: each call reduces <code>size</code> by one.</p></li>
+            <li><p>Combination: current contribution plus the smaller result.</p></li>
           </ul>
         </section>
 
-        <section id="rec-complexity" class="frame">
-          <h2>Complexity of recursion (what to ask)</h2>
+        <section id="recursion-halving" class="frame">
+          <h2>One recursive call on half the input</h2>
+          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-text">n -> n/2 -> n/4 -> n/8 -> ... -> 1</code></pre>
           <ul>
-            <li><p>How many recursive calls?</p></li>
-            <li><p>How does problem size shrink each call?</p></li>
-            <li><p>What’s the work per call?</p></li>
-            <li><p>What’s the extra stack space used?</p></li>
-            <li><p>Use recursion tree intuition when helpful.</p></li>
+            <li><p>Binary search checks one middle value and continues in one half.</p></li>
+            <li><p>Constant work per level with about <code>log₂ n</code> levels gives <code>Θ(log n)</code> time.</p></li>
+            <li><p>One recursive subproblem is different from two recursive subproblems.</p></li>
+            <li><p>The recursive version also uses one stack frame per active level.</p></li>
           </ul>
         </section>
       </section>
 
       <!-- =========================================================
-           SECTION: Frequently Tested Tasks
+           SECTION: Final Check
            ========================================================= -->
       <section>
-        <section>
-          <h2>Frequently Tested Tasks</h2>
+        <section class="title-slide slide level1">
+          <h1>Final Check</h1>
         </section>
 
-        <section id="test-tasks" class="frame">
-          <h2>What shows up a lot</h2>
+        <section id="practice-prompts" class="frame">
+          <h2>Practice without memorizing</h2>
           <ul>
-            <li><p>Write code on paper / simple editor (no IDE help)</p></li>
-            <li><p>Write a full program with multiple files</p></li>
-            <li><p>Write a full class (single-file or multi-file), inline or not</p></li>
-            <li><p>Implement Big Three correctly</p></li>
-            <li><p>Write function/class from usage or tests</p></li>
-            <li><p>Calculate <code>T(n)</code> given a snippet</p></li>
-            <li><p>Use pass-by-reference correctly</p></li>
-            <li><p>Implement recursive algorithms</p></li>
-          </ul>
-        </section>
-
-        <section id="practice-rec-sum" class="frame">
-          <h2>Practice prompt: recursive summation</h2>
-          <p>Write the recursive function(s) to sum an array.</p>
-
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-data-fontsize="\small" data-tabsize="1"><code class="language-cpp">int arr[] = {1, 2, 3, 4};
-
-int sumArr(int *arr, int size) {
-  // TODO: implement recursively
-}</code></pre>
-
-          <ul>
-            <li><p>Hint: base case when <code>size == 0</code> (or <code>size == 1</code>)</p></li>
-            <li><p>Recursive case: reduce size by 1</p></li>
+            <li><p>Complete a header guard using a new guard name.</p></li>
+            <li><p>Read a small Makefile and identify valid targets and the link recipe.</p></li>
+            <li><p>Infer a class name, constructor, and method from a new test driver.</p></li>
+            <li><p>Count a loop exactly, then simplify its growth rate.</p></li>
+            <li><p>Trace a recursive call sequence and decide whether the base case is reached.</p></li>
+            <li><p>Explain how a resource-owning class copies and releases its allocation.</p></li>
           </ul>
         </section>
 
         <section id="wrap-up" class="frame">
-          <h2>Wrap-up checklist</h2>
+          <h2>Readiness checklist</h2>
           <ul>
-            <li><p>Can you explain stack vs heap?</p></li>
-            <li><p>Can you match <code>new</code> with the correct <code>delete</code>?</p></li>
-            <li><p>Can you write Big Three from memory?</p></li>
-            <li><p>Can you simplify Big-O expressions quickly?</p></li>
-            <li><p>Can you identify base case + recursive step?</p></li>
+            <li><p>Can you distinguish declarations, definitions, object files, and executables?</p></li>
+            <li><p>Can you explain what <code>make</code>, a named target, and a unit test do?</p></li>
+            <li><p>Can you match <code>new[]</code> with <code>delete[]</code> and recognize a leak?</p></li>
+            <li><p>Can you write the three ownership methods with correct non-inline syntax?</p></li>
+            <li><p>Can you count constant, sequential, nested, and conditional work?</p></li>
+            <li><p>Can you identify a dominant term and distinguish <code>O</code>, <code>Ω</code>, and <code>Θ</code>?</p></li>
+            <li><p>Can you identify recursion's base case, progress step, stack use, and runtime?</p></li>
           </ul>
         </section>
       </section>
