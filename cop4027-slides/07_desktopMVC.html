@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Model View Controller</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<style>
+.reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+.reveal table.compact { font-size: 0.78em; }
+.reveal table.tight { font-size: 0.72em; }
+</style>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%" class="title-slide">
+<h1>Model View Controller</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+
+<section>
+<section class="frame">
+<h2>Today's Roadmap</h2>
+<p>Main question: which part of the program should own each decision?</p>
+<ul>
+<li><p>See why a JavaFX controller can become too large.</p></li>
+<li><p>Define Model, View, and Controller responsibilities.</p></li>
+<li><p>Connect MVC to JavaFX and FXML code.</p></li>
+<li><p>Separate a simple Student record into Model, View, and Controller.</p></li>
+<li><p>Trace a desktop event through MVC.</p></li>
+<li><p>Apply MVC to a small JavaFX drawing app.</p></li>
+<li><p>Extend the drawing app with one new feature.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Why MVC Exists</h1>
+</section>
+
+<section class="frame">
+<h2>JavaFX Controllers Can Grow Too Large</h2>
+<p>In a small JavaFX program, it is tempting to put everything in the controller.</p>
+<ul>
+<li><p>Read input from controls.</p></li>
+<li><p>Check whether the input is valid.</p></li>
+<li><p>Store application state.</p></li>
+<li><p>Apply rules.</p></li>
+<li><p>Update labels, tables, or drawings.</p></li>
+<li><p>Load or save data.</p></li>
+</ul>
+<p>The program may run, but the controller becomes hard to read, test, and change.</p>
+</section>
+
+<section class="frame">
+<h2>A Controller Doing Too Much</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@FXML
+private void saveClicked() {
+    String title = titleField.getText();
+
+    if (title.isBlank()) {
+        statusLabel.setText("Title required");
+        return;
+    }
+
+    currentDocument.setTitle(title);
+    currentDocument.setModified(false);
+    fileService.save(currentDocument);
+    statusLabel.setText("Saved");
+}</code></pre>
+<ul>
+<li><p>This method reads UI input, validates data, changes state, saves data, and updates the UI.</p></li>
+<li><p>MVC separates those responsibilities so one event handler does not become the whole application.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>What MVC Separates</h2>
+<p>MVC divides an interactive application into three parts.</p>
+<ul>
+<li><p><strong>Model:</strong> application data, state, and rules.</p></li>
+<li><p><strong>View:</strong> what the user sees, such as JavaFX controls and rendering.</p></li>
+<li><p><strong>Controller:</strong> event handling and coordination between View and Model.</p></li>
+</ul>
+<img
+    src="../_static/images/cop4027/mvc.png"
+    alt="Diagram showing the relationships model, view, and controller"
+    style="display:block; margin:0 0 0 0; max-width:60%; max-height:78vh;"
+/>
+</section>
+
+<section class="frame">
+<h2>MVC in a JavaFX/FXML App</h2>
+<p>In a JavaFX/FXML app, MVC keeps the controller focused on events and coordination.</p>
+<ul>
+<li><p><strong>FXML and JavaFX controls</strong> describe the View.</p></li>
+<li><p><strong>@FXML event handlers</strong> are Controller entry points.</p></li>
+<li><p><strong>Plain Java objects</strong> store application state and rules in the Model.</p></li>
+<li><p>Helper classes such as file services may still exist when the app needs them.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">FXML + controls     -> View
+@FXML event handler -> Controller
+Document, Drawing   -> Model</code></pre>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>MVC Responsibilities</h1>
+</section>
+
+<section class="frame">
+<h2>Model</h2>
+<p>The Model represents what the application knows and what rules are valid.</p>
+<ul>
+<li><p>Stores state: drawing points, selected color, current document, dirty flag.</p></li>
+<li><p>Provides operations: add a point, clear a drawing, rename a document.</p></li>
+<li><p>Enforces rules: clamp brush size, reject invalid values, keep IDs unique.</p></li>
+<li><p>Can be tested without starting a JavaFX window.</p></li>
+</ul>
+<p>The Model should not contain JavaFX controls such as <code>Button</code>, <code>TextField</code>, or <code>Canvas</code>.</p>
+</section>
+
+<section class="frame">
+<h2>View</h2>
+<p>The View displays the current state and exposes UI controls.</p>
+<ul>
+<li><p>Owns JavaFX layout, controls, and rendering code.</p></li>
+<li><p>Shows data from the Model.</p></li>
+<li><p>Collects raw user input through controls.</p></li>
+<li><p>May provide helper methods such as <code>redraw()</code>, <code>setStatus(...)</code>, or <code>getCanvas()</code>.</p></li>
+</ul>
+<p>The View should render information, not decide application rules.</p>
+</section>
+
+<section class="frame">
+<h2>Controller</h2>
+<p>The Controller connects JavaFX events to application behavior.</p>
+<ul>
+<li><p>Receives user actions: button clicks, menu choices, mouse drags, key events.</p></li>
+<li><p>Reads needed values from the View.</p></li>
+<li><p>Calls Model operations to change application state.</p></li>
+<li><p>Asks the View to refresh when the screen should change.</p></li>
+</ul>
+<p>The Controller coordinates work, but it should not become the whole application.</p>
+</section>
+
+<section class="frame">
+<h2>What Each Part Should Avoid</h2>
+<ul>
+<li><p><strong>Model:</strong> avoid JavaFX controls and screen layout code.</p></li>
+<li><p><strong>View:</strong> avoid business rules and hidden application state.</p></li>
+<li><p><strong>Controller:</strong> avoid duplicating domain logic or storing all data itself.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">If one class answers all three questions...
+1. What data do we store?
+2. What rules make the data valid?
+3. How should the screen look?
+
+...then that class is probably doing too much.</code></pre>
+</section>
+
+<section class="frame">
+<h2>Student Example</h2>
+<p>A student record can use MVC even without a graphical interface.</p>
+<ul>
+<li><p><strong>StudentModel:</strong> stores <code>name</code> and <code>id</code>, and owns the student data.</p></li>
+<li><p><strong>StudentView:</strong> displays student details, but does not store the real data or decide rules.</p></li>
+<li><p><strong>StudentController:</strong> receives update requests, changes the model, and asks the view to display results.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Controller changes StudentModel.
+Controller asks StudentView to display StudentModel data.</code></pre>
+</section>
+
+<section class="frame">
+<h2>Student Example Flow</h2>
+<p>The same three responsibilities apply before we add JavaFX controls.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User wants to rename a student
+    -&gt; StudentController receives the request
+    -&gt; StudentController calls model.setName(newName)
+    -&gt; StudentModel stores the new name
+    -&gt; StudentController calls view.printStudentDetails(...)
+    -&gt; StudentView displays the current model data</code></pre>
+<ul>
+<li><p>The Model owns the data.</p></li>
+<li><p>The View presents the data.</p></li>
+<li><p>The Controller coordinates the change.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Desktop MVC Flow</h1>
+</section>
+
+<section class="frame">
+<h2>Desktop MVC Is Event Driven</h2>
+<p>In JavaFX, the program stays open and responds to many small events.</p>
+<ul>
+<li><p>A button click runs an event handler.</p></li>
+<li><p>A menu item runs an event handler.</p></li>
+<li><p>A mouse drag runs an event handler.</p></li>
+<li><p>The application commonly keeps state in memory while it is running.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User event
+    -&gt; Controller event handler
+    -&gt; Model operation
+    -&gt; View redraws from Model state</code></pre>
+</section>
+
+<section class="frame">
+<h2>Example Event Flow</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User drags mouse on Canvas
+    -&gt; Controller handles the MouseEvent
+    -&gt; Controller starts or extends a Stroke
+    -&gt; Model stores the point in that Stroke
+    -&gt; Controller calls view.redraw()
+    -&gt; View reads model.getStrokes()
+    -&gt; Canvas shows the updated drawing</code></pre>
+<p>The controller handles the event. The model stores the data. The view draws the result.</p>
+</section>
+
+<section class="frame">
+<h2>Drawing App Responsibilities</h2>
+<p>The same MVC split also works in a JavaFX drawing app.</p>
+<p>A small drawing app records strokes and renders them on a canvas.</p>
+<ul>
+<li><p><strong>DrawModel:</strong> stores strokes and the selected color.</p></li>
+<li><p><strong>Stroke:</strong> keeps the points and color used for one mouse drag.</p></li>
+<li><p><strong>DrawView:</strong> owns the canvas, color choice, button, and status label.</p></li>
+<li><p><strong>DrawController:</strong> handles mouse and control events.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">DrawController updates DrawModel.
+DrawView renders DrawModel.
+DrawModel does not know JavaFX controls.</code></pre>
+</section>
+
+<section class="frame">
+<h2>Drawing App UML</h2>
+<div style="display:flex;justify-content:center;align-items:center;width:100%;">
+<svg class="uml-svg" viewBox="0 0 920 310" role="img" aria-label="UML class diagram for DrawModel, DrawView, and DrawController" style="width:96%;height:auto;max-height:78vh;">
+  <defs>
+    <marker id="umlArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#333" />
+    </marker>
+  </defs>
+  <style>
+    .uml-box { fill: #ffffff; stroke: #222222; stroke-width: 2; }
+    .uml-line { stroke: #222222; stroke-width: 1.4; }
+    .uml-arrow { stroke: #222222; stroke-width: 2; fill: none; marker-end: url(#umlArrow); }
+    .uml-title { font: 700 19px Arial, sans-serif; fill: #111111; }
+    .uml-text { font: 14px Arial, sans-serif; fill: #111111; }
+    .uml-label { font: 14px Arial, sans-serif; fill: #333333; }
+  </style>
+
+  <rect class="uml-box" x="20" y="58" width="260" height="150" rx="3" />
+  <line class="uml-line" x1="20" y1="93" x2="280" y2="93" />
+  <line class="uml-line" x1="20" y1="146" x2="280" y2="146" />
+  <text class="uml-title" x="150" y="82" text-anchor="middle">DrawController</text>
+  <text class="uml-text" x="35" y="117">- model : DrawModel</text>
+  <text class="uml-text" x="35" y="136">- view : DrawView</text>
+  <text class="uml-text" x="35" y="172">+ connectHandlers() : void</text>
+
+  <rect class="uml-box" x="340" y="58" width="245" height="150" rx="3" />
+  <line class="uml-line" x1="340" y1="93" x2="585" y2="93" />
+  <line class="uml-line" x1="340" y1="146" x2="585" y2="146" />
+  <text class="uml-title" x="462.5" y="82" text-anchor="middle">DrawView</text>
+  <text class="uml-text" x="355" y="117">- model : DrawModel</text>
+  <text class="uml-text" x="355" y="136">- canvas : Canvas</text>
+  <text class="uml-text" x="355" y="172">+ getCanvas() : Canvas</text>
+  <text class="uml-text" x="355" y="191">+ redraw() : void</text>
+
+  <rect class="uml-box" x="660" y="45" width="250" height="190" rx="3" />
+  <line class="uml-line" x1="660" y1="80" x2="910" y2="80" />
+  <line class="uml-line" x1="660" y1="133" x2="910" y2="133" />
+  <text class="uml-title" x="785" y="69" text-anchor="middle">DrawModel</text>
+  <text class="uml-text" x="675" y="104">- strokes : List&lt;Stroke&gt;</text>
+  <text class="uml-text" x="675" y="123">- selectedColor : InkColor</text>
+  <text class="uml-text" x="675" y="159">+ startStroke(x, y) : void</text>
+  <text class="uml-text" x="675" y="178">+ addPoint(x, y) : void</text>
+  <text class="uml-text" x="675" y="197">+ getStrokes() : List&lt;Stroke&gt;</text>
+  <text class="uml-text" x="675" y="216">+ setSelectedColor(c) : void</text>
+
+  <path class="uml-arrow" d="M280 112 L340 112" />
+  <text class="uml-label" x="310" y="101" text-anchor="middle">view</text>
+  <path class="uml-arrow" d="M585 112 L660 112" />
+  <text class="uml-label" x="622" y="101" text-anchor="middle">model</text>
+  <path class="uml-arrow" d="M150 208 L150 262 L660 262 L660 205" />
+  <text class="uml-label" x="410" y="253" text-anchor="middle">model</text>
+</svg>
+</div>
+</section>
+
+<section class="frame">
+<h2>DrawModel</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class DrawModel {
+    // The Model owns drawing state and has no JavaFX controls.
+    private final List&lt;Stroke&gt; strokes = new ArrayList&lt;&gt;();
+    private InkColor selectedColor = InkColor.BLACK;
+
+    public void startStroke(double x, double y) {
+        strokes.add(new Stroke(selectedColor, new Point(x, y)));
+    }
+
+    public void addPoint(double x, double y) {
+        // A drag should always belong to a stroke.
+        if (strokes.isEmpty()) {
+            startStroke(x, y);
+            return;
+        }
+        strokes.getLast().addPoint(new Point(x, y));
+    }
+
+    public void clear() {
+        strokes.clear();
+    }
+
+    public List&lt;Stroke&gt; getStrokes() {
+        // Callers can read the drawing but cannot edit the list directly.
+        return Collections.unmodifiableList(strokes);
+    }
+
+    public InkColor getSelectedColor() {
+        return selectedColor;
+    }
+
+    public void setSelectedColor(InkColor selectedColor) {
+        this.selectedColor = Objects.requireNonNull(selectedColor);
+    }
+}</code></pre>
+<p>The Model owns the strokes and selected color.</p>
+<p>The View reads the strokes. The Controller sends drawing and color changes.</p>
+<p><strong>Example:</strong> <code>cop4027.desktop.mvc.DrawModel</code></p>
+</section>
+
+<section class="frame">
+<h2>DrawView</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class DrawView extends BorderPane {
+    private final DrawModel model;
+
+    // The View owns the JavaFX controls.
+    private final Canvas canvas = new Canvas(700, 440);
+    private final ChoiceBox&lt;DrawModel.InkColor&gt; colorChoice =
+            new ChoiceBox&lt;&gt;();
+    private final Button clearButton = new Button("Clear");
+    private final Label statusLabel =
+            new Label("Drag on the canvas to draw.");
+
+    public DrawView(DrawModel model) {
+        this.model = model;
+
+        colorChoice.getItems().setAll(DrawModel.InkColor.values());
+        colorChoice.setValue(model.getSelectedColor());
+
+        HBox toolbar = new HBox(10,
+                new Label("Color:"), colorChoice, clearButton);
+        setTop(toolbar);
+        setCenter(new StackPane(canvas));
+        setBottom(statusLabel);
+
+        redraw();
+    }
+
+    public Canvas getCanvas() { return canvas; }
+    public ChoiceBox&lt;DrawModel.InkColor&gt; getColorChoice() {
+        return colorChoice;
+    }
+    public Button getClearButton() { return clearButton; }
+    public DrawModel.InkColor getSelectedColor() {
+        return colorChoice.getValue();
+    }
+    public void setStatus(String message) {
+        statusLabel.setText(message);
+    }
+
+    public void redraw() {
+        GraphicsContext graphics = canvas.getGraphicsContext2D();
+        graphics.setFill(Color.WHITE);
+        graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        graphics.setLineCap(StrokeLineCap.ROUND);
+
+        // Rebuild the canvas from the current Model state.
+        for (DrawModel.Stroke stroke : model.getStrokes()) {
+            drawStroke(graphics, stroke);
+        }
+    }
+}</code></pre>
+<p>The View redraws the canvas from Model state.</p>
+<p>At first, <code>drawStroke</code> uses a fixed size.</p>
+<p><strong>Example:</strong> <code>cop4027.desktop.mvc.DrawView</code></p>
+</section>
+
+<section class="frame">
+<h2>DrawController</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class DrawController {
+    private final DrawModel model;
+    private final DrawView view;
+
+    public DrawController(DrawModel model, DrawView view) {
+        this.model = model;
+        this.view = view;
+    }
+
+    public void connectHandlers() {
+        // Convert mouse input into Model changes, then redraw the View.
+        view.getCanvas().setOnMousePressed(event -&gt; {
+            model.startStroke(event.getX(), event.getY());
+            view.redraw();
+            view.setStatus("Drawing with "
+                    + model.getSelectedColor() + ".");
+        });
+
+        view.getCanvas().setOnMouseDragged(event -&gt; {
+            model.addPoint(event.getX(), event.getY());
+            view.redraw();
+        });
+
+        view.getColorChoice().setOnAction(event -&gt; {
+            // The View supplies the selected value; the Model stores it.
+            model.setSelectedColor(view.getSelectedColor());
+            view.setStatus("Color: " + model.getSelectedColor());
+        });
+
+        view.getClearButton().setOnAction(event -&gt; {
+            model.clear();
+            view.redraw();
+            view.setStatus("Drawing cleared.");
+        });
+    }
+}</code></pre>
+<ul>
+<li><p>Mouse events create or extend a stroke.</p></li>
+<li><p>The color-choice event updates the selected tool setting.</p></li>
+</ul>
+<p><strong>Example:</strong> <code>cop4027.desktop.mvc.DrawController</code></p>
+</section>
+
+<section class="frame">
+<h2>Adding Brush Size</h2>
+<p>Where should each part of this feature go?</p>
+<ul>
+<li><p><strong>Model:</strong> validates the incoming value and stores it in the new <code>Stroke</code>.</p></li>
+<li><p><strong>View:</strong> provides the choice and renders each stroke using its saved size.</p></li>
+<li><p><strong>Controller:</strong> passes the selected value to the Model when a stroke begins.</p></li>
+<li><p>Only new strokes use the new selection.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Model: Save Size in Each Stroke</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void startStroke(double x, double y) {
+    // Preserve the original API with a default brush size.
+    startStroke(x, y, 5);
+}
+
+public void startStroke(double x, double y, int brushSize) {
+    // Validate the value before it becomes Model state.
+    int size = Math.max(1, Math.min(brushSize, 20));
+    strokes.add(new Stroke(
+            selectedColor, size, new Point(x, y)));
+}
+
+public static final class Stroke {
+    private final InkColor color;
+    private final int brushSize;
+    private final List&lt;Point&gt; points = new ArrayList&lt;&gt;();
+
+    private Stroke(InkColor color, int brushSize, Point firstPoint) {
+        this.color = color;
+        this.brushSize = brushSize;
+        points.add(firstPoint);
+    }
+
+    private void addPoint(Point point) {
+        points.add(point);
+    }
+
+    public InkColor getColor() {
+        return color;
+    }
+
+    public List&lt;Point&gt; getPoints() {
+        return Collections.unmodifiableList(points);
+    }
+
+    public int getBrushSize() {
+        return brushSize;
+    }
+}</code></pre>
+<p>The Model validates the input and keeps each stroke's original size.</p>
+</section>
+
+<section class="frame">
+<h2>View: Choose and Render the Size</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final ChoiceBox&lt;Integer&gt; brushSizeChoice =
+        new ChoiceBox&lt;&gt;();
+
+// In the DrawView constructor: configure and place the control.
+brushSizeChoice.getItems().setAll(2, 5, 10, 15);
+brushSizeChoice.setValue(5);
+
+HBox toolbar = new HBox(10,
+        new Label("Color:"), colorChoice,
+        new Label("Brush size:"), brushSizeChoice,
+        clearButton);
+setTop(toolbar);
+
+public int getSelectedBrushSize() {
+    return brushSizeChoice.getValue();
+}
+
+private void drawStroke(GraphicsContext graphics,
+        DrawModel.Stroke stroke) {
+    Color color = toJavaFxColor(stroke.getColor());
+    List&lt;DrawModel.Point&gt; points = stroke.getPoints();
+
+    // Render the saved size, not the control's current selection.
+    double size = stroke.getBrushSize();
+    graphics.setStroke(color);
+    graphics.setFill(color);
+    graphics.setLineWidth(size);
+
+    if (points.size() == 1) {
+        DrawModel.Point point = points.getFirst();
+        double radius = size / 2.0;
+        graphics.fillOval(point.x() - radius, point.y() - radius,
+                size, size);
+        return;
+    }
+
+    for (int index = 1; index &lt; points.size(); index++) {
+        DrawModel.Point from = points.get(index - 1);
+        DrawModel.Point to = points.get(index);
+        graphics.strokeLine(from.x(), from.y(), to.x(), to.y());
+    }
+}</code></pre>
+<p>The View owns the control and exposes its selected value.</p>
+<p><code>drawStroke</code> uses the saved size for line width and single-point dots.</p>
+</section>
+
+<section class="frame">
+<h2>Controller: Pass the Selected Size</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Read the current choice once, when the stroke begins.
+view.getCanvas().setOnMousePressed(event -&gt; {
+    int size = view.getSelectedBrushSize();
+
+    // Pass the event data and selected size into the Model.
+    model.startStroke(event.getX(), event.getY(), size);
+    view.redraw();
+    view.setStatus("Brush size: " + size);
+});</code></pre>
+<p>The Controller supplies the size at the moment the new stroke begins.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Benefits and Pitfalls</h1>
+</section>
+
+<section class="frame">
+<h2>Why MVC Helps</h2>
+<ul>
+<li><p>The Model can be tested without launching the UI.</p></li>
+<li><p>The View can change without rewriting application rules.</p></li>
+<li><p>The Controller is easier to read when it only coordinates events.</p></li>
+<li><p>New features have a clearer place to go.</p></li>
+<li><p>The program is easier to maintain as it grows.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Pitfalls to Avoid</h2>
+<ul>
+<li><p><strong>Fat controller:</strong> the controller stores all data and rules.</p></li>
+<li><p><strong>Smart view:</strong> the view makes application decisions.</p></li>
+<li><p><strong>UI-dependent model:</strong> the model contains JavaFX controls.</p></li>
+<li><p><strong>Too many layers:</strong> a tiny one-off program becomes harder than needed.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Adding files is not the goal.
+The goal is to put each responsibility in the right place.</code></pre>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+
+<section class="frame">
+<h2>Check Your Design</h2>
+<ul>
+<li><p>What data do we store, and what rules make it valid? <strong>Model</strong></p></li>
+<li><p>How should the current state appear to the user? <strong>View</strong></p></li>
+<li><p>What should happen after this click, drag, or menu choice? <strong>Controller</strong></p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Model: knows application state.
+View: knows the screen.
+Controller: knows how user events become operations.</code></pre>
+</section>
+</section>
+
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+</script>
+</body>
+</html>

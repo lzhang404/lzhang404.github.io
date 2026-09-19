@@ -8,6 +8,59 @@
  */
 let sd_id_to_elements = {};
 const storageKeyPrefix = "sphinx-design-tab-id-";
+const projectorViewportWidth = window.innerWidth;
+const projectorViewportHeight = window.innerHeight;
+
+document.documentElement.dataset.projectorLayout = "1600x900-scroll";
+document.documentElement.style.setProperty(
+  "--projector-viewport-width",
+  `${projectorViewportWidth}px`
+);
+document.documentElement.style.setProperty(
+  "--projector-viewport-height",
+  `${projectorViewportHeight}px`
+);
+
+/**
+ * Apply the shared classroom canvas and native browser zoom behavior.
+ *
+ * @returns {boolean} Whether Reveal was available and configured.
+ */
+function configure_projector_layout() {
+  const reveal = window.Reveal;
+  if (!reveal || typeof reveal.configure !== "function") return false;
+
+  reveal.configure({
+    disableLayout: false,
+    center: false,
+    transition: "none",
+    width: 1600,
+    height: 900,
+    margin: 0.1,
+  });
+  if (typeof reveal.layout === "function") reveal.layout();
+  return true;
+}
+
+/**
+ * Configure Reveal now and once more when initialization finishes.
+ */
+function initialize_projector_layout() {
+  if (!configure_projector_layout()) {
+    window.addEventListener("load", configure_projector_layout, { once: true });
+    return;
+  }
+
+  const reveal = window.Reveal;
+  if (
+    reveal &&
+    typeof reveal.on === "function" &&
+    typeof reveal.isReady === "function" &&
+    !reveal.isReady()
+  ) {
+    reveal.on("ready", configure_projector_layout);
+  }
+}
 
 /**
  * Create a key for a tab element.
@@ -27,6 +80,8 @@ function create_key(el) {
  *
  */
 function ready() {
+  initialize_projector_layout();
+
   // Find all tabs with sync data
 
   /** @type {string[]} */

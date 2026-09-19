@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Final Exam Review</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css?v=20260918d" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=20260918"></script>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%">
+<h1>Final Exam Review</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+<section>
+<section class="frame"><h2>Review Roadmap</h2>
+<p>This review focuses on the concepts behind the final and practice exam.</p>
+<ul>
+<li><p>Chapter 7: objects, classes, fields, constructors, methods, and references.</p></li>
+<li><p>Chapter 8: inheritance, <code>super</code>, overriding, overloading, and polymorphism.</p></li>
+<li><p>Chapter 9: abstract classes and interfaces.</p></li>
+<li><p>Chapter 10: file input, file output, and exceptions.</p></li>
+<li><p>Short review: memory, recursion, and GUI basics.</p></li>
+<li><p>Project connection: the pet shelter class design.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>How to Study</h2>
+<ul>
+<li><p>Do not only memorize definitions.</p></li>
+<li><p>Practice recognizing the same concept in a new example.</p></li>
+<li><p>For code, trace what object is created, what method is called, and what value changes.</p></li>
+<li><p>For design, ask whether the relationship should be a class, field, subclass, abstract class, or interface.</p></li>
+</ul>
+<p>Main exam skill: connect vocabulary to code behavior.</p>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Objects and Classes</h1>
+</section>
+<section class="frame"><h2>Class vs. Object</h2>
+<ul>
+<li><p>A <strong>class</strong> is a type definition or blueprint.</p></li>
+<li><p>An <strong>object</strong> is one instance created from that class.</p></li>
+<li><p>The class describes the fields and methods.</p></li>
+<li><p>The object stores actual values while the program runs.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Ticket ticket1 = new Ticket("A12", 25.00);
+Ticket ticket2 = new Ticket("B07", 30.00);</code></pre>
+<ul>
+<li><p><code>Ticket</code> is the class.</p></li>
+<li><p><code>ticket1</code> and <code>ticket2</code> are reference variables.</p></li>
+<li><p><code>new Ticket(...)</code> creates objects.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Basic Class Pattern</h2>
+<p>A beginner class usually has private fields and public methods.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class Ticket {
+    private String seat;
+    private double price;
+
+    public Ticket(String seat, double price) {
+        this.seat = seat;
+        this.price = price;
+    }
+
+    public String getSeat() {
+        return seat;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+}</code></pre>
+<ul>
+<li><p>Fields store object data.</p></li>
+<li><p>The constructor initializes a new object.</p></li>
+<li><p>Getters return field values.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Private Fields and Public Methods</h2>
+<p>Private fields protect object data from direct outside changes.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class Ticket {
+    private double price;
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}</code></pre>
+<ul>
+<li><p><code>private</code>: only code inside the same class can directly use the field.</p></li>
+<li><p><code>public</code>: other code can call the method.</p></li>
+<li><p>A setter gives the class control over how a field changes.</p></li>
+<li><p>Usually keep fields private and expose safe behavior through methods.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Constructor Rules</h2>
+<ul>
+<li><p>A constructor has the same name as the class.</p></li>
+<li><p>A constructor has no return type, not even <code>void</code>.</p></li>
+<li><p>A constructor runs when an object is created with <code>new</code>.</p></li>
+<li><p>A constructor usually initializes fields.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class Song {
+    private String title;
+
+    public Song(String title) {
+        this.title = title;
+    }
+}</code></pre>
+</section>
+<section class="frame"><h2>The <code>this</code> Keyword</h2>
+<p><code>this</code> refers to the current object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private String name;
+
+public void setName(String name) {
+    this.name = name;
+}</code></pre>
+<ul>
+<li><p><code>this.name</code> means the object field.</p></li>
+<li><p><code>name</code> by itself means the parameter.</p></li>
+<li><p>This is common when the parameter and field use the same name.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Accessor, Mutator, and <code>toString()</code></h2>
+<table>
+<thead><tr><th>Method type</th><th>Common job</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Accessor / getter</td><td>Returns a field value</td><td><code>getName()</code></td></tr>
+<tr><td>Mutator / setter</td><td>Changes a field value</td><td><code>setName(...)</code></td></tr>
+<tr><td><code>toString()</code></td><td>Returns readable object information</td><td><code>"Ticket A12: $25.00"</code></td></tr>
+</tbody>
+</table>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Override
+public String toString() {
+    return seat + ": $" + price;
+}</code></pre>
+</section>
+<section class="frame"><h2>Reference Variables and Aliasing</h2>
+<p>A reference variable stores a way to find an object. It does not store the object itself.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Counter a = new Counter();
+a.value = 10;
+
+Counter b = a;
+b.value = 15;
+
+System.out.println(a.value);</code></pre>
+<ul>
+<li><p><code>a</code> and <code>b</code> refer to the same object.</p></li>
+<li><p>Changing the object through <code>b</code> changes what <code>a</code> sees.</p></li>
+<li><p>This is called aliasing.</p></li>
+<li><p>The printed value is <code>15</code>.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Instance Fields, Static Fields, and Local Variables</h2>
+<table>
+<thead><tr><th>Kind</th><th>Belongs to</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Instance field</td><td>One object</td><td><code>private String name;</code></td></tr>
+<tr><td>Static field</td><td>The class</td><td><code>private static int nextId;</code></td></tr>
+<tr><td>Local variable</td><td>One method call</td><td><code>int count = 0;</code></td></tr>
+</tbody>
+</table>
+<ul>
+<li><p><code>static</code> means class-level.</p></li>
+<li><p><code>static</code> does not mean constant.</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Inheritance and Polymorphism</h1>
+</section>
+<section class="frame"><h2>Is-a vs. Has-a</h2>
+<p>Before using inheritance, check the relationship.</p>
+<table>
+<thead><tr><th>Relationship</th><th>Use</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Is-a</td><td>Inheritance</td><td><code>Cat</code> is a <code>Pet</code></td></tr>
+<tr><td>Has-a</td><td>Field or collection</td><td><code>Team</code> has players</td></tr>
+</tbody>
+</table>
+<ul>
+<li><p>Use <code>extends</code> only when the subclass is a more specific version of the base class.</p></li>
+<li><p>Use fields or <code>ArrayList</code> when one object contains other objects.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Inheritance Syntax</h2>
+<p>A subclass uses <code>extends</code> to inherit from a base class.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Vehicle {
+    public String move() {
+        return "moving";
+    }
+}
+
+class Bicycle extends Vehicle {
+    public int getWheelCount() {
+        return 2;
+    }
+}</code></pre>
+<ul>
+<li><p><code>Bicycle</code> inherits public behavior from <code>Vehicle</code>.</p></li>
+<li><p><code>Bicycle</code> can also add new behavior.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Calling a Base-Class Constructor</h2>
+<p>A subclass constructor can call the base-class constructor with <code>super(...)</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Vehicle {
+    private String model;
+
+    public Vehicle(String model) {
+        this.model = model;
+    }
+}
+
+class Bicycle extends Vehicle {
+    public Bicycle(String model) {
+        super(model);
+    }
+}</code></pre>
+<ul>
+<li><p><code>super(model)</code> calls the constructor in the direct parent class.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Private Fields Stay Private</h2>
+<p>Inheritance does not remove encapsulation.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Vehicle {
+    private String model;
+
+    public String getModel() {
+        return model;
+    }
+}
+
+class Bicycle extends Vehicle {
+    public void printModel() {
+        System.out.println(getModel());
+    }
+}</code></pre>
+<ul>
+<li><p>The subclass object contains inherited data.</p></li>
+<li><p>The subclass code should not directly access private base-class fields.</p></li>
+<li><p>Use inherited public methods when needed.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Overriding</h2>
+<p>Overriding means the subclass provides its own version of an inherited method.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Vehicle {
+    public String move() {
+        return "Vehicle moves";
+    }
+}
+
+class Bicycle extends Vehicle {
+    @Override
+    public String move() {
+        return "Bicycle pedals";
+    }
+}</code></pre>
+<ul>
+<li><p>Same method name.</p></li>
+<li><p>Same parameter list.</p></li>
+<li><p>Compatible return type.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>The <code>@Override</code> Annotation</h2>
+<p><code>@Override</code> tells the compiler that the method should replace inherited behavior.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Override
+public String toString() {
+    return "Bicycle";
+}</code></pre>
+<ul>
+<li><p>It is not required to run the program.</p></li>
+<li><p>It helps catch spelling or parameter mistakes.</p></li>
+<li><p>Use it before methods that override parent-class or interface methods.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Overloading vs. Overriding</h2>
+<table>
+<thead><tr><th>Concept</th><th>Meaning</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Overloading</td><td>Same method name, different parameter list</td><td><code>print(int)</code> and <code>print(String)</code></td></tr>
+<tr><td>Overriding</td><td>Subclass replaces inherited method behavior</td><td><code>Bicycle.move()</code> replaces <code>Vehicle.move()</code></td></tr>
+</tbody>
+</table>
+<p>Overloading is about parameters. Overriding is about inheritance.</p>
+</section>
+<section class="frame"><h2>Polymorphism</h2>
+<p>Polymorphism lets a general reference point to a specific object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Vehicle item = new Bicycle("Trail Rider");
+
+System.out.println(item.move());</code></pre>
+<ul>
+<li><p>Reference type: <code>Vehicle</code></p></li>
+<li><p>Object type: <code>Bicycle</code></p></li>
+<li><p>The object type decides which overridden method runs.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Two-Step Rule for Polymorphic Calls</h2>
+<p>When Java sees a method call on a polymorphic reference, two checks happen.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Vehicle item = new Bicycle("Trail Rider");
+item.move();</code></pre>
+<ul>
+<li><p>The compiler asks whether <code>Vehicle</code> has a <code>move()</code> method.</p></li>
+<li><p>At runtime, Java asks what object is actually there.</p></li>
+<li><p>If the object is a <code>Bicycle</code>, the <code>Bicycle</code> version runs.</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Pet Shelter Review</h1>
+</section>
+<section class="frame"><h2>Pet Shelter Class Design</h2>
+<div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
+<div style="flex:1;min-width:0;">
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Careable
+   ^
+   |
+Pet
+ / \
+Dog Cat</code></pre>
+</div>
+<div style="flex:1;min-width:0;">
+<ul>
+<li><p><code>Careable</code> is an interface.</p></li>
+<li><p><code>Pet</code> is an abstract class.</p></li>
+<li><p><code>Dog</code> and <code>Cat</code> are concrete subclasses.</p></li>
+<li><p>An <code>ArrayList&lt;Pet&gt;</code> can store dogs and cats together.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="frame"><h2>Subclass Checklist</h2>
+<p>When writing a pet subclass, check each required part.</p>
+<ul>
+<li><p>Use <code>extends Pet</code>.</p></li>
+<li><p>Write a constructor that calls <code>super(name)</code>.</p></li>
+<li><p>Implement every abstract method from <code>Pet</code>.</p></li>
+<li><p>Implement every required method from the interface.</p></li>
+<li><p>Use <code>@Override</code> before methods that replace required behavior.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Polymorphism in the Shelter</h2>
+<p>The manager code should not decide every pet's sound manually.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ArrayList&lt;Pet&gt; pets = new ArrayList&lt;Pet&gt;();
+
+pets.add(new Dog("Buddy"));
+pets.add(new Cat("Luna"));
+
+for (Pet pet : pets) {
+    System.out.println(pet.makeSound());
+}</code></pre>
+<ul>
+<li><p>The loop uses the general type <code>Pet</code>.</p></li>
+<li><p>The object decides which <code>makeSound()</code> version runs.</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Abstract Classes and Interfaces</h1>
+</section>
+<section class="frame"><h2>Abstract Classes</h2>
+<p>An abstract class describes a common idea but is not complete enough to instantiate directly.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">abstract class Account {
+    private String owner;
+
+    public Account(String owner) {
+        this.owner = owner;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public abstract double monthlyFee();
+}</code></pre>
+<ul>
+<li><p>It can store shared fields.</p></li>
+<li><p>It can provide shared methods.</p></li>
+<li><p>It can require abstract methods.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Concrete Subclasses</h2>
+<p>A concrete subclass must finish inherited abstract methods.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class CheckingAccount extends Account {
+    public CheckingAccount(String owner) {
+        super(owner);
+    }
+
+    @Override
+    public double monthlyFee() {
+        return 5.00;
+    }
+}</code></pre>
+<ul>
+<li><p><code>Account</code> is abstract.</p></li>
+<li><p><code>CheckingAccount</code> is concrete because it implements <code>monthlyFee()</code>.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Abstract Methods</h2>
+<p>An abstract method has a header but no body.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public abstract double monthlyFee();</code></pre>
+<ul>
+<li><p>It ends with a semicolon.</p></li>
+<li><p>It does not use braces.</p></li>
+<li><p>A concrete subclass must provide the body.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Interfaces</h2>
+<p>An interface is a contract of required methods.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">interface Printable {
+    void printReport();
+}
+
+class Receipt implements Printable {
+    @Override
+    public void printReport() {
+        System.out.println("Receipt report");
+    }
+}</code></pre>
+<ul>
+<li><p>A class uses <code>implements</code> to follow an interface.</p></li>
+<li><p>A concrete class must implement the required methods.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Abstract Class vs. Interface</h2>
+<table>
+<thead><tr><th>Use this</th><th>When you need...</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Abstract class</td><td>Shared fields, shared methods, and required methods</td><td><code>Pet</code>, <code>Account</code></td></tr>
+<tr><td>Interface</td><td>A method contract that different classes can follow</td><td><code>Careable</code>, <code>Printable</code></td></tr>
+</tbody>
+</table>
+<ul>
+<li><p>A class can extend one class.</p></li>
+<li><p>A class can implement multiple interfaces.</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>File I/O and Exceptions</h1>
+</section>
+<section class="frame"><h2>File Input Pattern</h2>
+<p>To read a file, open a stream and connect a scanner to it.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">FileInputStream fileStream =
+        new FileInputStream("data.txt");
+
+Scanner fileScanner = new Scanner(fileStream);
+
+while (fileScanner.hasNextLine()) {
+    String line = fileScanner.nextLine();
+    System.out.println(line);
+}
+
+fileScanner.close();
+fileStream.close();</code></pre>
+<ul>
+<li><p><code>FileInputStream</code> opens the file.</p></li>
+<li><p><code>Scanner</code> reads tokens or lines from the stream.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Reading Tokens vs. Reading Lines</h2>
+<table>
+<thead><tr><th>Scanner method</th><th>Use when...</th></tr></thead>
+<tbody>
+<tr><td><code>hasNextLine()</code></td><td>You want to process each full line.</td></tr>
+<tr><td><code>nextLine()</code></td><td>You want to read one full line.</td></tr>
+<tr><td><code>hasNext()</code></td><td>You want to check for another token.</td></tr>
+<tr><td><code>next()</code></td><td>You want to read one token.</td></tr>
+<tr><td><code>hasNextInt()</code></td><td>You want to check whether the next token is an integer.</td></tr>
+</tbody>
+</table>
+</section>
+<section class="frame"><h2>File Output Pattern</h2>
+<p>To write to a file, open an output stream and connect a writer to it.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">FileOutputStream outputStream =
+        new FileOutputStream("summary.txt");
+
+PrintWriter writer = new PrintWriter(outputStream);
+
+writer.println("Summary Report");
+writer.printf("Average: %.2f%n", average);
+
+writer.close();
+outputStream.close();</code></pre>
+<ul>
+<li><p><code>PrintWriter</code> gives <code>print()</code>, <code>println()</code>, and <code>printf()</code>.</p></li>
+<li><p>Close the writer when finished.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Common Exception Types</h2>
+<table>
+<thead><tr><th>Exception</th><th>Common cause</th></tr></thead>
+<tbody>
+<tr><td><code>IOException</code></td><td>A file or stream operation has a problem.</td></tr>
+<tr><td><code>FileNotFoundException</code></td><td>A file cannot be opened.</td></tr>
+<tr><td><code>InputMismatchException</code></td><td><code>Scanner</code> expected one type but found another.</td></tr>
+<tr><td><code>NumberFormatException</code></td><td>A string cannot be converted to a number.</td></tr>
+<tr><td><code>NullPointerException</code></td><td>Code tries to use an object through <code>null</code>.</td></tr>
+</tbody>
+</table>
+</section>
+<section class="frame"><h2><code>try</code> and <code>catch</code></h2>
+<p>A <code>try</code> block contains code that may fail. A <code>catch</code> block handles the exception.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try {
+    int rating = scnr.nextInt();
+    System.out.println("Rating: " + rating);
+}
+catch (InputMismatchException excpt) {
+    System.out.println("Please enter a whole number.");
+    scnr.next();
+}</code></pre>
+<ul>
+<li><p>If the read succeeds, the program continues normally.</p></li>
+<li><p>If the read fails, the matching <code>catch</code> block runs.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Checked vs. Unchecked Exceptions</h2>
+<table>
+<thead><tr><th>Kind</th><th>Beginner meaning</th><th>Examples</th></tr></thead>
+<tbody>
+<tr><td>Checked exception</td><td>Java requires the code to catch it or declare it.</td><td><code>IOException</code>, <code>FileNotFoundException</code></td></tr>
+<tr><td>Unchecked exception</td><td>Usually caused by a programming or runtime input problem.</td><td><code>InputMismatchException</code>, <code>NullPointerException</code></td></tr>
+</tbody>
+</table>
+<ul>
+<li><p>File operations commonly involve checked exceptions.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Try-With-Resources</h2>
+<p>Try-with-resources closes declared resources automatically.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Scanner input =
+         new Scanner(new FileInputStream("data.txt"));
+     PrintWriter output =
+         new PrintWriter(new FileOutputStream("summary.txt"))) {
+
+    while (input.hasNextLine()) {
+        String line = input.nextLine();
+        output.println(line);
+    }
+}
+catch (IOException excpt) {
+    System.out.println("File problem.");
+}</code></pre>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Short Review Topics</h1>
+</section>
+<section class="frame"><h2>Memory Basics: Stack and Heap</h2>
+<div style="display:flex;gap:1em;align-items:flex-start;margin-top:.4em;">
+<div style="flex:1;min-width:0;">
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Student student = new Student();</code></pre>
+<ul>
+<li><p>The local reference variable is on the stack.</p></li>
+<li><p>The object created with <code>new</code> is on the heap.</p></li>
+</ul>
+</div>
+<div style="flex:1;min-width:0;">
+<div style="border:2px solid #315f8c;border-radius:8px;background:#f7f9fc;padding:.55em;margin-bottom:.45em;">
+<p><strong>Stack</strong></p>
+<p><code>student --&gt;</code></p>
+</div>
+<div style="border:2px solid #315f8c;border-radius:8px;background:#f7f9fc;padding:.55em;margin-bottom:.45em;">
+<p><strong>Heap</strong></p>
+<p><code>Student object</code></p>
+</div>
+</div>
+</div>
+</section>
+<section class="frame"><h2>Recursion Basics</h2>
+<p>A recursive method calls itself to solve a smaller version of the same problem.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static int sumTo(int n) {
+    if (n &lt;= 0) {
+        return 0;
+    }
+
+    return n + sumTo(n - 1);
+}</code></pre>
+<ul>
+<li><p>Base case: <code>n &lt;= 0</code></p></li>
+<li><p>Recursive case: <code>n + sumTo(n - 1)</code></p></li>
+<li><p>The value moves closer to the base case each time.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>GUI Basics</h2>
+<table>
+<thead><tr><th>Swing component</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>JFrame</code></td><td>Main window</td></tr>
+<tr><td><code>JLabel</code></td><td>Text shown to the user</td></tr>
+<tr><td><code>JTextField</code></td><td>Text input or output box</td></tr>
+<tr><td><code>JButton</code></td><td>Clickable button</td></tr>
+<tr><td><code>JPanel</code></td><td>Container for grouping components</td></tr>
+</tbody>
+</table>
+</section>
+<section class="frame"><h2>Text Fields and Button Clicks</h2>
+<p>A GUI program often reads text, calculates, then displays text.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">calculateButton.addActionListener(event -&gt; {
+    String inputText = wageField.getText();
+    double wage = Double.parseDouble(inputText);
+
+    double salary = wage * 40 * 50;
+    salaryField.setText(String.format("%.2f", salary));
+});</code></pre>
+<ul>
+<li><p><code>getText()</code> reads text from a field.</p></li>
+<li><p><code>setText()</code> displays text in a field.</p></li>
+<li><p>The listener code runs after the button is clicked.</p></li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+<section class="frame"><h2>Read Code in This Order</h2>
+<ol>
+<li><p>What classes are defined?</p></li>
+<li><p>Which class extends another class?</p></li>
+<li><p>Which methods are overridden?</p></li>
+<li><p>What is the reference type?</p></li>
+<li><p>What object is actually created with <code>new</code>?</p></li>
+<li><p>Which method version runs?</p></li>
+</ol>
+<p>This order is especially useful for polymorphism questions.</p>
+</section>
+
+<section class="frame"><h2>Common Mistakes to Avoid</h2>
+<ul>
+<li><p>Writing <code>void</code> in a constructor.</p></li>
+<li><p>Forgetting <code>super(...)</code> when the parent constructor requires arguments.</p></li>
+<li><p>Using <code>extends</code> for an interface instead of <code>implements</code>.</p></li>
+<li><p>Forgetting to implement an abstract or interface method.</p></li>
+<li><p>Confusing overloading with overriding.</p></li>
+<li><p>Reading from <code>System.in</code> when the task says to read from a file stream.</p></li>
+<li><p>Forgetting to increment a counter inside a loop.</p></li>
+</ul>
+</section>
+<section class="frame"><h2>Final Checklist</h2>
+<table>
+<thead><tr><th>Topic</th><th>Review words</th></tr></thead>
+<tbody>
+<tr><td>Objects</td><td>class, object, field, constructor, getter, setter, <code>toString()</code>, references</td></tr>
+<tr><td>Inheritance</td><td><code>extends</code>, <code>super</code>, overriding, overloading, polymorphism</td></tr>
+<tr><td>Abstract/interface</td><td>abstract class, abstract method, concrete class, <code>implements</code></td></tr>
+<tr><td>File I/O</td><td><code>FileInputStream</code>, <code>Scanner</code>, <code>FileOutputStream</code>, <code>PrintWriter</code></td></tr>
+<tr><td>Exceptions</td><td><code>try</code>, <code>catch</code>, <code>throws</code>, checked vs. unchecked</td></tr>
+<tr><td>Short topics</td><td>stack/heap, base case, <code>JFrame</code>, <code>getText()</code>, <code>setText()</code></td></tr>
+</tbody>
+</table>
+</section>
+<section class="frame"><h2>Key Takeaways</h2>
+<ul>
+<li><p>Use classes to group data and behavior.</p></li>
+<li><p>Use inheritance only for real is-a relationships.</p></li>
+<li><p>Use abstract classes and interfaces to require behavior.</p></li>
+<li><p>Use polymorphism to process related objects through a shared type.</p></li>
+<li><p>Use file streams, scanners, writers, and exceptions to handle input and output safely.</p></li>
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+  </script>
+</body>
+</html>
