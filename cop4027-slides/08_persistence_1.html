@@ -238,17 +238,25 @@ ResultSet reads returned rows.</code></pre>
 
 <section class="frame">
 <h2>Configuration and Connection</h2>
+
+<p>Connection settings can stay outside the Java source code.</p>
+
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-properties">jdbc.url=jdbc:h2:file:./data/tasksdb
 jdbc.username=sa
 jdbc.password=</code></pre>
+
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">DatabaseConfig config =
         DatabaseConfig.load("/database.properties");
 
 try (Connection conn = config.openConnection()) {
-    System.out.println(conn.getMetaData().getURL());
+    // use the database
 }</code></pre>
-<p>The properties file keeps configuration outside Java. Each run opens a connection through <code>DriverManager</code>; rows remain in the H2 file after it closes.</p>
-<p>Run: <code>basics/TaskJdbcDemo.java</code></p>
+
+<ul>
+<li><p>The properties file keeps connection settings outside Java code.</p></li>
+<li><p><code>openConnection()</code> returns a JDBC <code>Connection</code>.</p></li>
+<li><p>Closing the connection does not delete the rows stored in the database.</p></li>
+</ul>
 </section>
 
 <section class="frame">
@@ -313,19 +321,21 @@ WHERE title = '' OR '1'='1';</code></pre>
 
 <section class="frame">
 <h2>How PreparedStatement Helps</h2>
-<p><code>PreparedStatement</code> keeps the SQL template separate from the values.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String sql = "SELECT id, title, done FROM tasks WHERE title = ?";
 
-try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-    stmt.setString(1, userTitle);
-    try (ResultSet rs = stmt.executeQuery()) {
-        // read rows here
-    }
-}</code></pre>
+<p><code>PreparedStatement</code> keeps the SQL structure separate from the values supplied to it.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String sql =
+        "SELECT id, title, done FROM tasks WHERE title = ?";
+
+PreparedStatement stmt = conn.prepareStatement(sql);
+stmt.setString(1, userTitle);
+
+ResultSet rs = stmt.executeQuery();</code></pre>
+
 <ul>
-<li><p>The <code>?</code> is a placeholder for a value.</p></li>
-<li><p><code>setString(1, userTitle)</code> sends the title as data, not as SQL code.</p></li>
-<li><p>Special characters inside the value stay part of the value.</p></li>
+<li><p>The <code>?</code> marks where a value will be supplied.</p></li>
+<li><p><code>setString(1, userTitle)</code> sends the title as data, not SQL code.</p></li>
+<li><p>The SQL structure stays separate from the user value.</p></li>
 </ul>
 </section>
 
@@ -347,17 +357,21 @@ String badSql = "SELECT ? FROM ?";</code></pre>
 
 <section class="frame">
 <h2>Parameter Indexes Start at 1</h2>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String sql = "INSERT INTO tasks (title, done) VALUES (?, ?)";
 
-try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-    stmt.setString(1, title);  // first ?
-    stmt.setBoolean(2, false); // second ?
-    stmt.executeUpdate();
-}</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String sql =
+        "INSERT INTO tasks (title, done) VALUES (?, ?)";
+
+PreparedStatement stmt = conn.prepareStatement(sql);
+
+stmt.setString(1, title);    // first ?
+stmt.setBoolean(2, false);   // second ?
+
+stmt.executeUpdate();</code></pre>
+
 <ul>
-<li><p>The first placeholder is index <code>1</code>, not index <code>0</code>.</p></li>
-<li><p>The setter method should match the value type: <code>setString</code>, <code>setLong</code>, <code>setDouble</code>, and so on.</p></li>
-<li><p>The SQL string stays readable because values are supplied separately.</p></li>
+<li><p>JDBC parameter indexes start at <code>1</code>, not <code>0</code>.</p></li>
+<li><p>Each setter corresponds to one placeholder.</p></li>
+<li><p>Use a setter that matches the value type.</p></li>
 </ul>
 </section>
 

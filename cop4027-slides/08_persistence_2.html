@@ -8,7 +8,7 @@
 <link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
 <link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
-<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
 <script src="../_static/design-tabs.js?v=f930bc37"></script>
 <style>
@@ -19,9 +19,11 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 </head>
+
 <body>
 <div class="reveal">
 <div class="slides" role="main">
+
 <section>
 <section class="title-slide" data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%">
 <h1>Organizing Persistence Code</h1>
@@ -31,6 +33,7 @@
 </div>
 </section>
 </section>
+
 <section>
 <section class="frame">
 <h2>Roadmap</h2>
@@ -46,10 +49,12 @@
 </ul>
 </section>
 </section>
+
 <section>
 <section class="title-slide slide level1">
 <h1>Why Persistence Needs a Boundary</h1>
 </section>
+
 <section class="frame">
 <h2>What Goes Wrong When SQL Spreads</h2>
 <ul>
@@ -58,25 +63,27 @@
 <li><p><strong>Harder to change:</strong> switching from H2 to another storage choice affects many files.</p></li>
 <li><p><strong>Harder to protect:</strong> one forgotten string concatenation can create a SQL injection risk.</p></li>
 <li><p><strong>Harder to maintain:</strong> the same SQL patterns are copied into many event handlers.</p></li>
-</ul><p>A program is easier to grow when persistence has one clear home.</p>
+</ul>
+<p>A program is easier to grow when persistence has one clear home.</p>
 </section>
+
 <section class="frame">
 <h2>Persistence Boundary</h2>
 <p>A persistence boundary hides storage details from the rest of the application.</p>
 <div style="display:flex;justify-content:center;align-items:center;width:100%;">
-<svg aria-label="Diagram showing application code uses repository and repository uses database" role="img" style="width:94%;height:auto;max-height:70vh;" viewbox="0 0 900 260">
+<svg aria-label="Diagram showing application code uses repository and repository uses database" role="img" style="width:94%;height:auto;max-height:70vh;" viewBox="0 0 900 260">
 <defs>
-<marker id="arrowBoundary" markerheight="10" markerunits="strokeWidth" markerwidth="10" orient="auto" refx="9" refy="3">
+<marker id="arrowBoundary" markerHeight="10" markerUnits="strokeWidth" markerWidth="10" orient="auto" refX="9" refY="3">
 <path d="M0,0 L9,3 L0,6 Z" fill="#333"></path>
 </marker>
 </defs>
 <style>
-    .box { fill:#ffffff; stroke:#222; stroke-width:2; }
-    .soft { fill:#f7f7f7; stroke:#888; stroke-width:2; stroke-dasharray:8 6; }
-    .txt { font: 20px Arial, sans-serif; fill:#111; }
-    .small { font: 15px Arial, sans-serif; fill:#333; }
-    .arrow { stroke:#222; stroke-width:2.5; fill:none; marker-end:url(#arrowBoundary); }
-  </style>
+.box { fill:#ffffff; stroke:#222; stroke-width:2; }
+.soft { fill:#f7f7f7; stroke:#888; stroke-width:2; stroke-dasharray:8 6; }
+.txt { font: 20px Arial, sans-serif; fill:#111; }
+.small { font: 15px Arial, sans-serif; fill:#333; }
+.arrow { stroke:#222; stroke-width:2.5; fill:none; marker-end:url(#arrowBoundary); }
+</style>
 <rect class="box" height="90" rx="5" width="220" x="30" y="70"></rect>
 <text class="txt" text-anchor="middle" x="140" y="108">Application Code</text>
 <text class="small" text-anchor="middle" x="140" y="136">Task objects and methods</text>
@@ -95,20 +102,35 @@
 <p>Outside code sees task operations. The Repository sees JDBC, SQL, and rows.</p>
 </section>
 </section>
+
 <section>
 <section class="title-slide slide level1">
 <h1>DAO and Repository</h1>
 </section>
-<section class="frame"><h2>Data Access Layer</h2><p>The data access layer is the part of the program that reads and writes persistent data.</p><ul><li><p>It owns SQL strings, JDBC resource handling, and row-mapping code.</p></li><li><p>It maps database rows into Java objects.</p></li><li><p>It reports persistence failures in one consistent way.</p></li><li><p>It prevents the UI and controller from depending on JDBC URLs, SQL strings, table names, or JDBC types.</p></li></ul><pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Outside the data access layer:
+
+<section class="frame">
+<h2>Data Access Layer</h2>
+<p>The data access layer is the part of the program that reads and writes persistent data.</p>
+<ul>
+<li><p>It owns SQL strings, JDBC resource handling, and row-mapping code.</p></li>
+<li><p>It maps database rows into Java objects.</p></li>
+<li><p>It reports persistence failures in one consistent way.</p></li>
+<li><p>It prevents the UI and controller from depending on JDBC URLs, SQL strings, table names, or JDBC types.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Outside the data access layer:
     Task objects and repository method calls
 
 Inside the data access layer:
-    Connection, PreparedStatement, ResultSet, SQL</code></pre></section>
+    Connection, PreparedStatement, ResultSet, SQL</code></pre>
+</section>
+
 <section class="frame">
 <h2>DAO and Repository in Practical Terms</h2>
 <p>Both patterns separate persistence code from the rest of the application.</p>
 <table class="compact">
-<thead><tr><th>Name</th><th>Main idea</th><th>Example name</th></tr></thead>
+<thead>
+<tr><th>Name</th><th>Main idea</th><th>Example name</th></tr>
+</thead>
 <tbody>
 <tr><td>DAO</td><td>Object that directly handles database access for a data type or table</td><td><code>TaskDao</code></td></tr>
 <tr><td>Repository</td><td>Object that looks like a collection of domain objects</td><td><code>TaskRepository</code></td></tr>
@@ -116,40 +138,33 @@ Inside the data access layer:
 </table>
 <p>In many Java applications, the two ideas overlap. The important part is the boundary.</p>
 </section>
-
-
 </section>
+
 <section>
 <section class="title-slide slide level1">
 <h1>Designing a Task Repository</h1>
 </section>
+
 <section class="frame">
 <h2>Domain Object: Task</h2>
-<p>The repository stores and returns domain objects.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record Task(long id, String title, boolean done)
-        implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    public Task {
-        if (id &lt;= 0) {
-            throw new IllegalArgumentException("Task ID must be positive");
-        }
-        Objects.requireNonNull(title, "title");
-        if (title.isBlank()) {
-            throw new IllegalArgumentException("Task title must not be blank");
-        }
-    }
+<p>The Repository stores and returns application objects, not JDBC rows.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record Task(
+        long id,
+        String title,
+        boolean done) {
 }</code></pre>
 <ul>
-<li><p>The task object represents application data.</p></li>
-<li><p>The task object does not know about SQL or JavaFX controls.</p></li>
+<li><p><code>Task</code> represents task data used by the application.</p></li>
+<li><p>It contains no SQL, JDBC types, or JavaFX controls.</p></li>
+<li><p>The Repository converts between database rows and <code>Task</code> objects.</p></li>
 </ul>
 <p>Uses: <code>Task.java</code></p>
 </section>
+
 <section class="frame">
 <h2>Repository Interface</h2>
-<p>The interface describes the task operations the application needs.</p><pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository {
+<p>The interface describes the task operations the application needs.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository {
     List&lt;Task&gt; findAll();
 
     void add(String title);
@@ -165,11 +180,14 @@ Inside the data access layer:
 </ul>
 <p>Uses: <code>repository/TaskRepository.java</code></p>
 </section>
+
 <section class="frame">
 <h2>Why Use an Interface?</h2>
 <p>An interface lets the rest of the application depend on behavior instead of storage details.</p>
 <table class="compact">
-<thead><tr><th>Implementation</th><th>Storage</th><th>Useful for</th></tr></thead>
+<thead>
+<tr><th>Implementation</th><th>Storage</th><th>Useful for</th></tr>
+</thead>
 <tbody>
 <tr><td><code>InMemoryTaskRepository</code></td><td><code>ArrayList</code></td><td>Quick runs and tests without a database</td></tr>
 <tr><td><code>JdbcTaskRepository</code></td><td>H2 database table</td><td>Persistent task data</td></tr>
@@ -178,57 +196,52 @@ Inside the data access layer:
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Controller depends on TaskRepository.
 Storage can change without rewriting the Controller.</code></pre>
 </section>
+
 <section class="frame">
-<h2>RepositoryException</h2>
-<p>A clean repository boundary should report persistence failures without exposing JDBC everywhere.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class RepositoryException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
+<h2>Hide JDBC Exceptions Behind the Boundary</h2>
+<p>Code outside the JDBC Repository should not need to handle <code>SQLException</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class RepositoryException
+        extends RuntimeException {
 
     public RepositoryException(String message, Throwable cause) {
         super(message, cause);
     }
 }</code></pre>
 <ul>
-<li><p><code>SQLException</code> belongs inside the JDBC implementation.</p></li>
-<li><p><code>RepositoryException</code> tells outside code that persistence failed.</p></li>
-<li><p>The original exception is still kept as the cause for debugging.</p></li>
+<li><p><code>SQLException</code> stays inside the JDBC implementation.</p></li>
+<li><p><code>RepositoryException</code> reports that a persistence operation failed.</p></li>
+<li><p>The original exception remains available as the cause.</p></li>
 </ul>
 <p>Uses: <code>repository/RepositoryException.java</code></p>
 </section>
+
 <section class="frame">
-<h2>In-Memory Implementation</h2>
+<h2>Another Repository Implementation</h2>
+<p>The same Repository interface can use a completely different storage mechanism.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class InMemoryTaskRepository
         implements TaskRepository {
 
     private final List&lt;Task&gt; tasks = new ArrayList&lt;&gt;();
-    private long nextId = 1;
 
     public List&lt;Task&gt; findAll() {
         return List.copyOf(tasks);
     }
 
     public void add(String title) {
-        tasks.add(new Task(nextId++, title, false));
+        // store the new Task in the list
     }
 
-    public void setDone(long id, boolean done) {
-        for (int index = 0; index &lt; tasks.size(); index++) {
-            Task task = tasks.get(index);
-            if (task.id() == id) {
-                tasks.set(index, new Task(id, task.title(), done));
-                return;
-            }
-        }
-    }
-
-    public void delete(long id) {
-        tasks.removeIf(task -&gt; task.id() == id);
-    }
+    // setDone(...) and delete(...) use the same list
 }</code></pre>
-<p>This version proves that the interface can work without a database.</p>
+<ul>
+<li><p>The interface stays the same.</p></li>
+<li><p>This implementation stores tasks in memory instead of a database.</p></li>
+<li><p>Application code can use either implementation through <code>TaskRepository</code>.</p></li>
+</ul>
 <p>Example: <code>repository/InMemoryTaskRepository.java</code></p>
 </section>
 </section>
+
 <section>
 <section class="title-slide slide level1">
 <h1>JDBC Repository Implementation</h1>
@@ -248,6 +261,7 @@ Storage can change without rewriting the Controller.</code></pre>
     private Connection connect() throws SQLException {
         return config.openConnection();
     }
+
     private void createTableIfMissing() { ... }
     private Task mapTask(ResultSet rows) throws SQLException { ... }
 
@@ -257,7 +271,7 @@ Storage can change without rewriting the Controller.</code></pre>
     public void delete(long id) { ... }
 }</code></pre>
 <ul>
-<li><p><strong>Setup:</strong> receive the shared database configuration and make sure the table exists.</p></li>
+<li><p><strong>Setup:</strong> receive the database configuration and make sure the table exists.</p></li>
 <li><p><strong>Helpers:</strong> open connections and convert rows into <code>Task</code> objects.</p></li>
 <li><p><strong>Repository methods:</strong> implement the operations from <code>TaskRepository</code>.</p></li>
 </ul>
@@ -265,26 +279,20 @@ Storage can change without rewriting the Controller.</code></pre>
 </section>
 
 <section class="frame">
-<h2>JdbcTaskRepository: Table Setup</h2>
-<p><code>createTableIfMissing()</code> prepares the database when the repository is created.</p>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private void createTableIfMissing() {
-    String sql = """
-        CREATE TABLE IF NOT EXISTS tasks (
-            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-            title VARCHAR(100) NOT NULL,
-            done BOOLEAN NOT NULL
-        )
-        """;
-
-    try (Connection connection = connect();
-         PreparedStatement statement = connection.prepareStatement(sql)) {
-        statement.executeUpdate();
-    } catch (SQLException exception) {
-        throw new RepositoryException(
-                "Could not create tasks table", exception);
-    }
-}</code></pre>
-<p>The rest of the application does not need to know this SQL exists.</p>
+<h2>Repository Owns Database Setup</h2>
+<p>Database-specific setup stays inside the JDBC Repository.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private static final String CREATE_TABLE_SQL = """
+    CREATE TABLE IF NOT EXISTS tasks (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        title VARCHAR(100) NOT NULL,
+        done BOOLEAN NOT NULL
+    )
+    """;</code></pre>
+<ul>
+<li><p>The Repository knows the table structure.</p></li>
+<li><p>The Repository runs this setup when it is created.</p></li>
+<li><p>The Controller and Model do not need this SQL.</p></li>
+</ul>
 </section>
 
 <section class="frame">
@@ -294,6 +302,7 @@ Storage can change without rewriting the Controller.</code></pre>
     long id = rows.getLong("id");
     String title = rows.getString("title");
     boolean done = rows.getBoolean("done");
+
     return new Task(id, title, done);
 }</code></pre>
 <ul>
@@ -304,7 +313,7 @@ Storage can change without rewriting the Controller.</code></pre>
 
 <section class="frame">
 <h2>JdbcTaskRepository: findAll()</h2>
-<p><code>findAll()</code> implements the repository read operation with JDBC.</p>
+<p>The caller asks for tasks. JDBC details stay inside this repository method.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public List&lt;Task&gt; findAll() {
     String sql = "SELECT id, title, done FROM tasks ORDER BY id";
     List&lt;Task&gt; tasks = new ArrayList&lt;&gt;();
@@ -328,25 +337,28 @@ Storage can change without rewriting the Controller.</code></pre>
 </section>
 
 <section class="frame">
-<h2>JdbcTaskRepository: add()</h2>
-<p><code>add(...)</code> implements the repository write operation with a prepared statement.</p>
+<h2>Repository Write Operation</h2>
+<p>The application asks to add a task. The JDBC Repository translates that operation into SQL.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void add(String title) {
-    String sql = "INSERT INTO tasks (title, done) VALUES (?, ?)";
+    String sql =
+            "INSERT INTO tasks (title, done) VALUES (?, ?)";
 
     try (Connection connection = connect();
-         PreparedStatement statement = connection.prepareStatement(sql)) {
+         PreparedStatement statement =
+                 connection.prepareStatement(sql)) {
 
         statement.setString(1, title);
         statement.setBoolean(2, false);
         statement.executeUpdate();
     } catch (SQLException exception) {
-        throw new RepositoryException("Could not add task", exception);
+        throw new RepositoryException(
+                "Could not add task", exception);
     }
 }</code></pre>
 <ul>
-<li><p>The repository still uses <code>PreparedStatement</code> for safe values.</p></li>
-<li><p>The UI and controller do not need to know the SQL syntax.</p></li>
-<li><p><code>setDone(...)</code> and <code>delete(...)</code> use the same pattern with different SQL.</p></li>
+<li><p>The application operation is <code>add(title)</code>.</p></li>
+<li><p>The JDBC implementation decides which SQL performs that operation.</p></li>
+<li><p>Other Repository methods follow the same pattern.</p></li>
 </ul>
 </section>
 
@@ -363,10 +375,12 @@ Storage can change without rewriting the Controller.</code></pre>
 </ul>
 </section>
 </section>
+
 <section>
 <section class="title-slide slide level1">
 <h1>Repository Back in MVC</h1>
 </section>
+
 <section class="frame">
 <h2>Where the Repository Fits</h2>
 <p>Each part of the application has a different responsibility.</p>
@@ -379,6 +393,7 @@ Storage can change without rewriting the Controller.</code></pre>
 </ul>
 <p>The Controller coordinates the Model and Repository. The View displays the Model, and the Repository communicates with the database.</p>
 </section>
+
 <section class="frame">
 <h2>Application Startup</h2>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void start(Stage stage) throws IOException {
@@ -403,6 +418,7 @@ Storage can change without rewriting the Controller.</code></pre>
 </ul>
 <p>Run: <code>repository/TaskRepositoryApp.java</code></p>
 </section>
+
 <section class="frame">
 <h2>Controller Uses the Repository</h2>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskController {
@@ -441,13 +457,17 @@ Storage can change without rewriting the Controller.</code></pre>
 <li><p>Letting the View decide database rules or table details.</p></li>
 <li><p>Copying the same row-mapping code into many methods.</p></li>
 <li><p>Ignoring persistence failures or hiding exceptions without a useful message.</p></li>
-</ul><p>Good repository code keeps database details local and application operations clear.</p>
+</ul>
+<p>Good repository code keeps database details local and application operations clear.</p>
 </section>
+
 <section class="frame">
 <h2>Small Design Checklist</h2>
 <p>Before adding database code, check where each responsibility belongs.</p>
 <table class="compact">
-<thead><tr><th>Question</th><th>Home</th></tr></thead>
+<thead>
+<tr><th>Question</th><th>Home</th></tr>
+</thead>
 <tbody>
 <tr><td>What data does the app work with?</td><td>Domain object / Model</td></tr>
 <tr><td>What happens when a button is clicked?</td><td>Controller</td></tr>
@@ -457,6 +477,7 @@ Storage can change without rewriting the Controller.</code></pre>
 </tbody>
 </table>
 </section>
+
 <section class="frame">
 <h2>Practice: Refactor Direct JDBC</h2>
 <p>Start with an event handler that inserts a task using JDBC.</p>
@@ -473,10 +494,12 @@ Model holds current state.
 Repository handles persistence.</code></pre>
 </section>
 </section>
+
 <section>
 <section class="title-slide slide level1">
 <h1>Summary</h1>
 </section>
+
 <section class="frame">
 <h2>Check Your Understanding</h2>
 <ul>
@@ -487,13 +510,14 @@ Repository handles persistence.</code></pre>
 <li><p>The JDBC implementation hides <code>Connection</code>, <code>PreparedStatement</code>, <code>ResultSet</code>, SQL strings, and row mapping.</p></li>
 <li><p><code>DatabaseConfig</code> keeps connection settings outside Java code.</p></li>
 <li><p><code>PreparedStatement</code> should still be used inside the repository for values.</p></li>
-
 <li><p>MVC becomes cleaner when the Controller coordinates events, the Model holds current state, and the Repository handles persistence.</p></li>
 </ul>
 </section>
 </section>
+
 </div>
 </div>
+
 <script src="../_static/revealjs/dist/reveal.js"></script>
 <script src="../_static/revealjs/plugin/notes/notes.js"></script>
 <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Three-Tier Architecture</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=20260918"></script>
+
+  <style>
+    .reveal pre[data-fontsize="small"] { font-size: 0.68em; }
+    .reveal pre[data-fontsize="xsmall"] { font-size: 0.56em; }
+    .reveal table.compact { font-size: 0.78em; }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      align-items: start;
+    }
+
+    .three-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .small { font-size: 0.86em; }
+    .mini-note { font-size: 0.78em; color: #555; }
+  </style>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+  <section data-background-color="white" data-background-image="../_static/logo.png"
+           data-background-size="50%" data-background-position="top center"
+           data-background-repeat="no-repeat" class="title-slide">
+    <h1>Three-Tier Architecture</h1>
+    <div class="subtitle docutils container">
+      <p><strong>Advanced Programming</strong></p>
+      <p>Liting Zhang</p>
+    </div>
+  </section>
+</section>
+
+<section>
+  <section class="frame">
+    <h2>Roadmap</h2>
+    <p>The persistent Task List already works. Now we organize the same app into clearer parts.</p>
+    <ul>
+      <li><p>Start from the MVC and Repository classes we already know.</p></li>
+      <li><p>Find the responsibilities currently collected in the Controller.</p></li>
+      <li><p>Group the application into presentation, application, and data tiers.</p></li>
+      <li><p>Move one dependency so each tier has a clearer job.</p></li>
+      <li><p>Trace one task from the button click to the database and back.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Why Reorganize the Application?</h1>
+  </section>
+
+  <section class="frame">
+    <h2>What We Already Know</h2>
+    <table class="compact">
+      <thead>
+        <tr><th>Part</th><th>Responsibility</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><p><code>TaskView</code></p></td><td><p>Displays tasks and provides controls.</p></td></tr>
+        <tr><td><p><code>TaskController</code></p></td><td><p>Responds to button events.</p></td></tr>
+        <tr><td><p><code>TaskModel</code> and <code>Task</code></p></td><td><p>Hold the task data used by the application.</p></td></tr>
+        <tr><td><p><code>TaskRepository</code></p></td><td><p>Defines the operations for saved tasks.</p></td></tr>
+        <tr><td><p><code>JdbcTaskRepository</code></p></td><td><p>Implements those operations with JDBC.</p></td></tr>
+      </tbody>
+    </table>
+    <p>These classes already separate many responsibilities. Three-tier helps us see the larger structure.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Current Persistent Task App</h2>
+    <p>The Controller currently coordinates both the screen and persistence.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskView ----&gt; TaskController ----&gt; TaskModel
+                    |
+                    +-------------&gt; TaskRepository
+                                         |
+                                         v
+                                JdbcTaskRepository ----&gt; Database</code></pre>
+    <ul>
+      <li><p>The View and Controller form the familiar MVC presentation.</p></li>
+      <li><p>The Repository still hides JDBC and SQL.</p></li>
+      <li><p>The Controller knows both the Model and the Repository.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>The Controller Has Two Jobs</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void addClicked() {
+    String title = view.getEnteredTitle();
+    if (title.isBlank()) {
+        view.setStatus("Title required");
+        return;
+    }
+
+    repository.add(title);
+    model.replaceTasks(repository.findAll());
+    view.refresh();
+}</code></pre>
+
+        <p><strong>Presentation work: </strong> Read the field, handle the click, and refresh the screen.</p>
+        <p><strong>Application work: </strong>Check the title, save the task, and reload application state.</p>
+   
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Organizing the Application into Three Tiers</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Presentation, Application, and Data</h2>
+    <table class="compact">
+      <thead>
+        <tr><th>Tier</th><th>Main question</th><th>Task List classes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><p><strong>Presentation</strong></p></td>
+          <td><p>How does the user interact with the application?</p></td>
+          <td><p><code>TaskView</code>, <code>TaskController</code></p></td>
+        </tr>
+        <tr>
+          <td><p><strong>Application</strong></p></td>
+          <td><p>What should the application do?</p></td>
+          <td><p><code>TaskModel</code>, <code>Task</code></p></td>
+        </tr>
+        <tr>
+          <td><p><strong>Data</strong></p></td>
+          <td><p>How are tasks saved and loaded?</p></td>
+          <td><p><code>TaskRepository</code>, JDBC implementation, database</p></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The tiers describe responsibilities. They can all run inside one Java program.</p>
+  </section>
+
+<section class="frame">
+  <h2>Familiar Classes in a Larger Structure</h2>
+
+  <ul>
+    <li><p><strong>Presentation:</strong> <code>TaskView</code>, <code>TaskController</code>, JavaFX controls and events</p></li>
+    <li><p><strong>Application:</strong> <code>TaskModel</code>, <code>Task</code>, task operations and rules</p></li>
+    <li><p><strong>Data:</strong> <code>TaskRepository</code>, <code>JdbcTaskRepository</code>, JDBC, SQL, and H2</p></li>
+  </ul>
+
+  <ul>
+    <li><p>Three-tier does not replace MVC.</p></li>
+    <li><p>Three-tier does not replace the Repository.</p></li>
+    <li><p>It shows where both ideas fit in the complete application.</p></li>
+  </ul>
+      <img
+    src="../_static/images/cop4027/three-tier-task.png"
+    alt="Three-tier architecture diagram showing the flow of a task application. The Presentation Tier contains the View and Controller, the Application Tier contains TaskModel, and the Data Tier contains TaskRepository and the Database. Solid arrows show requests moving from View to Controller to TaskModel to TaskRepository to Database, while dashed arrows show responses returning in the opposite direction."
+    style="display:block; margin:0 auto; max-width:50%; max-height:78vh;"
+/>
+</section>
+
+
+  <section class="frame">
+    <h2>Add a Task</h2>
+    <ol>
+      <li><p>The View provides the entered title.</p></li>
+      <li><p>The Controller calls <code>model.addTask(title)</code>.</p></li>
+      <li><p>The Model checks the task rule.</p></li>
+      <li><p>The Model asks the Repository to save the task.</p></li>
+      <li><p>The Repository uses JDBC to update the database.</p></li>
+      <li><p>The Model reloads its task list.</p></li>
+      <li><p>The Controller tells the View to refresh.</p></li>
+    </ol>
+
+  </section>
+
+
+
+
+  <section class="frame">
+    <h2>Presentation: TaskController</h2>
+    <p>The presentation tier handles user interaction and delegates application work to the Model.</p>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void addClicked() {
+    try {
+        model.addTask(view.getEnteredTitle());
+        view.refresh();
+        view.clearEnteredTitle();
+        view.setStatus("Task saved");
+    } catch (IllegalArgumentException | RepositoryException exception) {
+        view.setStatus(exception.getMessage());
+    }
+}</code></pre>
+    <ul>
+      <li><p>The Controller handles the button event and display feedback.</p></li>
+      <li><p>It asks the Model to perform the task operation.</p></li>
+      <li><p>No Repository field, JDBC type, or SQL appears here.</p></li>
+    </ul>
+  </section>
+
+<p>The presentation tier handles user interaction and delegates application work to the Model.</p>
+
+
+<section class="frame">
+  <h2>Data: TaskRepository</h2>
+
+  <p>The data tier gives the application persistence operations without exposing how they are implemented.</p>
+
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository {
+    List&lt;Task&gt; findAll();
+
+    void add(String title);
+
+    void setDone(long id, boolean done);
+
+    void delete(long id);
+}</code></pre>
+
+  <ul>
+    <li><p>The Model works with task operations such as <code>add</code> and <code>findAll</code>.</p></li>
+    <li><p><code>JdbcTaskRepository</code> translates those operations into JDBC and SQL.</p></li>
+    <li><p>No <code>Connection</code>, <code>PreparedStatement</code>, or <code>ResultSet</code> crosses the boundary.</p></li>
+  </ul>
+</section>
+
+  <section class="frame">
+    <h2>Connect the Objects in One Place</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">DatabaseConfig config =
+        DatabaseConfig.load("/database.properties");
+TaskRepository repository = new JdbcTaskRepository(config);
+
+TaskModel model = new TaskModel(repository);
+TaskView view = new TaskView(model);
+TaskController controller = new TaskController(model, view);
+controller.connectHandlers();</code></pre>
+    <ul>
+      <li><p>External configuration supplies the database connection settings.</p></li>
+      <li><p>The Model receives the Repository it needs.</p></li>
+      <li><p>The Controller receives only the Model and View it needs.</p></li>
+      <li><p>The construction code makes the dependency direction visible.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Where Does Each Responsibility Belong?</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Classify Each Responsibility</h2>
+    <p>Choose presentation, application, or data.</p>
+    <ol>
+      <li><p>Display <code>"Task saved"</code>.</p></li>
+      <li><p>Handle the Add button event.</p></li>
+      <li><p>Reject a blank task title.</p></li>
+      <li><p>Reload the current tasks after a change.</p></li>
+      <li><p>Execute an <code>INSERT</code> statement.</p></li>
+      <li><p>Convert a database row into a <code>Task</code>.</p></li>
+    </ol>
+  </section>
+
+  <section class="frame">
+    <h2>Possible Classification</h2>
+    <ul>
+      <li><p><strong>Presentation:</strong> display <code>"Task saved"</code> and handle the Add button event.</p></li>
+      <li><p><strong>Application:</strong> reject a blank title and reload the current tasks.</p></li>
+      <li><p><strong>Data:</strong> execute the <code>INSERT</code> and map a database row to a <code>Task</code>.</p></li>
+    </ul>
+    <p>When a class starts doing work from another tier, move that responsibility to the class that owns it.</p>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Summary</h1>
+  </section>
+
+<section class="frame">
+  <h2>Key Takeaways</h2>
+
+  <ul>
+    <li><p><strong>Presentation tier:</strong> handles user interaction and display.</p></li>
+    <li><p><strong>Application tier:</strong> handles application rules, state, and operations.</p></li>
+    <li><p><strong>Data tier:</strong> handles persistence, JDBC, SQL, and database mapping.</p></li>
+    <li><p>MVC separates the View, Controller, and Model.</p></li>
+    <li><p>Repository separates database access from application logic.</p></li>
+    <li><p>Three-tier organizes these responsibilities into a larger application structure.</p></li>
+  </ul>
+</section>
+</section>
+
+</div>
+</div>
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+  var revealjsConfig = new Object();
+  Object.assign(revealjsConfig, {
+    "disableLayout": true,
+    "controls": true,
+    "progress": true,
+    "hash": true,
+    "center": true,
+    "transition": "slide",
+    "slideNumber": true,
+    "scrollActivationWidth": null,
+    "mouseWheel": false,
+    "width": 800,
+    "height": 540
+  });
+
+  revealjsConfig.plugins = [
+    RevealNotes, RevealHighlight, RevealMath,
+  ];
+
+  Reveal.initialize(revealjsConfig);
+</script>
+
+</body>
+</html>

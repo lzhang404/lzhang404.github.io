@@ -18,6 +18,7 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 </head>
+
 <body>
 <div class="reveal">
 <div class="slides" role="main">
@@ -191,11 +192,11 @@ Controller asks StudentView to display StudentModel data.</code></pre>
 <h2>Student Example Flow</h2>
 <p>The same three responsibilities apply before we add JavaFX controls.</p>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User wants to rename a student
-    -&gt; StudentController receives the request
-    -&gt; StudentController calls model.setName(newName)
-    -&gt; StudentModel stores the new name
-    -&gt; StudentController calls view.printStudentDetails(...)
-    -&gt; StudentView displays the current model data</code></pre>
+    -> StudentController receives the request
+    -> StudentController calls model.setName(newName)
+    -> StudentModel stores the new name
+    -> StudentController calls view.printStudentDetails(...)
+    -> StudentView displays the current model data</code></pre>
 <ul>
 <li><p>The Model owns the data.</p></li>
 <li><p>The View presents the data.</p></li>
@@ -219,20 +220,20 @@ Controller asks StudentView to display StudentModel data.</code></pre>
 <li><p>The application commonly keeps state in memory while it is running.</p></li>
 </ul>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User event
-    -&gt; Controller event handler
-    -&gt; Model operation
-    -&gt; View redraws from Model state</code></pre>
+    -> Controller event handler
+    -> Model operation
+    -> View redraws from Model state</code></pre>
 </section>
 
 <section class="frame">
 <h2>Example Event Flow</h2>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">User drags mouse on Canvas
-    -&gt; Controller handles the MouseEvent
-    -&gt; Controller starts or extends a Stroke
-    -&gt; Model stores the point in that Stroke
-    -&gt; Controller calls view.redraw()
-    -&gt; View reads model.getStrokes()
-    -&gt; Canvas shows the updated drawing</code></pre>
+    -> Controller handles the MouseEvent
+    -> Controller starts or extends a Stroke
+    -> Model stores the point in that Stroke
+    -> Controller calls view.redraw()
+    -> View reads model.getStrokes()
+    -> Canvas shows the updated drawing</code></pre>
 <p>The controller handles the event. The model stores the data. The view draws the result.</p>
 </section>
 
@@ -308,9 +309,10 @@ DrawModel does not know JavaFX controls.</code></pre>
 </section>
 
 <section class="frame">
-<h2>DrawModel</h2>
+<h2>Model: Own State and Rules</h2>
+<p>The Model stores the drawing data and provides operations that change that data.</p>
+
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class DrawModel {
-    // The Model owns drawing state and has no JavaFX controls.
     private final List&lt;Stroke&gt; strokes = new ArrayList&lt;&gt;();
     private InkColor selectedColor = InkColor.BLACK;
 
@@ -319,136 +321,77 @@ DrawModel does not know JavaFX controls.</code></pre>
     }
 
     public void addPoint(double x, double y) {
-        // A drag should always belong to a stroke.
-        if (strokes.isEmpty()) {
-            startStroke(x, y);
-            return;
-        }
         strokes.getLast().addPoint(new Point(x, y));
     }
 
-    public void clear() {
-        strokes.clear();
-    }
-
     public List&lt;Stroke&gt; getStrokes() {
-        // Callers can read the drawing but cannot edit the list directly.
         return Collections.unmodifiableList(strokes);
     }
-
-    public InkColor getSelectedColor() {
-        return selectedColor;
-    }
-
-    public void setSelectedColor(InkColor selectedColor) {
-        this.selectedColor = Objects.requireNonNull(selectedColor);
-    }
 }</code></pre>
-<p>The Model owns the strokes and selected color.</p>
-<p>The View reads the strokes. The Controller sends drawing and color changes.</p>
-<p><strong>Example:</strong> <code>cop4027.desktop.mvc.DrawModel</code></p>
+
+<ul>
+<li><p>The Model owns the strokes and selected color.</p></li>
+<li><p>The Model exposes operations such as start stroke and add point.</p></li>
+<li><p>The Model has no JavaFX controls or drawing code.</p></li>
+</ul>
 </section>
 
 <section class="frame">
-<h2>DrawView</h2>
+<h2>View: Render Current State</h2>
+<p>The View owns the JavaFX controls and redraws the screen from Model state.</p>
+
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class DrawView extends BorderPane {
     private final DrawModel model;
-
-    // The View owns the JavaFX controls.
     private final Canvas canvas = new Canvas(700, 440);
-    private final ChoiceBox&lt;DrawModel.InkColor&gt; colorChoice =
-            new ChoiceBox&lt;&gt;();
-    private final Button clearButton = new Button("Clear");
-    private final Label statusLabel =
-            new Label("Drag on the canvas to draw.");
 
-    public DrawView(DrawModel model) {
-        this.model = model;
-
-        colorChoice.getItems().setAll(DrawModel.InkColor.values());
-        colorChoice.setValue(model.getSelectedColor());
-
-        HBox toolbar = new HBox(10,
-                new Label("Color:"), colorChoice, clearButton);
-        setTop(toolbar);
-        setCenter(new StackPane(canvas));
-        setBottom(statusLabel);
-
-        redraw();
-    }
-
-    public Canvas getCanvas() { return canvas; }
-    public ChoiceBox&lt;DrawModel.InkColor&gt; getColorChoice() {
-        return colorChoice;
-    }
-    public Button getClearButton() { return clearButton; }
-    public DrawModel.InkColor getSelectedColor() {
-        return colorChoice.getValue();
-    }
-    public void setStatus(String message) {
-        statusLabel.setText(message);
+    public Canvas getCanvas() {
+        return canvas;
     }
 
     public void redraw() {
         GraphicsContext graphics = canvas.getGraphicsContext2D();
-        graphics.setFill(Color.WHITE);
-        graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        graphics.setLineCap(StrokeLineCap.ROUND);
+        clearCanvas(graphics);
 
-        // Rebuild the canvas from the current Model state.
         for (DrawModel.Stroke stroke : model.getStrokes()) {
             drawStroke(graphics, stroke);
         }
     }
 }</code></pre>
-<p>The View redraws the canvas from Model state.</p>
-<p>At first, <code>drawStroke</code> uses a fixed size.</p>
-<p><strong>Example:</strong> <code>cop4027.desktop.mvc.DrawView</code></p>
+
+<ul>
+<li><p>The View owns the canvas and rendering code.</p></li>
+<li><p>The View reads Model state when it redraws.</p></li>
+<li><p>The View does not decide drawing rules or update drawing state itself.</p></li>
+</ul>
 </section>
 
 <section class="frame">
-<h2>DrawController</h2>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class DrawController {
-    private final DrawModel model;
-    private final DrawView view;
+<h2>Controller: Turn Events into Operations</h2>
+<p>The Controller receives JavaFX events and calls the correct Model and View methods.</p>
 
-    public DrawController(DrawModel model, DrawView view) {
-        this.model = model;
-        this.view = view;
-    }
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void connectHandlers() {
+    view.getCanvas().setOnMousePressed(event -&gt; {
+        model.startStroke(event.getX(), event.getY());
+        view.redraw();
+    });
 
-    public void connectHandlers() {
-        // Convert mouse input into Model changes, then redraw the View.
-        view.getCanvas().setOnMousePressed(event -&gt; {
-            model.startStroke(event.getX(), event.getY());
-            view.redraw();
-            view.setStatus("Drawing with "
-                    + model.getSelectedColor() + ".");
-        });
+    view.getCanvas().setOnMouseDragged(event -&gt; {
+        model.addPoint(event.getX(), event.getY());
+        view.redraw();
+    });
 
-        view.getCanvas().setOnMouseDragged(event -&gt; {
-            model.addPoint(event.getX(), event.getY());
-            view.redraw();
-        });
-
-        view.getColorChoice().setOnAction(event -&gt; {
-            // The View supplies the selected value; the Model stores it.
-            model.setSelectedColor(view.getSelectedColor());
-            view.setStatus("Color: " + model.getSelectedColor());
-        });
-
-        view.getClearButton().setOnAction(event -&gt; {
-            model.clear();
-            view.redraw();
-            view.setStatus("Drawing cleared.");
-        });
-    }
+    view.getClearButton().setOnAction(event -&gt; {
+        model.clear();
+        view.redraw();
+        view.setStatus("Drawing cleared.");
+    });
 }</code></pre>
+
 <ul>
-<li><p>Mouse events create or extend a stroke.</p></li>
-<li><p>The color-choice event updates the selected tool setting.</p></li>
+<li><p>The Controller translates events into Model operations.</p></li>
+<li><p>The Controller asks the View to redraw after state changes.</p></li>
+<li><p>The Controller coordinates work, but does not store the drawing itself.</p></li>
 </ul>
-<p><strong>Example:</strong> <code>cop4027.desktop.mvc.DrawController</code></p>
 </section>
 
 <section class="frame">
@@ -460,18 +403,20 @@ DrawModel does not know JavaFX controls.</code></pre>
 <li><p><strong>Controller:</strong> passes the selected value to the Model when a stroke begins.</p></li>
 <li><p>Only new strokes use the new selection.</p></li>
 </ul>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Feature question:
+Who owns the value?
+Who displays or collects it?
+Who moves it from the UI into the Model?</code></pre>
 </section>
 
 <section class="frame">
-<h2>Model: Save Size in Each Stroke</h2>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void startStroke(double x, double y) {
-    // Preserve the original API with a default brush size.
-    startStroke(x, y, 5);
-}
+<h2>Model Change: Validate and Save Size</h2>
+<p>The brush size becomes part of the drawing state, so the Model stores it with each stroke.</p>
 
-public void startStroke(double x, double y, int brushSize) {
-    // Validate the value before it becomes Model state.
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void startStroke(double x, double y, int brushSize) {
     int size = Math.max(1, Math.min(brushSize, 20));
+
     strokes.add(new Stroke(
             selectedColor, size, new Point(x, y)));
 }
@@ -481,45 +426,23 @@ public static final class Stroke {
     private final int brushSize;
     private final List&lt;Point&gt; points = new ArrayList&lt;&gt;();
 
-    private Stroke(InkColor color, int brushSize, Point firstPoint) {
-        this.color = color;
-        this.brushSize = brushSize;
-        points.add(firstPoint);
-    }
-
-    private void addPoint(Point point) {
-        points.add(point);
-    }
-
-    public InkColor getColor() {
-        return color;
-    }
-
-    public List&lt;Point&gt; getPoints() {
-        return Collections.unmodifiableList(points);
-    }
-
     public int getBrushSize() {
         return brushSize;
     }
 }</code></pre>
-<p>The Model validates the input and keeps each stroke's original size.</p>
+
+<ul>
+<li><p>The Model validates the size before storing it.</p></li>
+<li><p>Each stroke remembers the size it started with.</p></li>
+</ul>
 </section>
 
 <section class="frame">
-<h2>View: Choose and Render the Size</h2>
+<h2>View Change: Choose and Render Size</h2>
+<p>The View owns the UI control and uses the saved Model value when drawing.</p>
+
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final ChoiceBox&lt;Integer&gt; brushSizeChoice =
         new ChoiceBox&lt;&gt;();
-
-// In the DrawView constructor: configure and place the control.
-brushSizeChoice.getItems().setAll(2, 5, 10, 15);
-brushSizeChoice.setValue(5);
-
-HBox toolbar = new HBox(10,
-        new Label("Color:"), colorChoice,
-        new Label("Brush size:"), brushSizeChoice,
-        clearButton);
-setTop(toolbar);
 
 public int getSelectedBrushSize() {
     return brushSizeChoice.getValue();
@@ -527,45 +450,39 @@ public int getSelectedBrushSize() {
 
 private void drawStroke(GraphicsContext graphics,
         DrawModel.Stroke stroke) {
-    Color color = toJavaFxColor(stroke.getColor());
-    List&lt;DrawModel.Point&gt; points = stroke.getPoints();
-
-    // Render the saved size, not the control's current selection.
     double size = stroke.getBrushSize();
-    graphics.setStroke(color);
-    graphics.setFill(color);
+
     graphics.setLineWidth(size);
+    graphics.setStroke(toJavaFxColor(stroke.getColor()));
 
-    if (points.size() == 1) {
-        DrawModel.Point point = points.getFirst();
-        double radius = size / 2.0;
-        graphics.fillOval(point.x() - radius, point.y() - radius,
-                size, size);
-        return;
-    }
-
-    for (int index = 1; index &lt; points.size(); index++) {
-        DrawModel.Point from = points.get(index - 1);
-        DrawModel.Point to = points.get(index);
-        graphics.strokeLine(from.x(), from.y(), to.x(), to.y());
-    }
+    // draw the stroke's points using the saved size
 }</code></pre>
-<p>The View owns the control and exposes its selected value.</p>
-<p><code>drawStroke</code> uses the saved size for line width and single-point dots.</p>
+
+<ul>
+<li><p>The View collects the current brush-size choice.</p></li>
+<li><p>The View renders each stroke using the size saved in the Model.</p></li>
+<li><p>The View does not decide whether the size is valid.</p></li>
+</ul>
 </section>
 
 <section class="frame">
-<h2>Controller: Pass the Selected Size</h2>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Read the current choice once, when the stroke begins.
-view.getCanvas().setOnMousePressed(event -&gt; {
+<h2>Controller Change: Pass the Choice Once</h2>
+<p>The Controller reads the selected size when the stroke begins and passes it to the Model operation.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">view.getCanvas().setOnMousePressed(event -&gt; {
     int size = view.getSelectedBrushSize();
 
-    // Pass the event data and selected size into the Model.
     model.startStroke(event.getX(), event.getY(), size);
     view.redraw();
+
     view.setStatus("Brush size: " + size);
 });</code></pre>
-<p>The Controller supplies the size at the moment the new stroke begins.</p>
+
+<ul>
+<li><p>The Controller moves user input into the Model operation.</p></li>
+<li><p>The Model stores the size with the new stroke.</p></li>
+<li><p>Changing the choice later does not change strokes already drawn.</p></li>
+</ul>
 </section>
 </section>
 
@@ -618,6 +535,7 @@ Controller: knows how user events become operations.</code></pre>
 
 </div>
 </div>
+
 <script src="../_static/revealjs/dist/reveal.js"></script>
 <script src="../_static/revealjs/plugin/notes/notes.js"></script>
 <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
