@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
+<title>Persistence with Serialization and JDBC</title>
+<link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
+<link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=20260921a" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/design-tabs.js?v=20260921a"></script>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+<section data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%" class="title-slide">
+<h1>Persistence with Serialization and JDBC</h1>
+<div class="subtitle docutils container">
+<p>Liting Zhang</p>
+<p>University of West Florida</p>
+</div>
+</section>
+</section>
+<section>
+
+<section class="frame">
+<h2>Roadmap</h2>
+<p>Main question: how can application data survive after the program closes?</p>
+<ul>
+<li><p>Explain why in-memory objects are temporary and compare persistence choices.</p></li>
+<li><p>Save and load Java object graphs with serialization.</p></li>
+<li><p>Use a relational database when records need to be searched and updated independently.</p></li>
+<li><p>Set up JDBC and work with <code>Connection</code>, <code>PreparedStatement</code>, and <code>ResultSet</code>.</p></li>
+<li><p>Write safe SQL and manage database resources and errors.</p></li>
+<li><p>Create a persistence boundary with DAO and Repository concepts.</p></li>
+<li><p>Design and implement a <code>TaskRepository</code> that hides JDBC details.</p></li>
+<li><p>Integrate the Repository with MVC so database code stays out of the Controller and UI.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>From Runtime State to Persistent Data</h1>
+</section>
+
+<section class="frame">
+<h2>Objects in Memory Are Temporary</h2>
+<p>A desktop application usually keeps its current state in Java objects.</p>
+<ul>
+<li><p>A drawing app may store strokes, selected color, and brush size.</p></li>
+<li><p>A text editor may store current text, file path, and dirty state.</p></li>
+<li><p>A signup app may store events, students, and registrations.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Program is running
+    -&gt; objects exist in memory
+Program exits
+    -&gt; memory is released
+Program opens again
+    -&gt; data must be loaded from storage</code></pre>
+<p><strong>Persistence</strong> means saving data so it can be used after the program ends.</p>
+</section>
+
+<section class="frame">
+<h2>Running Example: Task List</h2>
+<p>The same task data can be stored as a serialized object graph or as database rows.</p>
+<ul>
+<li><p><code>TaskItem</code> stores an ID, title, and completion status.</p></li>
+<li><p><code>TaskList</code> stores a collection of tasks.</p></li>
+<li><p>Serialization saves the whole task list to one file.</p></li>
+<li><p>JDBC stores each task as one row in a database table.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Object file approach:
+    TaskList -> tasks.bin
+
+Database approach:
+    tasks table -> rows with id, title, done</code></pre>
+</section>
+
+<section class="frame">
+<h2>Persistence Choices</h2>
+<p>Different storage choices solve different problems.</p>
+<table class="compact">
+<thead><tr><th>Choice</th><th>Useful when</th><th>Limitation</th></tr></thead>
+<tbody>
+<tr><td>Java object serialization</td><td>Save and restore a simple Java object graph</td><td>Java-specific and hard to query</td></tr>
+<tr><td>JSON or XML file</td><td>Data should be readable or shared across tools</td><td>Searching and updating records can become manual work</td></tr>
+<tr><td>Relational database</td><td>Data needs search, filtering, updates, and relationships</td><td>Requires SQL and connection handling</td></tr>
+</tbody>
+</table>
+<p>The right choice depends on how the application will use the saved data.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Java Object Serialization</h1>
+</section>
+
+<section class="frame">
+<h2>Serializable Task List</h2>
+<p>Java serialization saves a reachable object graph as bytes.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskList implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private final String name;
+    private final List&lt;TaskItem&gt; tasks;
+    private transient int completedCount;
+}</code></pre>
+<ul>
+<li><p><code>writeObject(taskList)</code> also reaches its serializable <code>TaskItem</code> objects.</p></li>
+<li><p><code>serialVersionUID</code> is checked when loading to verify class compatibility.</p></li>
+<li><p><code>transient</code> fields are skipped; they return with default values and may need rebuilding.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Save and Load</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Path file = Path.of("data/tasks.bin");
+
+try (ObjectOutputStream out = new ObjectOutputStream(
+        Files.newOutputStream(file))) {
+    out.writeObject(taskList);
+}
+
+TaskList restored;
+try (ObjectInputStream in = new ObjectInputStream(
+        Files.newInputStream(file))) {
+    restored = (TaskList) in.readObject();
+}</code></pre>
+<p><code>ObjectOutputStream</code> writes the graph; <code>ObjectInputStream</code> reads it. <code>readObject()</code> returns <code>Object</code>, and try-with-resources closes both files.</p>
+<p>Run: <code>basics/TaskSerializationDemo.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Serialization vs Database</h2>
+<p>Serialization is useful for a small, trusted, Java-only snapshot.</p>
+<ul>
+<li><p>The program normally loads the whole object graph before searching it.</p></li>
+<li><p>Updating one task usually means writing the whole graph again.</p></li>
+<li><p>The saved bytes depend on Java classes and their compatible versions.</p></li>
+<li><p>Never deserialize data from an untrusted source.</p></li>
+</ul>
+<p>A database is a better fit when the application must search, update, or relate individual records.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Why Use a Database?</h1>
+</section>
+
+<section class="frame">
+<h2>Database Storage Is Record-Based</h2>
+<p>A database stores structured records that can be searched and updated directly.</p>
+<table class="compact">
+<thead><tr><th>id</th><th>title</th><th>done</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Review MVC</td><td>true</td></tr>
+<tr><td>2</td><td>Practice JDBC</td><td>false</td></tr>
+<tr><td>3</td><td>Finish lab</td><td>false</td></tr>
+</tbody>
+</table>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-sql">SELECT id, title, done
+FROM tasks
+WHERE title LIKE ?;</code></pre>
+<p>The database can find matching rows without loading every task into Java first.</p>
+</section>
+
+<section class="frame">
+<h2>What JDBC Is</h2>
+<p>JDBC is the standard Java API for working with relational databases.</p>
+<ul>
+<li><p>Java code calls JDBC interfaces such as <code>Connection</code> and <code>PreparedStatement</code>.</p></li>
+<li><p>A JDBC driver translates those calls for a specific database.</p></li>
+<li><p>The database executes SQL and returns results.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Java application
+    -&gt; JDBC API
+    -&gt; JDBC driver
+    -&gt; database</code></pre>
+</section>
+
+<section class="frame">
+<h2>Important JDBC Pieces</h2>
+<ul>
+<li><p><code>DriverManager</code>: creates a connection from a JDBC URL.</p></li>
+<li><p><code>Connection</code>: represents an open database connection.</p></li>
+<li><p><code>PreparedStatement</code>: represents a SQL command with safe value placeholders.</p></li>
+<li><p><code>ResultSet</code>: represents rows returned by a <code>SELECT</code> query.</p></li>
+<li><p><code>SQLException</code>: reports database connection and SQL errors.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Connection opens the door.
+PreparedStatement sends a command.
+ResultSet reads returned rows.</code></pre>
+</section>
+
+<section class="frame">
+<h2>JDBC Driver with Maven</h2>
+<p>The code uses the JDBC API, but the project also needs a database driver.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.h2database&lt;/groupId&gt;
+        &lt;artifactId&gt;h2&lt;/artifactId&gt;
+        &lt;version&gt;2.5.250&lt;/version&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;</code></pre>
+<ul>
+<li><p><strong>JDBC API:</strong> standard Java types such as <code>Connection</code>.</p></li>
+<li><p><strong>H2 driver:</strong> library that knows how to open an H2 database.</p></li>
+<li><p><strong>Maven:</strong> downloads the driver and adds it to the project build.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>JDBC in module-info.java</h2>
+<p>A modular Java project must declare the modules it reads.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">module cop4027.persistence.basics {
+    requires java.sql;
+    requires com.h2database;
+}</code></pre>
+<ul>
+<li><p><code>requires java.sql</code> lets the code use JDBC types such as <code>Connection</code>, <code>PreparedStatement</code>, and <code>ResultSet</code>.</p></li>
+<li><p><code>requires com.h2database</code> makes the H2 driver module available to the application.</p></li>
+<li><p>The module name for a library comes from that library, not from the Maven artifact name in general.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Configuration and Connection</h2>
+
+<p>Connection settings can stay outside the Java source code.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-properties">jdbc.url=jdbc:h2:file:./data/tasksdb
+jdbc.username=sa
+jdbc.password=</code></pre>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">DatabaseConfig config =
+        DatabaseConfig.load("/database.properties");
+
+try (Connection conn = config.openConnection()) {
+    // use the database
+}</code></pre>
+
+<ul>
+<li><p>The properties file keeps connection settings outside Java code.</p></li>
+<li><p><code>openConnection()</code> returns a JDBC <code>Connection</code>.</p></li>
+<li><p>Closing the connection does not delete the rows stored in the database.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Database Table Setup</h2>
+<p>The <code>tasks</code> table stores one task in each row.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-sql">CREATE TABLE IF NOT EXISTS tasks (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    done BOOLEAN NOT NULL
+)</code></pre>
+<ul>
+<li><p><code>id</code> uniquely identifies each task.</p></li>
+<li><p><code>title</code> and <code>done</code> store the task data.</p></li>
+<li><p>Java code writes values to this table and reads rows through JDBC.</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>PreparedStatement and Safe SQL</h1>
+</section>
+
+<section class="frame">
+<h2>Statement vs PreparedStatement</h2>
+<p>JDBC has more than one way to send SQL to the database.</p>
+<table class="compact">
+<thead><tr><th>Tool</th><th>How it works</th><th>Main use</th></tr></thead>
+<tbody>
+<tr><td><code>Statement</code></td><td>Sends one complete SQL string</td><td>Fixed SQL with no outside values</td></tr>
+<tr><td><code>PreparedStatement</code></td><td>Uses a SQL template with <code>?</code> placeholders</td><td>SQL with values from variables, forms, or files</td></tr>
+</tbody>
+</table>
+<p>In application code, prefer <code>PreparedStatement</code> whenever values come from outside the SQL string.</p>
+</section>
+
+<section class="frame">
+<h2>The Risk: Building SQL with String Concatenation</h2>
+<p>A common mistake is to paste user input directly into a SQL string.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String sql = "SELECT id, title, done FROM tasks "
+        + "WHERE title = '" + userTitle + "'";</code></pre>
+<ul>
+<li><p>This mixes the SQL command and the user's value into one string.</p></li>
+<li><p>If the value contains quotes or SQL syntax, the final command can change meaning.</p></li>
+<li><p>The program becomes easier to break and easier to attack.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>SQL Injection Example</h2>
+<p>Suppose the program expects a task title, but the input is this:</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">' OR '1'='1</code></pre>
+<p>String concatenation can turn the query into:</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-sql">SELECT id, title, done FROM tasks
+WHERE title = '' OR '1'='1';</code></pre>
+<ul>
+<li><p><code>'1'='1'</code> is always true.</p></li>
+<li><p>The query may return rows that the user did not actually search for.</p></li>
+<li><p>In other contexts, injection can modify or delete data.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>How PreparedStatement Helps</h2>
+
+<p><code>PreparedStatement</code> keeps the SQL structure separate from the values supplied to it.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String sql =
+        "SELECT id, title, done FROM tasks WHERE title = ?";
+
+PreparedStatement stmt = conn.prepareStatement(sql);
+stmt.setString(1, userTitle);
+
+ResultSet rs = stmt.executeQuery();</code></pre>
+
+<ul>
+<li><p>The <code>?</code> marks where a value will be supplied.</p></li>
+<li><p><code>setString(1, userTitle)</code> sends the title as data, not SQL code.</p></li>
+<li><p>The SQL structure stays separate from the user value.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Placeholders Are for Values</h2>
+<p>A placeholder can replace a value, but not a table name or column name.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Good: the title pattern is a value.
+String sql = "SELECT id, title FROM tasks WHERE title LIKE ?";
+stmt.setString(1, "%exam%");
+
+// Not the right use: table names and column names are SQL structure.
+String badSql = "SELECT ? FROM ?";</code></pre>
+<ul>
+<li><p>Use placeholders for user values such as names, IDs, prices, and search text.</p></li>
+<li><p>Do not build SQL structure from raw user input.</p></li>
+<li><p>If the user chooses a sort field, map the choice to a fixed allowed column name.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Parameter Indexes Start at 1</h2>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String sql =
+        "INSERT INTO tasks (title, done) VALUES (?, ?)";
+
+PreparedStatement stmt = conn.prepareStatement(sql);
+
+stmt.setString(1, title);    // first ?
+stmt.setBoolean(2, false);   // second ?
+
+stmt.executeUpdate();</code></pre>
+
+<ul>
+<li><p>JDBC parameter indexes start at <code>1</code>, not <code>0</code>.</p></li>
+<li><p>Each setter corresponds to one placeholder.</p></li>
+<li><p>Use a setter that matches the value type.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>executeUpdate and executeQuery</h2>
+<p>Use the method that matches the kind of SQL command.</p>
+<table class="compact">
+<thead><tr><th>Method</th><th>Use for</th><th>Returns</th></tr></thead>
+<tbody>
+<tr><td><code>executeUpdate()</code></td><td><code>CREATE</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td><td>Number of rows changed, or 0 for some schema commands</td></tr>
+<tr><td><code>executeQuery()</code></td><td><code>SELECT</code></td><td>A <code>ResultSet</code> containing returned rows</td></tr>
+</tbody>
+</table>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">int changed = stmt.executeUpdate();
+ResultSet rows = stmt.executeQuery();</code></pre>
+</section>
+
+<section class="frame">
+<h2>How ResultSet Works</h2>
+<p>A <code>ResultSet</code> acts like a cursor over returned rows.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ResultSet rs = stmt.executeQuery()) {
+    while (rs.next()) {
+        long id = rs.getLong("id");
+        String title = rs.getString("title");
+        boolean done = rs.getBoolean("done");
+        System.out.println(id + ": " + title + " - " + done);
+    }
+}</code></pre>
+<p>The cursor starts before the first row. <code>rs.next()</code> moves it forward, and getter methods read columns from the current row.</p>
+<p>Run: <code>basics/TaskJdbcDemo.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Resources and Errors</h2>
+<p>JDBC code must close resources and handle database failures.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (PreparedStatement stmt = conn.prepareStatement(sql);
+     ResultSet rs = stmt.executeQuery()) {
+
+    while (rs.next()) {
+        // read rows
+    }
+} catch (SQLException ex) {
+    System.out.println("Database error: " + ex.getMessage());
+}</code></pre>
+<ul>
+<li><p><code>try-with-resources</code> closes the statement and result set automatically.</p></li>
+<li><p><code>SQLException</code> reports connection problems, invalid SQL, missing tables, or constraint violations.</p></li>
+<li><p>The program should report or handle the failure instead of silently ignoring it.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Do Not Put JDBC Everywhere</h2>
+<p>JDBC code works, but it is low-level code.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@FXML
+private void saveClicked() throws SQLException {
+    String title = titleField.getText();
+
+    try (Connection conn = DriverManager.getConnection(URL);
+         PreparedStatement stmt = conn.prepareStatement(
+                 "INSERT INTO tasks (title, done) VALUES (?, ?)")) {
+        stmt.setString(1, title);
+        stmt.setBoolean(2, false);
+        stmt.executeUpdate();
+    }
+
+    statusLabel.setText("Saved");
+}</code></pre>
+<p>This event handler now knows UI controls, SQL, database connections, and status display.</p>
+</section>
+
+<section class="frame">
+<h2>Design Takeaway</h2>
+<p>Good persistence code should have a clear home.</p>
+<ul>
+<li><p>UI event handlers should not contain long SQL blocks.</p></li>
+<li><p>Application rules should not depend on button fields or text areas.</p></li>
+<li><p>Database code should be separated so it can be tested and changed more easily.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">UI event
+    -&gt; application operation
+    -&gt; persistence code
+    -&gt; database</code></pre>
+<p>The important idea is separation of responsibilities, not just making the code run.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Why Persistence Needs a Boundary</h1>
+</section>
+
+<section class="frame">
+<h2>What Goes Wrong When SQL Spreads</h2>
+<ul>
+<li><p><strong>Harder to read:</strong> UI logic and database logic are mixed together.</p></li>
+<li><p><strong>Harder to test:</strong> saving a task requires a JavaFX event and a database.</p></li>
+<li><p><strong>Harder to change:</strong> switching from H2 to another storage choice affects many files.</p></li>
+<li><p><strong>Harder to protect:</strong> one forgotten string concatenation can create a SQL injection risk.</p></li>
+<li><p><strong>Harder to maintain:</strong> the same SQL patterns are copied into many event handlers.</p></li>
+</ul>
+<p>A program is easier to grow when persistence has one clear home.</p>
+</section>
+
+<section class="frame">
+<h2>Persistence Boundary</h2>
+<p>A persistence boundary hides storage details from the rest of the application.</p>
+<div style="display:flex;justify-content:center;align-items:center;width:100%;">
+<svg aria-label="Diagram showing application code uses repository and repository uses database" role="img" style="width:94%;height:auto;max-height:70vh;" viewBox="0 0 900 260">
+<defs>
+<marker id="arrowBoundary" markerHeight="10" markerUnits="strokeWidth" markerWidth="10" orient="auto" refX="9" refY="3">
+<path d="M0,0 L9,3 L0,6 Z" fill="#333"></path>
+</marker>
+</defs>
+<style>
+.box { fill:#ffffff; stroke:#222; stroke-width:2; }
+.soft { fill:#f7f7f7; stroke:#888; stroke-width:2; stroke-dasharray:8 6; }
+.txt { font: 20px Arial, sans-serif; fill:#111; }
+.small { font: 15px Arial, sans-serif; fill:#333; }
+.arrow { stroke:#222; stroke-width:2.5; fill:none; marker-end:url(#arrowBoundary); }
+</style>
+<rect class="box" height="90" rx="5" width="220" x="30" y="70"></rect>
+<text class="txt" text-anchor="middle" x="140" y="108">Application Code</text>
+<text class="small" text-anchor="middle" x="140" y="136">TaskItem objects and methods</text>
+<rect class="soft" height="170" rx="8" width="260" x="315" y="35"></rect>
+<text class="small" text-anchor="middle" x="445" y="62">persistence boundary</text>
+<rect class="box" height="90" rx="5" width="190" x="350" y="86"></rect>
+<text class="txt" text-anchor="middle" x="445" y="121">Repository</text>
+<text class="small" text-anchor="middle" x="445" y="149">JDBC hidden inside</text>
+<rect class="box" height="90" rx="5" width="210" x="660" y="70"></rect>
+<text class="txt" text-anchor="middle" x="765" y="108">Database</text>
+<text class="small" text-anchor="middle" x="765" y="136">tables and rows</text>
+<path class="arrow" d="M250 115 L350 115"></path>
+<path class="arrow" d="M540 115 L660 115"></path>
+</svg>
+</div>
+<p>Outside code sees task operations. The Repository sees JDBC, SQL, and rows.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>DAO and Repository</h1>
+</section>
+
+<section class="frame">
+<h2>Data Access Layer</h2>
+<p>The data access layer is the part of the program that reads and writes persistent data.</p>
+<ul>
+<li><p>It owns SQL strings, JDBC resource handling, and row-mapping code.</p></li>
+<li><p>It maps database rows into Java objects.</p></li>
+<li><p>It reports persistence failures in one consistent way.</p></li>
+<li><p>It prevents the UI and controller from depending on JDBC URLs, SQL strings, table names, or JDBC types.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Outside the data access layer:
+    TaskItem objects and repository method calls
+
+Inside the data access layer:
+    Connection, PreparedStatement, ResultSet, SQL</code></pre>
+</section>
+
+<section class="frame">
+<h2>DAO and Repository in Practical Terms</h2>
+<p>Both patterns separate persistence code from the rest of the application.</p>
+<table class="compact">
+<thead>
+<tr><th>Name</th><th>Main idea</th><th>Example name</th></tr>
+</thead>
+<tbody>
+<tr><td>DAO</td><td>Object that directly handles database access for a data type or table</td><td><code>TaskDao</code></td></tr>
+<tr><td>Repository</td><td>Object that looks like a collection of domain objects</td><td><code>TaskRepository</code></td></tr>
+</tbody>
+</table>
+<p>In many Java applications, the two ideas overlap. The important part is the boundary.</p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Designing a Task Repository</h1>
+</section>
+
+<section class="frame">
+<h2>Domain Object: TaskItem</h2>
+<p>The Repository stores and returns application objects, not JDBC rows.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record TaskItem(
+        long id,
+        String title,
+        boolean done) {
+}</code></pre>
+<ul>
+<li><p><code>TaskItem</code> represents one task item used by the application.</p></li>
+<li><p>It contains no SQL, JDBC types, or JavaFX controls.</p></li>
+<li><p>The Repository converts between database rows and <code>TaskItem</code> objects.</p></li>
+</ul>
+<p>Uses: <code>TaskItem.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Repository Interface</h2>
+<p>The interface describes the task operations the application needs.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository {
+    List&lt;TaskItem&gt; findAll();
+
+    void add(String title);
+
+    void setDone(long id, boolean done);
+
+    void delete(long id);
+}</code></pre>
+<ul>
+<li><p>The method names describe task operations, not SQL commands.</p></li>
+<li><p>The return and parameter types are ordinary Java types.</p></li>
+<li><p>No <code>Connection</code>, <code>PreparedStatement</code>, or <code>ResultSet</code> appears in the interface.</p></li>
+</ul>
+<p>Uses: <code>repository/TaskRepository.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Why Use an Interface?</h2>
+<p>An interface lets the rest of the application depend on behavior instead of storage details.</p>
+<table class="compact">
+<thead>
+<tr><th>Implementation</th><th>Storage</th><th>Useful for</th></tr>
+</thead>
+<tbody>
+<tr><td><code>InMemoryTaskRepository</code></td><td><code>ArrayList</code></td><td>Quick runs and tests without a database</td></tr>
+<tr><td><code>JdbcTaskRepository</code></td><td>H2 database table</td><td>Persistent task data</td></tr>
+</tbody>
+</table>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Controller depends on TaskRepository.
+Storage can change without rewriting the Controller.</code></pre>
+</section>
+
+<section class="frame">
+<h2>Hide JDBC Exceptions Behind the Boundary</h2>
+<p>Code outside the JDBC Repository should not need to handle <code>SQLException</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class RepositoryException
+        extends RuntimeException {
+
+    public RepositoryException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}</code></pre>
+<ul>
+<li><p><code>SQLException</code> stays inside the JDBC implementation.</p></li>
+<li><p><code>RepositoryException</code> reports that a persistence operation failed.</p></li>
+<li><p>The original exception remains available as the cause.</p></li>
+</ul>
+<p>Uses: <code>repository/RepositoryException.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Another Repository Implementation</h2>
+<p>The same Repository interface can use a completely different storage mechanism.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class InMemoryTaskRepository
+        implements TaskRepository {
+
+    private final List&lt;TaskItem&gt; tasks = new ArrayList&lt;&gt;();
+
+    public List&lt;TaskItem&gt; findAll() {
+        return List.copyOf(tasks);
+    }
+
+    public void add(String title) {
+        // store the new TaskItem in the list
+    }
+
+    // setDone(...) and delete(...) use the same list
+}</code></pre>
+<ul>
+<li><p>The interface stays the same.</p></li>
+<li><p>This implementation stores tasks in memory instead of a database.</p></li>
+<li><p>Application code can use either implementation through <code>TaskRepository</code>.</p></li>
+</ul>
+<p>Example: <code>repository/InMemoryTaskRepository.java</code></p>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>JDBC Repository Implementation</h1>
+</section>
+
+<section class="frame">
+<h2>JdbcTaskRepository Structure</h2>
+<p>The JDBC repository implements the same operations promised by <code>TaskRepository</code>.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class JdbcTaskRepository implements TaskRepository {
+    private final DatabaseConfig config;
+
+    public JdbcTaskRepository(DatabaseConfig config) {
+        this.config = Objects.requireNonNull(config, "config");
+        createTableIfMissing();
+    }
+
+    private Connection connect() throws SQLException {
+        return config.openConnection();
+    }
+
+    private void createTableIfMissing() { ... }
+    private TaskItem mapTask(ResultSet rows) throws SQLException { ... }
+
+    public List&lt;TaskItem&gt; findAll() { ... }
+    public void add(String title) { ... }
+    public void setDone(long id, boolean done) { ... }
+    public void delete(long id) { ... }
+}</code></pre>
+<ul>
+<li><p><strong>Setup:</strong> receive the database configuration and make sure the table exists.</p></li>
+<li><p><strong>Helpers:</strong> open connections and convert rows into <code>TaskItem</code> objects.</p></li>
+<li><p><strong>Repository methods:</strong> implement the operations from <code>TaskRepository</code>.</p></li>
+</ul>
+<p>Example: <code>repository/JdbcTaskRepository.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Repository Owns Database Setup</h2>
+<p>Database-specific setup stays inside the JDBC Repository.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private static final String CREATE_TABLE_SQL = """
+    CREATE TABLE IF NOT EXISTS tasks (
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        title VARCHAR(100) NOT NULL,
+        done BOOLEAN NOT NULL
+    )
+    """;</code></pre>
+<ul>
+<li><p>The Repository knows the table structure.</p></li>
+<li><p>The Repository runs this setup when it is created.</p></li>
+<li><p>The Controller and Model do not need this SQL.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>JdbcTaskRepository: Mapping Rows to Tasks</h2>
+<p><code>mapTask(...)</code> converts one database row into one <code>TaskItem</code> object.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private TaskItem mapTask(ResultSet rows) throws SQLException {
+    long id = rows.getLong("id");
+    String title = rows.getString("title");
+    boolean done = rows.getBoolean("done");
+
+    return new TaskItem(id, title, done);
+}</code></pre>
+<ul>
+<li><p>This helper is the bridge from relational rows to Java objects.</p></li>
+<li><p>Keeping it in one method avoids repeated column-reading code.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>JdbcTaskRepository: findAll()</h2>
+<p>The caller asks for tasks. JDBC details stay inside this repository method.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public List&lt;TaskItem&gt; findAll() {
+    String sql = "SELECT id, title, done FROM tasks ORDER BY id";
+    List&lt;TaskItem&gt; tasks = new ArrayList&lt;&gt;();
+
+    try (Connection connection = connect();
+         PreparedStatement statement = connection.prepareStatement(sql);
+         ResultSet rows = statement.executeQuery()) {
+
+        while (rows.next()) {
+            tasks.add(mapTask(rows));
+        }
+        return List.copyOf(tasks);
+    } catch (SQLException exception) {
+        throw new RepositoryException("Could not load tasks", exception);
+    }
+}</code></pre>
+<ul>
+<li><p>The repository uses the JDBC pattern internally.</p></li>
+<li><p>The caller receives a <code>List&lt;TaskItem&gt;</code>, not a <code>ResultSet</code>.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Repository Write Operation</h2>
+<p>The application asks to add a task. The JDBC Repository translates that operation into SQL.</p>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void add(String title) {
+    String sql =
+            "INSERT INTO tasks (title, done) VALUES (?, ?)";
+
+    try (Connection connection = connect();
+         PreparedStatement statement =
+                 connection.prepareStatement(sql)) {
+
+        statement.setString(1, title);
+        statement.setBoolean(2, false);
+        statement.executeUpdate();
+    } catch (SQLException exception) {
+        throw new RepositoryException(
+                "Could not add task", exception);
+    }
+}</code></pre>
+<ul>
+<li><p>The application operation is <code>add(title)</code>.</p></li>
+<li><p>The JDBC implementation decides which SQL performs that operation.</p></li>
+<li><p>Other Repository methods follow the same pattern.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>Repository Method Checklist</h2>
+<p>Each JDBC repository method should answer the same design questions.</p>
+<ul>
+<li><p>What application operation does this method represent?</p></li>
+<li><p>What fixed SQL template does it need?</p></li>
+<li><p>Which values are bound to placeholders?</p></li>
+<li><p>Does it use <code>executeUpdate()</code> or <code>executeQuery()</code>?</p></li>
+<li><p>If rows are returned, where are they mapped into Java objects?</p></li>
+<li><p>How does the method handle <code>SQLException</code>?</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Repository Back in MVC</h1>
+</section>
+
+<section class="frame">
+<h2>Where the Repository Fits</h2>
+<p>Each part of the application has a different responsibility.</p>
+<ul>
+<li><p><strong>View:</strong> displays the current state and collects user input.</p></li>
+<li><p><strong>Controller:</strong> handles user events and coordinates application operations.</p></li>
+<li><p><strong>Model:</strong> holds the application's current state in memory.</p></li>
+<li><p><strong>Repository:</strong> saves and loads domain objects.</p></li>
+<li><p><strong>Database:</strong> stores persistent data as rows.</p></li>
+</ul>
+<p>The Controller coordinates the Model and Repository. The View displays the Model, and the Repository communicates with the database.</p>
+</section>
+
+<section class="frame">
+<h2>Application Startup</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void start(Stage stage) throws IOException {
+    DatabaseConfig config =
+            DatabaseConfig.load("/database.properties");
+    TaskRepository repository =
+            new JdbcTaskRepository(config);
+
+    TaskModel model = new TaskModel(repository.findAll());
+    TaskView view = new TaskView(model);
+    TaskController controller =
+            new TaskController(model, view, repository);
+
+    controller.connectHandlers();
+    stage.setScene(new Scene(view));
+    stage.show();
+}</code></pre>
+<ul>
+<li><p>The repository is created once and passed to the controller.</p></li>
+<li><p>The model starts with tasks loaded from persistent storage.</p></li>
+<li><p>The controller depends on the <code>TaskRepository</code> interface.</p></li>
+</ul>
+<p>Run: <code>repository/TaskRepositoryApp.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Controller Uses the Repository</h2>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskController {
+    private final TaskModel model;
+    private final TaskView view;
+    private final TaskRepository repository;
+
+    public void addClicked() {
+        String title = view.getEnteredTitle();
+        if (title.isBlank()) {
+            view.setStatus("Title required");
+            return;
+        }
+
+        repository.add(title);
+        model.replaceTasks(repository.findAll());
+        view.refresh();
+        view.setStatus("Task saved");
+    }
+}</code></pre>
+<ul>
+<li><p>The controller coordinates the event.</p></li>
+<li><p>The repository saves and loads persistent data.</p></li>
+<li><p>The model holds the current task list used by the view.</p></li>
+</ul>
+<p>Uses: <code>repository/TaskController.java</code></p>
+</section>
+
+<section class="frame">
+<h2>Common Mistakes</h2>
+<ul>
+<li><p>Putting long SQL blocks directly inside JavaFX event handlers.</p></li>
+<li><p>Returning <code>ResultSet</code> from repository methods.</p></li>
+<li><p>Building SQL values with string concatenation instead of placeholders.</p></li>
+<li><p>Hard-coding the JDBC URL instead of loading external configuration.</p></li>
+<li><p>Letting the View decide database rules or table details.</p></li>
+<li><p>Copying the same row-mapping code into many methods.</p></li>
+<li><p>Ignoring persistence failures or hiding exceptions without a useful message.</p></li>
+</ul>
+<p>Good repository code keeps database details local and application operations clear.</p>
+</section>
+
+<section class="frame">
+<h2>Small Design Checklist</h2>
+<p>Before adding database code, check where each responsibility belongs.</p>
+<table class="compact">
+<thead>
+<tr><th>Question</th><th>Home</th></tr>
+</thead>
+<tbody>
+<tr><td>What data does the app work with?</td><td>Domain object / Model</td></tr>
+<tr><td>What happens when a button is clicked?</td><td>Controller</td></tr>
+<tr><td>How is data displayed?</td><td>View</td></tr>
+<tr><td>How are objects saved and loaded?</td><td>Repository</td></tr>
+<tr><td>How are rows converted into objects?</td><td>Repository helper method</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="frame">
+<h2>Practice: Refactor Direct JDBC</h2>
+<p>Start with an event handler that inserts a task using JDBC.</p>
+<ul>
+<li><p>Create a <code>TaskRepository</code> interface.</p></li>
+<li><p>Move the SQL into <code>JdbcTaskRepository.add(...)</code>.</p></li>
+<li><p>Keep <code>PreparedStatement</code> and placeholders inside the repository.</p></li>
+<li><p>Make the controller call <code>repository.add(title)</code>.</p></li>
+<li><p>Reload the Model with <code>repository.findAll()</code>, then refresh the View.</p></li>
+</ul>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Goal:
+Controller coordinates the event.
+Model holds current state.
+Repository handles persistence.</code></pre>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1">
+<h1>Summary</h1>
+</section>
+
+<section class="frame">
+<h2>Key Takeaways</h2>
+<ul>
+<li><p>Persistence keeps application data available after the program ends.</p></li>
+<li><p>Serialization is useful for saving a trusted Java object graph; databases are better for searchable and independently updated records.</p></li>
+<li><p>JDBC connects Java applications to relational databases through APIs such as <code>Connection</code>, <code>PreparedStatement</code>, and <code>ResultSet</code>.</p></li>
+<li><p><code>PreparedStatement</code> keeps parameter values separate from SQL structure and helps prevent SQL injection.</p></li>
+<li><p>Try-with-resources ensures JDBC resources are closed even when an operation fails.</p></li>
+<li><p>A persistence boundary keeps SQL, JDBC types, connection details, and row mapping out of the rest of the application.</p></li>
+<li><p>DAO and Repository both organize data access; a Repository exposes application-level operations instead of database details.</p></li>
+<li><p>Depending on a <code>TaskRepository</code> interface allows storage implementations to change without rewriting the Controller.</p></li>
+<li><p>In MVC, the Controller coordinates actions, domain objects represent application data, and the Repository handles persistence.</p></li>
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig, { "disableLayout": true,
+      "controls": true,
+      "progress": true,
+      "hash": true,
+      "center": true,
+      "transition": "slide",
+      "slideNumber": true,
+      "scrollActivationWidth": 1,
+      "mouseWheel": false,
+      "width": 960,
+      "height": 540
+    });
+    revealjsConfig.plugins = [RevealNotes, RevealHighlight, RevealMath];
+    Reveal.initialize(revealjsConfig);
+</script>
+</body>
+</html>

@@ -6,15 +6,10 @@
 <title>Model View Controller</title>
 <link href="../_static/revealjs/dist/reveal.css?v=40f0a724" rel="stylesheet" type="text/css"/>
 <link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/idea.css?v=e717f371" rel="stylesheet" type="text/css"/>
+<link href="../_static/idea.css?v=20260921a" rel="stylesheet" type="text/css"/>
 <link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
 <link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
-<script src="../_static/design-tabs.js?v=f930bc37"></script>
-<style>
-.reveal pre[data-fontsize="small"] { font-size: 0.68em; }
-.reveal table.compact { font-size: 0.78em; }
-.reveal table.tight { font-size: 0.72em; }
-</style>
+<script src="../_static/design-tabs.js?v=20260921a"></script>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 </head>
@@ -244,7 +239,7 @@ Controller asks StudentView to display StudentModel data.</code></pre>
 <ul>
 <li><p><strong>DrawModel:</strong> stores strokes and the selected color.</p></li>
 <li><p><strong>Stroke:</strong> keeps the points and color used for one mouse drag.</p></li>
-<li><p><strong>DrawView:</strong> owns the canvas, color choice, button, and status label.</p></li>
+<li><p><strong>DrawView:</strong> owns the canvas, color and brush-size choices, button, and status label.</p></li>
 <li><p><strong>DrawController:</strong> handles mouse and control events.</p></li>
 </ul>
 <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">DrawController updates DrawModel.
@@ -395,36 +390,59 @@ DrawModel does not know JavaFX controls.</code></pre>
 </section>
 
 <section class="frame">
-<h2>Adding Brush Size</h2>
-<p>Where should each part of this feature go?</p>
+<h2>Adding Brush Size: Follow the Color Pattern</h2>
+<p>Color already demonstrates how a current tool setting becomes historical stroke data.</p>
 <ul>
-<li><p><strong>Model:</strong> validates the incoming value and stores it in the new <code>Stroke</code>.</p></li>
-<li><p><strong>View:</strong> provides the choice and renders each stroke using its saved size.</p></li>
-<li><p><strong>Controller:</strong> passes the selected value to the Model when a stroke begins.</p></li>
-<li><p>Only new strokes use the new selection.</p></li>
+<li><p>The View owns the JavaFX choice control.</p></li>
+<li><p>The Controller copies a changed choice into the Model.</p></li>
+<li><p>The Model owns the current color and brush-size settings.</p></li>
+<li><p>Each <code>Stroke</code> preserves the settings used when it began.</p></li>
 </ul>
 
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Feature question:
-Who owns the value?
-Who displays or collects it?
-Who moves it from the UI into the Model?</code></pre>
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">ChoiceBox value
+    -&gt; Controller choice handler
+    -&gt; DrawModel.selectedBrushSize
+    -&gt; startStroke creates a new Stroke
+    -&gt; saved drawing state
+    -&gt; canvas rendering</code></pre>
 </section>
 
 <section class="frame">
-<h2>Model Change: Validate and Save Size</h2>
-<p>The brush size becomes part of the drawing state, so the Model stores it with each stroke.</p>
+<h2>1. Inspect the Existing Size Control</h2>
+<p>The View already owns the JavaFX control and exposes its current value.</p>
 
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void startStroke(double x, double y, int brushSize) {
-    int size = Math.max(1, Math.min(brushSize, 20));
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final ChoiceBox&lt;Integer&gt; brushSizeChoice =
+        new ChoiceBox&lt;&gt;();
 
-    strokes.add(new Stroke(
-            selectedColor, size, new Point(x, y)));
-}
+brushSizeChoice.getItems().setAll(2, 5, 10, 15);
+brushSizeChoice.setValue(5);
 
-public static final class Stroke {
+public int getSelectedBrushSize() {
+    return brushSizeChoice.getValue();
+}</code></pre>
+
+<ul>
+<li><p>Read this code before editing any class.</p></li>
+<li><p>The control supplies the current choice; it does not preserve history.</p></li>
+<li><p>The existing color choice shows the same View → Controller → Model pattern.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>2. Extend <code>Stroke</code> Data First</h2>
+<p>A stroke must remember the size that was selected when it began.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public static final class Stroke {
     private final InkColor color;
-    private final int brushSize;
     private final List&lt;Point&gt; points = new ArrayList&lt;&gt;();
+    private final int brushSize;
+
+    private Stroke(InkColor color, Point firstPoint,
+            int brushSize) {
+        this.color = color;
+        this.brushSize = brushSize;
+        points.add(firstPoint);
+    }
 
     public int getBrushSize() {
         return brushSize;
@@ -432,21 +450,57 @@ public static final class Stroke {
 }</code></pre>
 
 <ul>
-<li><p>The Model validates the size before storing it.</p></li>
-<li><p>Each stroke remembers the size it started with.</p></li>
+<li><p>Saving now exposes the old constructor call in <code>startStroke</code>.</p></li>
+<li><p>That compiler error identifies the next operation to update.</p></li>
 </ul>
 </section>
 
 <section class="frame">
-<h2>View Change: Choose and Render Size</h2>
-<p>The View owns the UI control and uses the saved Model value when drawing.</p>
+<h2>3. Add the Current Setting to <code>DrawModel</code></h2>
+<p>Brush size follows the same Model-owned pattern as selected color.</p>
 
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final ChoiceBox&lt;Integer&gt; brushSizeChoice =
-        new ChoiceBox&lt;&gt;();
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private InkColor selectedColor = InkColor.BLACK;
+private int selectedBrushSize = 5;
 
 public int getSelectedBrushSize() {
-    return brushSizeChoice.getValue();
+    return selectedBrushSize;
 }
+
+public void setSelectedBrushSize(int selectedBrushSize) {
+    this.selectedBrushSize =
+            Math.max(1, Math.min(selectedBrushSize, 20));
+}</code></pre>
+
+<ul>
+<li><p>The Model owns both current tool settings.</p></li>
+<li><p><code>selectedBrushSize</code> may change for future strokes.</p></li>
+<li><p>The setter keeps the Model value within the valid range.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>4. Update the Existing <code>startStroke</code></h2>
+<p>The operation keeps the same two parameters and copies both current settings into the new stroke.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void startStroke(double x, double y) {
+    strokes.add(new Stroke(
+            selectedColor, new Point(x, y),
+            selectedBrushSize));
+}</code></pre>
+
+<ul>
+<li><p>Callers still provide only the starting coordinates.</p></li>
+<li><p>The Model already knows its current color and brush size.</p></li>
+<li><p>No new <code>startStroke</code> parameter or overload is needed.</p></li>
+</ul>
+</section>
+
+<section class="frame">
+<h2>5. Read Brush-Size State in <code>DrawView</code></h2>
+<p>The View initializes the control from the current setting and renders each stroke from its historical state.</p>
+
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">brushSizeChoice.setValue(
+        model.getSelectedBrushSize());
 
 private void drawStroke(GraphicsContext graphics,
         DrawModel.Stroke stroke) {
@@ -459,28 +513,30 @@ private void drawStroke(GraphicsContext graphics,
 }</code></pre>
 
 <ul>
-<li><p>The View collects the current brush-size choice.</p></li>
-<li><p>The View renders each stroke using the size saved in the Model.</p></li>
-<li><p>The View does not decide whether the size is valid.</p></li>
+<li><p>The View does not read the current choice while redrawing old strokes.</p></li>
+<li><p>Changing the control therefore affects only future strokes.</p></li>
 </ul>
 </section>
 
 <section class="frame">
-<h2>Controller Change: Pass the Choice Once</h2>
-<p>The Controller reads the selected size when the stroke begins and passes it to the Model operation.</p>
+<h2>6. Connect the Brush-Size Event</h2>
+<p>The Controller updates the Model when the brush-size choice changes, just as it does for color.</p>
 
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">view.getCanvas().setOnMousePressed(event -&gt; {
-    int size = view.getSelectedBrushSize();
+<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">view.getColorChoice().setOnAction(event -&gt; {
+    model.setSelectedColor(view.getSelectedColor());
+    view.setStatus("Color: " + model.getSelectedColor());
+});
 
-    model.startStroke(event.getX(), event.getY(), size);
-    view.redraw();
-
-    view.setStatus("Brush size: " + size);
+view.getBrushSizeChoice().setOnAction(event -&gt; {
+    model.setSelectedBrushSize(
+            view.getSelectedBrushSize());
+    view.setStatus("Brush size: "
+            + model.getSelectedBrushSize());
 });</code></pre>
 
 <ul>
-<li><p>The Controller moves user input into the Model operation.</p></li>
-<li><p>The Model stores the size with the new stroke.</p></li>
+<li><p>The mouse handler still calls <code>model.startStroke(x, y)</code>.</p></li>
+<li><p>The Model copies its current settings into the new stroke.</p></li>
 <li><p>Changing the choice later does not change strokes already drawn.</p></li>
 </ul>
 </section>

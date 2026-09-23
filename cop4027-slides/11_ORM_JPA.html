@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>ORM, JPA, and Spring Data JPA</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+  <script src="../_static/design-tabs.js?v=20260918"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+  <section data-background-color="white" data-background-image="../_static/logo.png"
+           data-background-size="50%" data-background-position="top center"
+           data-background-repeat="no-repeat" class="title-slide">
+    <h1>ORM, JPA, and Spring Data JPA</h1>
+    <div class="subtitle docutils container">
+      <p><strong>Advanced Programming</strong></p>
+      <p>Liting Zhang</p>
+    </div>
+  </section>
+</section>
+
+<section>
+  <section class="frame">
+    <h2>Roadmap</h2>
+    <p>We already used JDBC, Repository, three-tier architecture, and Spring Core. Now we use JPA and Spring Data JPA for persistence.</p>
+    <ul>
+      <li><p>Review why manual JDBC mapping becomes repetitive.</p></li>
+      <li><p>Define ORM, JPA, Hibernate, and Spring Data JPA.</p></li>
+      <li><p>Map a Java entity class to a database table.</p></li>
+      <li><p>Explain entity identity, persistence context, and transactions.</p></li>
+      <li><p>Replace manual Repository code with Spring Data JPA.</p></li>
+      <li><p>Add a Service layer for application operations.</p></li>
+      <li><p>Prepare for HTTP/REST and Spring Web/MVC.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>From JDBC to ORM</h1>
+  </section>
+
+  <section class="frame">
+    <h2>What JDBC Made Us Do</h2>
+    <p>JDBC gives direct control over SQL, but our Repository still has repeated mapping work.</p>
+    <ul>
+      <li><p>Write SQL strings for each operation.</p></li>
+      <li><p>Bind Java values into a <code>PreparedStatement</code>.</p></li>
+      <li><p>Read columns from a <code>ResultSet</code>.</p></li>
+      <li><p>Build Java objects from database rows.</p></li>
+      <li><p>Repeat similar code in many repository methods.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Manual Row Mapping</h2>
+    <p>The Repository translates between database rows and Java domain objects.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private TaskItem mapTaskItem(ResultSet rows) throws SQLException {
+    return new TaskItem(
+            rows.getLong("id"),
+            rows.getString("title"),
+            rows.getBoolean("done"));
+}</code></pre>
+    <ul>
+      <li><p>The database stores rows and columns.</p></li>
+      <li><p>The Java application works with <code>TaskItem</code> objects.</p></li>
+      <li><p>Mapping code connects those two representations.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>The Object-Relational Gap</h2>
+    <p>Java and relational databases organize data differently.</p>
+    <ul>
+      <li><p>Java uses objects, fields, references, and methods.</p></li>
+      <li><p>Relational databases use tables, columns, rows, and keys.</p></li>
+      <li><p>An application often needs to move data between these two models.</p></li>
+      <li><p>Manual JDBC mapping makes that movement explicit.</p></li>
+      <li><p>ORM tools reduce repeated mapping code.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>What ORM Means</h2>
+    <p><strong>ORM</strong> means object-relational mapping.</p>
+    <ul>
+      <li><p>A Java class maps to a database table.</p></li>
+      <li><p>An object maps to one row in that table.</p></li>
+      <li><p>A field maps to a column.</p></li>
+      <li><p>An object ID maps to a primary key.</p></li>
+      <li><p>The ORM provider handles much of the object-row translation.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>JPA, Hibernate, and Spring Data JPA</h2>
+    <p>These names are related, but they are not the same thing.</p>
+    <ul>
+      <li><p><strong>JPA:</strong> the Java/Jakarta standard API for object-relational mapping.</p></li>
+      <li><p><strong>Hibernate:</strong> a common implementation of JPA.</p></li>
+      <li><p><strong>Spring Data JPA:</strong> Spring repository support built on top of JPA.</p></li>
+    </ul>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JPA defines the mapping model.
+Hibernate performs the mapping work.
+Spring Data JPA reduces repository code.</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>Where This Fits in Three-Tier</h2>
+    <p>JPA and Spring Data JPA change the data tier. The rest of the application should stay separated from persistence details.</p>
+    <ul>
+      <li><p>The presentation tier should not know how data is stored.</p></li>
+      <li><p>The application tier should call persistence operations through a boundary.</p></li>
+      <li><p>The data tier maps entities and communicates with the database.</p></li>
+    </ul>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Presentation -> Application -> Repository -> JPA -> Database</code></pre>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Mapping a TaskItem Entity</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Entity, Table, Column, Row</h2>
+    <p>JPA uses the word <strong>entity</strong> for a Java object that can be stored in a database.</p>
+    <ul>
+      <li><p>An entity class maps to a table.</p></li>
+      <li><p>Each entity object maps to a row.</p></li>
+      <li><p>Each persistent field maps to a column.</p></li>
+      <li><p>Each entity has an identity value, usually mapped to a primary key.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>TaskItem as a JPA Entity</h2>
+    <p><code>TaskItem</code> is the persistent object that JPA stores and loads.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Entity
+@Table(name = "task_items")
+public class TaskItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+    private boolean done;
+}</code></pre>
+    <ul>
+      <li><p><code class="inline-java">@Entity</code> marks this class as persistent.</p></li>
+      <li><p><code class="inline-java">@Table</code> connects the class to the <code>task_items</code> table.</p></li>
+      <li><p><code class="inline-java">@Id</code> identifies the primary-key field.</p></li>
+      <li><p><code class="inline-java">@GeneratedValue</code> marks the ID as generated when the entity is saved.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>JPA Entity Requirements</h2>
+    <p>A JPA entity has requirements that are different from a simple data record.</p>
+    <ul>
+      <li><p>The entity class needs a no-argument constructor.</p></li>
+      <li><p>The entity class should not be <code class="inline-java">final</code>.</p></li>
+      <li><p>Persistent fields should not be <code class="inline-java">final</code>.</p></li>
+      <li><p>JPA providers need to create and manage entity objects.</p></li>
+      <li><p>A Java <code class="inline-java">record</code> is not used as a JPA entity.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Constructors</h2>
+    <p>JPA needs a no-argument constructor, while application code can use a clearer constructor.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">protected TaskItem() {
+    // Used by JPA
+}
+
+public TaskItem(String title) {
+    this.title = title;
+    this.done = false;
+}</code></pre>
+    <ul>
+      <li><p>The no-argument constructor can be <code class="inline-java">protected</code>.</p></li>
+      <li><p>The application constructor expresses how a new task item is created.</p></li>
+      <li><p>JPA can still create entity objects when it loads rows.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Identity: <code class="inline-java">@Id</code> and <code class="inline-java">@GeneratedValue</code></h2>
+    <p>Each entity needs an identity value.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;</code></pre>
+    <ul>
+      <li><p><code class="inline-java">@Id</code> marks the entity identifier.</p></li>
+      <li><p>The identifier usually maps to the table primary key.</p></li>
+      <li><p>With <code>GenerationType.IDENTITY</code>, the database generates the ID.</p></li>
+      <li><p>New objects usually have no ID until they are saved.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Column Mapping</h2>
+    <p>Fields can use default column names, or we can give JPA more detail.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Column(nullable = false, length = 100)
+private String title;
+
+@Column(nullable = false)
+private boolean done;</code></pre>
+    <ul>
+      <li><p><code class="inline-java">@Column</code> customizes how a field maps to a column.</p></li>
+      <li><p><code>nullable = false</code> means the column should not accept null values.</p></li>
+      <li><p><code>length = 100</code> limits the text column size.</p></li>
+      <li><p>The database still enforces constraints when data is written.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Entity Methods</h2>
+    <p>An entity can contain simple state-changing methods.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void setDone(boolean done) {
+    this.done = done;
+}
+
+public void rename(String title) {
+    if (title == null || title.isBlank()) {
+        throw new IllegalArgumentException("Title required");
+    }
+    this.title = title.trim();
+}</code></pre>
+    <ul>
+      <li><p>Entity methods can protect simple object state.</p></li>
+      <li><p>Larger application operations still belong in the service layer.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>What JPA Persists</h2>
+    <p>JPA persists entity objects, even when the application also uses collection objects.</p>
+    <ul>
+      <li><p><code>TaskItem</code> is an entity and maps to one row.</p></li>
+      <li><p><code>TaskList</code> is an application collection of task items.</p></li>
+      <li><p><code>TaskRepository</code> loads and saves <code>TaskItem</code> entities.</p></li>
+      <li><p><code>TaskList</code> does not become a database table simply because the application uses it.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Working with Entities</h1>
+  </section>
+
+  <section class="frame">
+    <h2>JPA Works Through an Entity Manager</h2>
+    <p>The lower-level JPA API uses an <code>EntityManager</code> to work with entities.</p>
+    <ul>
+      <li><p><code>persist(...)</code> stores a new entity.</p></li>
+      <li><p><code>find(...)</code> loads an entity by its ID.</p></li>
+      <li><p><code>remove(...)</code> deletes an entity.</p></li>
+      <li><p>Queries can load entities that match a condition.</p></li>
+      <li><p>Spring Data JPA will hide much of this direct API.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Basic Entity Operations</h2>
+    <p>JPA operations work with entity objects rather than raw rows.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskItem item = new TaskItem("Review ORM");
+
+entityManager.persist(item);
+
+TaskItem saved = entityManager.find(TaskItem.class, item.getId());
+
+saved.setDone(true);     // JPA can track this change
+
+entityManager.remove(saved);</code></pre>
+    <ul>
+      <li><p>The application works with <code>TaskItem</code> objects.</p></li>
+      <li><p>JPA translates object operations into database work.</p></li>
+      <li><p>Repository code can use JPA instead of manual JDBC mapping.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Persistence Context</h2>
+    <p>The persistence context is the set of entity objects currently managed by JPA.</p>
+    <ul>
+      <li><p>A managed entity is being tracked by JPA.</p></li>
+      <li><p>JPA knows which object represents which database row.</p></li>
+      <li><p>Changes to managed entities can be written to the database.</p></li>
+      <li><p>The persistence context usually works within a transaction.</p></li>
+    </ul>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">database row <-> managed TaskItem object</code></pre>
+  </section>
+
+  <section class="frame">
+    <h2>Entity States</h2>
+    <p>An entity object can be in different states.</p>
+    <ul>
+      <li><p><strong>New:</strong> a new object not yet managed by JPA.</p></li>
+      <li><p><strong>Managed:</strong> an object currently tracked by the persistence context.</p></li>
+      <li><p><strong>Detached:</strong> an object that was managed before but is no longer tracked.</p></li>
+      <li><p><strong>Removed:</strong> an object marked for deletion.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Dirty Checking</h2>
+    <p>JPA can detect changes to managed entities.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskItem item = entityManager.find(TaskItem.class, id);
+
+item.setDone(true);</code></pre>
+    <ul>
+      <li><p>If <code>item</code> is managed, JPA tracks the change.</p></li>
+      <li><p>The update can be written when the transaction is flushed or committed.</p></li>
+      <li><p>This is different from JDBC, where we write the <code>UPDATE</code> ourselves.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Transactions Still Matter</h2>
+    <p>ORM does not remove the need for transactions.</p>
+    <ul>
+      <li><p>A transaction groups database work into one unit.</p></li>
+      <li><p>Writes should happen inside a transaction.</p></li>
+      <li><p>Commit makes the changes permanent.</p></li>
+      <li><p>Rollback cancels changes if something fails.</p></li>
+      <li><p>Spring usually manages transactions with <code class="inline-java">@Transactional</code>.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Queries with JPQL</h2>
+    <p>JPA can query entities using JPQL, which talks about entities instead of tables.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;TaskItem&gt; items = entityManager
+        .createQuery(
+                "select item from TaskItem item where item.done = false",
+                TaskItem.class)
+        .getResultList();</code></pre>
+    <ul>
+      <li><p><code>TaskItem</code> is the entity class name.</p></li>
+      <li><p><code>item.done</code> is an entity field.</p></li>
+      <li><p>The result is a list of <code>TaskItem</code> objects.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Manual JPA Repository Idea</h2>
+    <p>A manual JPA Repository can use <code>EntityManager</code> instead of JDBC.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public List&lt;TaskItem&gt; findAll() {
+    return entityManager
+            .createQuery("select item from TaskItem item", TaskItem.class)
+            .getResultList();
+}
+
+public void add(String title) {
+    entityManager.persist(new TaskItem(title));
+}</code></pre>
+    <ul>
+      <li><p>The Repository still exposes application-level operations.</p></li>
+      <li><p>JPA handles much of the row-to-object mapping.</p></li>
+      <li><p>Spring Data JPA will reduce this code further.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Spring Data JPA</h1>
+  </section>
+
+  <section class="frame">
+    <h2>What Spring Data JPA Adds</h2>
+    <p>Spring Data JPA builds Repository support on top of JPA.</p>
+    <ul>
+      <li><p>JPA gives us entity mapping and persistence APIs.</p></li>
+      <li><p>Hibernate commonly performs the actual mapping work.</p></li>
+      <li><p>Spring Data JPA creates repository implementations from interfaces.</p></li>
+      <li><p>We still design the entity, repository interface, and application structure.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Spring Data JPA with Maven</h2>
+    <p>A Spring Boot project usually uses the Spring Data JPA starter.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-data-jpa&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+    &lt;groupId&gt;com.h2database&lt;/groupId&gt;
+    &lt;artifactId&gt;h2&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+    <ul>
+      <li><p>The JPA starter brings Spring Data JPA and a JPA provider.</p></li>
+      <li><p>H2 gives us a small database for development and testing.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Basic JPA Configuration</h2>
+    <p>Spring Boot can configure JPA from application properties.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-properties">spring.datasource.url=jdbc:h2:file:./data/tasksdb
+spring.datasource.username=sa
+spring.datasource.password=
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true</code></pre>
+    <ul>
+      <li><p>The datasource properties tell Spring how to connect to the database.</p></li>
+      <li><p><code>ddl-auto=update</code> lets Hibernate update the schema during development.</p></li>
+      <li><p><code>show-sql=true</code> prints generated SQL so we can inspect the ORM behavior.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Spring Data Repository Interface</h2>
+    <p>Spring Data JPA can create the repository implementation from an interface.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository
+        extends JpaRepository&lt;TaskItem, Long&gt; {
+}</code></pre>
+    <ul>
+      <li><p><code>TaskItem</code> is the entity type.</p></li>
+      <li><p><code>Long</code> is the ID type.</p></li>
+      <li><p>Spring Data JPA supplies the implementation at runtime.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>What <code>JpaRepository</code> Gives Us</h2>
+    <p>The repository already has common persistence methods.</p>
+    <ul>
+      <li><p><code>findAll()</code> loads all entities.</p></li>
+      <li><p><code>findById(id)</code> loads one entity by ID.</p></li>
+      <li><p><code>save(entity)</code> inserts or updates an entity.</p></li>
+      <li><p><code>deleteById(id)</code> deletes by ID.</p></li>
+      <li><p><code>existsById(id)</code> checks whether an ID exists.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Reading with a Repository</h2>
+    <p>Repository read methods return entity objects instead of database rows.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;TaskItem&gt; items = repository.findAll();
+
+Optional&lt;TaskItem&gt; item =
+        repository.findById(id);</code></pre>
+    <ul>
+      <li><p><code>findAll()</code> returns a list of entities.</p></li>
+      <li><p><code>findById(...)</code> returns an <code>Optional</code> because the ID may not exist.</p></li>
+      <li><p>The caller does not handle <code>ResultSet</code> or row-mapping code.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Changing Persistent Data</h2>
+    <p>Repository write methods hide common insert, update, and delete work.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskItem saved =
+        repository.save(new TaskItem("Review JPA"));
+
+TaskItem item = repository.findById(id)
+        .orElseThrow(() -&gt; new IllegalArgumentException("Task item not found"));
+
+item.setDone(true);
+repository.save(item);
+
+repository.deleteById(id);</code></pre>
+    <ul>
+      <li><p><code>save(...)</code> stores a new entity or an updated entity.</p></li>
+      <li><p><code>deleteById(...)</code> deletes by primary key.</p></li>
+      <li><p>The application does not write SQL for these common operations.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Derived Query Methods</h2>
+    <p>Spring Data JPA can create some queries from method names.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository
+        extends JpaRepository&lt;TaskItem, Long&gt; {
+
+    List&lt;TaskItem&gt; findByDone(boolean done);
+
+    List&lt;TaskItem&gt; findByTitleContainingIgnoreCase(String text);
+}</code></pre>
+    <ul>
+      <li><p>The method name describes the query.</p></li>
+      <li><p>Spring Data JPA creates the query implementation.</p></li>
+      <li><p>Use simple derived queries for simple search needs.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Sorting Results</h2>
+    <p>Spring Data repositories can support sorted results.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;TaskItem&gt; items = repository.findAll(
+        Sort.by("id").ascending());</code></pre>
+    <ul>
+      <li><p>The sort uses an entity property name.</p></li>
+      <li><p>Sorting belongs near the data request.</p></li>
+      <li><p>The View should not sort by directly querying the database.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>From Manual Repository Code to Spring Data JPA</h2>
+    <p>The goal is still a persistence boundary, but Spring Data JPA removes much repeated implementation code.</p>
+    <ul>
+      <li><p><strong>Manual JDBC Repository:</strong> write SQL, bind parameters, read rows, and map objects.</p></li>
+      <li><p><strong>Manual JPA Repository:</strong> use <code>EntityManager</code> and entities.</p></li>
+      <li><p><strong>Spring Data JPA Repository:</strong> define an interface and let Spring supply common implementations.</p></li>
+      <li><p>Common save, find, and delete methods no longer need hand-written repository code.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>What Code Remains?</h2>
+    <p>Spring Data JPA does not remove application design work.</p>
+    <ul>
+      <li><p>Entity classes still need correct mappings.</p></li>
+      <li><p>Service methods still need application rules.</p></li>
+      <li><p>Transactions still need clear boundaries.</p></li>
+      <li><p>Custom queries still need careful design.</p></li>
+      <li><p>Controllers still should not become persistence code.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Custom Query with <code class="inline-java">@Query</code></h2>
+    <p>When a derived method name is not clear enough, we can write a query.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Query("""
+       select item from TaskItem item
+       where lower(item.title) like lower(concat('%', :text, '%'))
+       """)
+List&lt;TaskItem&gt; searchByTitle(@Param("text") String text);</code></pre>
+    <ul>
+      <li><p>The query uses entity names and fields.</p></li>
+      <li><p>The method still belongs in the Repository interface.</p></li>
+      <li><p>Use custom queries when method names become hard to read.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Service Layer with Spring Data JPA</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Why Add a Service Layer?</h2>
+    <p>Spring applications often place application operations in a service class.</p>
+    <ul>
+      <li><p>The Controller handles user or request input.</p></li>
+      <li><p>The Service handles application rules and operations.</p></li>
+      <li><p>The Repository handles persistence.</p></li>
+      <li><p>The entity represents persistent data.</p></li>
+      <li><p>This keeps the three-tier responsibilities clear.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>TaskService</h2>
+    <p>The service coordinates task item operations.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Service
+public class TaskService {
+    private final TaskRepository repository;
+
+    public TaskService(TaskRepository repository) {
+        this.repository = repository;
+    }
+}</code></pre>
+    <ul>
+      <li><p><code class="inline-java">@Service</code> marks application logic.</p></li>
+      <li><p>The service depends on the Repository interface.</p></li>
+      <li><p>Constructor injection supplies the Repository.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Add Task Item Operation</h2>
+    <p>The service owns the application rule for adding a task item.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public TaskItem addTaskItem(String title) {
+    if (title == null || title.isBlank()) {
+        throw new IllegalArgumentException("Title required");
+    }
+
+    return repository.save(new TaskItem(title.trim()));
+}</code></pre>
+    <ul>
+      <li><p>The Service checks the application rule.</p></li>
+      <li><p>The Repository performs persistence.</p></li>
+      <li><p>The Controller should not duplicate this rule.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Mark Task Item Done</h2>
+    <p>The service can load an entity, change it, and save it.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public TaskItem setDone(Long id, boolean done) {
+    TaskItem item = repository.findById(id)
+            .orElseThrow(() -&gt; new IllegalArgumentException("Task item not found"));
+
+    item.setDone(done);
+    return repository.save(item);
+}</code></pre>
+    <ul>
+      <li><p>The service decides what the operation means.</p></li>
+      <li><p>The Repository provides database access.</p></li>
+      <li><p>The error message stays near the application operation.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2><code class="inline-java">@Transactional</code></h2>
+    <p>A transaction groups database work into one unit.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Transactional
+public TaskItem setDone(Long id, boolean done) {
+    TaskItem item = repository.findById(id)
+            .orElseThrow(() -&gt; new IllegalArgumentException("Task item not found"));
+
+    item.setDone(done);  // tracked because item is managed
+    return item;
+}</code></pre>
+    <ul>
+      <li><p>The entity is managed inside the transaction.</p></li>
+      <li><p>JPA can detect the changed field.</p></li>
+      <li><p>The change is written when the transaction commits.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Read-Only Service Methods</h2>
+    <p>Read operations can be marked as read-only transactions.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Transactional(readOnly = true)
+public TaskList findAllTaskItems() {
+    List&lt;TaskItem&gt; items =
+            repository.findAll(Sort.by("id").ascending());
+
+    return new TaskList(items);
+}</code></pre>
+    <ul>
+      <li><p>The method loads task items but does not intentionally change them.</p></li>
+      <li><p><code>TaskList</code> gives the application a collection object.</p></li>
+      <li><p>The service gives the Controller a simple operation to call.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Add Task Item Flow</h2>
+    <p>The same three-tier flow still applies.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Controller receives input
+    -> Service checks rule and starts operation
+    -> Repository saves the TaskItem
+    -> JPA maps the entity to a database row
+    -> Database stores the row</code></pre>
+    <ul>
+      <li><p>The Controller handles interaction.</p></li>
+      <li><p>The Service handles application behavior.</p></li>
+      <li><p>The Repository and JPA handle persistence.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Controller Uses the Service</h2>
+    <p>The Controller should call application operations, not own persistence rules.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void addClicked() {
+    try {
+        service.addTaskItem(view.getEnteredTitle());
+        view.refresh();
+        view.setStatus("Task item saved");
+    } catch (IllegalArgumentException exception) {
+        view.setStatus(exception.getMessage());
+    }
+}</code></pre>
+    <ul>
+      <li><p>The Controller handles the event and feedback.</p></li>
+      <li><p>The Service performs the task item operation.</p></li>
+      <li><p>The Repository is not used directly by the View.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Testing and Development</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Using H2 for Development</h2>
+    <p>H2 is useful for small examples and development testing.</p>
+    <ul>
+      <li><p>It can run without installing a separate database server.</p></li>
+      <li><p>It works well for small applications, examples, and tests.</p></li>
+      <li><p>It lets us inspect generated tables and SQL.</p></li>
+      <li><p>It should not hide the need to understand transactions and mappings.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Testing a Service</h2>
+    <p>A service test can use a Repository connected to a test database.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Test
+void addTaskItemSavesEntity() {
+    TaskItem saved = service.addTaskItem("Review Spring Data JPA");
+
+    assertNotNull(saved.getId());
+    assertEquals("Review Spring Data JPA", saved.getTitle());
+}</code></pre>
+    <ul>
+      <li><p>The test checks the application operation.</p></li>
+      <li><p>The generated ID shows that persistence happened.</p></li>
+      <li><p>More focused unit tests can still test rules separately.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Testing Repository Queries</h2>
+    <p>Repository tests should focus on persistence behavior.</p>
+    <ul>
+      <li><p>Does the entity save correctly?</p></li>
+      <li><p>Does the query return the expected rows?</p></li>
+      <li><p>Does sorting or filtering work?</p></li>
+      <li><p>Does the test database start with known data?</p></li>
+      <li><p>Focus repository tests on mappings and custom query behavior.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Common Mistakes</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Common JPA Mistakes</h2>
+    <ul>
+      <li><p>Forgetting the entity ID field.</p></li>
+      <li><p>Using a Java <code class="inline-java">record</code> as an entity.</p></li>
+      <li><p>Making the entity class or persistent fields <code class="inline-java">final</code>.</p></li>
+      <li><p>Forgetting the no-argument constructor.</p></li>
+      <li><p>Assuming <code class="inline-java">@Entity</code> by itself saves an object.</p></li>
+      <li><p>Expecting detached objects to update the database automatically.</p></li>
+      <li><p>Ignoring transaction boundaries.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Common Spring Data Mistakes</h2>
+    <ul>
+      <li><p>Putting application rules directly inside the Controller.</p></li>
+      <li><p>Calling the Repository from the View.</p></li>
+      <li><p>Writing very long derived query method names.</p></li>
+      <li><p>Forgetting that <code>findById</code> returns <code>Optional</code>.</p></li>
+      <li><p>Assuming Spring Data removes the need for transactions.</p></li>
+      <li><p>Letting database annotations replace application validation.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Design Mistakes to Avoid</h2>
+    <ul>
+      <li><p>Mixing UI code into entity classes.</p></li>
+      <li><p>Treating entities as View objects.</p></li>
+      <li><p>Putting all application behavior inside Repository methods.</p></li>
+      <li><p>Letting Controller, Service, and Repository all repeat the same rule.</p></li>
+      <li><p>Forgetting that three-tier responsibilities still apply.</p></li>
+    </ul>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JPA changes how objects are stored.
+It does not remove the need for good application structure.</code></pre>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Summary</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Key Takeaways</h2>
+    <ul>
+      <li><p><code>TaskItem</code> is the persistent to-do item; <code>TaskList</code> is the collection.</p></li>
+      <li><p>ORM maps Java objects to relational database rows.</p></li>
+      <li><p>JPA defines the standard mapping model and API.</p></li>
+      <li><p>Hibernate is a common JPA implementation.</p></li>
+      <li><p>An entity class maps to a table.</p></li>
+      <li><p>Managed entities are tracked in a persistence context.</p></li>
+      <li><p>Spring Data JPA supplies repository implementations from interfaces.</p></li>
+      <li><p>The Service layer keeps application operations separate from persistence details.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Where We Are Now</h2>
+    <p>The persistence tier has changed, but the architecture remains familiar.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Before:
+Controller -> TaskModel -> JDBC Repository -> Database
+
+Now:
+Controller -> TaskService -> Spring Data Repository -> JPA -> Database</code></pre>
+    <ul>
+      <li><p>The Controller handles interaction.</p></li>
+      <li><p>The Service handles application operations.</p></li>
+      <li><p>The Repository handles persistence access.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Next: HTTP/REST and Spring Web/MVC</h2>
+    <p>Next, the presentation tier moves from JavaFX events to HTTP requests.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX:
+button click -> Controller -> Service -> Repository
+
+Spring Web:
+HTTP request -> Web Controller -> Service -> Repository</code></pre>
+    <p>The input mechanism changes, but the three-tier structure still guides where code belongs.</p>
+  </section>
+</section>
+
+</div>
+</div>
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+  var revealjsConfig = new Object();
+  Object.assign(revealjsConfig, {
+    "disableLayout": true,
+    "controls": true,
+    "progress": true,
+    "hash": true,
+    "center": true,
+    "transition": "slide",
+    "slideNumber": true,
+    "scrollActivationWidth": null,
+    "mouseWheel": false,
+    "width": 800,
+    "height": 540
+  });
+
+  revealjsConfig.plugins = [
+    RevealNotes, RevealHighlight, RevealMath,
+  ];
+
+  Reveal.initialize(revealjsConfig);
+</script>
+
+</body>
+</html>

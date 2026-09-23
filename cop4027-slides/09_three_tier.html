@@ -7,16 +7,12 @@
 
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
-  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=20260921a" />
   <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-  <script src="../_static/design-tabs.js?v=20260918"></script>
+  <script src="../_static/design-tabs.js?v=20260921a"></script>
 
   <style>
-    .reveal pre[data-fontsize="small"] { font-size: 0.68em; }
-    .reveal pre[data-fontsize="xsmall"] { font-size: 0.56em; }
-    .reveal table.compact { font-size: 0.78em; }
-
     .two-column {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -83,7 +79,7 @@
       <tbody>
         <tr><td><p><code>TaskView</code></p></td><td><p>Displays tasks and provides controls.</p></td></tr>
         <tr><td><p><code>TaskController</code></p></td><td><p>Responds to button events.</p></td></tr>
-        <tr><td><p><code>TaskModel</code> and <code>Task</code></p></td><td><p>Hold the task data used by the application.</p></td></tr>
+        <tr><td><p><code>TaskModel</code> and <code>TaskItem</code></p></td><td><p>Hold the task data used by the application.</p></td></tr>
         <tr><td><p><code>TaskRepository</code></p></td><td><p>Defines the operations for saved tasks.</p></td></tr>
         <tr><td><p><code>JdbcTaskRepository</code></p></td><td><p>Implements those operations with JDBC.</p></td></tr>
       </tbody>
@@ -123,7 +119,7 @@
 
         <p><strong>Presentation work: </strong> Read the field, handle the click, and refresh the screen.</p>
         <p><strong>Application work: </strong>Check the title, save the task, and reload application state.</p>
-   
+
   </section>
 </section>
 
@@ -147,7 +143,7 @@
         <tr>
           <td><p><strong>Application</strong></p></td>
           <td><p>What should the application do?</p></td>
-          <td><p><code>TaskModel</code>, <code>Task</code></p></td>
+          <td><p><code>TaskModel</code>, <code>TaskItem</code></p></td>
         </tr>
         <tr>
           <td><p><strong>Data</strong></p></td>
@@ -164,7 +160,7 @@
 
   <ul>
     <li><p><strong>Presentation:</strong> <code>TaskView</code>, <code>TaskController</code>, JavaFX controls and events</p></li>
-    <li><p><strong>Application:</strong> <code>TaskModel</code>, <code>Task</code>, task operations and rules</p></li>
+    <li><p><strong>Application:</strong> <code>TaskModel</code>, <code>TaskItem</code>, task operations and rules</p></li>
     <li><p><strong>Data:</strong> <code>TaskRepository</code>, <code>JdbcTaskRepository</code>, JDBC, SQL, and H2</p></li>
   </ul>
 
@@ -228,7 +224,7 @@
   <p>The data tier gives the application persistence operations without exposing how they are implemented.</p>
 
   <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository {
-    List&lt;Task&gt; findAll();
+    List&lt;TaskItem&gt; findAll();
 
     void add(String title);
 
@@ -277,7 +273,7 @@ controller.connectHandlers();</code></pre>
       <li><p>Reject a blank task title.</p></li>
       <li><p>Reload the current tasks after a change.</p></li>
       <li><p>Execute an <code>INSERT</code> statement.</p></li>
-      <li><p>Convert a database row into a <code>Task</code>.</p></li>
+      <li><p>Convert a database row into a <code>TaskItem</code>.</p></li>
     </ol>
   </section>
 
@@ -286,7 +282,7 @@ controller.connectHandlers();</code></pre>
     <ul>
       <li><p><strong>Presentation:</strong> display <code>"Task saved"</code> and handle the Add button event.</p></li>
       <li><p><strong>Application:</strong> reject a blank title and reload the current tasks.</p></li>
-      <li><p><strong>Data:</strong> execute the <code>INSERT</code> and map a database row to a <code>Task</code>.</p></li>
+      <li><p><strong>Data:</strong> execute the <code>INSERT</code> and map a database row to a <code>TaskItem</code>.</p></li>
     </ul>
     <p>When a class starts doing work from another tier, move that responsibility to the class that owns it.</p>
   </section>
