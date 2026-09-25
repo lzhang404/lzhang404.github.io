@@ -43,7 +43,6 @@
       <li><p>Explain entity identity, persistence context, and transactions.</p></li>
       <li><p>Replace manual Repository code with Spring Data JPA.</p></li>
       <li><p>Add a Service layer for application operations.</p></li>
-      <li><p>Prepare for HTTP/REST and Spring Web/MVC.</p></li>
     </ul>
   </section>
 </section>
@@ -89,8 +88,7 @@
       <li><p>Relational databases use tables, columns, rows, and keys.</p></li>
       <li><p>An application often needs to move data between these two models.</p></li>
       <li><p>Manual JDBC mapping makes that movement explicit.</p></li>
-      <li><p>ORM tools reduce repeated mapping code.</p></li>
-    </ul>
+      <li><p>Mapping frameworks can reduce repeated object-row translation code.</p></li>
   </section>
 
   <section class="frame">
@@ -221,7 +219,7 @@ private String title;
 private boolean done;</code></pre>
     <ul>
       <li><p><code class="inline-java">@Column</code> customizes how a field maps to a column.</p></li>
-      <li><p><code>nullable = false</code> means the column should not accept null values.</p></li>
+      <li><p><code class="inline-java">nullable = false</code> means the column should not accept null values.</p></li>
       <li><p><code>length = 100</code> limits the text column size.</p></li>
       <li><p>The database still enforces constraints when data is written.</p></li>
     </ul>

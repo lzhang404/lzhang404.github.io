@@ -63,6 +63,52 @@ function initialize_projector_layout() {
 }
 
 /**
+ * Apply the existing Reveal Java highlighter to opted-in inline code.
+ *
+ * @returns {boolean} Whether the Reveal highlighter was available.
+ */
+function highlight_inline_java() {
+  const reveal = window.Reveal;
+  if (!reveal || typeof reveal.getPlugin !== "function") return false;
+
+  const highlightPlugin = reveal.getPlugin("highlight");
+  const highlighter = highlightPlugin && highlightPlugin.hljs;
+  if (!highlighter || typeof highlighter.highlightElement !== "function") {
+    return false;
+  }
+
+  document.querySelectorAll(".reveal code.inline-java").forEach((code) => {
+    if (
+      !(code instanceof HTMLElement) ||
+      code.closest("pre") ||
+      code.classList.contains("hljs")
+    ) {
+      return;
+    }
+
+    code.classList.add("language-java");
+    highlighter.highlightElement(code);
+  });
+
+  return true;
+}
+
+/**
+ * Highlight inline Java after Reveal registers its highlight plugin.
+ */
+function initialize_inline_java_highlighting() {
+  if (highlight_inline_java()) return;
+
+  const reveal = window.Reveal;
+  if (reveal && typeof reveal.on === "function") {
+    reveal.on("ready", highlight_inline_java);
+    return;
+  }
+
+  window.addEventListener("load", highlight_inline_java, { once: true });
+}
+
+/**
  * Create a key for a tab element.
  * @param {HTMLElement} el - The tab element.
  * @returns {[string, string, string] | null} - The key.
@@ -81,6 +127,7 @@ function create_key(el) {
  */
 function ready() {
   initialize_projector_layout();
+  initialize_inline_java_highlighting();
 
   // Find all tabs with sync data
 

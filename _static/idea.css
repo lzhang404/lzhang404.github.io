@@ -9,6 +9,17 @@ Intellij Idea-like styling (c) Vasily Polovnyov <vast@whiteants.net>
   background: #fff;
 }
 
+/* Opt-in Java highlighting for inline code in slide text and lists. */
+.reveal code.inline-java.hljs {
+  color: #000080;
+  background: transparent;
+}
+
+.reveal code.inline-java .hljs-meta,
+.reveal code.inline-java .hljs-title {
+  color: #000080;
+}
+
 .hljs-subst,
 .hljs-title {
   font-weight: normal;
@@ -91,4 +102,9 @@ Intellij Idea-like styling (c) Vasily Polovnyov <vast@whiteants.net>
 
 .hljs-strong {
   font-weight: bold;
+}
+
+.reveal code.inline-java,
+.reveal code.inline-java * {
+  font-weight: normal;
 }

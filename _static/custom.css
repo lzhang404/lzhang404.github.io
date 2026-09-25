@@ -29,7 +29,7 @@ section.has-dark-background, section.has-dark-background h1, section.has-dark-ba
   --r-heading2-size: 1.5em;
   --r-heading3-size: 1.5em;
   --r-heading4-size: 1.3em;
-  --r-code-font: monospace;
+  --r-code-font: "IBM Plex Mono", monospace;
   --r-link-color: #d0662e;
   --r-link-color-dark: #a14d22;
   --r-link-color-hover: #e98553;
@@ -307,6 +307,7 @@ html.zoomed body.reveal-viewport {
 
 .reveal code {
   font-family: var(--r-code-font);
+  font-variant-ligatures: none;
   text-transform: none;
   tab-size: 2; }
 
@@ -575,8 +576,9 @@ body.image-viewer-open {
 .reveal .footnote {
   font-size: 0.5em; }
 
-.reveal code * {
-  font-family: monospace; }
+.reveal code {
+  font-variant-ligatures: none;
+}
 
 .reveal .slides section {
   text-align: left; }
@@ -810,7 +812,8 @@ body.image-viewer-open {
  * viewport so native browser zoom can expose scrollbars without shrinking
  * the deck back to fit.
  */
-.reveal pre[data-fontsize="small"] { font-size: 1em; }
+.reveal pre[data-fontsize="small"] { font-size: 0.85em; }
+.reveal pre[data-fontsize="xsmall"] { font-size: 0.56em; }
 .reveal table.compact { font-size: 0.78em; }
 .reveal table.tight { font-size: 0.72em; }
 
