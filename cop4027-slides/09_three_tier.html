@@ -156,24 +156,23 @@
   </section>
 
 <section class="frame">
-  <h2>Familiar Classes in a Larger Structure</h2>
-
-  <ul>
-    <li><p><strong>Presentation:</strong> <code>TaskView</code>, <code>TaskController</code>, JavaFX controls and events</p></li>
-    <li><p><strong>Application:</strong> <code>TaskModel</code>, <code>TaskItem</code>, task operations and rules</p></li>
-    <li><p><strong>Data:</strong> <code>TaskRepository</code>, <code>JdbcTaskRepository</code>, JDBC, SQL, and H2</p></li>
-  </ul>
-
-  <ul>
-    <li><p>Three-tier does not replace MVC.</p></li>
-    <li><p>Three-tier does not replace the Repository.</p></li>
-    <li><p>It shows where both ideas fit in the complete application.</p></li>
-  </ul>
-      <img
+  <h2>Task List Across Three Tiers</h2>
+  <img
     src="../_static/images/cop4027/three-tier-task.png"
     alt="Three-tier architecture diagram showing the flow of a task application. The Presentation Tier contains the View and Controller, the Application Tier contains TaskModel, and the Data Tier contains TaskRepository and the Database. Solid arrows show requests moving from View to Controller to TaskModel to TaskRepository to Database, while dashed arrows show responses returning in the opposite direction."
-    style="display:block; margin:0 auto; max-width:50%; max-height:78vh;"
-/>
+    style="display:block; margin:0 auto; width:94%; max-height:65vh;" />
+  <p>The MVC Model belongs to the application tier in this example.</p>
+</section>
+
+  <section class="frame">
+    <h2>Trace an Add Request</h2>
+    <p>A user enters a title and clicks Add. Predict the path before the next slide.</p>
+    <ol>
+      <li><p>Which class receives the click?</p></li>
+      <li><p>Which class checks the title?</p></li>
+      <li><p>Which class writes the database row?</p></li>
+      <li><p>How does the new task reach the View?</p></li>
+    </ol>
 </section>
 
 
@@ -213,10 +212,27 @@
       <li><p>It asks the Model to perform the task operation.</p></li>
       <li><p>No Repository field, JDBC type, or SQL appears here.</p></li>
     </ul>
+    <p>Example: <code>three-tier-task-list/TaskController.java</code></p>
   </section>
 
-<p>The presentation tier handles user interaction and delegates application work to the Model.</p>
+  <section class="frame">
+    <h2>Application: TaskModel</h2>
+    <p>The Model checks the task rule and coordinates the operation.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void addTask(String title) {
+    if (title == null || title.isBlank()) {
+        throw new IllegalArgumentException("Title required");
+    }
 
+    repository.add(title.trim());
+    reload();
+}</code></pre>
+    <ul>
+      <li><p>The Model checks the title before saving.</p></li>
+      <li><p>It asks the Repository to save, then reloads its task list.</p></li>
+      <li><p>JavaFX controls and SQL stay outside this class.</p></li>
+    </ul>
+    <p>Example: <code>three-tier-task-list/TaskModel.java</code></p>
+  </section>
 
 <section class="frame">
   <h2>Data: TaskRepository</h2>
@@ -238,6 +254,7 @@
     <li><p><code>JdbcTaskRepository</code> translates those operations into JDBC and SQL.</p></li>
     <li><p>No <code>Connection</code>, <code>PreparedStatement</code>, or <code>ResultSet</code> crosses the boundary.</p></li>
   </ul>
+  <p>Example: <code>three-tier-task-list/JdbcTaskRepository.java</code></p>
 </section>
 
   <section class="frame">
@@ -256,6 +273,7 @@ controller.connectHandlers();</code></pre>
       <li><p>The Controller receives only the Model and View it needs.</p></li>
       <li><p>The construction code makes the dependency direction visible.</p></li>
     </ul>
+    <p>Example: <code>three-tier-task-list/TaskThreeTierApp.java</code></p>
   </section>
 </section>
 

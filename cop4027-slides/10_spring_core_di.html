@@ -35,48 +35,68 @@
 <section>
   <section class="frame">
     <h2>Roadmap</h2>
-    <p>The three-tier Task List already uses constructor injection. Spring Core lets a container manage that wiring.</p>
+    <p>Main question: who creates and connects the objects in an application?</p>
     <ul>
-      <li><p>Identify dependencies in plain Java.</p></li>
-      <li><p>Define dependency injection and inversion of control.</p></li>
-      <li><p>Connect manual object wiring to Spring-managed wiring.</p></li>
-      <li><p>Use Spring Core to create and connect application objects.</p></li>
-      <li><p>Configure the same Task List as Spring beans.</p></li>
-      <li><p>Preview the annotations used later in JPA and Spring Web/MVC.</p></li>
+      <li><p>See where Spring Core fits in the Spring ecosystem.</p></li>
+      <li><p>Use constructor injection in plain Java.</p></li>
+      <li><p>Let the Spring container create beans from <code class="inline-java">@Bean</code> methods.</p></li>
+      <li><p>See how Spring reports missing and ambiguous dependencies.</p></li>
+      <li><p>Configure beans with component scanning and stereotype annotations.</p></li>
     </ul>
   </section>
 </section>
 
 <section>
   <section class="title-slide slide level1">
-    <h1>Spring in Enterprise Java</h1>
+    <h1>The Spring Framework Ecosystem</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Why Use Spring?</h2>
+    <p>Layered applications contain objects with dependencies.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Controller → Model / Service → Repository → Database</code></pre>
+    <ul>
+      <li><p>Those objects must be created in the right order.</p></li>
+      <li><p>Each object needs the correct dependencies.</p></li>
+      <li><p>As projects grow, manual startup code becomes harder to maintain.</p></li>
+    </ul>
+    <p>Spring helps manage that object creation and wiring.</p>
   </section>
 
   <section class="frame">
     <h2>What Is Spring?</h2>
     <ul>
-      <li><p>Spring is an enterprise Java framework.</p></li>
-      <li><p>Spring Core creates and connects Java objects.</p></li>
-      <li><p>Spring Data supports database access.</p></li>
-      <li><p>Spring Web supports web applications.</p></li>
-      <li><p>Spring Boot simplifies startup and configuration.</p></li>
+      <li><p><strong>Spring</strong> is a Java framework for building applications.</p></li>
+      <li><p><strong>Spring Core</strong> creates and connects Java objects.</p></li>
+      <li><p><strong>Spring Data</strong> supports database access and repositories.</p></li>
+      <li><p><strong>Spring Web</strong> supports web applications and HTTP requests.</p></li>
     </ul>
-    <p>This lesson focuses on Spring Core: object creation, object wiring, and dependency injection.</p>
   </section>
 
   <section class="frame">
     <h2>Spring Framework and Spring Boot</h2>
     <p><strong>Spring Framework</strong></p>
     <ul>
-      <li><p>Provides the Core container.</p></li>
-      <li><p>Provides Core, data-access, and Web support.</p></li>
-      <li><p>Defines the bean and injection model.</p></li>
+      <li><p>Provides the Core container and the bean and injection model.</p></li>
+      <li><p>The other Spring modules build on this container.</p></li>
     </ul>
     <p><strong>Spring Boot</strong></p>
     <ul>
       <li><p>Starts a Spring application with less setup code.</p></li>
-      <li><p>Provides common configuration defaults.</p></li>
-      <li><p>Will support later JPA and web examples.</p></li>
+      <li><p>Provides common defaults and configuration conventions used with Spring Data JPA and Spring Web.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Spring Core with Maven</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-context&lt;/artifactId&gt;
+    &lt;version&gt;${spring.version}&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+    <ul>
+      <li><p><code>spring-context</code> provides the application context.</p></li>
+      <li><p>Maven downloads the required Spring libraries.</p></li>
     </ul>
   </section>
 </section>
@@ -87,152 +107,105 @@
   </section>
 
   <section class="frame">
+    <h2>Task List Object Graph</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController ──→ TaskModel ──→ TaskRepository ──→ H2
+     │                  │
+     └──→ TaskView  ←───┘</code></pre>
+    <ul>
+      <li><p>The Controller handles user actions.</p></li>
+      <li><p>The Model handles task state and rules.</p></li>
+      <li><p>The Repository handles saved tasks.</p></li>
+    </ul>
+    <p><strong>Question:</strong> Who creates these objects and passes them to constructors?</p>
+  </section>
+
+  <section class="frame">
     <h2>What Is a Dependency?</h2>
-
     <p>A <strong>dependency</strong> is another object that a class needs to do its work.</p>
-
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public final class TaskModel {
     private final TaskRepository repository;
-
-    public TaskModel(TaskRepository repository) {
-        this.repository = repository;
-        reload();
-    }
+    ...
 }</code></pre>
-
     <ul>
-      <li><p><code>TaskModel</code> performs task operations.</p></li>
-      <li><p>It needs a <code>TaskRepository</code> to save and load tasks.</p></li>
-      <li><p>Therefore, the Repository is a dependency of the Model.</p></li>
+      <li><p><code>TaskModel</code> needs a <code>TaskRepository</code>.</p></li>
+      <li><p>The Repository is a dependency of the Model.</p></li>
     </ul>
   </section>
 
-<section class="frame">
-  <h2>Creating the Dependency Inside the Class</h2>
-
-  <p>A class can create the object it needs by itself.</p>
-
-  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public TaskModel() throws IOException {
-    DatabaseConfig config =
-            DatabaseConfig.load("/database.properties");
+  <section class="frame">
+    <h2>Creating vs. Receiving a Dependency</h2>
+    <p><strong>Creating the dependency inside <code>TaskModel</code>:</strong></p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public TaskModel() throws IOException {
+    DatabaseConfig config = DatabaseConfig.load("/database.properties");
     repository = new JdbcTaskRepository(config);
 }</code></pre>
-
-  <ul>
-    <li><p><code>TaskModel</code> decides that persistence must use JDBC.</p></li>
-    <li><p><code>TaskModel</code> also loads the database configuration.</p></li>
-    <li><p>Task operations and dependency construction become coupled.</p></li>
-  </ul>
-</section>
-
-<section class="frame">
-  <h2>Receiving the Dependency from Outside</h2>
-
-  <p>A class can receive the object it needs from another part of the application.</p>
-
-  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public TaskModel(TaskRepository repository) {
+    <p><strong>Receiving the dependency from outside:</strong></p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public TaskModel(TaskRepository repository) {
     this.repository = repository;
     reload();
 }</code></pre>
-
-  <ul>
-    <li><p><code>TaskModel</code> only declares that it needs a Repository.</p></li>
-    <li><p>Something outside the Model chooses which Repository to provide.</p></li>
-    <li><p>The Model stays focused on task operations.</p></li>
-  </ul>
-</section>
+    <ul>
+      <li><p>The first version chooses JDBC inside the Model.</p></li>
+      <li><p>That Model cannot switch storage or be tested without a database.</p></li>
+      <li><p>The second version lets another part choose the Repository.</p></li>
+    </ul>
+  </section>
 
   <section class="frame">
     <h2>What Is Dependency Injection?</h2>
-
-    <p><strong>Dependency injection</strong> means giving an object the dependencies it needs from outside instead of having the object create them itself.</p>
-
+    <p><strong>Dependency injection</strong> means giving an object its dependencies from outside instead of having the object create them itself.</p>
     <ul>
       <li><p>The class declares what it needs.</p></li>
       <li><p>Another part of the application creates the dependency.</p></li>
       <li><p>That dependency is supplied to the class.</p></li>
     </ul>
-
-    <p><code>TaskModel</code> needs a <code>TaskRepository</code>, but it does not need to decide whether that Repository uses JDBC, memory, JPA, or another storage system.</p>
+    <p><code>TaskModel</code> does not need to decide whether its Repository uses JDBC, memory, JPA, or another storage system.</p>
   </section>
 
   <section class="frame">
     <h2>Injection Styles</h2>
-
     <ul>
-      <li><p><strong>Constructor injection:</strong> passes required dependencies during construction.</p></li>
-      <li><p><strong>Setter injection:</strong> supplies a dependency through a setter after construction.</p></li>
-      <li><p><strong>Field injection:</strong> writes directly to a field.</p></li>
+      <li><p><strong>Constructor injection:</strong> pass required dependencies during construction.</p></li>
+      <li><p><strong>Setter injection:</strong> supply a dependency through a setter after construction.</p></li>
+      <li><p><strong>Field injection:</strong> write directly to a field.</p></li>
     </ul>
-
-    <p>This course uses constructor injection.</p>
+    <p>Constructor injection makes required dependencies explicit at object creation.</p>
   </section>
 
   <section class="frame">
     <h2>Why Constructor Injection?</h2>
-
     <ul>
       <li><p>The constructor shows every required dependency.</p></li>
       <li><p>The object starts with complete state.</p></li>
-      <li><p>Dependency fields can remain <code>final</code>.</p></li>
+      <li><p>Dependency fields can remain <code class="inline-java">final</code>.</p></li>
       <li><p>Tests can pass small replacement objects.</p></li>
       <li><p>The class stays independent of Spring.</p></li>
     </ul>
+    <p>Example: <code>spring-core/task/TaskModelTest.java</code></p>
   </section>
 
   <section class="frame">
-    <h2>Who Performs the Injection?</h2>
-
-    <p>Dependency injection does not require a framework. </p>
-    <p>Ordinary Java code can create and connect the objects.</p>
-
+    <h2>Constructor Injection in Plain Java</h2>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">DatabaseConfig config = DatabaseConfig.load("/database.properties");
 TaskRepository repository = new JdbcTaskRepository(config);
 
 TaskModel model = new TaskModel(repository);
 TaskView view = new TaskView(model);
 TaskController controller = new TaskController(model, view);</code></pre>
-
     <ul>
-      <li><p>The startup code chooses the implementations.</p></li>
-      <li><p>The constructors receive the dependencies.</p></li>
-      <li><p>This is dependency injection in plain Java.</p></li>
+      <li><p>Startup code chooses the implementations.</p></li>
+      <li><p>Constructors receive the dependencies.</p></li>
+      <li><p>Spring is not required for dependency injection.</p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>Dependency Injection and Inversion of Control</h2>
-
     <ul>
-      <li><p><strong>Dependency injection:</strong> dependencies are supplied from outside the object.</p></li>
-      <li><p><strong>Inversion of control:</strong> the object no longer controls how those dependencies are created.</p></li>
+      <li><p><strong>Inversion of control:</strong> the object no longer controls how its dependencies are created.</p></li>
+      <li><p>Dependency injection is one way to apply inversion of control.</p></li>
+      <li><p><code>TaskModel</code> gives up control of creating its Repository.</p></li>
     </ul>
-
-    <p>For <code>TaskModel</code>:</p>
-
-    <ul>
-      <li><p>The Model declares that it needs a <code>TaskRepository</code>.</p></li>
-      <li><p>Another part of the application chooses and creates that Repository.</p></li>
-      <li><p>Spring can take over this construction and wiring work.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>From Manual Wiring to Spring</h2>
-
-    <p>The dependencies do not change. What changes is who creates and connects the objects.</p>
-
-    <ul>
-      <li><p><strong>Plain Java:</strong> startup code creates the Repository, Model, View, and Controller.</p></li>
-      <li><p><strong>Spring:</strong> configuration describes those objects, and the container creates them.</p></li>
-      <li><p>The application classes can keep ordinary Java constructors.</p></li>
-    </ul>
-
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Manual wiring:
-startup code -> creates objects -> connects dependencies
-
-Spring wiring:
-configuration -> Spring container -> creates and connects objects</code></pre>
   </section>
 </section>
 
@@ -242,248 +215,281 @@ configuration -> Spring container -> creates and connects objects</code></pre>
   </section>
 
   <section class="frame">
+    <h2>What Spring Adds</h2>
+    <p>Constructor injection moved object creation out of the classes and into startup code. Spring replaces that startup code.</p>
+    <ul>
+      <li><p>The application classes keep their ordinary constructors.</p></li>
+      <li><p>Spring reports missing or ambiguous dependencies at startup.</p></li>
+      <li><p>Component scanning removes hand-written wiring code.</p></li>
+      <li><p>Spring Data and Spring Web build on the same container. In the next lecture, Spring creates the JPA repository implementations.</p></li>
+    </ul>
+    <p>In a four-class app the savings are small; the container matters more as the application grows.</p>
+  </section>
+
+  <section class="frame">
     <h2>Spring Core Vocabulary</h2>
     <ul>
       <li><p><strong>Bean:</strong> an object managed by Spring.</p></li>
       <li><p><strong>Container:</strong> creates and connects beans.</p></li>
-      <li><p><strong>Application context:</strong> the Spring container that manages the application's beans.</p></li>
-      <li><p><strong>Configuration:</strong> describes the beans to create.</p></li>
-      <li><p><strong>Injection:</strong> supplies one bean to another.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>Spring Core with Maven</h2>
-    <p>The project needs Spring Core libraries before it can create a Spring application context.</p>
-
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;dependency&gt;
-    &lt;groupId&gt;org.springframework&lt;/groupId&gt;
-    &lt;artifactId&gt;spring-context&lt;/artifactId&gt;
-    &lt;version&gt;${spring.version}&lt;/version&gt;
-&lt;/dependency&gt;</code></pre>
-
-    <ul>
-      <li><p><code>spring-context</code> provides the application context.</p></li>
-      <li><p>It includes the Core container dependencies.</p></li>
-      <li><p>Maven downloads the required Spring libraries.</p></li>
+      <li><p><strong>Application context:</strong> gives access to the container.</p></li>
+      <li><p><strong>Configuration:</strong> describes which beans to create.</p></li>
+      <li><p><strong>Injection:</strong> supplies one bean to another bean.</p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>Annotations at Runtime</h2>
+    <p>Spring combines annotation metadata with runtime reflection.</p>
     <ul>
-      <li><p>Spring inspects annotations and configuration metadata during startup.</p></li>
-      <li><p>Reflection lets Spring inspect classes and methods.</p></li>
-      <li><p><code class="inline-java">@Configuration</code> marks bean configuration.</p></li>
-      <li><p><code class="inline-java">@Bean</code> marks an object-creation method.</p></li>
-      <li><p>The annotation supplies metadata to the container.</p></li>
+      <li><p>Annotations provide metadata.</p></li>
+      <li><p>Reflection lets code inspect classes and methods at runtime.</p></li>
+      <li><p>Spring uses reflection to read annotations during application startup.</p></li>
     </ul>
-    <p>This reuses Java reflection and annotation concepts.</p>
   </section>
 
   <section class="frame">
-    <h2>Database and Repository Beans</h2>
-    <p>A configuration class can describe how Spring should create infrastructure and data-access objects.</p>
-
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Configuration //marks a configuration class
-public class TaskConfiguration {
-    @Bean // marks an object-creation method
-    DatabaseConfig databaseConfig() throws IOException {
-        return DatabaseConfig.load("/database.properties");
-    }
-
+    <h2><code class="inline-java">@Configuration</code> and <code class="inline-java">@Bean</code></h2>
+    <p>Spring reads two annotations to learn which beans to create.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Configuration
+public class AppConfig {
     @Bean
-    TaskRepository taskRepository(DatabaseConfig config) {
-        return new JdbcTaskRepository(config);
+    TaskRepository taskRepository() {
+        return new JdbcTaskRepository(...);
     }
 }</code></pre>
-
     <ul>
-      <li><p>Spring supplies the <code>DatabaseConfig</code> parameter.</p></li>
+      <li><p><code class="inline-java">@Configuration</code> marks a class that defines beans.</p></li>
+      <li><p><code class="inline-java">@Bean</code> marks a method that creates one bean.</p></li>
+      <li><p>The returned object is managed by Spring.</p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Beans Form a Dependency Graph</h2>
+    <h2>First Bean</h2>
+    <p>A bean method is a factory: Spring calls it once and keeps the object it returns.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Bean
+TaskRepository taskRepository() throws IOException {
+    DatabaseConfig config = DatabaseConfig.load("/database.properties");
+    return new JdbcTaskRepository(config);
+}</code></pre>
+    <ul>
+      <li><p>The returned <code>JdbcTaskRepository</code> becomes a bean.</p></li>
+      <li><p>Declaring the interface type lets other beans depend on <code>TaskRepository</code>, not on JDBC.</p></li>
+    </ul>
+  </section>
 
-    <p>Bean method parameters tell Spring which other objects are required.</p>
-
+  <section class="frame">
+    <h2>A Bean Depending on Another Bean</h2>
+    <p>A bean method declares its dependencies as parameters, just like a constructor.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Bean
 TaskModel taskModel(TaskRepository repository) {
     return new TaskModel(repository);
-}
-
-@Bean
-TaskController taskController(TaskModel model, TaskView view) {
-    return new TaskController(model, view);
 }</code></pre>
-
     <ul>
-      <li><p><code>TaskModel</code> requires a <code>TaskRepository</code>.</p></li>
-      <li><p><code>TaskController</code> requires a Model and View.</p></li>
-      <li><p>Spring finds matching beans and supplies those arguments.</p></li>
+      <li><p>Spring matches each parameter to a bean by type.</p></li>
+      <li><p>The method still calls the ordinary Java constructor.</p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>The Application Context</h2>
+    <h2>Complete Task List Configuration</h2>
+    <p>The four bean methods describe the same object graph as the plain Java startup code.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Configuration
+public class AppConfig {
+    @Bean
+    TaskRepository taskRepository() { return new JdbcTaskRepository(...); }
 
-    <p>The application context starts the container and gives the application access to managed objects.</p>
+    @Bean
+    TaskModel taskModel(TaskRepository repository) {
+        return new TaskModel(repository);
+    }
 
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">context = new AnnotationConfigApplicationContext(
-        TaskConfiguration.class);
+    @Bean
+    TaskView taskView(TaskModel model) { return new TaskView(model); }
 
-TaskController controller =
-        context.getBean(TaskController.class);
-
-controller.connectHandlers();</code></pre>
-
-    <ul>
-      <li><p>The context reads <code>TaskConfiguration</code>.</p></li>
-      <li><p>Spring creates the required beans and connects their dependencies.</p></li>
-      <li><p><code>getBean(...)</code> retrieves an object managed by Spring.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>How Spring Resolves the Beans</h2>
-    <ol>
-      <li><p><code>TaskController</code> requires a Model and View.</p></li>
-      <li><p><code>TaskView</code> requires the Model.</p></li>
-      <li><p><code>TaskModel</code> requires a Repository.</p></li>
-      <li><p><code>JdbcTaskRepository</code> requires database configuration.</p></li>
-      <li><p>Spring creates the required beans and supplies constructor or method arguments.</p></li>
-    </ol>
-    <p>The constructors remain ordinary Java constructors.</p>
-  </section>
-
-  <section class="frame">
-    <h2>Choosing a Bean by Type</h2>
-    <ul>
-      <li><p>Spring normally matches a dependency by its Java type.</p></li>
-      <li><p>One matching bean gives Spring a clear choice.</p></li>
-      <li><p>No matching bean causes application startup to fail.</p></li>
-      <li><p>Several matching beans require Spring to know which one to use.</p></li>
-      <li><p><code class="inline-java">@Primary</code> or <code class="inline-java">@Qualifier</code> can resolve that choice.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>Component Scanning</h2>
-    <p>Spring can also discover annotated classes instead of using only explicit <code>@Bean</code> methods.</p>
-
-    <ul>
-      <li><p>Explicit <code class="inline-java">@Bean</code> methods show each construction step.</p></li>
-      <li><p>Component scanning finds annotated classes in selected packages.</p></li>
-      <li><p><code class="inline-java">@Component</code> marks a general Spring-managed class.</p></li>
-      <li><p><code class="inline-java">@ComponentScan</code> selects packages to scan.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>Spring Stereotype Roles</h2>
-    <p>Stereotype annotations mark Spring-managed classes and describe their role in the application.</p>
-
-    <ul>
-      <li><p><code class="inline-java">@Component</code>: general Spring-managed class.</p></li>
-      <li><p><code class="inline-java">@Service</code>: application or service logic.</p></li>
-      <li><p><code class="inline-java">@Repository</code>: data-access class.</p></li>
-      <li><p><code class="inline-java">@Controller</code>: web controller in Spring Web MVC.</p></li>
-      <li><p><code class="inline-java">@RestController</code>: web controller that returns response data.</p></li>
-    </ul>
-
-    <p>The annotation helps Spring discover the class; it does not automatically design the application for us.</p>
-  </section>
-
-  <section class="frame">
-    <h2>Constructor Injection with Scanned Classes</h2>
-    <p>In many Spring applications, application operations are placed in a service class.</p>
-    <p>When Spring discovers a class, it can still use ordinary constructor injection.</p>
-
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Service
-public class TaskService {
-    private final TaskRepository repository;
-
-    public TaskService(TaskRepository repository) {
-        this.repository = repository;
+    @Bean
+    TaskController taskController(TaskModel model, TaskView view) {
+        return new TaskController(model, view);
     }
 }</code></pre>
-
-    <ul>
-      <li><p>Spring discovers <code>TaskService</code> during component scanning.</p></li>
-      <li><p>The constructor declares a required <code>TaskRepository</code>.</p></li>
-      <li><p>Spring finds a matching Repository bean and injects it.</p></li>
-    </ul>
+    <p>Example: <code>spring-core/explicit/AppConfig.java</code></p>
   </section>
 
-<section class="frame">
-  <h2>JavaFX and Spring Work Together</h2>
+  <section class="frame">
+    <h2>What Spring Does at Startup</h2>
+    <ol>
+      <li><p>Reads the configuration class.</p></li>
+      <li><p>Finds the <code class="inline-java">@Bean</code> methods.</p></li>
+      <li><p>Creates beans in a valid dependency order.</p></li>
+      <li><p>Supplies method arguments from existing beans.</p></li>
+      <li><p>Stores the created objects in the application context.</p></li>
+    </ol>
+  </section>
 
-  <p>JavaFX manages the application window while Spring manages the application objects.</p>
+  <section class="frame">
+    <h2>Getting an Object from the Context</h2>
+    <p>The main application no longer constructs the object graph itself; it starts the container and asks for the object it needs.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ApplicationContext context =
+        new AnnotationConfigApplicationContext(AppConfig.class);
 
-  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void start(Stage stage) {
-    context = new AnnotationConfigApplicationContext(
-            TaskConfiguration.class);
-
-    TaskView view = context.getBean(TaskView.class);
-    TaskController controller =
-            context.getBean(TaskController.class);
-
-    controller.connectHandlers();
-
-    stage.setScene(new Scene(view));
-    stage.show();
-}</code></pre>
-
-  <ul>
-    <li><p>JavaFX creates the application and <code>Stage</code>.</p></li>
-    <li><p>Spring creates and connects the Task List objects.</p></li>
-    <li><p>The Controller connects the JavaFX event handlers.</p></li>
-    <li><p>The two frameworks have different responsibilities.</p></li>
-  </ul>
-</section>
+TaskController controller = context.getBean(TaskController.class);</code></pre>
+    <ul>
+      <li><p>Creating the context starts the container and runs the startup steps.</p></li>
+      <li><p>The returned <code>TaskController</code> already has its Model and View.</p></li>
+    </ul>
+  </section>
 </section>
 
 <section>
   <section class="title-slide slide level1">
-    <h1>Replacing Dependencies</h1>
+    <h1>Dependency Problems Spring Can Detect</h1>
   </section>
 
   <section class="frame">
-    <h2>A Different Repository Bean</h2>
-    <p>Because the Model depends on the interface, Spring can provide another implementation.</p>
+    <h2>Missing Dependency</h2>
+    <p>Suppose the configuration has the <code>taskModel</code> bean method but no <code>TaskRepository</code> bean.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">UnsatisfiedDependencyException: Error creating bean with name 'taskModel'
+...
+No qualifying bean of type '...TaskRepository' available:
+expected at least 1 bean which qualifies as autowire candidate.</code></pre>
+    <ul>
+      <li><p>Spring cannot call the method without a <code>TaskRepository</code>.</p></li>
+      <li><p>The application fails during startup instead of failing later during a user action.</p></li>
+    </ul>
+  </section>
 
+  <section class="frame">
+    <h2>Multiple Implementations</h2>
+    <p>When two beans have the same type, matching by type is ambiguous.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Bean
+TaskRepository jdbcRepository() { return new JdbcTaskRepository(...); }
+
+@Bean
+TaskRepository memoryRepository() { return new InMemoryTaskRepository(); }</code></pre>
+    <ul>
+      <li><p>The <code>taskModel</code> parameter now has two candidates, so startup fails.</p></li>
+      <li><p>Spring needs an explicit choice between the implementations.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Choosing Between Implementations</h2>
+    <p>Spring can resolve the ambiguity with a default for all injection points or an exact choice for one.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Bean
+@Primary
+TaskRepository jdbcRepository() { return new JdbcTaskRepository(...); }
+
+@Bean
+TaskModel taskModel(@Qualifier("memoryRepository")
+                    TaskRepository repository) {
+    return new TaskModel(repository);
+}</code></pre>
+    <ul>
+      <li><p><code class="inline-java">@Primary</code>: the default for every <code>TaskRepository</code> parameter.</p></li>
+      <li><p><code class="inline-java">@Qualifier</code>: the exact bean for one parameter; it overrides the default.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Replacing the Repository</h2>
+    <p>Constructor injection lets us change the data layer without changing the Model.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Bean
 TaskRepository taskRepository() {
     return new InMemoryTaskRepository();
 }</code></pre>
-
     <ul>
-      <li><p><code>TaskModel</code> still receives a <code>TaskRepository</code>.</p></li>
-      <li><p>The Model code does not change.</p></li>
-      <li><p>Tests can use a small in-memory implementation.</p></li>
-      <li><p>A later lesson can supply a Spring Data JPA implementation.</p></li>
+      <li><p>The <code>TaskModel</code> constructor stays the same.</p></li>
+      <li><p>The Controller and View stay the same.</p></li>
+      <li><p>Only the configuration changes.</p></li>
+    </ul>
+    <p>Example: <code>spring-core/task/InMemoryTaskRepository.java</code></p>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Component Scanning and Stereotypes</h1>
+  </section>
+
+  <section class="frame">
+    <h2>Explicit Bean Configuration</h2>
+    <p>Explicit <code class="inline-java">@Bean</code> methods make the object graph directly visible.</p>
+    <ul>
+      <li><p>Each method shows one object being created.</p></li>
+      <li><p>Each parameter shows one dependency.</p></li>
+    </ul>
+    <p>Component scanning provides a shorter configuration style.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Component Scanning</h2>
+    <p>Instead of a bean method for every class, Spring can scan a package and create the annotated classes as beans.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Configuration
+@ComponentScan("cop4027.springcore.task")
+public class AppConfig {
+    @Bean
+    DatabaseConfig databaseConfig() throws IOException {
+        return DatabaseConfig.load("/database.properties");
+    }
+}</code></pre>
+    <ul>
+      <li><p>Constructor parameters still describe dependencies.</p></li>
+      <li><p><code>DatabaseConfig</code> has no component annotation, so a <code class="inline-java">@Bean</code> method supplies it.</p></li>
+    </ul>
+    <p>Example: <code>spring-core/scanned/AppConfig.java</code></p>
+  </section>
+
+  <section class="frame">
+    <h2>Stereotype Annotations</h2>
+    <ul>
+      <li><p><code class="inline-java">@Component</code>: general Spring-managed class.</p></li>
+      <li><p><code class="inline-java">@Service</code>: application or business logic class.</p></li>
+      <li><p><code class="inline-java">@Repository</code>: persistence or data-access class.</p></li>
+      <li><p><code class="inline-java">@Controller</code>: web MVC controller.</p></li>
+      <li><p><code class="inline-java">@RestController</code>: REST controller.</p></li>
+    </ul>
+    <p>The annotations describe the role of the class.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Scanned Service and Repository</h2>
+    <p>With scanning, the annotation goes on the class itself, and Spring calls its constructor.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Repository
+public final class JdbcTaskRepository implements TaskRepository {
+    ...
+}
+
+@Service
+public final class TaskModel {
+    public TaskModel(TaskRepository repository) { ... }
+}</code></pre>
+    <ul>
+      <li><p>Spring passes the <code>JdbcTaskRepository</code> bean to the <code>TaskModel</code> constructor.</p></li>
+      <li><p>Apart from the annotations, these classes are the same as in the plain Java version.</p></li>
+    </ul>
+    <p>Run: <code>spring-core/scanned/ScannedTaskApp.java</code></p>
+  </section>
+
+  <section class="frame">
+    <h2>Explicit Beans vs. Component Scanning</h2>
+    <ul>
+      <li><p><strong>Explicit <code class="inline-java">@Bean</code>:</strong> useful when construction needs custom code or explicit control.</p></li>
+      <li><p><strong>Component scanning:</strong> good when many application classes follow standard patterns.</p></li>
+      <li><p>Both styles create Spring-managed beans.</p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Testing Without the Container</h2>
-    <p>Constructor injection lets unit tests create only the objects they need.</p>
-
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskRepository repository = new InMemoryTaskRepository();
-TaskModel model = new TaskModel(repository);
-
-model.addTask("Review dependency injection");
-
-assertEquals(1, model.getTasks().size());</code></pre>
-
+    <h2>Spring with JavaFX</h2>
+    <p>A desktop JavaFX app can still use Spring for object wiring.</p>
     <ul>
-      <li><p>A Model unit test does not need Spring.</p></li>
-      <li><p>A separate context test can check bean wiring.</p></li>
-      <li><p>Constructor injection supports both test styles.</p></li>
+      <li><p>JavaFX still owns the window, scene, and UI thread.</p></li>
+      <li><p>Spring can create Models, Repositories, Services, and Controllers.</p></li>
     </ul>
   </section>
 </section>
+
+
 
 <section>
   <section class="title-slide slide level1">
@@ -505,7 +511,7 @@ TaskController taskController(TaskModel model, TaskView view) {
   </section>
 
   <section class="frame">
-    <h2>Practice Answers</h2>
+    <h2>Bean Definition: Solution</h2>
     <ul>
       <li><p>The returned <code>TaskController</code> becomes a bean.</p></li>
       <li><p><code>TaskModel</code> and <code>TaskView</code> are its dependencies.</p></li>
@@ -513,25 +519,22 @@ TaskController taskController(TaskModel model, TaskView view) {
       <li><p>The bean method calls the constructor.</p></li>
     </ul>
   </section>
-</section>
 
-<section>
-  <section class="title-slide slide level1">
-    <h1>Summary</h1>
-  </section>
 
   <section class="frame">
     <h2>Key Takeaways</h2>
     <ul>
+      <li><p>Spring is a Java framework; Spring Core manages object creation and wiring.</p></li>
       <li><p>A dependency is an object another object needs.</p></li>
-      <li><p>Constructor injection supplies dependencies from outside.</p></li>
-      <li><p>Spring Core manages objects in a container.</p></li>
+      <li><p>Constructor injection supplies required dependencies from outside.</p></li>
       <li><p>A Spring-managed object is a bean.</p></li>
+      <li><p>The container creates beans and injects their dependencies.</p></li>
       <li><p><code class="inline-java">@Configuration</code>, <code class="inline-java">@Bean</code>, and component scanning define the object graph.</p></li>
-      <li><p>Stereotype annotations mark common roles such as service, repository, and web controller.</p></li>
       <li><p>The three-tier responsibilities stay the same.</p></li>
     </ul>
   </section>
+
+
 </section>
 
 </div>
@@ -559,7 +562,9 @@ TaskController taskController(TaskModel model, TaskView view) {
   });
 
   revealjsConfig.plugins = [
-    RevealNotes, RevealHighlight, RevealMath,
+    RevealNotes,
+    RevealHighlight,
+    RevealMath,
   ];
 
   Reveal.initialize(revealjsConfig);

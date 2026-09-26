@@ -116,7 +116,7 @@ Database approach:
 <ul>
 <li><p><code>writeObject(taskList)</code> also reaches its serializable <code>TaskItem</code> objects.</p></li>
 <li><p><code>serialVersionUID</code> is checked when loading to verify class compatibility.</p></li>
-<li><p><code>transient</code> fields are skipped; they return with default values and may need rebuilding.</p></li>
+<li><p><code class="inline-java">transient</code> fields are skipped; they return with default values and may need rebuilding.</p></li>
 </ul>
 </section>
 
@@ -883,21 +883,6 @@ Storage can change without rewriting the Controller.</code></pre>
 </table>
 </section>
 
-<section class="frame">
-<h2>Practice: Refactor Direct JDBC</h2>
-<p>Start with an event handler that inserts a task using JDBC.</p>
-<ul>
-<li><p>Create a <code>TaskRepository</code> interface.</p></li>
-<li><p>Move the SQL into <code>JdbcTaskRepository.add(...)</code>.</p></li>
-<li><p>Keep <code>PreparedStatement</code> and placeholders inside the repository.</p></li>
-<li><p>Make the controller call <code>repository.add(title)</code>.</p></li>
-<li><p>Reload the Model with <code>repository.findAll()</code>, then refresh the View.</p></li>
-</ul>
-<pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Goal:
-Controller coordinates the event.
-Model holds current state.
-Repository handles persistence.</code></pre>
-</section>
 </section>
 
 <section>
@@ -908,15 +893,11 @@ Repository handles persistence.</code></pre>
 <section class="frame">
 <h2>Key Takeaways</h2>
 <ul>
-<li><p>Persistence keeps application data available after the program ends.</p></li>
-<li><p>Serialization is useful for saving a trusted Java object graph; databases are better for searchable and independently updated records.</p></li>
-<li><p>JDBC connects Java applications to relational databases through APIs such as <code>Connection</code>, <code>PreparedStatement</code>, and <code>ResultSet</code>.</p></li>
-<li><p><code>PreparedStatement</code> keeps parameter values separate from SQL structure and helps prevent SQL injection.</p></li>
-<li><p>Try-with-resources ensures JDBC resources are closed even when an operation fails.</p></li>
-<li><p>A persistence boundary keeps SQL, JDBC types, connection details, and row mapping out of the rest of the application.</p></li>
-<li><p>DAO and Repository both organize data access; a Repository exposes application-level operations instead of database details.</p></li>
-<li><p>Depending on a <code>TaskRepository</code> interface allows storage implementations to change without rewriting the Controller.</p></li>
-<li><p>In MVC, the Controller coordinates actions, domain objects represent application data, and the Repository handles persistence.</p></li>
+<li><p>Persistence keeps data after the program ends.</p></li>
+<li><p>Serialization saves a trusted object graph; a database supports searching and updating individual records.</p></li>
+<li><p>JDBC uses <code>Connection</code>, <code>PreparedStatement</code>, and <code>ResultSet</code> to work with a database.</p></li>
+<li><p>Bind values with <code>PreparedStatement</code> and close JDBC resources with try-with-resources.</p></li>
+<li><p>A <code>TaskRepository</code> interface hides JDBC; the Controller uses it to save and load Model data.</p></li>
 </ul>
 </section>
 </section>
