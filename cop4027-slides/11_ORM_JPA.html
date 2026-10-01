@@ -20,32 +20,20 @@
 <div class="reveal">
 <div class="slides" role="main">
 
-<section>
-  <section data-background-color="white" data-background-image="../_static/logo.png"
-           data-background-size="50%" data-background-position="top center"
-           data-background-repeat="no-repeat" class="title-slide">
-    <h1>ORM, JPA, and Spring Data JPA</h1>
-    <div class="subtitle docutils container">
-      <p><strong>Advanced Programming</strong></p>
-      <p>Liting Zhang</p>
-    </div>
-  </section>
-</section>
 
-<section>
   <section class="frame">
     <h2>Roadmap</h2>
-    <p>We already used JDBC, Repository, three-tier architecture, and Spring Core. Now we use JPA and Spring Data JPA for persistence.</p>
+    <p>We already used JDBC, Repository, three-tier architecture, and Spring Core. Now we move from manual JDBC mapping to JPA and Spring Data JPA.</p>
     <ul>
-      <li><p>Review why manual JDBC mapping becomes repetitive.</p></li>
-      <li><p>Define ORM, JPA, Hibernate, and Spring Data JPA.</p></li>
-      <li><p>Map a Java entity class to a database table.</p></li>
-      <li><p>Explain entity identity, persistence context, and transactions.</p></li>
-      <li><p>Replace manual Repository code with Spring Data JPA.</p></li>
-      <li><p>Add a Service layer for application operations.</p></li>
+      <li><p>From JDBC mapping to ORM</p></li>
+      <li><p>JPA and Hibernate</p></li>
+      <li><p>JPA entity mapping</p></li>
+      <li><p>Entity management and transactions</p></li>
+      <li><p>Spring Data JPA repositories</p></li>
+      <li><p>Service layer with JPA</p></li>
     </ul>
   </section>
-</section>
+
 
 <section>
   <section class="title-slide slide level1">
@@ -89,6 +77,7 @@
       <li><p>An application often needs to move data between these two models.</p></li>
       <li><p>Manual JDBC mapping makes that movement explicit.</p></li>
       <li><p>Mapping frameworks can reduce repeated object-row translation code.</p></li>
+    </ul>
   </section>
 
   <section class="frame">
@@ -99,33 +88,56 @@
       <li><p>An object maps to one row in that table.</p></li>
       <li><p>A field maps to a column.</p></li>
       <li><p>An object ID maps to a primary key.</p></li>
-      <li><p>The ORM provider handles much of the object-row translation.</p></li>
+      <li><p>A mapping tool handles much of the object-row translation.</p></li>
     </ul>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Java class   <->   database table
+Java object  <->   database row
+Java field   <->   database column</code></pre>
   </section>
 
   <section class="frame">
-    <h2>JPA, Hibernate, and Spring Data JPA</h2>
-    <p>These names are related, but they are not the same thing.</p>
+    <h2>ORM in Java: JPA and Hibernate</h2>
+    <p>ORM is the general idea. JPA and Hibernate are how Java applications commonly apply that idea.</p>
     <ul>
-      <li><p><strong>JPA:</strong> the Java/Jakarta standard API for object-relational mapping.</p></li>
-      <li><p><strong>Hibernate:</strong> a common implementation of JPA.</p></li>
-      <li><p><strong>Spring Data JPA:</strong> Spring repository support built on top of JPA.</p></li>
+      <li><p><strong>JPA (Jakarta Persistence API):</strong> the Java/Jakarta standard API and rules for persistence and object-relational mapping.</p></li>
+      <li><p><strong>Hibernate:</strong> a common JPA provider that performs the mapping and database operations.</p></li>
+      <li><p>Spring Data JPA will later build Repository support on top of JPA.</p></li>
     </ul>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JPA defines the mapping model.
-Hibernate performs the mapping work.
-Spring Data JPA reduces repository code.</code></pre>
-  </section>
 
-  <section class="frame">
-    <h2>Where This Fits in Three-Tier</h2>
-    <p>JPA and Spring Data JPA change the data tier. The rest of the application should stay separated from persistence details.</p>
-    <ul>
-      <li><p>The presentation tier should not know how data is stored.</p></li>
-      <li><p>The application tier should call persistence operations through a boundary.</p></li>
-      <li><p>The data tier maps entities and communicates with the database.</p></li>
-    </ul>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Presentation -> Application -> Repository -> JPA -> Database</code></pre>
   </section>
+<section class="frame">
+  <h2>Where This Fits in Three-Tier</h2>
+  <p>JPA changes the data tier. The rest of the application should stay separated from persistence details.</p>
+
+  <ul>
+    <li><p>The presentation tier should not know how data is stored.</p></li>
+    <li><p>The application tier should call persistence operations through a boundary.</p></li>
+    <li><p>The data tier contains the persistence boundary, the JPA layer, and the database connection path.</p></li>
+  </ul>
+
+  <div style="display:flex; gap:1em; align-items:stretch; margin-top:0.8em;">
+    <div style="flex:1; border:1px solid #999; padding:0.8em;">
+      <p><strong>Presentation Tier</strong></p>
+      <p>View / Controller</p>
+    </div>
+
+    <div style="flex:1; border:1px solid #999; padding:0.8em;">
+      <p><strong>Application Tier</strong></p>
+      <p>Service / application logic</p>
+    </div>
+
+    <div style="flex:1.4; border:1px solid #999; padding:0.8em;">
+      <p><strong>Data Tier</strong></p>
+      <div style="display:flex; gap:0.5em; align-items:center; justify-content:space-between;">
+        <div style="flex:1; border:1px solid #bbb; padding:0.5em; text-align:center;">Repository</div>
+        <div style="font-weight:bold;">→</div>
+        <div style="flex:1; border:1px solid #bbb; padding:0.5em; text-align:center;">JPA</div>
+        <div style="font-weight:bold;">→</div>
+        <div style="flex:1; border:1px solid #bbb; padding:0.5em; text-align:center;">Database</div>
+      </div>
+    </div>
+  </div>
+</section>
 </section>
 
 <section>
@@ -133,53 +145,42 @@ Spring Data JPA reduces repository code.</code></pre>
     <h1>Mapping a TaskItem Entity</h1>
   </section>
 
-  <section class="frame">
-    <h2>Entity, Table, Column, Row</h2>
-    <p>JPA uses the word <strong>entity</strong> for a Java object that can be stored in a database.</p>
-    <ul>
-      <li><p>An entity class maps to a table.</p></li>
-      <li><p>Each entity object maps to a row.</p></li>
-      <li><p>Each persistent field maps to a column.</p></li>
-      <li><p>Each entity has an identity value, usually mapped to a primary key.</p></li>
-    </ul>
-  </section>
+<section class="frame">
+  <h2>Entity Mapping: Object to Row</h2>
+  <p>In JPA, an <strong>entity</strong> is a Java object that can be stored and loaded through a database table.</p>
 
-  <section class="frame">
-    <h2>TaskItem as a JPA Entity</h2>
-    <p><code>TaskItem</code> is the persistent object that JPA stores and loads.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Entity
+  <div style="display:flex; gap:1em; align-items:flex-start;">
+    <div style="flex:1; min-width:0;">
+            <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Entity
 @Table(name = "task_items")
 public class TaskItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
     private boolean done;
 }</code></pre>
-    <ul>
-      <li><p><code class="inline-java">@Entity</code> marks this class as persistent.</p></li>
-      <li><p><code class="inline-java">@Table</code> connects the class to the <code>task_items</code> table.</p></li>
-      <li><p><code class="inline-java">@Id</code> identifies the primary-key field.</p></li>
-      <li><p><code class="inline-java">@GeneratedValue</code> marks the ID as generated when the entity is saved.</p></li>
-    </ul>
-  </section>
+
+
+    </div>
+
+    <div style="flex:1; min-width:0;">
+            <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskItem class  -> task_items table
+TaskItem object -> one table row
+title, done     -> table columns
+id              -> row identity</code></pre>
+    </div>
+  </div>
+        <ul>
+        <li><p><code class="inline-java">@Entity</code> marks this class as a JPA entity.</p></li>
+        <li><p><code class="inline-java">@Table</code> connects the class to the table.</p></li>
+        <li><p>The ID field identifies the row for one entity object.</p></li>
+      </ul>
+</section>
 
   <section class="frame">
-    <h2>JPA Entity Requirements</h2>
-    <p>A JPA entity has requirements that are different from a simple data record.</p>
-    <ul>
-      <li><p>The entity class needs a no-argument constructor.</p></li>
-      <li><p>The entity class should not be <code class="inline-java">final</code>.</p></li>
-      <li><p>Persistent fields should not be <code class="inline-java">final</code>.</p></li>
-      <li><p>JPA providers need to create and manage entity objects.</p></li>
-      <li><p>A Java <code class="inline-java">record</code> is not used as a JPA entity.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>Constructors</h2>
-    <p>JPA needs a no-argument constructor, while application code can use a clearer constructor.</p>
+    <h2>JPA Entity Class Requirements</h2>
+    <p>JPA must be able to create and manage entity objects when it loads database rows.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">protected TaskItem() {
     // Used by JPA
 }
@@ -189,15 +190,17 @@ public TaskItem(String title) {
     this.done = false;
 }</code></pre>
     <ul>
+      <li><p>The entity class needs a no-argument constructor.</p></li>
       <li><p>The no-argument constructor can be <code class="inline-java">protected</code>.</p></li>
-      <li><p>The application constructor expresses how a new task item is created.</p></li>
-      <li><p>JPA can still create entity objects when it loads rows.</p></li>
+      <li><p>The entity class should not be <code class="inline-java">final</code>.</p></li>
+      <li><p>Persistent fields should not be <code class="inline-java">final</code>.</p></li>
+      <li><p>A Java <code class="inline-java">record</code> is not used as a JPA entity.</p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Identity: <code class="inline-java">@Id</code> and <code class="inline-java">@GeneratedValue</code></h2>
-    <p>Each entity needs an identity value.</p>
+    <h2>Entity Identity: <code class="inline-java">@Id</code> and <code class="inline-java">@GeneratedValue</code></h2>
+    <p>Each entity needs an identity value that connects the Java object to one database row.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;</code></pre>
@@ -219,15 +222,15 @@ private String title;
 private boolean done;</code></pre>
     <ul>
       <li><p><code class="inline-java">@Column</code> customizes how a field maps to a column.</p></li>
-      <li><p><code class="inline-java">nullable = false</code> means the column should not accept null values.</p></li>
+      <li><p><code>nullable = false</code> means the column should not accept null values.</p></li>
       <li><p><code>length = 100</code> limits the text column size.</p></li>
       <li><p>The database still enforces constraints when data is written.</p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Entity Methods</h2>
-    <p>An entity can contain simple state-changing methods.</p>
+    <h2>Changing Entity State</h2>
+    <p>An entity can contain simple methods that protect or change its own state.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void setDone(boolean done) {
     this.done = done;
 }
@@ -243,17 +246,6 @@ public void rename(String title) {
       <li><p>Larger application operations still belong in the service layer.</p></li>
     </ul>
   </section>
-
-  <section class="frame">
-    <h2>What JPA Persists</h2>
-    <p>JPA persists entity objects, even when the application also uses collection objects.</p>
-    <ul>
-      <li><p><code>TaskItem</code> is an entity and maps to one row.</p></li>
-      <li><p><code>TaskList</code> is an application collection of task items.</p></li>
-      <li><p><code>TaskRepository</code> loads and saves <code>TaskItem</code> entities.</p></li>
-      <li><p><code>TaskList</code> does not become a database table simply because the application uses it.</p></li>
-    </ul>
-  </section>
 </section>
 
 <section>
@@ -262,33 +254,20 @@ public void rename(String title) {
   </section>
 
   <section class="frame">
-    <h2>JPA Works Through an Entity Manager</h2>
-    <p>The lower-level JPA API uses an <code>EntityManager</code> to work with entities.</p>
-    <ul>
-      <li><p><code>persist(...)</code> stores a new entity.</p></li>
-      <li><p><code>find(...)</code> loads an entity by its ID.</p></li>
-      <li><p><code>remove(...)</code> deletes an entity.</p></li>
-      <li><p>Queries can load entities that match a condition.</p></li>
-      <li><p>Spring Data JPA will hide much of this direct API.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>Basic Entity Operations</h2>
-    <p>JPA operations work with entity objects rather than raw rows.</p>
+    <h2><code>EntityManager</code></h2>
+    <p>The lower-level JPA API uses an <code>EntityManager</code> to store, load, update, and remove entities.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskItem item = new TaskItem("Review ORM");
-
 entityManager.persist(item);
 
 TaskItem saved = entityManager.find(TaskItem.class, item.getId());
-
 saved.setDone(true);     // JPA can track this change
 
 entityManager.remove(saved);</code></pre>
     <ul>
-      <li><p>The application works with <code>TaskItem</code> objects.</p></li>
-      <li><p>JPA translates object operations into database work.</p></li>
-      <li><p>Repository code can use JPA instead of manual JDBC mapping.</p></li>
+      <li><p><code>persist(...)</code> stores a new entity.</p></li>
+      <li><p><code>find(...)</code> loads an entity by its class and ID.</p></li>
+      <li><p>Managed entity changes can be tracked by JPA.</p></li>
+      <li><p><code>remove(...)</code> marks an entity for deletion.</p></li>
     </ul>
   </section>
 
@@ -330,7 +309,7 @@ item.setDone(true);</code></pre>
 
   <section class="frame">
     <h2>Transactions Still Matter</h2>
-    <p>ORM does not remove the need for transactions.</p>
+    <p>JPA does not remove the need for transactions.</p>
     <ul>
       <li><p>A transaction groups database work into one unit.</p></li>
       <li><p>Writes should happen inside a transaction.</p></li>

@@ -163,7 +163,7 @@
         <section class="frame">
           <h2>Visual model + invariants</h2>
           <img
-            src = "../_static/images/singly_linkedlist.png"
+            src = "../_static/images/cop3530/singly_linkedlist.png"
             alt = "A example singly linked list"
             style="display:block; margin: 0.6em auto; max-width: 30%; max-height: 30%; height:auto;"
           >
@@ -187,6 +187,34 @@
 };</code></pre>
 
       </section>
+      <section class="frame">
+  <h2>Linked List Class (typical)</h2>
+
+  <p>The <code class="inline">LinkedList</code> object represents the whole list.</p>
+
+  <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+       data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+class LinkedList {
+private:
+  Node&lt;T&gt;* head;
+  Node&lt;T&gt;* tail;
+
+public:
+  LinkedList() : head(nullptr), tail(nullptr) {}
+
+  void Append(Node&lt;T&gt;* newNode);
+  void Prepend(Node&lt;T&gt;* newNode);
+  Node&lt;T&gt;* Search(const T&amp; value);
+};</code></pre>
+
+  <ul>
+    <li><p><code class="inline">Node</code> represents one element in the list.</p></li>
+    <li><p><code class="inline">LinkedList</code> represents the whole list.</p></li>
+    <li><p><code class="inline">head</code> points to the first node; <code class="inline">tail</code> points to the last node.</p></li>
+    <li><p>List operations are methods of the <code class="inline">LinkedList</code> class.</p></li>
+  </ul>
+</section>
+
 
         <section class="frame">
           <h2>Append (add to end)</h2>
@@ -404,7 +432,7 @@ void TraverseRec(Node&lt;T&gt;* node) {
   <section class="frame">
     <h2>Visual model + invariants</h2>
     <img
-      src="../_static/images/doubly_linkedlist.png"
+      src="../_static/images/cop3530/doubly_linkedlist.png"
       alt="An example doubly linked list"
       style="display:block; margin: 0.6em 0; max-width: 38%; max-height: 38%; height:auto;"
     >
