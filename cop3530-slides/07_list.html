@@ -167,6 +167,7 @@
             alt = "A example singly linked list"
             style="display:block; margin: 0.6em auto; max-width: 30%; max-height: 30%; height:auto;"
           >
+          <ul>
             <li><p>Empty: <code class="inline">head == nullptr</code> and <code class="inline">tail == nullptr</code></p></li>
             <li><p>Non-empty: <code class="inline">tail-&gt;next == nullptr</code></p></li>
             <li><p>Traversal follows <code class="inline">next</code> pointers starting from <code class="inline">head</code></p></li>
@@ -218,9 +219,16 @@ public:
 
         <section class="frame">
           <h2>Append (add to end)</h2>
-          <p>Two cases: empty vs non-empty.</p>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <p>Append places a new node at the end of the list.</p>
+          <ul>
+            <li><p>Connect the old tail to the new node, then move <code class="inline">tail</code>.</p></li>
+            <li><p>For an empty list, both <code class="inline">head</code> and <code class="inline">tail</code> point to the new node.</p></li>
+          </ul>
+          <p class="small-note">O(1) with a tail pointer.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+            <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+     data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void Append(Node&lt;T&gt;* newNode) {
   if (newNode == nullptr) return;
 
@@ -238,15 +246,27 @@ void Append(Node&lt;T&gt;* newNode) {
   tail-&gt;next = newNode;
   tail = newNode;
 }</code></pre>
-
-          <p class="small-note">Append is O(1) only if you maintain <code class="inline">tail</code>.</p>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/append.svg"
+               alt="Append step by step: Case 1 empty list (head = newNode, tail = newNode); Case 2 non-empty list (tail-&gt;next = newNode, tail = newNode)"
+               style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
         </section>
 
         <section class="frame">
           <h2>Prepend (add to front)</h2>
-          <ul><li><p>Time complexity is O(1)</p></li></ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <p>Prepend places a new node before the first node.</p>
+          <ul>
+            <li><p>Point the new node to the old head, then move <code class="inline">head</code>.</p></li>
+            <li><p>If the list was empty, update <code class="inline">tail</code> too.</p></li>
+          </ul>
+          <p class="small-note">O(1): no traversal is needed.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+            <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+     data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void Prepend(Node&lt;T&gt;* newNode) {
   if (newNode == nullptr) return;
 
@@ -259,20 +279,27 @@ void Prepend(Node&lt;T&gt;* newNode) {
     tail = newNode;
   }
 }</code></pre>
-
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/prepend.svg"
+               alt="Prepend step by step: Case 1 empty list (newNode-&gt;next = head, head = newNode, tail = newNode); Case 2 non-empty list (newNode-&gt;next = head, head = newNode, tail unchanged)"
+               style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
         </section>
 
         <section class="frame">
           <h2>Search / Contains</h2>
+          <p>Search finds the first node containing the target value.</p>
           <ul>
-            <li><p>Searches for the first node containing a specific value.</p></li>
-            <li><p>Sequential traversal from head to tail.</p></li>
-            <li><p>Returns pointer to the node if found, else null.</p></li>
-            <li><p>Time complexity is O(n)</p></li>
+            <li><p>Start at <code class="inline">head</code>; compare each value and follow <code class="inline">next</code>.</p></li>
+            <li><p>Return the matching node, or <code class="inline">nullptr</code> if absent; Contains returns true or false.</p></li>
           </ul>
-          
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <p class="small-note">O(n) in the worst case; the list does not change.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+            <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 Node&lt;T&gt;* Search(const T&amp; target) const {
   Node&lt;T&gt;* current = head;
   while (current != nullptr) {
@@ -283,14 +310,35 @@ Node&lt;T&gt;* Search(const T&amp; target) const {
   }
   return nullptr;              // Not found
 }</code></pre>
-
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/search.svg"
+               alt="Search step by step: Case 1 empty list returns nullptr; Case 2 value found; Case 3 value not found, current reaches nullptr"
+               style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
         </section>
 
         <section class="frame">
           <h2>InsertAfter (given a node)</h2>
-          <p>Three cases: empty list, insert after tail and insert in middle.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+          <p>Insert a new node after a given node.</p>
+          <ul>
+            <li><p>Set <code class="inline">newNode-&gt;next</code> before changing the current link.</p></li>
+            <li><p>After the tail, move <code class="inline">tail</code> to the new node.</p></li>
+            <li><p>Empty list: make the new node both head and tail.</p></li>
+          </ul>
+          <p class="small-note">O(1) when the current node is already known.</p>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/insert_after.svg"
+               alt="Singly-linked InsertAfter step by step: Case 1 empty list; Case 2 insert after tail; Case 3 insert in the middle"
+               style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
           <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">
+               data-fontsize="small" data-tabsize="1"><code class="language-cpp">
 void InsertAfter(Node&lt;T&gt;* currentNode, Node&lt;T&gt;* newNode) {
   if (newNode == nullptr) return;
   // Make sure the node doesn't accidentally keep an old link.
@@ -317,12 +365,24 @@ void InsertAfter(Node&lt;T&gt;* currentNode, Node&lt;T&gt;* newNode) {
 
         <section class="frame">
           <h2>RemoveAfter</h2>
-          <p>
-            Convention used in many course implementations:
-            if <code class="inline">cur == nullptr</code>, remove the head.
-          </p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+          <p>Delete the node after a given node.</p>
+          <ul>
+            <li><p>Bypass the node, then delete it.</p></li>
+            <li><p>Removing the tail: move <code class="inline">tail</code> to the current node.</p></li>
+            <li><p>Null argument: remove head; if it was the only node, clear <code class="inline">tail</code>.</p></li>
+          </ul>
+          <p class="small-note">O(1); no successor means no removal.</p>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/remove_after.svg"
+               alt="RemoveAfter step by step: Case 1 remove head; Case 2 remove the only node; Case 3 remove a middle node; Case 4 remove the tail"
+               style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
           <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+     data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void RemoveAfter(Node&lt;T&gt;* curNode) {
   // Special case: remove head
   if (curNode == nullptr) {
@@ -348,15 +408,28 @@ void RemoveAfter(Node&lt;T&gt;* curNode) {
     delete removed;
   }
 }</code></pre>
-
-
         </section>
 
         <section class="frame">
           <h2>Remove(value)</h2>
-          <p>Track <code class="inline">prev</code> so you can reconnect around the removed node.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+          <p>Delete the first occurrence of a target value.</p>
+          <ul>
+            <li><p>Track the current node and its predecessor.</p></li>
+            <li><p>Use <code class="inline">RemoveAfter(prevNode)</code> to delete the match.</p></li>
+            <li><p>Return true if removed, false if absent.</p></li>
+          </ul>
+          <p class="small-note">O(n): searching requires traversal.</p>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/remove_value.svg"
+               alt="Remove(value) step by step: Case 1 value not found returns false; Case 2 value at head; Case 3 value after head, with curNode and prevNode tracking"
+               style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
           <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-     data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+     data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 bool RemoveValue(const T&amp; targetValue) {
   Node&lt;T&gt;* curNode = head;
   Node&lt;T&gt;* prevNode = nullptr;
@@ -379,13 +452,20 @@ bool RemoveValue(const T&amp; targetValue) {
   RemoveAfter(prevNode);
   return true;
 }</code></pre>
-
         </section>
 
         <section class="frame">
           <h2>Traversal (iterative)</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <p>Traversal visits every node in order without changing the list.</p>
+          <ul>
+            <li><p>Start at <code class="inline">head</code>, process the value, and follow <code class="inline">next</code>.</p></li>
+            <li><p>Stop at <code class="inline">nullptr</code>; an empty list produces no output.</p></li>
+          </ul>
+          <p class="small-note">O(n) time and O(1) extra space.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+            <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void Traverse(Node&lt;T&gt;* head) {
   Node&lt;T&gt;* cur = head;
   while (cur != nullptr) {
@@ -393,18 +473,39 @@ void Traverse(Node&lt;T&gt;* head) {
     cur = cur-&gt;next;
   }
 }</code></pre>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/traverse.svg"
+               alt="Iterative traversal step by step: Case 1 empty list prints nothing; Case 2 cur visits 99 then 71 then reaches nullptr"
+               style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
         </section>
 
         <section class="frame">
           <h2>Traversal (recursive)</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <p>Recursive traversal processes one node, then visits the rest of the list.</p>
+          <ul>
+            <li><p>Base case: a null node ends the recursion.</p></li>
+            <li><p>Print the current value before calling the function on <code class="inline">node-&gt;next</code>.</p></li>
+          </ul>
+          <p class="small-note">O(n) time and O(n) call-stack space.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+            <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+               data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void TraverseRec(Node&lt;T&gt;* node) {
   if (node == nullptr) return;
   std::cout &lt;&lt; node-&gt;data &lt;&lt; " ";
   TraverseRec(node-&gt;next);
 }</code></pre>
-          <p class="small-note">Still O(n); recursion uses the call stack.</p>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/traverse_recursive.svg"
+               alt="Recursive traversal step by step with the call stack: Case 1 empty list; Case 2 calls on 99, 71, nullptr, then the calls return"
+               style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
         </section>
       </section>
 
@@ -459,10 +560,25 @@ public:
   </section>
 
   <section class="frame">
-    <h2>InsertAfter (given a node)</h2>
-    <p>Three cases: empty list, insert after tail, insert in middle.</p>
-    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <h2>InsertAfter (given a node)</h2>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+          <p>Connect the new node in both directions.</p>
+          <ul>
+            <li><p>Point the new node to its predecessor and successor.</p></li>
+            <li><p>Update the neighbors: predecessor’s <code class="inline">next</code>, successor’s <code class="inline">prev</code>.</p></li>
+            <li><p>Empty list or insertion after tail: update head or tail too.</p></li>
+          </ul>
+          <p class="small-note">O(1) when the current node is already known.</p>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/dll_insert_after.svg"
+         alt="Doubly-linked InsertAfter step by step, including prev pointers: Case 1 empty list; Case 2 insert after tail; Case 3 insert in the middle"
+         style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void InsertAfter(DNode&lt;T&gt;* currentNode, DNode&lt;T&gt;* newNode) {
   if (newNode == nullptr) return;
 
@@ -497,13 +613,28 @@ void InsertAfter(DNode&lt;T&gt;* currentNode, DNode&lt;T&gt;* newNode) {
   currentNode-&gt;next = newNode;
   sucNode-&gt;prev = newNode;
 }</code></pre>
-  </section>
+        </section>
 
   <section class="frame">
-    <h2>RemoveNode (given a node)</h2>
-    <p>Handles: only node, remove head, remove tail, remove middle.</p>
-    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <h2>RemoveNode (given a node)</h2>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+          <p>Delete a known node from a doubly-linked list.</p>
+          <ul>
+            <li><p>Reconnect its neighbors before deleting it.</p></li>
+            <li><p>At head or tail, update the boundary and clear its outside link.</p></li>
+            <li><p>Only node: clear both <code class="inline">head</code> and <code class="inline">tail</code>.</p></li>
+          </ul>
+          <p class="small-note">O(1) when the target node is already known.</p>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/dll_remove_node.svg"
+         alt="Doubly-linked RemoveNode step by step: Case 1 only node; Case 2 remove head; Case 3 remove tail; Case 4 remove a middle node"
+         style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
+          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void RemoveNode(DNode&lt;T&gt;* target) {
   if (target == nullptr) return;
   if (head == nullptr) return;
@@ -543,12 +674,20 @@ void RemoveNode(DNode&lt;T&gt;* target) {
 
   delete target;
 }</code></pre>
-  </section>
+        </section>
 
   <section class="frame">
-    <h2>Traversal (forward)</h2>
-    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <h2>Traversal (forward)</h2>
+          <p>Forward traversal visits a doubly-linked list from first to last.</p>
+          <ul>
+            <li><p>Start at <code class="inline">head</code> and follow <code class="inline">next</code>.</p></li>
+            <li><p>Process each value; stop when the current pointer becomes null.</p></li>
+          </ul>
+          <p class="small-note">O(n) time and O(1) extra space.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+            <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void TraverseForward() const {
   DNode&lt;T&gt;* cur = head;
   while (cur != nullptr) {
@@ -556,12 +695,27 @@ void TraverseForward() const {
     cur = cur-&gt;next;
   }
 }</code></pre>
-  </section>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/dll_traverse_forward.svg"
+         alt="Doubly-linked forward traversal step by step: Case 1 empty list; Case 2 cur follows next from head to nullptr"
+         style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
+        </section>
 
   <section class="frame">
-    <h2>Traversal (backward)</h2>
-    <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-         data-fontsize="\small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
+          <h2>Traversal (backward)</h2>
+          <p>Backward traversal visits a doubly-linked list from last to first.</p>
+          <ul>
+            <li><p>Start at <code class="inline">tail</code> and follow <code class="inline">prev</code>.</p></li>
+            <li><p>Process each value; stop when the current pointer becomes null.</p></li>
+          </ul>
+          <p class="small-note">O(n) time and O(1) extra space.</p>
+          <div style="display:flex; gap:2%; align-items:flex-start;">
+          <div style="width:68%; min-width:0;">
+            <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
+         data-fontsize="small" data-tabsize="1"><code class="language-cpp">template &lt;typename T&gt;
 void TraverseBackward() const {
   DNode&lt;T&gt;* cur = tail;
   while (cur != nullptr) {
@@ -569,10 +723,14 @@ void TraverseBackward() const {
     cur = cur-&gt;prev;
   }
 }</code></pre>
-    <p class="small-note">
-      This is the main benefit: reverse traversal is O(n) without extra work.
-    </p>
-  </section>
+          </div>
+          <div style="width:30%; min-width:0;">
+            <img src="../_static/images/cop3530/list/dll_traverse_backward.svg"
+         alt="Doubly-linked backward traversal step by step: Case 1 empty list; Case 2 cur follows prev from tail to nullptr"
+         style="display:block; width:100%; height:auto; margin:0;">
+          </div>
+          </div>
+        </section>
 </section>
 
 
