@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<rect x="0" y="0" width="1920" height="1080" fill="#ffffff"/>
+<g transform="translate(331.9,0.0) scale(0.9375)">
+<rect x="20.0" y="20.0" width="510.0" height="1072.0" rx="14" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="40.0" y="52.0" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#111827">Case 1: Empty list</text>
+<text x="60.0" y="102.0" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#111827"><tspan font-weight="700">Step 0:</tspan><tspan font-family="Menlo, Consolas, 'Courier New', monospace" dx="10">cur = tail</tspan><tspan dx="10">(no output)</tspan></text>
+<g transform="translate(40.0,106.0)">
+<rect x="20.0" y="96.0" width="180.0" height="100.0" fill="#ffffff" stroke="#10293b" stroke-width="3"/>
+<text x="36.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">head: nullptr</text>
+<text x="36.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">tail: nullptr</text>
+<text x="320.0" y="146.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">nullptr</text>
+<text x="320.0" y="38.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">cur</text>
+<polyline points="320.0,56.0 320.0,112.0" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="320.0,128.0 312.0,112.0 328.0,112.0" fill="#e8730c"/>
+</g>
+<rect x="560.0" y="20.0" width="760.0" height="1072.0" rx="14" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="580.0" y="52.0" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#111827">Case 2: Non-empty list</text>
+<text x="600.0" y="102.0" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#111827"><tspan font-weight="700">Step 0:</tspan><tspan font-family="Menlo, Consolas, 'Courier New', monospace" dx="10">cur = tail</tspan><tspan dx="10">(prints 71)</tspan></text>
+<g transform="translate(580.0,106.0)">
+<rect x="20.0" y="96.0" width="180.0" height="100.0" fill="#ffffff" stroke="#10293b" stroke-width="3"/>
+<text x="36.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">head:</text>
+<text x="36.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">tail:</text>
+<rect x="270.0" y="96.0" width="180.0" height="134.0" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="286.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">data: 99</text>
+<text x="286.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">next:</text>
+<text x="286.0" y="198.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">prev: nullptr</text>
+<rect x="520.0" y="96.0" width="180.0" height="134.0" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="536.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">data: 71</text>
+<text x="536.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">next: nullptr</text>
+<text x="684.0" y="198.0" text-anchor="end" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">:prev</text>
+<polyline points="104.0,130.0 254.0,130.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="270.0,130.0 254.0,138.0 254.0,122.0" fill="#1f5f85"/>
+<polyline points="104.0,164.0 235.0,164.0 235.0,272.0 610.0,272.0 610.0,246.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="610.0,230.0 618.0,246.0 602.0,246.0" fill="#1f5f85"/>
+<polyline points="354.0,164.0 504.0,164.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="520.0,164.0 504.0,172.0 504.0,156.0" fill="#1f5f85"/>
+<polyline points="550.0,198.0 466.0,198.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="450.0,198.0 466.0,190.0 466.0,206.0" fill="#1f5f85"/>
+<text x="610.0" y="38.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">cur</text>
+<polyline points="610.0,56.0 610.0,80.0" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="610.0,96.0 602.0,80.0 618.0,80.0" fill="#e8730c"/>
+</g>
+<line x1="580.0" y1="408.0" x2="1300.0" y2="408.0" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 6"/>
+<text x="600.0" y="434.0" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#111827"><tspan font-weight="700">Step 1:</tspan><tspan font-family="Menlo, Consolas, 'Courier New', monospace" dx="10">cur = cur-&gt;prev</tspan><tspan dx="10">(prints 99; output: 71 99)</tspan></text>
+<g transform="translate(580.0,438.0)">
+<rect x="20.0" y="96.0" width="180.0" height="100.0" fill="#ffffff" stroke="#10293b" stroke-width="3"/>
+<text x="36.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">head:</text>
+<text x="36.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">tail:</text>
+<rect x="270.0" y="96.0" width="180.0" height="134.0" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="286.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">data: 99</text>
+<text x="286.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">next:</text>
+<text x="286.0" y="198.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">prev: nullptr</text>
+<rect x="520.0" y="96.0" width="180.0" height="134.0" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="536.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">data: 71</text>
+<text x="536.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">next: nullptr</text>
+<text x="684.0" y="198.0" text-anchor="end" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">:prev</text>
+<polyline points="104.0,130.0 254.0,130.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="270.0,130.0 254.0,138.0 254.0,122.0" fill="#1f5f85"/>
+<polyline points="104.0,164.0 235.0,164.0 235.0,272.0 610.0,272.0 610.0,246.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="610.0,230.0 618.0,246.0 602.0,246.0" fill="#1f5f85"/>
+<polyline points="354.0,164.0 504.0,164.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="520.0,164.0 504.0,172.0 504.0,156.0" fill="#1f5f85"/>
+<polyline points="550.0,198.0 466.0,198.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="450.0,198.0 466.0,190.0 466.0,206.0" fill="#1f5f85"/>
+<text x="360.0" y="38.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">cur</text>
+<polyline points="360.0,56.0 360.0,80.0" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="360.0,96.0 352.0,80.0 368.0,80.0" fill="#e8730c"/>
+</g>
+<line x1="580.0" y1="740.0" x2="1300.0" y2="740.0" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 6"/>
+<text x="600.0" y="766.0" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#111827"><tspan font-weight="700">Step 2:</tspan><tspan font-family="Menlo, Consolas, 'Courier New', monospace" dx="10">cur = cur-&gt;prev</tspan><tspan dx="10">(nullptr, loop ends)</tspan></text>
+<g transform="translate(580.0,770.0)">
+<rect x="20.0" y="96.0" width="180.0" height="100.0" fill="#ffffff" stroke="#10293b" stroke-width="3"/>
+<text x="36.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">head:</text>
+<text x="36.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">tail:</text>
+<rect x="270.0" y="96.0" width="180.0" height="134.0" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="286.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">data: 99</text>
+<text x="286.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">next:</text>
+<text x="286.0" y="198.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">prev: nullptr</text>
+<rect x="520.0" y="96.0" width="180.0" height="134.0" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="536.0" y="130.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">data: 71</text>
+<text x="536.0" y="164.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">next: nullptr</text>
+<text x="684.0" y="198.0" text-anchor="end" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">:prev</text>
+<polyline points="104.0,130.0 254.0,130.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="270.0,130.0 254.0,138.0 254.0,122.0" fill="#1f5f85"/>
+<polyline points="104.0,164.0 235.0,164.0 235.0,272.0 610.0,272.0 610.0,246.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="610.0,230.0 618.0,246.0 602.0,246.0" fill="#1f5f85"/>
+<polyline points="354.0,164.0 504.0,164.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="520.0,164.0 504.0,172.0 504.0,156.0" fill="#1f5f85"/>
+<polyline points="550.0,198.0 466.0,198.0" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="miter"/>
+<polygon points="450.0,198.0 466.0,190.0 466.0,206.0" fill="#1f5f85"/>
+<text x="20.0" y="56.0" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#e8730c"><tspan font-weight="700">cur</tspan> = nullptr</text>
+</g>
+<line x1="24.0" y1="1116.0" x2="64.0" y2="1116.0" stroke="#e8730c" stroke-width="4"/>
+<text x="76.0" y="1116.0" text-anchor="start" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#111827">Orange = where cur moves in this step</text>
+</g>
+</svg>
