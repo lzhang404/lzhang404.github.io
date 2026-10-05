@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-  <title>Three-Tier Architecture</title>
+  <title>Three-Tier Architecture — Revised</title>
 
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
@@ -265,6 +265,18 @@ assertEquals("Practice three-tier",
         model.getTasks().getFirst().title());</code></pre>
     <p>This checks the title rule and saved state without JavaFX or a database.</p>
     <p>Example: <code>three-tier/TaskModelTest.java</code></p>
+  </section>
+
+  <section class="frame">
+    <h2>Task List Demonstration</h2>
+    <p>In Eclipse, open <code>TaskThreeTierApp</code> and select <strong>Run As &gt; Java Application</strong>.</p>
+    <ol>
+      <li><p>Add a task and follow the calls through Controller, Model, and Repository.</p></li>
+      <li><p>Enter a blank title and identify where execution stops.</p></li>
+      <li><p>Restart the app to check that the saved task remains.</p></li>
+    </ol>
+    <p>Then open <code>TaskModelTest</code> and select <strong>Run As &gt; JUnit Test</strong>.</p>
+    <p>Example: <code>three-tier/TaskThreeTierApp.java</code></p>
   </section>
 </section>
 
