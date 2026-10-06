@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1260" viewBox="0 0 1600 1260" role="img" aria-labelledby="title desc">
+<title id="title">Array stack grows before inserting into a full array</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect width="1600" height="1260" fill="white"/>
+<text x="40" y="50" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Before push(13): the array is full</text>
+<text x="520.0" y="120" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="430" y="150" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="520.0" y="197" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<text x="700.0" y="120" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="610" y="150" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="700.0" y="197" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="40" y="310" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">capacity = 2     size = 2</text>
+<text x="700.0" y="380" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="700.0,355 700.0,245" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="700.0,245 707.0,259.0 693.0,259.0" fill="#1f5f85"/>
+<polyline points="30,400 1570,400" fill="none" stroke="#d8dfe5" stroke-width="4" stroke-linejoin="round"/>
+<text x="40" y="450" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">1. Allocate capacity 4 and copy active values</text>
+<text x="40" y="492" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">size stays 2 while capacity grows</text>
+<text x="520.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="430" y="550" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="520.0" y="597" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<text x="700.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="610" y="550" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="700.0" y="597" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="880.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="790" y="550" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="1060.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="970" y="550" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="40" y="710" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">capacity = 4     size = 2</text>
+<text x="700.0" y="780" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="700.0,755 700.0,645" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="700.0,645 707.0,659.0 693.0,659.0" fill="#1f5f85"/>
+<polyline points="30,800 1570,800" fill="none" stroke="#d8dfe5" stroke-width="4" stroke-linejoin="round"/>
+<text x="40" y="850" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">2. Store 13 and increase size</text>
+<text x="520.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="430" y="950" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="520.0" y="997" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<text x="700.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="610" y="950" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="700.0" y="997" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="880.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="790" y="950" width="180" height="95" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="880.0" y="997" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">13</text>
+<text x="1060.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="970" y="950" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="40" y="1110" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">capacity = 4     size = 3</text>
+<text x="880.0" y="1180" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="880.0,1155 880.0,1045" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="880.0,1045 887.0,1059.0 873.0,1059.0" fill="#e8730c"/>
+</svg>

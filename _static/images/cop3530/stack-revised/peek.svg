@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+<title id="title">Peek reads the top without removing it</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect width="1600" height="900" fill="white"/>
+<text x="50.0" y="70" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Before peek()</text>
+<rect x="115.0" y="650" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="265.0" y="708" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">mosquito</text>
+<rect x="115.0" y="525" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="265.0" y="583" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">fish</text>
+<text x="265.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="265.0,480 265.0,525" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="265.0,525 258.0,511.0 272.0,511.0" fill="#1f5f85"/>
+<text x="265.0" y="825" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">size = 2</text>
+<text x="800.0" y="70" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">peek() returns &quot;fish&quot;</text>
+<rect x="865.0" y="650" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1015.0" y="708" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">mosquito</text>
+<rect x="865.0" y="525" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1015.0" y="583" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">fish</text>
+<text x="1015.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="1015.0,480 1015.0,525" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="1015.0,525 1008.0,511.0 1022.0,511.0" fill="#1f5f85"/>
+<text x="1015.0" y="825" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">size = 2</text>
+</svg>

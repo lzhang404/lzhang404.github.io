@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="600" viewBox="0 0 1600 600" role="img" aria-labelledby="title desc">
+<title id="title">Deque supports operations at both ends</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect width="1600" height="600" fill="white"/>
+<text x="50" y="60" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Deque</text>
+<rect x="400" y="250" width="200" height="120" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="500" y="310" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<rect x="650" y="250" width="200" height="120" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="750" y="310" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">23</text>
+<rect x="900" y="250" width="200" height="120" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1000" y="310" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">34</text>
+<text x="190" y="160" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">push_front(x)</text>
+<text x="190" y="450" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">pop_front()</text>
+<polyline points="190,190 190,280 400,280" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="400,280 386.0,287.0 386.0,273.0" fill="#e8730c"/>
+<polyline points="400,340 190,340 190,410" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="190,410 183.0,396.0 197.0,396.0" fill="#1f5f85"/>
+<text x="1390" y="160" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">push_back(x)</text>
+<text x="1390" y="450" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">pop_back()</text>
+<polyline points="1390,190 1390,280 1100,280" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="1100,280 1114.0,273.0 1114.0,287.0" fill="#e8730c"/>
+<polyline points="1100,340 1390,340 1390,410" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="1390,410 1383.0,396.0 1397.0,396.0" fill="#1f5f85"/>
+<text x="500" y="215" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">front</text>
+<text x="1000" y="215" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">back</text>
+</svg>

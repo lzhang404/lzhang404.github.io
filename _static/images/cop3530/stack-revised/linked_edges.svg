@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1115" viewBox="0 0 1600 1115" role="img" aria-labelledby="title desc">
+<title id="title">Empty and one-node stack cases</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect width="1600" height="1115" fill="white"/>
+<text x="40" y="35" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">push(71) into an empty stack</text>
+<text x="40" y="77" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">The new node has next = nullptr</text>
+<rect x="340" y="130" width="160" height="110" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="354" y="160" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="354" y="200" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">size_: 1</text>
+<rect x="570" y="130" width="180" height="110" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<polyline points="570,182 750,182" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="584" y="158" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 71</text>
+<text x="584" y="212" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="440,160 570,158" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="570,158 556.1093360759868,165.21453087526268 555.893976945382,151.21618738594705" fill="#e8730c"/>
+<polyline points="30,345 1570,345" fill="none" stroke="#d8dfe5" stroke-width="4" stroke-linejoin="round"/>
+<text x="40" y="385" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">pop() removes the only node</text>
+<text x="40" y="427" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top becomes nullptr; size_ becomes 0</text>
+<rect x="340" y="480" width="160" height="110" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="354" y="510" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="354" y="550" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">size_: 0</text>
+<rect x="570" y="480" width="180" height="110" fill="#eef1f4" stroke="#10293b" stroke-width="3" stroke-dasharray="9 6"/>
+<polyline points="570,532 750,532" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="584" y="508" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#73899a" text-anchor="start" dominant-baseline="middle">val: 71</text>
+<text x="584" y="562" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="575,485 745,585" fill="none" stroke="#b42318" stroke-width="4" stroke-linejoin="round"/>
+<polyline points="745,485 575,585" fill="none" stroke="#b42318" stroke-width="4" stroke-linejoin="round"/>
+<text x="660" y="620" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#b42318" text-anchor="middle" dominant-baseline="middle">freed</text>
+<text x="416" y="510" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#e8730c" text-anchor="start" dominant-baseline="middle">nullptr</text>
+<polyline points="30,695 1570,695" fill="none" stroke="#d8dfe5" stroke-width="4" stroke-linejoin="round"/>
+<text x="40" y="735" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">pop() or peek() on an empty stack</text>
+<text x="40" y="777" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">The empty check throws before dereferencing top</text>
+<rect x="340" y="830" width="160" height="110" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="354" y="860" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="354" y="900" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">size_: 0</text>
+<text x="416" y="860" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">nullptr</text>
+</svg>

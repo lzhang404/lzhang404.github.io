@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1260" viewBox="0 0 1600 1260" role="img" aria-labelledby="title desc">
+<title id="title">Circular queue wraps without shifting</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect width="1600" height="1260" fill="white"/>
+<text x="40" y="50" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Before enqueue(4)</text>
+<text x="520.0" y="120" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="430" y="150" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="700.0" y="120" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="610" y="150" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="880.0" y="120" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="790" y="150" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="880.0" y="197" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<text x="1060.0" y="120" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="970" y="150" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1060.0" y="197" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<text x="1240.0" y="120" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<rect x="1150" y="150" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1240.0" y="197" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="1420.0" y="120" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">5</text>
+<rect x="1330" y="150" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="40" y="310" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">capacity = 6     size = 3</text>
+<text x="1240.0" y="380" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">rear</text>
+<polyline points="1240.0,355 1240.0,245" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="1240.0,245 1247.0,259.0 1233.0,259.0" fill="#1f5f85"/>
+<text x="934.0" y="85" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">front</text>
+<polyline points="934.0,108 934.0,150" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="934.0,150 927.0,136.0 941.0,136.0" fill="#1f5f85"/>
+<polyline points="30,400 1570,400" fill="none" stroke="#d8dfe5" stroke-width="4" stroke-linejoin="round"/>
+<text x="40" y="450" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Write at (front + size) % capacity = 5</text>
+<text x="520.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="430" y="550" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="700.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="610" y="550" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="880.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="790" y="550" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="880.0" y="597" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<text x="1060.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="970" y="550" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1060.0" y="597" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<text x="1240.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<rect x="1150" y="550" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1240.0" y="597" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="1420.0" y="520" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">5</text>
+<rect x="1330" y="550" width="180" height="95" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="1420.0" y="597" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<text x="40" y="710" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">capacity = 6     size = 4</text>
+<text x="1420.0" y="780" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">rear</text>
+<polyline points="1420.0,755 1420.0,645" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="1420.0,645 1427.0,659.0 1413.0,659.0" fill="#e8730c"/>
+<text x="934.0" y="485" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">front</text>
+<polyline points="934.0,508 934.0,550" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="934.0,550 927.0,536.0 941.0,536.0" fill="#1f5f85"/>
+<polyline points="30,800 1570,800" fill="none" stroke="#d8dfe5" stroke-width="4" stroke-linejoin="round"/>
+<text x="40" y="850" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">enqueue(5) wraps to index 0</text>
+<text x="520.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="430" y="950" width="180" height="95" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="520.0" y="997" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">5</text>
+<text x="700.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="610" y="950" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="880.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="790" y="950" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="880.0" y="997" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<text x="1060.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="970" y="950" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1060.0" y="997" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<text x="1240.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<rect x="1150" y="950" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1240.0" y="997" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="1420.0" y="920" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">5</text>
+<rect x="1330" y="950" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1420.0" y="997" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<text x="40" y="1110" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">capacity = 6     size = 5</text>
+<text x="520.0" y="1180" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">rear</text>
+<polyline points="520.0,1155 520.0,1045" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="520.0,1045 527.0,1059.0 513.0,1059.0" fill="#e8730c"/>
+<text x="934.0" y="885" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">front</text>
+<polyline points="934.0,908 934.0,950" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="934.0,950 927.0,936.0 941.0,936.0" fill="#1f5f85"/>
+</svg>

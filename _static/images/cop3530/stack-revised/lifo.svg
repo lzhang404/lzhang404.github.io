@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+<title id="title">Last in first out</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect width="1600" height="900" fill="white"/>
+<text x="50.0" y="70" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">push(&quot;mosquito&quot;)</text>
+<rect x="115.0" y="650" width="300" height="115" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="265.0" y="708" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">mosquito</text>
+<text x="265.0" y="580" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="265.0,605 265.0,650" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="265.0,650 258.0,636.0 272.0,636.0" fill="#e8730c"/>
+<text x="265.0" y="825" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">size = 1</text>
+<text x="550.0" y="70" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">push(&quot;fish&quot;)</text>
+<rect x="615.0" y="650" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="765.0" y="708" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">mosquito</text>
+<rect x="615.0" y="525" width="300" height="115" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="765.0" y="583" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">fish</text>
+<text x="765.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="765.0,480 765.0,525" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="765.0,525 758.0,511.0 772.0,511.0" fill="#e8730c"/>
+<text x="765.0" y="825" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">size = 2</text>
+<text x="1050.0" y="70" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">push(&quot;raccoon&quot;)</text>
+<rect x="1115.0" y="650" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1265.0" y="708" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">mosquito</text>
+<rect x="1115.0" y="525" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1265.0" y="583" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">fish</text>
+<rect x="1115.0" y="400" width="300" height="115" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="1265.0" y="458" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">raccoon</text>
+<text x="1265.0" y="330" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="1265.0,355 1265.0,400" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="1265.0,400 1258.0,386.0 1272.0,386.0" fill="#e8730c"/>
+<text x="1265.0" y="825" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">size = 3</text>
+</svg>
