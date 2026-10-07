@@ -295,7 +295,7 @@ TaskModel taskModel(TaskRepository repository) {
   <section class="frame">
     <h2>Complete Task List Configuration</h2>
     <p>The four bean methods describe the same object graph as the plain Java startup code.</p>
-    <pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java" style="max-height: none;">@Configuration
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java" style="max-height: none;">@Configuration
 public class AppConfig {
     @Bean
     TaskRepository taskRepository() { return new JdbcTaskRepository(...); }
@@ -481,14 +481,6 @@ public final class TaskModel {
     </ul>
   </section>
 
-  <section class="frame">
-    <h2>Spring with JavaFX</h2>
-    <p>A desktop JavaFX app can still use Spring for object wiring.</p>
-    <ul>
-      <li><p>JavaFX still owns the window, scene, and UI thread.</p></li>
-      <li><p>Spring can create Models, Repositories, Services, and Controllers.</p></li>
-    </ul>
-  </section>
 </section>
 
 
