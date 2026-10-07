@@ -446,7 +446,8 @@ spring.jpa.show-sql=true</code></pre>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX Controller → TaskModel → TaskService → TaskRepository
 Web Controller ───────────────→ TaskService → TaskRepository</code></pre>
     <ul>
-      <li><p><code>TaskModel</code> keeps the JavaFX-facing state: the list the View shows.</p></li>
+      <li><p><code>TaskModel</code> holds the current task list.</p></li>
+      <li><p>The Controller supplies that list to the View with <code>showTasks</code>.</p></li>
       <li><p><code>TaskService</code> owns task rules and transactions.</p></li>
       <li><p>Both belong to the application tier; the Service is not a new tier.</p></li>
     </ul>

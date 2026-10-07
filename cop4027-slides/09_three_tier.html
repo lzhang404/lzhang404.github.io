@@ -74,7 +74,7 @@ if (title.isBlank()) {
 // Inside the existing try block:
 repository.add(title);
 model.replaceTasks(repository.findAll());
-view.refresh();</code></pre>
+view.showTasks(model.getTasks());</code></pre>
     <p>Which lines handle the screen, and which perform the task operation?</p>
     <p>Example: <code>persistence-basics/repository/TaskController.java</code></p>
   </section>
@@ -128,7 +128,7 @@ view.refresh();</code></pre>
         <tr><td><strong>Save and reload</strong></td><td>Controller coordinates</td><td>Model coordinates</td></tr>
       </tbody>
     </table>
-    <p>The View still displays tasks. The JDBC implementation still owns SQL.</p>
+    <p>The Controller supplies task data to the View. The JDBC implementation still owns SQL.</p>
   </section>
 </section>
 
@@ -141,7 +141,7 @@ view.refresh();</code></pre>
     <pre data-fontsize="small" data-frame="leftline"><code class="language-java">public void addClicked() {
     try {
         model.addTask(view.getEnteredTitle());
-        view.refresh();
+        view.showTasks(model.getTasks());
         view.clearEnteredTitle();
         view.setStatus("Task saved");
     } catch (IllegalArgumentException
@@ -189,10 +189,10 @@ view.refresh();</code></pre>
 TaskRepository repository = new JdbcTaskRepository(config);
 
 TaskModel model = new TaskModel(repository);
-TaskView view = new TaskView(model);
+TaskView view = new TaskView();
 TaskController controller = new TaskController(model, view);
 controller.connectHandlers();</code></pre>
-    <p>The Model receives the Repository. The View and Controller share the same Model.</p>
+    <p>The Controller receives the Model and View. The Model receives the Repository. The View has no Model dependency.</p>
     <p>Example: <code>three-tier/TaskThreeTierApp.java</code></p>
   </section>
 </section>
@@ -229,15 +229,15 @@ private void reload() {
 
   <section class="frame">
     <h2>Refreshing the Screen</h2>
-    <p>After <code>model.addTask</code> returns successfully, the Controller refreshes the View.</p>
+    <p>After <code>model.addTask</code> returns successfully, the Controller passes the updated task list to the View.</p>
     <pre data-fontsize="small" data-frame="leftline"><code class="language-java">// TaskController
-view.refresh();
+view.showTasks(model.getTasks());
 
 // TaskView
-public void refresh() {
-    taskList.getItems().setAll(model.getTasks());
+public void showTasks(List&lt;TaskItem&gt; tasks) {
+    taskList.getItems().setAll(tasks);
 }</code></pre>
-    <p>The View reads the updated Model state. The Controller then clears the field and displays <code>Task saved</code>.</p>
+    <p>The View displays the supplied tasks. The Controller then clears the field and displays <code>Task saved</code>.</p>
     <p>Example: <code>three-tier/TaskView.java</code></p>
   </section>
 
@@ -298,7 +298,7 @@ assertEquals("Practice three-tier",
   <section class="frame">
     <h2>Key Takeaways</h2>
     <ul>
-      <li><p>The Controller handles user interaction and feedback.</p></li>
+      <li><p>The Controller handles user interaction and supplies display data to the View.</p></li>
       <li><p>The Model owns task rules and coordinates persistence.</p></li>
       <li><p>The Repository implementation owns JDBC and SQL.</p></li>
       <li><p>Moving the operation into the Model makes it available to other callers and direct tests.</p></li>

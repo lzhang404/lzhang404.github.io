@@ -796,7 +796,7 @@ Storage can change without rewriting the Controller.</code></pre>
 <li><p><strong>Repository:</strong> saves and loads domain objects.</p></li>
 <li><p><strong>Database:</strong> stores persistent data as rows.</p></li>
 </ul>
-<p>The Controller coordinates the Model and Repository. The View displays the Model, and the Repository communicates with the database.</p>
+<p>The Controller coordinates the Model and Repository and passes task data to the View. The Repository communicates with the database.</p>
 </section>
 
 <section class="frame">
@@ -808,7 +808,7 @@ Storage can change without rewriting the Controller.</code></pre>
             new JdbcTaskRepository(config);
 
     TaskModel model = new TaskModel(repository.findAll());
-    TaskView view = new TaskView(model);
+    TaskView view = new TaskView();
     TaskController controller =
             new TaskController(model, view, repository);
 
@@ -818,7 +818,7 @@ Storage can change without rewriting the Controller.</code></pre>
 }</code></pre>
 <ul>
 <li><p>The repository is created once and passed to the controller.</p></li>
-<li><p>The model starts with tasks loaded from persistent storage.</p></li>
+<li><p>The model starts with saved tasks; the controller supplies them to the view.</p></li>
 <li><p>The controller depends on the <code>TaskRepository</code> interface.</p></li>
 </ul>
 <p>Run: <code>repository/TaskRepositoryApp.java</code></p>
@@ -840,14 +840,14 @@ Storage can change without rewriting the Controller.</code></pre>
 
         repository.add(title);
         model.replaceTasks(repository.findAll());
-        view.refresh();
+        view.showTasks(model.getTasks());
         view.setStatus("Task saved");
     }
 }</code></pre>
 <ul>
 <li><p>The controller coordinates the event.</p></li>
 <li><p>The repository saves and loads persistent data.</p></li>
-<li><p>The model holds the current task list used by the view.</p></li>
+<li><p>The controller passes the Model's current task list to the View.</p></li>
 </ul>
 <p>Uses: <code>repository/TaskController.java</code></p>
 </section>

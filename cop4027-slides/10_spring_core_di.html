@@ -108,14 +108,16 @@
 
   <section class="frame">
     <h2>Task List Object Graph</h2>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController ──→ TaskModel ──→ TaskRepository ──→ H2
-     │                  │
-     └──→ TaskView  ←───┘</code></pre>
+    <p>Arrows show object references.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController → TaskModel → JdbcTaskRepository → DatabaseConfig
+       │
+       └──────→ TaskView</code></pre>
     <ul>
-      <li><p>The Controller handles user actions.</p></li>
-      <li><p>The Model handles task state and rules.</p></li>
-      <li><p>The Repository handles saved tasks.</p></li>
+      <li><p>The Controller receives the Model and View.</p></li>
+      <li><p>The Model receives a <code>TaskRepository</code>; here it uses JDBC.</p></li>
+      <li><p>The View displays task data supplied by the Controller.</p></li>
     </ul>
+    <p><strong>User actions:</strong> View → Controller → Model → Repository → H2.</p>
     <p><strong>Question:</strong> Who creates these objects and passes them to constructors?</p>
   </section>
 
@@ -190,13 +192,14 @@
 TaskRepository repository = new JdbcTaskRepository(config);
 
 TaskModel model = new TaskModel(repository);
-TaskView view = new TaskView(model);
+TaskView view = new TaskView();
 TaskController controller = new TaskController(model, view);</code></pre>
     <ul>
       <li><p>Startup code chooses the implementations.</p></li>
       <li><p>Constructors receive the dependencies.</p></li>
-      <li><p>Spring is not required for dependency injection.</p></li>
     </ul>
+    <p><strong>Quick check:</strong> Is this dependency injection even though Spring is not used?</p>
+    <p class="fragment"><strong>Answer:</strong> Yes. Startup code passes dependencies to constructors; Spring is not required.</p>
   </section>
 
   <section class="frame">
@@ -216,14 +219,12 @@ TaskController controller = new TaskController(model, view);</code></pre>
 
   <section class="frame">
     <h2>What Spring Adds</h2>
-    <p>Constructor injection moved object creation out of the classes and into startup code. Spring replaces that startup code.</p>
+    <p>Spring replaces manual startup wiring.</p>
     <ul>
-      <li><p>The application classes keep their ordinary constructors.</p></li>
-      <li><p>Spring reports missing or ambiguous dependencies at startup.</p></li>
-      <li><p>Component scanning removes hand-written wiring code.</p></li>
-      <li><p>Spring Data and Spring Web build on the same container. In the next lecture, Spring creates the JPA repository implementations.</p></li>
+      <li><p>Creates objects and supplies their dependencies.</p></li>
+      <li><p>Reports missing or ambiguous dependencies at startup.</p></li>
+      <li><p>Application classes keep their ordinary constructors.</p></li>
     </ul>
-    <p>In a four-class app the savings are small; the container matters more as the application grows.</p>
   </section>
 
   <section class="frame">
@@ -266,7 +267,7 @@ public class AppConfig {
 
   <section class="frame">
     <h2>First Bean</h2>
-    <p>A bean method is a factory: Spring calls it once and keeps the object it returns.</p>
+    <p>A bean method is a factory: By default, Spring creates one shared instance of the bean and keeps it in the application context..</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Bean
 TaskRepository taskRepository() throws IOException {
     DatabaseConfig config = DatabaseConfig.load("/database.properties");
@@ -294,19 +295,16 @@ TaskModel taskModel(TaskRepository repository) {
   <section class="frame">
     <h2>Complete Task List Configuration</h2>
     <p>The four bean methods describe the same object graph as the plain Java startup code.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Configuration
+    <pre data-fontsize="xsmall" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java" style="max-height: none;">@Configuration
 public class AppConfig {
     @Bean
     TaskRepository taskRepository() { return new JdbcTaskRepository(...); }
-
     @Bean
     TaskModel taskModel(TaskRepository repository) {
         return new TaskModel(repository);
     }
-
     @Bean
-    TaskView taskView(TaskModel model) { return new TaskView(model); }
-
+    TaskView taskView() { return new TaskView(); }
     @Bean
     TaskController taskController(TaskModel model, TaskView view) {
         return new TaskController(model, view);
@@ -327,16 +325,20 @@ public class AppConfig {
   </section>
 
   <section class="frame">
-    <h2>Getting an Object from the Context</h2>
-    <p>The main application no longer constructs the object graph itself; it starts the container and asks for the object it needs.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ApplicationContext context =
-        new AnnotationConfigApplicationContext(AppConfig.class);
+    <h2>Starting the Explicit Task App</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">context = new AnnotationConfigApplicationContext(AppConfig.class);
+TaskView view = context.getBean(TaskView.class);
+TaskController controller = context.getBean(TaskController.class);
+controller.connectHandlers();
 
-TaskController controller = context.getBean(TaskController.class);</code></pre>
+stage.setScene(new Scene(view, 960, 600));
+stage.show();</code></pre>
     <ul>
-      <li><p>Creating the context starts the container and runs the startup steps.</p></li>
-      <li><p>The returned <code>TaskController</code> already has its Model and View.</p></li>
+      <li><p>Spring creates and wires the beans; <code>getBean</code> retrieves them.</p></li>
+      <li><p>The Controller already holds this View and its Model.</p></li>
+      <li><p>The app calls <code>connectHandlers()</code> to display tasks and register button actions, then shows the View.</p></li>
     </ul>
+    <p>Example: <code>spring-core/explicit/ExplicitTaskApp.java</code></p>
   </section>
 </section>
 
@@ -385,7 +387,7 @@ TaskModel taskModel(@Qualifier("memoryRepository")
     return new TaskModel(repository);
 }</code></pre>
     <ul>
-      <li><p><code class="inline-java">@Primary</code>: the default for every <code>TaskRepository</code> parameter.</p></li>
+      <li><p><code class="inline-java">@Primary</code>: the preferred bean when multiple <code>TaskRepository </code>beans match.</p></li>
       <li><p><code class="inline-java">@Qualifier</code>: the exact bean for one parameter; it overrides the default.</p></li>
     </ul>
   </section>
