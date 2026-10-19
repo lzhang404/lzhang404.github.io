@@ -41,7 +41,7 @@
       <li><p>Turn <code>TaskItem</code> into a JPA entity.</p></li>
       <li><p>Explain managed entities and why transactions matter.</p></li>
       <li><p>Replace hand-written Repository code with Spring Data JPA.</p></li>
-      <li><p>Put task rules and transactions in a Service.</p></li>
+      <li><p>Put task operations and transactions in a Service.</p></li>
       <li><p>Test the persistence boundary and avoid common mistakes.</p></li>
     </ul>
   </section>
@@ -72,7 +72,7 @@
 
   <section class="frame">
     <h2>Objects and Tables Represent Data Differently</h2>
-    <p>Java keeps data in objects; a relational database keeps it in tables.</p>
+    <p>Java keeps data in objects where a relational database keeps it in tables.</p>
     <table class="compact">
       <thead><tr><th>Java</th><th>Relational database</th></tr></thead>
       <tbody>
@@ -97,7 +97,7 @@
         <tr><td><p>Spring Data JPA</p></td><td><p>Creates Repository code on top of JPA.</p></td></tr>
       </tbody>
     </table>
-    <p>We write code against JPA; Hibernate does the work underneath.</p>
+    <p>We write code against JPA. Hibernate does the work underneath.</p>
   </section>
 
   <section class="frame">
@@ -120,7 +120,7 @@ TaskController → TaskModel → TaskRepository → JPA → H2</code></pre>
 
   <section class="frame">
     <h2>Why Can't <code>TaskItem</code> Stay a Record?</h2>
-    <p>JPA creates entity objects itself and changes their fields later, so it needs an ordinary class.</p>
+    <p>The JDBC version used immutable task data. A JPA entity needs fields that JPA can populate and track.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Immutable task data
 public record TaskItem(long id, String title, boolean done) { }
 
@@ -128,8 +128,7 @@ public record TaskItem(long id, String title, boolean done) { }
 @Entity
 public class TaskItem { /* fields, constructors, methods */ }</code></pre>
     <ul>
-      <li><p>A <code class="inline-java">record</code> is <code class="inline-java">final</code>, and its fields cannot change.</p></li>
-      <li><p>An <strong>entity</strong> is a class whose objects JPA stores as table rows.</p></li>
+      <li><p>A record's fields cannot change, so we use an ordinary class for the entity.</p></li>
       <li><p>The name and meaning of <code>TaskItem</code> stay the same.</p></li>
     </ul>
   </section>
@@ -142,15 +141,15 @@ public class TaskItem { /* fields, constructors, methods */ }</code></pre>
 public class TaskItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    private Long id; //By default, each field maps to a column of the same name.
     private String title;
     private boolean done;
 }</code></pre>
     <ul>
       <li><p><code class="inline-java">@Entity</code> marks the class as an entity.</p></li>
       <li><p><code class="inline-java">@Table</code> names the table; without it, the name comes from the class.</p></li>
-      <li><p>By default, each field maps to a column of the same name.</p></li>
+      <li><p><code class="inline-java">@Id</code> marks the identity field</li>
+        <li><code class="inline-java">@GeneratedValue</code> With <code>GenerationType.IDENTITY</code>, the database generates the key when the row is inserted</li>
     </ul>
   </section>
 
@@ -169,27 +168,12 @@ public TaskItem(String title) {
       <li><p>The class and its persistent fields cannot be <code class="inline-java">final</code>.</p></li>
       <li><p>Application code creates new tasks with the title constructor.</p></li>
     </ul>
-    <p>Example: <code>jpa/TaskItem.java</code></p>
-  </section>
-
-  <section class="frame">
-    <h2>Identity Comes from the Database</h2>
-    <p>The <code>id</code> links an entity to its row, and the database chooses it when the row is inserted.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-private Long id;</code></pre>
-    <ul>
-      <li><p><code class="inline-java">@Id</code> marks the identity field.</p></li>
-      <li><p><code>GenerationType.IDENTITY</code> lets the database generate the key.</p></li>
-      <li><p>A new <code>TaskItem</code> has no <code>id</code> until it is saved.</p></li>
-    </ul>
-    <p><strong>Check:</strong> Why is the field <code>Long</code> rather than <code class="inline-java">long</code>?</p>
-    <p class="fragment"><strong>Answer:</strong> before saving, there is no <code>id</code> yet. <code>Long</code> can be <code class="inline-java">null</code>; <code class="inline-java">long</code> cannot.</p>
+    <p>Example: <code>jpa/task/TaskItem.java</code></p>
   </section>
 
   <section class="frame">
     <h2>Map a Column, Keep a Rule</h2>
-    <p>A column setting describes the database; an entity method protects the object.</p>
+    <p>A column setting describes the database. An entity method protects the object.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Column(nullable = false, length = 100)
 private String title;
 
@@ -212,38 +196,50 @@ public void rename(String title) {
     <h1>Managed Entities and Transactions</h1>
   </section>
 
+ 
+
   <section class="frame">
     <h2><code>EntityManager</code></h2>
     <p><code>EntityManager</code> is the JPA object that stores, loads, and removes entities.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskItem item = new TaskItem("Review ORM");
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">EntityTransaction transaction = entityManager.getTransaction();
+transaction.begin();
+TaskItem item = new TaskItem("Review ORM");
 entityManager.persist(item); // New → managed
 
 TaskItem found =
         entityManager.find(TaskItem.class, item.getId());
 
-entityManager.remove(found); // Mark for DELETE at flush</code></pre>
+entityManager.remove(found); // Mark for DELETE at flush
+transaction.commit(); // Finish this successful transaction.</code></pre>
     <ul>
-      <li><p>We call methods on objects; JPA writes the SQL.</p></li>
+      <li><p>We call methods on objects and JPA writes the SQL.</p></li>
       <li><p>Write operations must run inside a transaction.</p></li>
     </ul>
+    <aside class="notes">This example shows the successful path. If a write fails while the transaction is still active, the caller should roll it back. See the EntityTransaction API: https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/jakarta/persistence/EntityTransaction.html</aside>
   </section>
 
   <section class="frame">
-    <h2>The Persistence Context</h2>
-    <p>JPA keeps track of the entities it has loaded or stored. This set is the <strong>persistence context</strong>.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">database row  ↔  managed TaskItem object
-                        ↑
-                  EntityManager</code></pre>
-    <ul>
-      <li><p>An entity in the persistence context is <strong>managed</strong>.</p></li>
-      <li><p>Each managed object stands for one row.</p></li>
-      <li><p>JPA remembers each managed object's loaded values so it can spot changes.</p></li>
-    </ul>
-  </section>
+  <h2>How JPA Tracks Entity Objects</h2>
+  <p>The <strong>persistence context</strong> holds the entity objects JPA is currently tracking. These are called <strong>managed entities</strong>.</p>
+
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Database row              Managed Java object
+task_items: id = 1    ↔    TaskItem with id = 1
+task_items: id = 2    ↔    TaskItem with id = 2</code></pre>
+
+  <ul>
+    <li><p><code>EntityManager</code> manages these objects through the persistence context.</p></li>
+    <li><p>Each managed object represents one database row.</p></li>
+    <li><p>JPA remembers the object's loaded values so it can detect changes to its fields.</p></li>
+  </ul>
+</section>
 
   <section class="frame">
     <h2>Flush and Commit</h2>
-    <p>Inside a transaction, JPA detects changes to managed entities through <strong>dirty checking</strong>.</p>
+    <ul>
+      <li>A <strong>transaction</strong> groups database changes into one operation that succeeds or fails as a whole</li>
+      <li><p>Inside a transaction, JPA detects changes to managed entities through <strong>dirty checking</strong>.</p></li>
+    </ul>
+    
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// inside a transaction
 TaskItem item = entityManager.find(TaskItem.class, id);
 item.setDone(true);
@@ -251,9 +247,10 @@ entityManager.flush(); // Send UPDATE; still uncommitted</code></pre>
     <ul>
       <li><p><strong>Flush</strong> sends pending changes to the database within the transaction.</p></li>
       <li><p>JPA also flushes automatically before commit and may flush before a query.</p></li>
-      <li><p><strong>Commit</strong> makes changes permanent; rollback undoes them even after a flush.</p></li>
+      <li><p><strong>Commit:</strong> finishes the transaction and saves its database changes permanently.</p></li>
+<li><p><strong>Rollback:</strong> cancels the transaction and undoes its uncommitted database changes. This must happen before commit.</p></li>
     </ul>
-    <p>Example: <code>jpa/EntityManagerDemo.java</code></p>
+    <p>Example: <code>jpa/plain/EntityManagerDemo.java</code></p>
     <aside class="notes">Jakarta Persistence, synchronization to the database: https://jakarta.ee/specifications/persistence/3.2/jakarta-persistence-spec-3.2#_synchronization_to_the_database</aside>
   </section>
 
@@ -287,8 +284,8 @@ public void add(String title) { // Caller starts the transaction.
     <ul>
       <li><p>No <code>ResultSet</code> or manual row mapping.</p></li>
     </ul>
-    <p>Example: <code>jpa/JpaTaskRepository.java</code></p>
-    <p>Example: <code>jpa/EntityManagerRepositoryDemo.java</code></p>
+    <p>Example: <code>jpa/plain/JpaTaskRepository.java</code></p>
+    <p>Example: <code>jpa/plain/EntityManagerRepositoryDemo.java</code></p>
   </section>
 
   <section class="frame">
@@ -306,20 +303,11 @@ public void add(String title) { // Caller starts the transaction.
     <ol>
       <li><p><code class="inline-java">@Entity</code>.</p></li>
       <li><p>JPA calls it to create the object when it loads a row.</p></li>
-      <li><p>No. Only managed entities are tracked; new and detached objects are not.</p></li>
+      <li><p>No. Only managed entities are tracked. new and detached objects are not.</p></li>
       <li><p>The database work of one operation: it all commits, or it all rolls back.</p></li>
     </ol>
   </section>
 
-  <section class="frame">
-    <h2>Takeaways: Entities and Transactions</h2>
-    <ul>
-      <li><p>ORM maps Java objects to table rows. JPA is the Java standard, and Hibernate implements it.</p></li>
-      <li><p><code>TaskItem</code> becomes an entity class with <code class="inline-java">@Entity</code>, an <code class="inline-java">@Id</code>, and a no-argument constructor.</p></li>
-      <li><p>Managed entities are tracked in the persistence context.</p></li>
-      <li><p>Flush writes managed changes to the database; commit makes them permanent.</p></li>
-    </ul>
-  </section>
 </section>
 
 <section>
@@ -330,17 +318,18 @@ public void add(String title) { // Caller starts the transaction.
   <section class="frame">
     <h2>Spring Boot Starts the Context</h2>
     <p>Spring Boot starts the application context and configures JPA automatically.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@SpringBootApplication
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@SpringBootApplication(scanBasePackages = "jpa")
+@EntityScan("jpa.task")
 public class TaskApp { /* JavaFX launcher */ }
 
 // In TaskListApp.init(), before the View opens:
 context = SpringApplication.run(TaskApp.class);</code></pre>
     <ul>
-      <li><p><code class="inline-java">@SpringBootApplication</code> turns on component scanning and auto-configuration.</p></li>
+      <li><p><code class="inline-java">@SpringBootApplication</code> scans our packages and enables auto-configuration. <code class="inline-java">@EntityScan</code> locates <code>TaskItem</code>.</p></li>
       <li><p>The <code>spring-boot-starter-data-jpa</code> dependency brings Spring Data JPA and Hibernate.</p></li>
       <li><p>Auto-configuration creates the database, JPA, and transaction beans for us.</p></li>
     </ul>
-    <p>Example: <code>jpa/TaskListApp.java</code></p>
+    <p>Example: <code>jpa/task/TaskListApp.java</code></p>
     <aside class="notes">TaskListApp starts Spring in init, creates the View and Controller on the JavaFX thread in start, and closes Spring in stop. RepositoryDemo uses the same Boot configuration without opening a window.</aside>
   </section>
 
@@ -355,7 +344,7 @@ spring.datasource.password=
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true</code></pre>
     <ul>
-      <li><p>The datasource lines say which database to use; H2 runs inside the app.</p></li>
+      <li><p>The datasource lines say which database to use and H2 runs inside the app.</p></li>
       <li><p><code>ddl-auto=update</code> lets Hibernate create and update tables during development.</p></li>
       <li><p><code>show-sql=true</code> prints the SQL that Hibernate generates.</p></li>
     </ul>
@@ -369,7 +358,7 @@ spring.jpa.show-sql=true</code></pre>
         extends JpaRepository&lt;TaskItem, Long&gt; { // Entity, id type
 }</code></pre>
     <ul>
-      <li><p><code>TaskItem</code> is the entity type; <code>Long</code> is its <code>id</code> type.</p></li>
+      <li><p><code>TaskItem</code> is the entity type. <code>Long</code> is its <code>id</code> type.</p></li>
       <li><p>Spring creates the implementation when the application starts.</p></li>
       <li><p>Hibernate still does the actual database work.</p></li>
     </ul>
@@ -391,18 +380,6 @@ spring.jpa.show-sql=true</code></pre>
   </section>
 
   <section class="frame">
-    <h2>Read One Task Item</h2>
-    <p><code>findById</code> returns an <code>Optional</code> because the <code>id</code> might not exist.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskItem item = repository.findById(id)
-        .orElseThrow(() -&gt;
-                new IllegalArgumentException("Task item not found"));</code></pre>
-    <ul>
-      <li><p>The Repository performs the lookup.</p></li>
-      <li><p>Application code decides what a missing task means.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
     <h2>Queries from Method Names</h2>
     <p>Spring Data reads a method's name and builds the query from it.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository
@@ -417,12 +394,12 @@ spring.jpa.show-sql=true</code></pre>
       <li><p><code>findByTitleContainingIgnoreCase("jpa")</code> searches titles.</p></li>
       <li><p>If a name gets too long, write the query with <code class="inline-java">@Query</code> instead.</p></li>
     </ul>
-    <p>Example: <code>jpa/TaskRepository.java</code></p>
+    <p>Example: <code>jpa/springdata/TaskRepository.java</code></p>
   </section>
 
   <section class="frame">
     <h2>Three Ways to Write the Repository</h2>
-    <p>The Repository boundary stays; the code we write inside it shrinks.</p>
+    <p>The Repository boundary stays but the code we write inside it shrinks.</p>
     <table class="compact">
       <thead><tr><th>Approach</th><th>We write</th><th>The library does</th></tr></thead>
       <tbody>
@@ -442,13 +419,12 @@ spring.jpa.show-sql=true</code></pre>
 
   <section class="frame">
     <h2>Where Do Task Operations Go?</h2>
-    <p><code>TaskService</code> groups reusable task rules and transactions for desktop and web applications.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX Controller → TaskModel → TaskService → TaskRepository
-Web Controller ───────────────→ TaskService → TaskRepository</code></pre>
+    <p><code>TaskService</code> groups task operations into transactions.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController → TaskModel → TaskService → TaskRepository</code></pre>
     <ul>
       <li><p><code>TaskModel</code> holds the current task list.</p></li>
       <li><p>The Controller supplies that list to the View with <code>showTasks</code>.</p></li>
-      <li><p><code>TaskService</code> owns task rules and transactions.</p></li>
+      <li><p><code>TaskService</code> coordinates task operations and transactions.</p></li>
       <li><p>Both belong to the application tier; the Service is not a new tier.</p></li>
     </ul>
   </section>
@@ -474,20 +450,19 @@ public class TaskService {
 
   <section class="frame">
     <h2>Add a Task Item</h2>
-    <p>The Service checks the task rule, then asks the Repository to save.</p>
+    <p>The Service creates a valid <code>TaskItem</code>, then asks the Repository to save it.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Transactional // Call through Spring's Service proxy.
 public TaskItem addTaskItem(String title) {
-    if (title == null || title.isBlank()) {
-        throw new IllegalArgumentException("Title required");
-    }
+    TaskItem item = new TaskItem(title); // Constructor calls rename.
     // save() inserts this new entity and assigns its id.
-    return repository.save(new TaskItem(title.trim()));
+    return repository.save(item);
 }</code></pre>
     <ul>
-      <li><p>A call through Spring's Service proxy runs this method in one transaction.</p></li>
+      <li><p><code class="inline-java">@Transactional</code> lets Spring start or join the transaction when a call enters through the Service proxy.</p></li>
+      <li><p><code>TaskItem.rename</code> rejects blank titles and trims the text.</p></li>
       <li><p>The returned <code>TaskItem</code> now has a database-generated <code>id</code>.</p></li>
     </ul>
-    <p>Example: <code>jpa/TaskService.java</code></p>
+    <p>Example: <code>jpa/springdata/TaskService.java</code></p>
   </section>
 
   <section class="frame">
@@ -501,10 +476,11 @@ public void setDone(Long id, boolean done) {
     item.setDone(done); // Managed: no save() needed.
 }</code></pre>
     <ul>
+      <li><p><code>findById</code> returns an <code>Optional</code>. The Service uses <code>orElseThrow</code> when the task is missing.</p></li>
       <li><p><code>findById</code> returns a managed entity.</p></li>
       <li><p>JPA writes the <code>UPDATE</code> during flush; commit makes the change permanent.</p></li>
     </ul>
-    <p>Example: <code>jpa/RepositoryDemo.java</code></p>
+    <p>Example: <code>jpa/springdata/RepositoryDemo.java</code></p>
   </section>
 
   <section class="frame">
@@ -545,10 +521,10 @@ private void reload() {
     tasks = List.copyOf(service.findAllTaskItems());
 }</code></pre>
     <ul>
-      <li><p>The title rule now lives in the Service, not in <code>TaskModel</code>.</p></li>
+      <li><p><code>TaskModel</code> delegates the operation. The Service creates the entity, which validates its title.</p></li>
       <li><p><code>TaskController</code> still talks only to <code>TaskModel</code>.</p></li>
     </ul>
-    <p>Example: <code>jpa/TaskModel.java</code></p>
+    <p>Example: <code>jpa/task/TaskModel.java</code></p>
   </section>
 
   <section class="frame">
@@ -566,12 +542,12 @@ private void reload() {
   <section class="frame">
     <h2>Trace: Answers</h2>
     <ol>
-      <li><p><code>TaskService</code>, in <code>addTaskItem</code>.</p></li>
+      <li><p><code>TaskItem.rename</code>, called by the constructor inside <code>TaskService.addTaskItem</code>.</p></li>
       <li><p>Spring, because <code>addTaskItem</code> is <code class="inline-java">@Transactional</code>.</p></li>
       <li><p><code>TaskService</code> calls <code>repository.save(...)</code>.</p></li>
       <li><p>Hibernate, working through JPA, writes the <code>INSERT</code> into H2.</p></li>
     </ol>
-    <p>Example: <code>jpa/TaskApp.java</code></p>
+    <p>Example: <code>jpa/springdata/TaskApp.java</code></p>
     <p>Add a task, mark it done, then close and rerun to check persistence.</p>
   </section>
 </section>
@@ -595,7 +571,7 @@ class TaskRepositoryTest {
       <li><p>Each test runs in a transaction that rolls back afterward.</p></li>
     </ul>
     <p>Service tests check task rules and transaction boundaries.</p>
-    <p>Example: <code>jpa/TaskServiceTest.java</code></p>
+    <p>Example: <code>jpa/springdata/TaskServiceTest.java</code></p>
   </section>
 
   <section class="frame">
@@ -614,7 +590,7 @@ void savesAndFindsTaskItem() {
       <li><p><code>flush()</code> sends pending SQL; it does not commit the test transaction.</p></li>
       <li><p><code>clear()</code> detaches managed entities, so the lookup cannot reuse <code>saved</code>.</p></li>
     </ul>
-    <p>Example: <code>jpa/TaskRepositoryTest.java</code></p>
+    <p>Example: <code>jpa/springdata/TaskRepositoryTest.java</code></p>
     <aside class="notes">Flush and clear prevent the test from checking only an entity already in the persistence context. Spring ORM testing guidance: https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/tx.html#testcontext-tx</aside>
   </section>
 
@@ -644,7 +620,7 @@ void savesAndFindsTaskItem() {
       <li><p>An entity needs <code class="inline-java">@Entity</code>, an <code class="inline-java">@Id</code>, and a no-argument constructor.</p></li>
       <li><p>Managed changes are written during flush; commit makes them permanent.</p></li>
       <li><p>Spring Data JPA creates Repository implementations from interfaces.</p></li>
-      <li><p><code>TaskService</code> owns task rules and transaction boundaries.</p></li>
+      <li><p><code>TaskItem</code> validates its title. <code>TaskService</code> coordinates task operations and transaction boundaries.</p></li>
     </ul>
   </section>
 

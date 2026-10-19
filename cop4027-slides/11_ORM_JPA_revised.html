@@ -11,6 +11,14 @@
   <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
   <script src="../_static/design-tabs.js?v=20260921a"></script>
+  <style>
+    .reveal .entity-map-table th:first-child,
+    .reveal .entity-map-table td:first-child {
+      white-space: nowrap;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+  </style>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -41,7 +49,7 @@
       <li><p>Turn <code>TaskItem</code> into a JPA entity.</p></li>
       <li><p>Explain managed entities and why transactions matter.</p></li>
       <li><p>Replace hand-written Repository code with Spring Data JPA.</p></li>
-      <li><p>Put task rules and transactions in a Service.</p></li>
+      <li><p>Put task operations and transactions in a Service.</p></li>
       <li><p>Test the persistence boundary and avoid common mistakes.</p></li>
     </ul>
   </section>
@@ -120,7 +128,7 @@ TaskController → TaskModel → TaskRepository → JPA → H2</code></pre>
 
   <section class="frame">
     <h2>Why Can't <code>TaskItem</code> Stay a Record?</h2>
-    <p>JPA creates entity objects itself and changes their fields later, so it needs an ordinary class.</p>
+    <p>The JDBC version used immutable task data. A JPA entity needs fields that JPA can populate and track.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Immutable task data
 public record TaskItem(long id, String title, boolean done) { }
 
@@ -128,8 +136,7 @@ public record TaskItem(long id, String title, boolean done) { }
 @Entity
 public class TaskItem { /* fields, constructors, methods */ }</code></pre>
     <ul>
-      <li><p>A <code class="inline-java">record</code> is <code class="inline-java">final</code>, and its fields cannot change.</p></li>
-      <li><p>An <strong>entity</strong> is a class whose objects JPA stores as table rows.</p></li>
+      <li><p>A record's fields cannot change, so we use an ordinary class for the entity.</p></li>
       <li><p>The name and meaning of <code>TaskItem</code> stay the same.</p></li>
     </ul>
   </section>
@@ -137,21 +144,33 @@ public class TaskItem { /* fields, constructors, methods */ }</code></pre>
   <section class="frame">
     <h2>Map the Entity</h2>
     <p>Annotations tell JPA which table the class uses and which field is its identity.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Entity // Objects map to rows.
-@Table(name = "task_items") // Database table name.
+    <div style="display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 32px; align-items: start;">
+      <div>
+        <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Entity
+@Table(name = "task_items")
 public class TaskItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy =
+        GenerationType.IDENTITY)
     private Long id;
 
     private String title;
     private boolean done;
 }</code></pre>
-    <ul>
-      <li><p><code class="inline-java">@Entity</code> marks the class as an entity.</p></li>
-      <li><p><code class="inline-java">@Table</code> names the table; without it, the name comes from the class.</p></li>
-      <li><p>By default, each field maps to a column of the same name.</p></li>
-    </ul>
+      </div>
+      <table class="compact entity-map-table" style="margin: 12px 0;">
+        <thead><tr><th>Annotation</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline-java">@Entity</code></td><td>Marks the class as an entity.</td></tr>
+          <tr><td><code class="inline-java">@Table</code></td><td>Names the table; without it, the name comes from the class.</td></tr>
+          <tr><td><code class="inline-java">@Id</code></td><td>Marks the primary key field. The <code>id</code> links the entity to its row.</td></tr>
+          <tr><td><code class="inline-java">@GeneratedValue</code></td><td>With <code>GenerationType.IDENTITY</code>, the database generates the key when the row is inserted.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>By default, each field maps to a column of the same name.</p>
+    <p><strong>Check:</strong> A new task has no <code>id</code> until saved. Why use <code>Long</code> rather than <code class="inline-java">long</code>?</p>
+    <p class="fragment"><strong>Answer:</strong> Before saving, <code>Long</code> can be <code class="inline-java">null</code>; <code class="inline-java">long</code> cannot.</p>
   </section>
 
   <section class="frame">
@@ -170,21 +189,6 @@ public TaskItem(String title) {
       <li><p>Application code creates new tasks with the title constructor.</p></li>
     </ul>
     <p>Example: <code>jpa/TaskItem.java</code></p>
-  </section>
-
-  <section class="frame">
-    <h2>Identity Comes from the Database</h2>
-    <p>The <code>id</code> links an entity to its row, and the database chooses it when the row is inserted.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-private Long id;</code></pre>
-    <ul>
-      <li><p><code class="inline-java">@Id</code> marks the identity field.</p></li>
-      <li><p><code>GenerationType.IDENTITY</code> lets the database generate the key.</p></li>
-      <li><p>A new <code>TaskItem</code> has no <code>id</code> until it is saved.</p></li>
-    </ul>
-    <p><strong>Check:</strong> Why is the field <code>Long</code> rather than <code class="inline-java">long</code>?</p>
-    <p class="fragment"><strong>Answer:</strong> before saving, there is no <code>id</code> yet. <code>Long</code> can be <code class="inline-java">null</code>; <code class="inline-java">long</code> cannot.</p>
   </section>
 
   <section class="frame">
@@ -312,12 +316,11 @@ public void add(String title) { // Caller starts the transaction.
   </section>
 
   <section class="frame">
-    <h2>Takeaways: Entities and Transactions</h2>
+    <h2>Before Spring Data JPA</h2>
+    <p>Our JPA Repository still contains code for each operation.</p>
     <ul>
-      <li><p>ORM maps Java objects to table rows. JPA is the Java standard, and Hibernate implements it.</p></li>
-      <li><p><code>TaskItem</code> becomes an entity class with <code class="inline-java">@Entity</code>, an <code class="inline-java">@Id</code>, and a no-argument constructor.</p></li>
-      <li><p>Managed entities are tracked in the persistence context.</p></li>
-      <li><p>Flush writes managed changes to the database; commit makes them permanent.</p></li>
+      <li><p>We wrote JPQL and called <code>EntityManager</code> methods ourselves.</p></li>
+      <li><p>The next step is to declare a Repository interface and let Spring create its implementation.</p></li>
     </ul>
   </section>
 </section>
@@ -391,18 +394,6 @@ spring.jpa.show-sql=true</code></pre>
   </section>
 
   <section class="frame">
-    <h2>Read One Task Item</h2>
-    <p><code>findById</code> returns an <code>Optional</code> because the <code>id</code> might not exist.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">TaskItem item = repository.findById(id)
-        .orElseThrow(() -&gt;
-                new IllegalArgumentException("Task item not found"));</code></pre>
-    <ul>
-      <li><p>The Repository performs the lookup.</p></li>
-      <li><p>Application code decides what a missing task means.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
     <h2>Queries from Method Names</h2>
     <p>Spring Data reads a method's name and builds the query from it.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public interface TaskRepository
@@ -442,13 +433,12 @@ spring.jpa.show-sql=true</code></pre>
 
   <section class="frame">
     <h2>Where Do Task Operations Go?</h2>
-    <p><code>TaskService</code> groups reusable task rules and transactions for desktop and web applications.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX Controller → TaskModel → TaskService → TaskRepository
-Web Controller ───────────────→ TaskService → TaskRepository</code></pre>
+    <p><code>TaskService</code> groups task operations into transactions.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController → TaskModel → TaskService → TaskRepository</code></pre>
     <ul>
       <li><p><code>TaskModel</code> holds the current task list.</p></li>
       <li><p>The Controller supplies that list to the View with <code>showTasks</code>.</p></li>
-      <li><p><code>TaskService</code> owns task rules and transactions.</p></li>
+      <li><p><code>TaskService</code> coordinates task operations and transactions.</p></li>
       <li><p>Both belong to the application tier; the Service is not a new tier.</p></li>
     </ul>
   </section>
@@ -474,17 +464,16 @@ public class TaskService {
 
   <section class="frame">
     <h2>Add a Task Item</h2>
-    <p>The Service checks the task rule, then asks the Repository to save.</p>
+    <p>The Service creates a valid <code>TaskItem</code>, then asks the Repository to save it.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Transactional // Call through Spring's Service proxy.
 public TaskItem addTaskItem(String title) {
-    if (title == null || title.isBlank()) {
-        throw new IllegalArgumentException("Title required");
-    }
+    TaskItem item = new TaskItem(title); // Constructor calls rename.
     // save() inserts this new entity and assigns its id.
-    return repository.save(new TaskItem(title.trim()));
+    return repository.save(item);
 }</code></pre>
     <ul>
       <li><p>A call through Spring's Service proxy runs this method in one transaction.</p></li>
+      <li><p><code>TaskItem.rename</code> rejects blank titles and trims the text.</p></li>
       <li><p>The returned <code>TaskItem</code> now has a database-generated <code>id</code>.</p></li>
     </ul>
     <p>Example: <code>jpa/TaskService.java</code></p>
@@ -501,6 +490,7 @@ public void setDone(Long id, boolean done) {
     item.setDone(done); // Managed: no save() needed.
 }</code></pre>
     <ul>
+      <li><p><code>findById</code> returns an <code>Optional</code>. The Service uses <code>orElseThrow</code> when the task is missing.</p></li>
       <li><p><code>findById</code> returns a managed entity.</p></li>
       <li><p>JPA writes the <code>UPDATE</code> during flush; commit makes the change permanent.</p></li>
     </ul>
@@ -545,7 +535,7 @@ private void reload() {
     tasks = List.copyOf(service.findAllTaskItems());
 }</code></pre>
     <ul>
-      <li><p>The title rule now lives in the Service, not in <code>TaskModel</code>.</p></li>
+      <li><p><code>TaskModel</code> delegates the operation. The Service creates the entity, which validates its title.</p></li>
       <li><p><code>TaskController</code> still talks only to <code>TaskModel</code>.</p></li>
     </ul>
     <p>Example: <code>jpa/TaskModel.java</code></p>
@@ -566,7 +556,7 @@ private void reload() {
   <section class="frame">
     <h2>Trace: Answers</h2>
     <ol>
-      <li><p><code>TaskService</code>, in <code>addTaskItem</code>.</p></li>
+      <li><p><code>TaskItem.rename</code>, called by the constructor inside <code>TaskService.addTaskItem</code>.</p></li>
       <li><p>Spring, because <code>addTaskItem</code> is <code class="inline-java">@Transactional</code>.</p></li>
       <li><p><code>TaskService</code> calls <code>repository.save(...)</code>.</p></li>
       <li><p>Hibernate, working through JPA, writes the <code>INSERT</code> into H2.</p></li>
@@ -644,7 +634,7 @@ void savesAndFindsTaskItem() {
       <li><p>An entity needs <code class="inline-java">@Entity</code>, an <code class="inline-java">@Id</code>, and a no-argument constructor.</p></li>
       <li><p>Managed changes are written during flush; commit makes them permanent.</p></li>
       <li><p>Spring Data JPA creates Repository implementations from interfaces.</p></li>
-      <li><p><code>TaskService</code> owns task rules and transaction boundaries.</p></li>
+      <li><p><code>TaskItem</code> validates its title. <code>TaskService</code> coordinates task operations and transaction boundaries.</p></li>
     </ul>
   </section>
 
