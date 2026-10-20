@@ -283,6 +283,7 @@ function initialize_image_viewer() {
   let zoom = 1;
   let fitScale = 1;
   let activePointerId = null;
+  let suppressStageClick = false;
   let dragStartX = 0;
   let dragStartY = 0;
   let dragStartScrollLeft = 0;
@@ -381,6 +382,7 @@ function initialize_image_viewer() {
    * @param {HTMLImageElement} image - Slide image to display.
    */
   function open_image_viewer(image) {
+    suppressStageClick = false;
     sourceImage = image;
     viewerImage.alt = image.alt || "Enlarged slide image";
     viewerImage.src = image.currentSrc || image.src;
@@ -400,8 +402,19 @@ function initialize_image_viewer() {
   resetButton.addEventListener("click", reset_zoom);
   closeButton.addEventListener("click", close_image_viewer);
 
+  stage.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (suppressStageClick) {
+      suppressStageClick = false;
+      return;
+    }
+    close_image_viewer();
+  });
+
   stage.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0 || !stage.classList.contains("is-pannable")) {
+    if (event.button !== 0) return;
+    suppressStageClick = false;
+    if (!stage.classList.contains("is-pannable")) {
       return;
     }
     activePointerId = event.pointerId;
@@ -416,6 +429,10 @@ function initialize_image_viewer() {
 
   stage.addEventListener("pointermove", (event) => {
     if (event.pointerId !== activePointerId) return;
+    // A drag must not close the viewer when the pointer is released.
+    if (Math.hypot(event.clientX - dragStartX, event.clientY - dragStartY) > 5) {
+      suppressStageClick = true;
+    }
     stage.scrollLeft = dragStartScrollLeft - (event.clientX - dragStartX);
     stage.scrollTop = dragStartScrollTop - (event.clientY - dragStartY);
     event.preventDefault();
