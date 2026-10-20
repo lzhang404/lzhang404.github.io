@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="812" height="581" viewBox="3 -17 812 581" role="img" aria-labelledby="title desc">
+<title id="title">Dequeue advances the front index</title>
+<desc id="desc">Front and rear label the active endpoint cells directly in each array. Blue cells hold active queue items. Gray cells are outside the queue.</desc>
+<rect x="3" y="-17" width="812" height="581" fill="white"/>
+<text xml:space="preserve" x="25" y="24" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Before dequeue()</text>
+<text xml:space="preserve" x="73.0" y="59" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="25" y="79" width="96" height="74" fill="#a8c9eb" stroke="#e8730c" stroke-width="3"/>
+<text xml:space="preserve" x="73.0" y="116" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<text xml:space="preserve" x="169.0" y="59" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="121" y="79" width="96" height="74" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="169.0" y="116" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<text xml:space="preserve" x="265.0" y="59" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="217" y="79" width="96" height="74" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="265.0" y="116" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text xml:space="preserve" x="361.0" y="59" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="313" y="79" width="96" height="74" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="361.0" y="116" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<text xml:space="preserve" x="457.0" y="59" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<rect x="409" y="79" width="96" height="74" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="457.0" y="116" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">5</text>
+<text xml:space="preserve" x="553.0" y="59" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">5</text>
+<rect x="505" y="79" width="96" height="74" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="649.0" y="59" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">6</text>
+<rect x="601" y="79" width="96" height="74" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="745.0" y="59" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">7</text>
+<rect x="697" y="79" width="96" height="74" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="73" y="180" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">front</text>
+<text xml:space="preserve" x="457" y="180" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">rear</text>
+<text xml:space="preserve" x="25" y="218" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">allocationSize = 8   length = 5   frontIndex = 0</text>
+<polyline points="23,245.4 795,245.4" fill="none" stroke="#d8dfe5" stroke-width="4"/><text xml:space="preserve" x="25" y="277.4" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">After dequeue(): returns 1</text>
+<text xml:space="preserve" x="73.0" y="312.4" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="25" y="332.4" width="96" height="74" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="73.0" y="369.4" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#7b8791" text-anchor="middle" dominant-baseline="middle">1</text>
+<text xml:space="preserve" x="169.0" y="312.4" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="121" y="332.4" width="96" height="74" fill="#a8c9eb" stroke="#e8730c" stroke-width="3"/>
+<text xml:space="preserve" x="169.0" y="369.4" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<text xml:space="preserve" x="265.0" y="312.4" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="217" y="332.4" width="96" height="74" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="265.0" y="369.4" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text xml:space="preserve" x="361.0" y="312.4" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="313" y="332.4" width="96" height="74" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="361.0" y="369.4" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<text xml:space="preserve" x="457.0" y="312.4" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">4</text>
+<rect x="409" y="332.4" width="96" height="74" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="457.0" y="369.4" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">5</text>
+<text xml:space="preserve" x="553.0" y="312.4" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">5</text>
+<rect x="505" y="332.4" width="96" height="74" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="649.0" y="312.4" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">6</text>
+<rect x="601" y="332.4" width="96" height="74" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="745.0" y="312.4" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">7</text>
+<rect x="697" y="332.4" width="96" height="74" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text xml:space="preserve" x="169" y="433.4" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">front</text>
+<text xml:space="preserve" x="457" y="433.4" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">rear</text>
+<text xml:space="preserve" x="25" y="471.4" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">allocationSize = 8   length = 4   frontIndex = 1</text>
+<text xml:space="preserve" x="25" y="527.8" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">The gray 1 remains in memory, outside the queue.</text>
+</svg>
+

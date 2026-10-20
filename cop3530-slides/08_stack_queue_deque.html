@@ -576,7 +576,7 @@ std::size_t length = 0;</code></pre>
                 </tbody>
               </table>
             </div>
-            <div style="width:30%; min-width:0;"><img src="../_static/images/cop3530/stack-revised/queue_array_storage.svg"
+            <div style="width:30%; min-width:0;"><img src="../_static/images/cop3530/stack/queue_array_storage.svg"
               alt="An array with 4 cells stores 3 at index 0, an unused cell at index 1, 1 at index 2, and 2 at index 3. The queue order is 1, 2, 3."
               style="display:block; width:100%; max-width:100%; height:auto; margin:0;"></div>
           </div>
@@ -633,7 +633,7 @@ std::size_t length = 0;</code></pre>
   frontIndex = 0;
 }</code></pre>
             </div>
-            <div style="width:30%; min-width:0;"><img src="../_static/images/cop3530/stack-revised/queue_array_resize.svg"
+            <div style="width:30%; min-width:0;"><img src="../_static/images/cop3530/stack/queue_array_resize.svg"
               alt="The full array contains 3, 4, 1, 2 with frontIndex 2. Resizing copies the queue order 1, 2, 3, 4 into indices 0 through 3 of an 8-cell array and resets frontIndex to 0."
               style="display:block; width:100%; max-width:100%; height:auto; margin:0;"></div>
           </div>
@@ -658,7 +658,7 @@ std::size_t length = 0;</code></pre>
   return true;
 }</code></pre>
             </div>
-            <div style="width:30%; min-width:0;"><img src="../_static/images/cop3530/stack-revised/queue_array_enqueue.svg"
+            <div style="width:30%; min-width:0;"><img src="../_static/images/cop3530/stack/queue_array_enqueue.svg"
               alt="Before enqueue 4, the queue has frontIndex 2 and length 3. Enqueue 4 writes index 1. Enqueue 5 grows to 8 cells, places 1 through 4 at indices 0 through 3, writes 5 at index 4, and increases length to 5."
               style="display:block; width:100%; max-width:100%; height:auto; margin:0;"></div>
           </div>
@@ -681,7 +681,7 @@ std::size_t length = 0;</code></pre>
   return value;
 }</code></pre>
             </div>
-            <div style="width:30%; min-width:0;"><img src="../_static/images/cop3530/stack-revised/queue_array_dequeue.svg"
+            <div style="width:30%; min-width:0;"><img src="../_static/images/cop3530/stack/queue_array_dequeue.svg"
               alt="Before dequeue, the 8-cell array has active items 1 through 5, frontIndex 0, and length 5. After dequeue returns 1, frontIndex is 1 and length is 4. The old value at index 0 remains outside the active queue."
               style="display:block; width:100%; max-width:100%; height:auto; margin:0;"></div>
           </div>
