@@ -195,78 +195,76 @@ public void rename(String title) {
   <section class="title-slide slide level1">
     <h1>Managed Entities and Transactions</h1>
   </section>
-
- 
-
   <section class="frame">
-    <h2><code>EntityManager</code></h2>
-    <p><code>EntityManager</code> is the JPA object that stores, loads, and removes entities.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">EntityTransaction transaction = entityManager.getTransaction();
-transaction.begin();
-TaskItem item = new TaskItem("Review ORM");
-entityManager.persist(item); // New → managed
+  <h2>Managed Entities</h2>
+  <p>The <strong>persistence context</strong> contains the entity objects JPA is currently tracking.</p>
 
-TaskItem found =
-        entityManager.find(TaskItem.class, item.getId());
+  <pre data-fontsize="small" data-frame="leftline"><code class="language-text">Database row              Managed Java object
 
-entityManager.remove(found); // Mark for DELETE at flush
-transaction.commit(); // Finish this successful transaction.</code></pre>
-    <ul>
-      <li><p>We call methods on objects and JPA writes the SQL.</p></li>
-      <li><p>Write operations must run inside a transaction.</p></li>
-    </ul>
-    <aside class="notes">This example shows the successful path. If a write fails while the transaction is still active, the caller should roll it back. See the EntityTransaction API: https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/jakarta/persistence/EntityTransaction.html</aside>
-  </section>
-
-  <section class="frame">
-  <h2>How JPA Tracks Entity Objects</h2>
-  <p>The <strong>persistence context</strong> holds the entity objects JPA is currently tracking. These are called <strong>managed entities</strong>.</p>
-
-  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Database row              Managed Java object
 task_items: id = 1    ↔    TaskItem with id = 1
 task_items: id = 2    ↔    TaskItem with id = 2</code></pre>
 
   <ul>
-    <li><p><code>EntityManager</code> manages these objects through the persistence context.</p></li>
-    <li><p>Each managed object represents one database row.</p></li>
-    <li><p>JPA remembers the object's loaded values so it can detect changes to its fields.</p></li>
+    <li><code>EntityManager</code> manages the persistence context.</li>
+    <li>JPA tracks changes made to <strong>managed</strong> objects.</li>
+  </ul>
+
+  <p><strong>Key idea:</strong> changing an object matters to JPA only while that object is managed.</p>
+</section>
+
+
+<section class="frame">
+  <h2>Entity States</h2>
+  <p>An entity's state tells us whether JPA is currently tracking it.</p>
+  <ul>
+    <li><strong>New:</strong> created with <code>new</code>; not tracked yet.</li>
+    <li><strong>Managed:</strong> in the persistence context; changes are tracked.</li>
+    <li><strong>Detached:</strong> was managed, but is no longer tracked.</li>
+    <li><strong>Removed:</strong> marked for deletion.</li>
   </ul>
 </section>
 
-  <section class="frame">
-    <h2>Flush and Commit</h2>
-    <ul>
-      <li>A <strong>transaction</strong> groups database changes into one operation that succeeds or fails as a whole</li>
-      <li><p>Inside a transaction, JPA detects changes to managed entities through <strong>dirty checking</strong>.</p></li>
-    </ul>
-    
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// inside a transaction
-TaskItem item = entityManager.find(TaskItem.class, id);
-item.setDone(true);
-entityManager.flush(); // Send UPDATE; still uncommitted</code></pre>
-    <ul>
-      <li><p><strong>Flush</strong> sends pending changes to the database within the transaction.</p></li>
-      <li><p>JPA also flushes automatically before commit and may flush before a query.</p></li>
-      <li><p><strong>Commit:</strong> finishes the transaction and saves its database changes permanently.</p></li>
-<li><p><strong>Rollback:</strong> cancels the transaction and undoes its uncommitted database changes. This must happen before commit.</p></li>
-    </ul>
-    <p>Example: <code>jpa/plain/EntityManagerDemo.java</code></p>
-    <aside class="notes">Jakarta Persistence, synchronization to the database: https://jakarta.ee/specifications/persistence/3.2/jakarta-persistence-spec-3.2#_synchronization_to_the_database</aside>
-  </section>
 
-  <section class="frame">
-    <h2>Entity States</h2>
-    <p>Only managed entities are tracked. An object moves between four states.</p>
-    <table class="compact">
-      <thead><tr><th>State</th><th>Meaning</th></tr></thead>
-      <tbody>
-        <tr><td><p><strong>New</strong></p></td><td><p>Created with <code class="inline-java">new</code>; JPA does not know it yet.</p></td></tr>
-        <tr><td><p><strong>Managed</strong></p></td><td><p>In the persistence context; changes are tracked.</p></td></tr>
-        <tr><td><p><strong>Detached</strong></p></td><td><p>Was managed, but is no longer tracked, for example after the transaction ends.</p></td></tr>
-        <tr><td><p><strong>Removed</strong></p></td><td><p>Marked for deletion when JPA flushes.</p></td></tr>
-      </tbody>
-    </table>
-  </section>
+<section class="frame">
+  <h2><code>EntityManager</code></h2>
+  <p><code>EntityManager</code> is the JPA API for working with entity objects.</p>
+
+  <pre data-fontsize="small" data-frame="leftline"><code class="language-java">TaskItem item = new TaskItem("Review ORM");   // NEW
+
+entityManager.persist(item);                  // → MANAGED
+
+TaskItem found =
+    entityManager.find(TaskItem.class, item.getId()); // MANAGED
+
+entityManager.remove(found);                  // → REMOVED</code></pre>
+  <ul>
+    <li><code>persist()</code> stores new entities</li>
+    <li><code>find()</code> loads entities</li>
+    <li><code>remove()</code> deletes entities</li>
+  </ul>
+</section>
+
+
+<section class="frame">
+  <h2>Transactions and Dirty Checking</h2>
+  <p>A <strong>transaction</strong> groups database work that should succeed or fail together.</p>
+
+  <pre data-fontsize="small" data-frame="leftline"><code class="language-java">EntityTransaction transaction = entityManager.getTransaction();
+transaction.begin();
+
+TaskItem item = entityManager.find(TaskItem.class, id);
+item.setDone(true);    
+
+transaction.commit();</code></pre>
+
+  <ul>
+    <li><strong>Dirty checking:</strong> JPA detects changes to managed entities.</li>
+    <li>Before commit, JPA normally <strong>flushes</strong> pending changes to the database.</li>
+    <li><strong>Commit</strong> finishes the transaction </li>
+    <li><strong>rollback</strong> cancels uncommitted work.</li>
+  </ul>
+</section>
+
 
   <section class="frame">
     <h2>A Repository with <code>EntityManager</code></h2>
@@ -325,12 +323,11 @@ public class TaskApp { /* JavaFX launcher */ }
 // In TaskListApp.init(), before the View opens:
 context = SpringApplication.run(TaskApp.class);</code></pre>
     <ul>
-      <li><p><code class="inline-java">@SpringBootApplication</code> scans our packages and enables auto-configuration. <code class="inline-java">@EntityScan</code> locates <code>TaskItem</code>.</p></li>
-      <li><p>The <code>spring-boot-starter-data-jpa</code> dependency brings Spring Data JPA and Hibernate.</p></li>
+      <li><p><code class="inline-java">@SpringBootApplication</code> scans our packages and enables auto-configuration. </p>
+        <li><p><code class="inline-java">@EntityScan</code> locates <code>TaskItem</code>.</p></li>
       <li><p>Auto-configuration creates the database, JPA, and transaction beans for us.</p></li>
     </ul>
     <p>Example: <code>jpa/task/TaskListApp.java</code></p>
-    <aside class="notes">TaskListApp starts Spring in init, creates the View and Controller on the JavaFX thread in start, and closes Spring in stop. RepositoryDemo uses the same Boot configuration without opening a window.</aside>
   </section>
 
   <section class="frame">
@@ -408,7 +405,6 @@ spring.jpa.show-sql=true</code></pre>
         <tr><td><p>Spring Data JPA</p></td><td><p>An interface</p></td><td><p>The implementation and simple queries</p></td></tr>
       </tbody>
     </table>
-    <p>Our <code>add(String)</code> becomes <code>save(TaskItem)</code>, so callers change a little. This is a redesign, not a drop-in swap.</p>
   </section>
 </section>
 
@@ -416,7 +412,15 @@ spring.jpa.show-sql=true</code></pre>
   <section class="title-slide slide level1">
     <h1>Service Layer and Transactions</h1>
   </section>
-
+  <section class="frame">
+  <h2>What Is a Service?</h2>
+  <p>A service is a class that provides application operations.</p>
+  <ul>
+    <li><p>Its methods represent actions such as adding a task or marking it done.</p></li>
+    <li><p>It coordinates entities and Repository calls to carry out those actions.</p></li>
+    <li><p>It can group the database work for an operation into one transaction.</p></li>
+  </ul>
+</section>
   <section class="frame">
     <h2>Where Do Task Operations Go?</h2>
     <p><code>TaskService</code> groups task operations into transactions.</p>
@@ -445,7 +449,6 @@ public class TaskService {
       <li><p>For this Service, Spring uses a subclass-based transaction proxy.</p></li>
       <li><p>The class and its transactional methods must therefore stay non-<code class="inline-java">final</code>.</p></li>
     </ul>
-    <aside class="notes">The restriction applies to subclass-based proxies. Spring also supports JDK interface proxies: https://docs.spring.io/spring-framework/reference/core/aop/proxying.html</aside>
   </section>
 
   <section class="frame">
@@ -481,19 +484,12 @@ public void setDone(Long id, boolean done) {
       <li><p>JPA writes the <code>UPDATE</code> during flush; commit makes the change permanent.</p></li>
     </ul>
     <p>Example: <code>jpa/springdata/RepositoryDemo.java</code></p>
-  </section>
-
-  <section class="frame">
-    <h2>Why Put the Transaction in the Service?</h2>
-    <p>One Service method is one task operation, so it should succeed or fail as a unit.</p>
-    <ul>
-      <li><p>Calls from <code>TaskModel</code> go through Spring's Service proxy, which starts or joins a transaction.</p></li>
-      <li><p>A call such as <code>this.setDone(...)</code> inside the Service bypasses that proxy.</p></li>
-    </ul>
     <p><strong>Check:</strong> In this desktop app, with no outer transaction, what happens if we remove <code class="inline-java">@Transactional</code> from <code>setDone</code>?</p>
     <p class="fragment"><strong>Answer:</strong> <code>findById</code> runs in its own transaction. The entity is detached when it returns, so changing it without <code>save</code> does not update the database.</p>
-    <aside class="notes">Proxy calls and self-invocation: https://docs.spring.io/spring-framework/reference/core/aop/proxying.html. Repository transactions and outer transaction boundaries: https://docs.spring.io/spring-data/jpa/reference/jpa/transactions.html. This example uses the ordinary transaction-scoped persistence context of the desktop app.</aside>
+    
   </section>
+
+
 
   <section class="frame">
     <h2>Read-Only Operations</h2>
@@ -506,7 +502,6 @@ public List&lt;TaskItem&gt; findAllTaskItems() {
       <li><p><code>readOnly = true</code> is an optimization hint; with Hibernate, it can avoid dirty checks.</p></li>
       <li><p><code>TaskModel</code> gets one simple method to call.</p></li>
     </ul>
-    <aside class="notes">Read-only is a hint, not a guarantee that writes are blocked: https://docs.spring.io/spring-data/jpa/reference/jpa/transactions.html</aside>
   </section>
 
   <section class="frame">
@@ -591,7 +586,6 @@ void savesAndFindsTaskItem() {
       <li><p><code>clear()</code> detaches managed entities, so the lookup cannot reuse <code>saved</code>.</p></li>
     </ul>
     <p>Example: <code>jpa/springdata/TaskRepositoryTest.java</code></p>
-    <aside class="notes">Flush and clear prevent the test from checking only an entity already in the persistence context. Spring ORM testing guidance: https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/tx.html#testcontext-tx</aside>
   </section>
 
   <section class="frame">

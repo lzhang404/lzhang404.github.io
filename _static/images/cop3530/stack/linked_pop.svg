@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="690" height="859" viewBox="18 -8 690 859" role="img" aria-labelledby="title desc">
+<title id="title">Linked stack pop()</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect x="18" y="-8" width="690" height="859" fill="white"/>
+<text x="40" y="35" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">1. Save the old top</text>
+<text x="40" y="77" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">Node* old = top</text>
+<rect x="40" y="160" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="185" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="54" y="225" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 2</text>
+<rect x="270" y="160" width="180" height="90" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<polyline points="270,205 450,205" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="284" y="183" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 71</text>
+<text x="284" y="227" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next:</text>
+<polyline points="355,227 500,227" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="500,227 486.0,234.0 486.0,220.0" fill="#1f5f85"/>
+<rect x="500" y="160" width="180" height="90" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<polyline points="500,205 680,205" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="514" y="183" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 99</text>
+<text x="514" y="227" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="140,185 270,183" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="270,183 256.1093360759868,190.21453087526268 255.89397694538195,176.21618738594705" fill="#1f5f85"/>
+<text x="360" y="110" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">old</text>
+<polyline points="360,132 360,160" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="360,160 353.0,146.0 367.0,146.0" fill="#1f5f85"/>
+<polyline points="38,267 688,267" fill="none" stroke="#d8dfe5" stroke-width="4"/>
+<text x="40" y="302" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">2. Advance top</text>
+<text x="40" y="344" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top = top-&gt;next</text>
+<rect x="40" y="427" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="452" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="54" y="492" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 2</text>
+<rect x="270" y="427" width="180" height="90" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<polyline points="270,472 450,472" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="284" y="450" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 71</text>
+<text x="284" y="494" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next:</text>
+<polyline points="355,494 500,494" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="500,494 486.0,501.0 486.0,487.0" fill="#1f5f85"/>
+<rect x="500" y="427" width="180" height="90" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<polyline points="500,472 680,472" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="514" y="450" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 99</text>
+<text x="514" y="494" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="140,452 225,452 225,402 540,402 540,427" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="540,427 533.0,413.0 547.0,413.0" fill="#e8730c"/>
+<text x="360" y="377" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">old</text>
+<polyline points="360,399 360,427" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="360,427 353.0,413.0 367.0,413.0" fill="#1f5f85"/>
+<polyline points="38,534 688,534" fill="none" stroke="#d8dfe5" stroke-width="4"/>
+<text x="40" y="569" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">3. Delete old and update length</text>
+<text x="40" y="611" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">delete old; --length</text>
+<rect x="40" y="694" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="719" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="54" y="759" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 1</text>
+<rect x="270" y="694" width="180" height="90" fill="#eef1f4" stroke="#10293b" stroke-width="3" stroke-dasharray="9 6"/>
+<polyline points="270,739 450,739" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="284" y="717" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#73899a" text-anchor="start" dominant-baseline="middle">val: 71</text>
+<text x="284" y="761" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next:</text>
+<polyline points="275,699 445,779" fill="none" stroke="#b42318" stroke-width="4" stroke-linejoin="round"/>
+<polyline points="445,699 275,779" fill="none" stroke="#b42318" stroke-width="4" stroke-linejoin="round"/>
+<text x="360" y="814" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#b42318" text-anchor="middle" dominant-baseline="middle">freed</text>
+<rect x="500" y="694" width="180" height="90" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<polyline points="500,739 680,739" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="514" y="717" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 99</text>
+<text x="514" y="761" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="140,719 225,719 225,669 540,669 540,694" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="540,694 533.0,680.0 547.0,680.0" fill="#1f5f85"/>
+</svg>
+

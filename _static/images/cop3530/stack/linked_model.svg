@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="690" height="250" viewBox="18 -8 690 250" role="img" aria-labelledby="title desc">
+<title id="title">Linked stack representation</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect x="18" y="-8" width="690" height="250" fill="white"/>
+<text x="40" y="35" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">top points to the first node</text>
+<rect x="40" y="130" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="155" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="54" y="195" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 2</text>
+<rect x="270" y="130" width="180" height="90" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<polyline points="270,175 450,175" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="284" y="153" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 71</text>
+<text x="284" y="197" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next:</text>
+<polyline points="355,197 500,197" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="500,197 486.0,204.0 486.0,190.0" fill="#1f5f85"/>
+<rect x="500" y="130" width="180" height="90" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<polyline points="500,175 680,175" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="514" y="153" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 99</text>
+<text x="514" y="197" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="140,155 270,153" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="270,153 256.1093360759868,160.21453087526268 255.89397694538195,146.21618738594705" fill="#1f5f85"/>
+</svg>
+

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="700" viewBox="18 -8 500 700" role="img" aria-labelledby="title desc">
+<title id="title">Queue empty and last-node cases</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect x="18" y="-8" width="500" height="700" fill="white"/>
+<text x="40" y="35" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Enqueue into an empty queue</text>
+<rect x="40" y="130" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="155" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">front:</text>
+<text x="54" y="195" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">rear:</text>
+<rect x="270" y="130" width="180" height="90" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<polyline points="270,175 450,175" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="284" y="153" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 1</text>
+<text x="284" y="197" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="140,155 270,153" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="270,153 256.1093360759868,160.21453087526268 255.89397694538195,146.21618738594705" fill="#e8730c"/>
+<polyline points="140,195 235,195 235,260 360,260 360,220" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="360,220 367.0,234.0 353.0,234.0" fill="#1f5f85"/>
+<text x="40" y="295" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 1</text>
+<polyline points="38,328.2 498,328.2" fill="none" stroke="#d8dfe5" stroke-width="4"/>
+<text x="40" y="363.2" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Dequeue the only node</text>
+<text x="40" y="405.2" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">Both front and rear become nullptr</text>
+<rect x="40" y="488.2" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="513.2" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">front:</text>
+<text x="54" y="553.2" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">rear:</text>
+<rect x="270" y="488.2" width="180" height="90" fill="#eef1f4" stroke="#10293b" stroke-width="3" stroke-dasharray="9 6"/>
+<polyline points="270,533.2 450,533.2" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="284" y="511.2" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#73899a" text-anchor="start" dominant-baseline="middle">val: 1</text>
+<text x="284" y="555.2" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="275,493.2 445,573.2" fill="none" stroke="#b42318" stroke-width="4" stroke-linejoin="round"/>
+<polyline points="445,493.2 275,573.2" fill="none" stroke="#b42318" stroke-width="4" stroke-linejoin="round"/>
+<text x="360" y="608.2" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#b42318" text-anchor="middle" dominant-baseline="middle">freed</text>
+<text x="116" y="513.2" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">nullptr</text>
+<text x="116" y="553.2" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">nullptr</text>
+<text x="40" y="653.2" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 0</text>
+</svg>
+

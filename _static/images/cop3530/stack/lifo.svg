@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1249" height="639" viewBox="8 -13 1249 639" role="img" aria-labelledby="title desc">
+<title id="title">Last in first out</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect x="8" y="-13" width="1249" height="639" fill="white"/>
+<text x="30" y="30" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">push("mosquito")</text>
+<rect x="95" y="410" width="300" height="115" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="245" y="468" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">mosquito</text>
+<text x="245" y="340" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="245,365 245,410" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="245,410 238.0,396.0 252.0,396.0" fill="#e8730c"/>
+<text x="245" y="585" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">length = 1</text>
+<text x="450" y="30" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">push("fish")</text>
+<rect x="515" y="410" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="665" y="468" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">mosquito</text>
+<rect x="515" y="285" width="300" height="115" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="665" y="343" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">fish</text>
+<text x="665" y="215" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="665,240 665,285" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="665,285 658.0,271.0 672.0,271.0" fill="#e8730c"/>
+<text x="665" y="585" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">length = 2</text>
+<text x="870" y="30" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">push("raccoon")</text>
+<rect x="935" y="410" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1085" y="468" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">mosquito</text>
+<rect x="935" y="285" width="300" height="115" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="1085" y="343" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">fish</text>
+<rect x="935" y="160" width="300" height="115" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="1085" y="218" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">raccoon</text>
+<text x="1085" y="90" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="1085,115 1085,160" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="1085,160 1078.0,146.0 1092.0,146.0" fill="#e8730c"/>
+<text x="1085" y="585" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">length = 3</text>
+</svg>
+

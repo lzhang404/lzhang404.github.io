@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="690" height="724" viewBox="18 -8 690 724" role="img" aria-labelledby="title desc">
+<title id="title">Destructor removes all stack nodes</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect x="18" y="-8" width="690" height="724" fill="white"/>
+<text x="40" y="35" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Before cleanup</text>
+<rect x="40" y="130" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="155" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="54" y="195" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 2</text>
+<rect x="270" y="130" width="180" height="90" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<polyline points="270,175 450,175" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="284" y="153" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 71</text>
+<text x="284" y="197" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next:</text>
+<polyline points="355,197 500,197" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="500,197 486.0,204.0 486.0,190.0" fill="#1f5f85"/>
+<rect x="500" y="130" width="180" height="90" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<polyline points="500,175 680,175" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="514" y="153" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 99</text>
+<text x="514" y="197" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="140,155 270,153" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="270,153 256.1093360759868,160.21453087526268 255.89397694538195,146.21618738594705" fill="#1f5f85"/>
+<polyline points="38,237 688,237" fill="none" stroke="#d8dfe5" stroke-width="4"/>
+<text x="40" y="272" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">After the first pop()</text>
+<rect x="40" y="367" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="392" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="54" y="432" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 1</text>
+<rect x="500" y="367" width="180" height="90" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<polyline points="500,412 680,412" fill="none" stroke="#73899a" stroke-width="4" stroke-linejoin="round"/>
+<text x="514" y="390" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">val: 99</text>
+<text x="514" y="434" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">next: nullptr</text>
+<polyline points="140,392 225,392 225,342 540,342 540,367" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="540,367 533.0,353.0 547.0,353.0" fill="#1f5f85"/>
+<polyline points="38,474 688,474" fill="none" stroke="#d8dfe5" stroke-width="4"/>
+<text x="40" y="509" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">After the last pop()</text>
+<rect x="40" y="604" width="160" height="90" fill="white" stroke="#10293b" stroke-width="3"/>
+<text x="54" y="629" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">top:</text>
+<text x="54" y="669" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">length: 0</text>
+<text x="116" y="629" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">nullptr</text>
+</svg>
+

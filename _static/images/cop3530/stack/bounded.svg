@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="656" height="648" viewBox="18 -8 656 648" role="img" aria-labelledby="title desc">
+<title id="title">A bounded stack rejects a push at its maximum length</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect x="18" y="-8" width="656" height="648" fill="white"/>
+<text x="40" y="35" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">A full stack with maxLength = 2</text>
+<text x="130.0" y="75" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="40" y="105" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="130.0" y="152" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<text x="310.0" y="75" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="220" y="105" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="310.0" y="152" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="40" y="290" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">allocationSize = 2     length = 2</text>
+<text x="310.0" y="251" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="310.0,230 310.0,200" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="310.0,200 317.0,214.0 303.0,214.0" fill="#1f5f85"/>
+<polyline points="38,324.6 654,324.6" fill="none" stroke="#d8dfe5" stroke-width="4"/>
+<text x="40" y="344.6" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">push(13) fails; contents stay unchanged</text>
+<text x="130.0" y="384.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="40" y="414.6" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="130.0" y="461.6" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<text x="310.0" y="384.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="220" y="414.6" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="310.0" y="461.6" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="40" y="599.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">allocationSize = 2     length = 2</text>
+<text x="310.0" y="560.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="310.0,539.6 310.0,509.6" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="310.0,509.6 317.0,523.6 303.0,523.6" fill="#1f5f85"/>
+</svg>
+

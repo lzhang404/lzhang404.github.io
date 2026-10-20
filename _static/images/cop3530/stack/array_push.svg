@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="764" height="1037" viewBox="18 -8 764 1037" role="img" aria-labelledby="title desc">
+<title id="title">Array stack push(13)</title>
+<desc id="desc">Blue shows existing items. Orange shows the item or pointer changed in this step.</desc>
+<rect x="18" y="-8" width="764" height="1037" fill="white"/>
+<text x="40" y="35" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">Before push(13)</text>
+<text x="130.0" y="75" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="40" y="105" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="130.0" y="152" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<text x="310.0" y="75" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="220" y="105" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="310.0" y="152" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="490.0" y="75" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="400" y="105" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="670.0" y="75" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="580" y="105" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="40" y="290" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">allocationSize = 4     length = 2</text>
+<text x="310.0" y="251" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="310.0,230 310.0,200" fill="none" stroke="#1f5f85" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="310.0,200 317.0,214.0 303.0,214.0" fill="#1f5f85"/>
+<polyline points="38,324.6 762,324.6" fill="none" stroke="#d8dfe5" stroke-width="4"/>
+<text x="40" y="344.6" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">1. Write at index length</text>
+<text x="40" y="386.6" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">array[2] = 13; length is still 2</text>
+<text x="130.0" y="424.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="40" y="454.6" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="130.0" y="501.6" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<text x="310.0" y="424.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="220" y="454.6" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="310.0" y="501.6" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="490.0" y="424.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="400" y="454.6" width="180" height="95" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="490.0" y="501.6" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#7b8791" text-anchor="middle" dominant-baseline="middle">13</text>
+<text x="670.0" y="424.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="580" y="454.6" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="40" y="639.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">allocationSize = 4     length = 2</text>
+<text x="310.0" y="600.6" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="310.0,579.6 310.0,549.6" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="310.0,549.6 317.0,563.6 303.0,563.6" fill="#e8730c"/>
+<polyline points="38,674.2 762,674.2" fill="none" stroke="#d8dfe5" stroke-width="4"/>
+<text x="40" y="694.2" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#10293b" text-anchor="start" dominant-baseline="middle">2. Increase length</text>
+<text x="40" y="736.2" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">++length; top is now index 2</text>
+<text x="130.0" y="774.2" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">0</text>
+<rect x="40" y="804.2" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="130.0" y="851.2" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">12</text>
+<text x="310.0" y="774.2" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">1</text>
+<rect x="220" y="804.2" width="180" height="95" fill="#a8c9eb" stroke="#10293b" stroke-width="3"/>
+<text x="310.0" y="851.2" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<text x="490.0" y="774.2" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">2</text>
+<rect x="400" y="804.2" width="180" height="95" fill="#fcd9a3" stroke="#10293b" stroke-width="3"/>
+<text x="490.0" y="851.2" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">13</text>
+<text x="670.0" y="774.2" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="middle" dominant-baseline="middle">3</text>
+<rect x="580" y="804.2" width="180" height="95" fill="#eef1f4" stroke="#10293b" stroke-width="3"/>
+<text x="40" y="989.2" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#10293b" text-anchor="start" dominant-baseline="middle">allocationSize = 4     length = 3</text>
+<text x="490.0" y="950.2" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#10293b" text-anchor="middle" dominant-baseline="middle">top</text>
+<polyline points="490.0,929.2 490.0,899.2" fill="none" stroke="#e8730c" stroke-width="4" stroke-linejoin="round"/>
+<polygon points="490.0,899.2 497.0,913.2 483.0,913.2" fill="#e8730c"/>
+</svg>
+
