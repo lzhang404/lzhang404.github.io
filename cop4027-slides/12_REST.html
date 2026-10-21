@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=20260921a" />
   <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
   <script src="../_static/design-tabs.js?v=20260921a"></script>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,14 +34,14 @@
 <section>
   <section class="frame">
     <h2>Roadmap</h2>
-    <p>Main question: how can other programs use the Task List over the web?</p>
+    <p>How can a browser use our Task List application?</p>
     <ul>
-      <li><p>Read and write HTTP requests and responses.</p></li>
-      <li><p>Design a REST API around resources, methods, and status codes.</p></li>
-      <li><p>Build a Spring web controller that calls the same <code>TaskService</code>.</p></li>
-      <li><p>Read path variables, query parameters, and JSON request bodies.</p></li>
-      <li><p>Validate input and turn errors into clear responses.</p></li>
-      <li><p>Test the API by hand and with MockMvc.</p></li>
+      <li><p>See how a client talks to a running server.</p></li>
+      <li><p>Read a web address and an HTTP exchange.</p></li>
+      <li><p>Choose URLs and methods for a Task List API.</p></li>
+      <li><p>Connect HTTP requests to Java methods.</p></li>
+      <li><p>Read and validate the client's input.</p></li>
+      <li><p>Try the application and test its responses.</p></li>
     </ul>
   </section>
 </section>
@@ -53,90 +52,155 @@
   </section>
 
   <section class="frame">
+    <h2>What Is HTTP?</h2>
+    <p>HTTP stands for Hypertext Transfer Protocol.</p>
+    <ul>
+      <li><p>It defines how programs exchange requests and responses.</p></li>
+      <li><p><strong>Client:</strong> a program that sends a request.</p></li>
+      <li><p><strong>Server:</strong> a running program that handles the request.</p></li>
+      <li><p>A browser is one kind of client.</p></li>
+      <li><p>The client and server can run on the same computer.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
     <h2>Same Service, New Input</h2>
-    <p>The Task List already has a Service. Today, a web request becomes a second way to call it.</p>
+    <p>An HTTP request becomes another way to call the Task List Service.</p>
+    <figure style="margin: 12px auto 18px;">
+      <img src="../_static/images/cop4027/rest-client-server.png"
+           width="2161" height="728"
+           alt="A browser or app sends an HTTP request to a Spring server. The server returns an HTTP response."
+           style="display: block; width: 100%; max-width: 800px; height: auto; max-height: none; margin: 0 auto;" />
+    </figure>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX: button click → TaskController → TaskModel → TaskService
 Web:    HTTP request → TaskApiController ─────────→ TaskService</code></pre>
     <ul>
-      <li><p>The Service, Repository, and entity do not change.</p></li>
-      <li><p>Only the presentation tier gains a new entry point.</p></li>
+      <li><p>Reuse the entity and Repository.</p></li>
+      <li><p>Add lookup and filtering methods to the Service.</p></li>
+      <li><p>Keep task rules and transactions in the Service.</p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Clients and Servers</h2>
-    <p>On the web, a <strong>client</strong> sends a request, and a <strong>server</strong> sends back a response.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">client                       server
-(browser, curl, an app)      (our Spring app)
-        ── request  ──→
-        ←── response ──</code></pre>
+    <h2>A Web Address</h2>
+    <p>A URL is the address that a client requests.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text" style="padding-top: 12px; padding-bottom: 12px;">http://localhost:8080/api/tasks</code></pre>
+    <table class="compact">
+      <thead><tr><th>Part</th><th>Meaning in this example</th></tr></thead>
+      <tbody>
+        <tr><td><p><code>http://</code></p></td><td><p>Protocol: use HTTP.</p></td></tr>
+        <tr><td><p><code>localhost</code></p></td><td><p>Host: this computer.</p></td></tr>
+        <tr><td><p><code>:8080</code></p></td><td><p>Port: where our server listens.</p></td></tr>
+        <tr><td><p><code>/api/tasks</code></p></td><td><p>Path: which data we want.</p></td></tr>
+      </tbody>
+    </table>
     <ul>
-      <li><p><strong>HTTP</strong> defines the format of these messages.</p></li>
-      <li><p>The server waits and only answers requests.</p></li>
-      <li><p>HTTP travels over TCP connections; the networking lecture covers that layer.</p></li>
+      <li><p>Run <code>WebApp</code> as a Java application first.</p></li>
+      <li><p>Enter this URL in the browser's address bar.</p></li>
+      <li><p><code>GET</code> asks the server to send back data.</p></li>
+      <li><p>Example: <code>WebApp.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>An HTTP Request</h2>
-    <p>A request says what the client wants, where, and with what data.</p>
+    <h2>Reading an HTTP Request</h2>
+    <p>The first line and headers follow HTTP/1.1 text rules.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-http">GET /api/tasks HTTP/1.1
+Host: localhost:8080
+
+</code></pre>
+    <ol>
+      <li><p><strong>First line:</strong> read the method, path, and HTTP version.</p></li>
+      <li><p><strong>Headers:</strong> each line uses <code>Name: value</code> syntax.</p></li>
+      <li><p><strong>Host:</strong> <code>localhost:8080</code> names the host and port.</p></li>
+      <li><p><strong>Blank line:</strong> ends the headers.</p></li>
+      <li><p><strong>Body:</strong> this GET request has none.</p></li>
+    </ol>
+  </section>
+
+  <section class="frame">
+    <h2>Reading an HTTP Response</h2>
+    <p>Read the status first, then the headers and body.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-http">HTTP/1.1 200 OK
+Content-Type: application/json
+
+[]</code></pre>
+    <ol>
+      <li><p><strong>First line:</strong> <code>200 OK</code> means the request succeeded.</p></li>
+      <li><p><strong>Header:</strong> <code>Content-Type</code> says the body uses JSON.</p></li>
+      <li><p><strong>Blank line:</strong> separates the headers from the body.</p></li>
+      <li><p><strong>Body:</strong> <code>[]</code> is an empty JSON array.</p></li>
+      <li><p><strong>Whole message:</strong> HTTP structure with a JSON body.</p></li>
+    </ol>
+  </section>
+
+  <section class="frame">
+    <h2>HTTP Methods</h2>
+    <p>The method describes the requested operation.</p>
+    <table class="compact">
+      <thead><tr><th>Method</th><th>Meaning</th><th>Task List example</th></tr></thead>
+      <tbody>
+        <tr><td><p><code>GET</code></p></td><td><p>Read data</p></td><td><p>List tasks or read one</p></td></tr>
+        <tr><td><p><code>POST</code></p></td><td><p>Submit data</p></td><td><p>Create a task</p></td></tr>
+        <tr><td><p><code>PUT</code></p></td><td><p>Create or replace</p></td><td><p>Not implemented here</p></td></tr>
+        <tr><td><p><code>PATCH</code></p></td><td><p>Apply a partial change</p></td><td><p>Set the done field</p></td></tr>
+        <tr><td><p><code>DELETE</code></p></td><td><p>Remove a resource</p></td><td><p>Delete a task</p></td></tr>
+      </tbody>
+    </table>
+    <p><code>GET</code> must not request a change to task data.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Sending Data with POST</h2>
+    <p>A request body carries data from the client to the server.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-http">POST /api/tasks HTTP/1.1
 Host: localhost:8080
 Content-Type: application/json
 
 {"title": "Review REST"}</code></pre>
     <ul>
-      <li><p><strong>Request line:</strong> the method, the path, and the HTTP version.</p></li>
-      <li><p><strong>Headers:</strong> extra details; <code>Content-Type</code> says the body is JSON.</p></li>
-      <li><p><strong>Body:</strong> the data, if any. A <code>GET</code> request usually has none.</p></li>
+      <li><p><code>POST</code> asks this API to create a task.</p></li>
+      <li><p>The body supplies the title as JSON.</p></li>
+      <li><p><code>Content-Type</code> tells the server how to read the body.</p></li>
+      <li><p>Example: <code>CreateTaskDemo.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>An HTTP Response</h2>
-    <p>A response says what happened and carries the result.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-http">HTTP/1.1 201 Created
-Content-Type: application/json
-Location: /api/tasks/4
-
-{"id": 4, "title": "Review REST", "done": false}</code></pre>
-    <ul>
-      <li><p><strong>Status line:</strong> a status code and a short reason.</p></li>
-      <li><p><strong>Headers:</strong> details such as the body format and the new task's URL.</p></li>
-      <li><p><strong>Body:</strong> the result, here the created task.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>HTTP Methods</h2>
-    <p>The method tells the server what kind of action the client wants.</p>
+    <h2>Content-Type and Accept</h2>
+    <p>Headers can describe data formats.</p>
     <table class="compact">
-      <thead><tr><th>Method</th><th>Meaning</th><th>Task List example</th></tr></thead>
+      <thead><tr><th>Header</th><th>Meaning</th></tr></thead>
       <tbody>
-        <tr><td><p><code>GET</code></p></td><td><p>Read</p></td><td><p>List tasks, or show one task</p></td></tr>
-        <tr><td><p><code>POST</code></p></td><td><p>Create</p></td><td><p>Add a task</p></td></tr>
-        <tr><td><p><code>PUT</code></p></td><td><p>Replace the whole resource</p></td><td><p>Replace every field of a task</p></td></tr>
-        <tr><td><p><code>PATCH</code></p></td><td><p>Change part of a resource</p></td><td><p>Mark a task done</p></td></tr>
-        <tr><td><p><code>DELETE</code></p></td><td><p>Remove</p></td><td><p>Delete a task</p></td></tr>
+        <tr><td><p><code>Content-Type: application/json</code></p></td><td><p>This message's body is JSON.</p></td></tr>
+        <tr><td><p><code>Accept: application/json</code></p></td><td><p>The client asks for a JSON response.</p></td></tr>
       </tbody>
     </table>
-    <p><code>GET</code> only reads. It must never change data.</p>
+    <ul>
+      <li><p>A POST with JSON sets <code>Content-Type</code>.</p></li>
+      <li><p>A GET can send <code>Accept</code> without a request body.</p></li>
+      <li><p>The response has its own <code>Content-Type</code>.</p></li>
+    </ul>
   </section>
 
   <section class="frame">
     <h2>Status Codes</h2>
-    <p>The first digit tells the client who is responsible for the result.</p>
+    <p>A status code tells the client how the request ended.</p>
     <table class="compact">
       <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
       <tbody>
-        <tr><td><p><strong>2xx</strong> success</p></td><td><p><code>200 OK</code>, <code>201 Created</code>, <code>204 No Content</code></p></td></tr>
-        <tr><td><p><strong>4xx</strong> client error</p></td><td><p><code>400 Bad Request</code>, <code>404 Not Found</code></p></td></tr>
-        <tr><td><p><strong>5xx</strong> server error</p></td><td><p><code>500 Internal Server Error</code></p></td></tr>
+        <tr><td><p><code>200 OK</code></p></td><td><p>The request succeeded.</p></td></tr>
+        <tr><td><p><code>201 Created</code></p></td><td><p>The server created a resource.</p></td></tr>
+        <tr><td><p><code>204 No Content</code></p></td><td><p>Success with no response body.</p></td></tr>
+        <tr><td><p><code>400 Bad Request</code></p></td><td><p>The request contains a problem.</p></td></tr>
+        <tr><td><p><code>404 Not Found</code></p></td><td><p>The requested resource was not found.</p></td></tr>
+        <tr><td><p><code>500 Internal Server Error</code></p></td><td><p>An unexpected server error occurred.</p></td></tr>
       </tbody>
     </table>
     <ul>
-      <li><p>A <code>4xx</code> means the client should change the request.</p></li>
-      <li><p>A <code>5xx</code> means the server has a bug or problem.</p></li>
+      <li><p><code>2xx</code>: success.</p></li>
+      <li><p><code>4xx</code>: a problem with the request.</p></li>
+      <li><p><code>5xx</code>: a problem on the server.</p></li>
     </ul>
   </section>
 </section>
@@ -147,20 +211,48 @@ Location: /api/tasks/4
   </section>
 
   <section class="frame">
-    <h2>What Makes an API RESTful?</h2>
-    <p>An <strong>API</strong> is the set of requests a program accepts. <strong>REST</strong> is a style for designing web APIs around resources.</p>
+    <h2>REST Resources and Representations</h2>
+    <p>A web API is a set of operations other programs can call.</p>
     <ul>
-      <li><p><strong>Resource:</strong> a thing the API manages, such as a task.</p></li>
-      <li><p><strong>URL:</strong> names the resource, such as <code>/api/tasks/4</code>.</p></li>
-      <li><p><strong>Method:</strong> says what to do with it.</p></li>
-      <li><p><strong>Representation:</strong> the resource's data, usually JSON.</p></li>
-      <li><p><strong>Stateless:</strong> each request carries everything the server needs.</p></li>
+      <li><p><strong>REST:</strong> a style for organizing web APIs around resources.</p></li>
+      <li><p><strong>Resource:</strong> something the API manages, such as a task.</p></li>
+      <li><p><strong>URL:</strong> identifies a resource, such as <code>/api/tasks/4</code>.</p></li>
+      <li><p><strong>Representation:</strong> resource data, such as JSON.</p></li>
+      <li><p><strong>HTTP method:</strong> describes the requested operation.</p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>URLs Name Things; Methods Name Actions</h2>
-    <p>A REST URL is a noun. The HTTP method supplies the verb.</p>
+    <h2>Stateful and Stateless Requests</h2>
+    <p>Here, state means information about a client's ongoing interaction.</p>
+    <table class="compact">
+      <thead><tr><th>Stateful</th><th>Stateless</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><p>The server remembers conversation details between requests.</p></td>
+          <td><p>Each request supplies the context needed to understand it.</p></td>
+        </tr>
+        <tr>
+          <td>
+            <p>1. Select task 4.</p>
+            <p>2. Show the selected task.</p>
+          </td>
+          <td>
+            <p><code>GET /api/tasks/4</code></p>
+            <p>The request names the task directly.</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><p>REST uses stateless requests.</p></li>
+      <li><p>Task data can still persist in the database.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Resource URLs and HTTP Methods</h2>
+    <p>Use resource names in URLs.</p>
     <table class="compact">
       <thead><tr><th>Avoid</th><th>Prefer</th></tr></thead>
       <tbody>
@@ -169,58 +261,66 @@ Location: /api/tasks/4
         <tr><td><p><code>POST /api/deleteTask?id=4</code></p></td><td><p><code>DELETE /api/tasks/4</code></p></td></tr>
       </tbody>
     </table>
-    <p>Collections use plural nouns: <code>/api/tasks</code> is all tasks; <code>/api/tasks/4</code> is one.</p>
+    <ul>
+      <li><p><code>/api/tasks</code> identifies the collection.</p></li>
+      <li><p><code>/api/tasks/4</code> identifies one task.</p></li>
+    </ul>
   </section>
 
   <section class="frame">
     <h2>JSON Represents a Resource</h2>
-    <p>The server sends a representation of the task: its data as JSON, not the Java object itself.</p>
+    <p>JSON carries the task's data across the network.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-json">{
   "id": 4,
   "title": "Review REST",
   "done": false
 }</code></pre>
     <ul>
-      <li><p>Spring converts Java objects to JSON and back with Jackson, from the data formats lecture.</p></li>
-      <li><p>Each record component or getter becomes a JSON key.</p></li>
+      <li><p>One task is an object inside <code>{ }</code>.</p></li>
+      <li><p>The fields are <code>id</code>, <code>title</code>, and <code>done</code>.</p></li>
+      <li><p>A list of tasks is an array inside <code>[ ]</code>.</p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>The Task List API</h2>
-    <p>Before writing code, we write the contract: every request the API accepts.</p>
+    <p>Write the API contract before writing the controller.</p>
     <table class="compact">
       <thead><tr><th>Method</th><th>URL</th><th>Meaning</th><th>Success</th></tr></thead>
       <tbody>
         <tr><td><p><code>GET</code></p></td><td><p><code>/api/tasks</code></p></td><td><p>List tasks</p></td><td><p><code>200 OK</code></p></td></tr>
-        <tr><td><p><code>GET</code></p></td><td><p><code>/api/tasks/{id}</code></p></td><td><p>Show one task</p></td><td><p><code>200 OK</code></p></td></tr>
-        <tr><td><p><code>POST</code></p></td><td><p><code>/api/tasks</code></p></td><td><p>Add a task</p></td><td><p><code>201 Created</code></p></td></tr>
-        <tr><td><p><code>PATCH</code></p></td><td><p><code>/api/tasks/{id}</code></p></td><td><p>Mark done or not done</p></td><td><p><code>204 No Content</code></p></td></tr>
+        <tr><td><p><code>GET</code></p></td><td><p><code>/api/tasks/{id}</code></p></td><td><p>Read one task</p></td><td><p><code>200 OK</code></p></td></tr>
+        <tr><td><p><code>POST</code></p></td><td><p><code>/api/tasks</code></p></td><td><p>Create a task</p></td><td><p><code>201 Created</code></p></td></tr>
+        <tr><td><p><code>PATCH</code></p></td><td><p><code>/api/tasks/{id}</code></p></td><td><p>Set done</p></td><td><p><code>204 No Content</code></p></td></tr>
         <tr><td><p><code>DELETE</code></p></td><td><p><code>/api/tasks/{id}</code></p></td><td><p>Delete a task</p></td><td><p><code>204 No Content</code></p></td></tr>
       </tbody>
     </table>
-    <p><code>{id}</code> stands for a real task id, such as <code>/api/tasks/4</code>.</p>
+    <p>Replace <code>{id}</code> with an actual id, such as <code>4</code>.</p>
   </section>
 
   <section class="frame">
-    <h2>Check: Design the Request</h2>
-    <p>For each job, give the method, the URL, and the success status.</p>
+    <h2>Check: Choose the Method and URL</h2>
+    <p>Choose the method and URL for each task.</p>
     <ol>
-      <li><p>Show task 7.</p></li>
-      <li><p>Add a task titled "Study REST".</p></li>
-      <li><p>Remove task 7.</p></li>
-      <li><p>What is wrong with <code>GET /api/tasks/7/delete</code>?</p></li>
-    </ol>
-    <p>Try each answer before the next slide.</p>
-  </section>
-
-  <section class="frame">
-    <h2>Check: Answers</h2>
-    <ol>
-      <li><p><code>GET /api/tasks/7</code> → <code>200 OK</code>.</p></li>
-      <li><p><code>POST /api/tasks</code> with body <code>{"title": "Study REST"}</code> → <code>201 Created</code>.</p></li>
-      <li><p><code>DELETE /api/tasks/7</code> → <code>204 No Content</code>.</p></li>
-      <li><p>It puts a verb in the URL, and a <code>GET</code> must not change data. Use <code>DELETE /api/tasks/7</code>.</p></li>
+      <li>
+        <p>Show task 7.</p>
+        <p class="fragment" data-fragment-index="0"><code>GET /api/tasks/7</code></p>
+      </li>
+      <li>
+        <p>Add a new task.</p>
+        <p class="fragment" data-fragment-index="1"><code>POST /api/tasks</code></p>
+      </li>
+      <li>
+        <p>Remove task 7.</p>
+        <p class="fragment" data-fragment-index="2"><code>DELETE /api/tasks/7</code></p>
+      </li>
+      <li>
+        <p>Why is <code>GET /api/tasks/7/delete</code> a poor choice?</p>
+        <div class="fragment" data-fragment-index="3">
+          <p>GET must not request deletion.</p>
+          <p>Use <code>DELETE /api/tasks/7</code>.</p>
+        </div>
+      </li>
     </ol>
   </section>
 </section>
@@ -232,49 +332,23 @@ Location: /api/tasks/4
 
   <section class="frame">
     <h2>Spring Web Adds an HTTP Server</h2>
-    <p>Adding the web starter turns the Boot app from the JPA lecture into a web server.</p>
+    <p>The web starter adds HTTP support to the Boot application.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-xml">&lt;dependency&gt;
     &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
     &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
 &lt;/dependency&gt;</code></pre>
     <ul>
-      <li><p>Boot starts an embedded Tomcat server on port 8080.</p></li>
-      <li><p>Jackson, for JSON, comes with the starter.</p></li>
-      <li><p>The <code>TaskService</code> and <code>TaskRepository</code> beans are still there.</p></li>
+      <li><p>The starter supplies Tomcat, an HTTP server.</p></li>
+      <li><p>The server listens for requests on port <code>8080</code>.</p></li>
+      <li><p>Run <code>WebApp</code> and leave it running.</p></li>
+      <li><p>Example: <code>WebApp.java</code></p></li>
     </ul>
-  </section>
-
-  <section class="frame">
-    <h2>How a Request Reaches a Method</h2>
-    <p>Spring's <code>DispatcherServlet</code> receives every request and sends it to the matching controller method.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">HTTP request
-  → Tomcat
-  → DispatcherServlet      finds the method by HTTP method + URL
-  → TaskApiController.findAll()
-  → return value → Jackson → JSON response</code></pre>
-    <ul>
-      <li><p>We write the controller method; Spring does the routing and the JSON conversion.</p></li>
-      <li><p>This part of Spring is <strong>Spring Web MVC</strong>.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2><code class="inline-java">@Controller</code> vs. <code class="inline-java">@RestController</code></h2>
-    <p>Spring MVC applies the MVC idea from the desktop lecture to web requests. The two annotations differ in what the client gets back.</p>
-    <table class="compact">
-      <thead><tr><th></th><th><code class="inline-java">@Controller</code></th><th><code class="inline-java">@RestController</code></th></tr></thead>
-      <tbody>
-        <tr><td><p>Returns</p></td><td><p>A view name: an HTML page template</p></td><td><p>Data, written as JSON</p></td></tr>
-        <tr><td><p>Used for</p></td><td><p>Web pages rendered on the server</p></td><td><p>APIs for other programs</p></td></tr>
-      </tbody>
-    </table>
-    <p><code class="inline-java">@RestController</code> is <code class="inline-java">@Controller</code> plus <code class="inline-java">@ResponseBody</code> on every method. We build APIs, so we use <code class="inline-java">@RestController</code>.</p>
   </section>
 
   <section class="frame">
     <h2>The Web Controller</h2>
-    <p>The web controller is a new presentation-tier class. It uses the same <code>TaskService</code> as the JavaFX side.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@RestController
+    <p>The web controller calls the Task List Service.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java" style="padding-top: 12px; padding-bottom: 12px;">@RestController
 @RequestMapping("/api/tasks")
 public class TaskApiController {
     private final TaskService service;
@@ -284,52 +358,65 @@ public class TaskApiController {
     }
 }</code></pre>
     <ul>
-      <li><p><code class="inline-java">@RequestMapping</code> sets the base URL for every method in the class.</p></li>
-      <li><p>The name differs from the JavaFX <code>TaskController</code>, so both can exist.</p></li>
-      <li><p>Spring injects the Service through the constructor, as before.</p></li>
+      <li><p><code>@RestController</code> writes return values into response bodies.</p></li>
+      <li><p><code>@RequestMapping</code> sets the shared URL path.</p></li>
+      <li><p>Spring injects <code>TaskService</code> through the constructor.</p></li>
+      <li><p>Example: <code>TaskApiController.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Return Records, Not Entities</h2>
-    <p>The API returns a response record instead of the entity, so the database design and the JSON can change separately.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record TaskItemResponse(Long id, String title, boolean done) {
+    <h2>Response Records</h2>
+    <p>A response record defines the public JSON fields.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record TaskItemResponse(
+        Long id, String title, boolean done) {
     public static TaskItemResponse from(TaskItem item) {
-        return new TaskItemResponse(item.getId(), item.getTitle(), item.isDone());
+        return new TaskItemResponse(
+                item.getId(), item.getTitle(), item.isDone());
     }
 }</code></pre>
     <ul>
-      <li><p><code>TaskItem</code> could not be a <code class="inline-java">record</code>; request and response types can.</p></li>
-      <li><p>The record decides exactly which fields the client sees.</p></li>
+      <li><p>The entity represents stored data.</p></li>
+      <li><p>The response record selects what clients can see.</p></li>
+      <li><p>Jackson converts the response record to JSON.</p></li>
+      <li><p>Example: <code>TaskItemResponse.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>GET All Tasks</h2>
-    <p>A <code class="inline-java">@GetMapping</code> method returns data. Spring turns the return value into JSON with status <code>200 OK</code>.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@GetMapping
+    <p>An endpoint is an operation reached through an HTTP method and URL.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java" style="padding-top: 12px; padding-bottom: 12px;">@GetMapping
 public List&lt;TaskItemResponse&gt; findAll() {
     return service.findAllTaskItems().stream()
             .map(TaskItemResponse::from)
             .toList();
 }</code></pre>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-bash">curl http://localhost:8080/api/tasks
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text" style="padding-top: 12px; padding-bottom: 12px;">http://localhost:8080/api/tasks
 [{"id":1,"title":"Review REST","done":false}]</code></pre>
     <ul>
-      <li><p>A list becomes a JSON array.</p></li>
-      <li><p>Opening the URL in a browser also sends a <code>GET</code>.</p></li>
+      <li><p><code>@GetMapping</code> connects <code>GET /api/tasks</code> to this method.</p></li>
+      <li><p>Open the URL in a browser to see the JSON.</p></li>
+      <li><p>Spring returns <code>200 OK</code>.</p></li>
+      <li><p>Example: <code>TaskApiController.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Takeaways: HTTP, REST, and a First Endpoint</h2>
+    <h2>How a Request Reaches a Method</h2>
+    <p>Routing means choosing Java code for an incoming request.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">HTTP request
+  → Tomcat
+  → DispatcherServlet
+  → TaskApiController.findAll()
+  → return value → Jackson → JSON response</code></pre>
     <ul>
-      <li><p>A request has a method, a URL, headers, and an optional body; a response has a status code.</p></li>
-      <li><p>REST URLs name resources, and HTTP methods name the actions.</p></li>
-      <li><p>Spring Web MVC routes each request to a controller method and converts the result to JSON.</p></li>
-      <li><p>The web controller calls the same <code>TaskService</code> as the JavaFX side.</p></li>
+      <li><p>Tomcat accepts the HTTP request.</p></li>
+      <li><p><code>DispatcherServlet</code> selects the mapped controller method.</p></li>
+      <li><p>Jackson converts the returned data to JSON.</p></li>
     </ul>
   </section>
+
 </section>
 
 <section>
@@ -341,215 +428,282 @@ public List&lt;TaskItemResponse&gt; findAll() {
     <h2>Recall</h2>
     <p>Answer from memory before we continue.</p>
     <ol>
-      <li><p>Which method creates a resource? <span class="fragment"><em><code>POST</code>.</em></span></p></li>
+      <li><p>Which method creates a task? <span class="fragment"><em><code>POST</code>.</em></span></p></li>
       <li><p>What does <code>404</code> mean? <span class="fragment"><em>The resource was not found.</em></span></p></li>
-      <li><p>What turns a returned record into JSON? <span class="fragment"><em>Jackson, called by Spring.</em></span></p></li>
+      <li><p>What converts a response record to JSON? <span class="fragment"><em>Jackson.</em></span></p></li>
     </ol>
   </section>
 
   <section class="frame">
+    <h2>Where Request Data Goes</h2>
+    <p>Requests can carry input in different places.</p>
+    <table class="compact">
+      <thead><tr><th>Part</th><th>Example</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><p>Path</p></td><td><p><code>/api/tasks/4</code></p></td><td><p>Identify task 4.</p></td></tr>
+        <tr><td><p>Query parameter</p></td><td><p><code>?done=false</code></p></td><td><p>Filter the task list.</p></td></tr>
+        <tr><td><p>Body</p></td><td><p><code>{"title": "Study REST"}</code></p></td><td><p>Supply new task data.</p></td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><p>A query parameter is a name and value after <code>?</code>.</p></li>
+      <li><p>A body carries data inside the request message.</p></li>
+      <li><p>Spring annotations tell Spring where to read each value.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
     <h2>Path Variables: One Task</h2>
-    <p>Part of the URL can be a value. <code class="inline-java">@PathVariable</code> copies it into a method parameter.</p>
+    <p><code>@PathVariable</code> reads a value from the URL path.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@GetMapping("/{id}")
 public TaskItemResponse findOne(@PathVariable Long id) {
     return TaskItemResponse.from(service.getTaskItem(id));
 }</code></pre>
     <ul>
       <li><p><code>GET /api/tasks/4</code> calls <code>findOne(4L)</code>.</p></li>
-      <li><p>Spring converts the text <code>"4"</code> to a <code>Long</code>.</p></li>
-      <li><p>If task 4 does not exist, the Service throws an exception. We turn it into <code>404</code> later today.</p></li>
+      <li><p>Spring converts <code>"4"</code> to a <code>Long</code>.</p></li>
+      <li><p>An invalid id format produces <code>400 Bad Request</code>.</p></li>
+      <li><p>We map a missing task to <code>404</code> in the error section.</p></li>
+      <li><p>Example: <code>TaskApiController.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>Query Parameters: Filter Tasks</h2>
-    <p>Optional settings go after <code>?</code> in the URL. <code class="inline-java">@RequestParam</code> reads them.</p>
+    <p><code>@RequestParam</code> reads a query parameter from the URL.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@GetMapping
-public List&lt;TaskItemResponse&gt; findAll(@RequestParam(required = false) Boolean done) {
+public List&lt;TaskItemResponse&gt; findAll(
+        @RequestParam(required = false) Boolean done) {
     List&lt;TaskItem&gt; items = (done == null)
             ? service.findAllTaskItems()
             : service.findTaskItemsByDone(done);
     return items.stream().map(TaskItemResponse::from).toList();
 }</code></pre>
     <ul>
-      <li><p><code>GET /api/tasks?done=false</code> lists unfinished tasks.</p></li>
-      <li><p><code>GET /api/tasks</code> still lists every task, because <code>done</code> is optional.</p></li>
-      <li><p>Path variables name <em>which</em> resource; query parameters filter or sort.</p></li>
+      <li><p><code>/api/tasks</code>: <code>done</code> is null, so return all tasks.</p></li>
+      <li><p><code>/api/tasks?done=false</code>: return unfinished tasks.</p></li>
+      <li><p><code>Boolean</code> distinguishes a missing value from <code>false</code>.</p></li>
+      <li><p>Example: <code>TaskApiController.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>Request Body: Create a Task</h2>
-    <p>A <code>POST</code> sends the new task as JSON in the body. <code class="inline-java">@RequestBody</code> turns that JSON into a record.</p>
+    <p><code>@RequestBody</code> reads JSON into a Java record.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record CreateTaskRequest(String title) { }</code></pre>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@PostMapping
-public TaskItemResponse create(@RequestBody CreateTaskRequest request) {
+public TaskItemResponse create(
+        @RequestBody CreateTaskRequest request) {
     return TaskItemResponse.from(service.addTaskItem(request.title()));
 }</code></pre>
     <ul>
-      <li><p>Jackson matches the JSON key <code>title</code> to the record component <code>title</code>.</p></li>
-      <li><p>This works, but it answers <code>200 OK</code>. A create should answer <code>201 Created</code>.</p></li>
+      <li><p>The client sends <code>{"title": "Review REST"}</code>.</p></li>
+      <li><p>Jackson maps the <code>title</code> key to the record component.</p></li>
+      <li><p>Spring returns <code>200 OK</code>.</p></li>
+      <li><p>Example: <code>CreateTaskRequest.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2><code>201 Created</code> and <code>Location</code></h2>
-    <p><code>ResponseEntity</code> lets a method choose the status code and headers, not just the body.</p>
+    <p><code>ResponseEntity</code> controls the status, headers, and body.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@PostMapping
-public ResponseEntity&lt;TaskItemResponse&gt; create(@RequestBody CreateTaskRequest request) {
+public ResponseEntity&lt;TaskItemResponse&gt; create(
+        @RequestBody CreateTaskRequest request) {
     TaskItem saved = service.addTaskItem(request.title());
     URI location = URI.create("/api/tasks/" + saved.getId());
-    return ResponseEntity.created(location).body(TaskItemResponse.from(saved));
+    return ResponseEntity.created(location)
+            .body(TaskItemResponse.from(saved));
 }</code></pre>
     <ul>
-      <li><p><code>created(location)</code> sets status <code>201</code> and the <code>Location</code> header.</p></li>
-      <li><p>The client learns the new task's URL without guessing its id.</p></li>
+      <li><p><code>created(location)</code> sets status <code>201</code>.</p></li>
+      <li><p><code>Location</code> gives the new task's URL.</p></li>
+      <li><p>The body contains the created task.</p></li>
+      <li><p>Example: <code>TaskApiController.java</code></p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Validate the Request Body</h2>
+    <p>Add constraints and activate validation.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record CreateTaskRequest(
+        @NotBlank @Size(max = 100) String title) { }
+
+// Add @Valid to the create method parameter:
+@Valid @RequestBody CreateTaskRequest request</code></pre>
+    <ul>
+      <li><p><code>@NotBlank</code> rejects missing, empty, and whitespace-only titles.</p></li>
+      <li><p><code>@Size(max = 100)</code> limits the title length.</p></li>
+      <li><p><code>@Valid</code> activates validation before the method body runs.</p></li>
+      <li><p>Add <code>spring-boot-starter-validation</code> to the project.</p></li>
+      <li><p>Example: <code>CreateTaskRequest.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2><code>PATCH</code>: Mark a Task Done</h2>
-    <p><code>PATCH</code> changes part of a task. When there is nothing useful to send back, answer <code>204 No Content</code>.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record UpdateTaskRequest(boolean done) { }</code></pre>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@PatchMapping("/{id}")
+    <p>Change the done field and return <code>204 No Content</code>.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java" style="padding-top: 12px; padding-bottom: 12px;">public record UpdateTaskRequest(
+        @NotNull Boolean done) { }</code></pre>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java" style="padding-top: 12px; padding-bottom: 12px;">@PatchMapping("/{id}")
 @ResponseStatus(HttpStatus.NO_CONTENT)
-public void update(@PathVariable Long id, @RequestBody UpdateTaskRequest request) {
+public void update(@PathVariable Long id,
+        @Valid @RequestBody UpdateTaskRequest request) {
     service.setDone(id, request.done());
 }</code></pre>
     <ul>
-      <li><p><code class="inline-java">@ResponseStatus</code> sets the success status for a <code class="inline-java">void</code> method.</p></li>
-      <li><p>The Service's <code class="inline-java">@Transactional</code> <code>setDone</code> from the JPA lecture does the work.</p></li>
+      <li><p><code>@ResponseStatus</code> sets the response status to <code>204</code>.</p></li>
+      <li><p>A missing <code>done</code> value becomes <code>null</code> in <code>Boolean</code>.</p></li>
+      <li><p><code>@NotNull</code> rejects it with <code>400</code>.</p></li>
+      <li><p>Example: <code>UpdateTaskRequest.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2><code>DELETE</code>: Remove a Task</h2>
-    <p>A delete needs only the id from the URL. It has no request body and no response body.</p>
+    <p>Read the id from the path and call the Service.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@DeleteMapping("/{id}")
 @ResponseStatus(HttpStatus.NO_CONTENT)
 public void delete(@PathVariable Long id) {
     service.deleteTaskItem(id);
 }</code></pre>
     <ul>
-      <li><p>Each controller method is a few lines: read the request, call the Service, shape the response.</p></li>
-      <li><p>Task rules stay in the Service. It gains small methods for these endpoints: <code>getTaskItem</code>, <code>findTaskItemsByDone</code>, and <code>deleteTaskItem</code>.</p></li>
+      <li><p>A successful delete returns <code>204</code>.</p></li>
+      <li><p>The response has no body.</p></li>
+      <li><p>The Service throws <code>TaskNotFoundException</code> for a missing task.</p></li>
+      <li><p>Example: <code>TaskApiController.java</code></p></li>
     </ul>
   </section>
 </section>
 
 <section>
   <section class="title-slide slide level1">
-    <h1>Validation and Errors</h1>
+    <h1>Handling Errors</h1>
   </section>
 
   <section class="frame">
-    <h2>Validate the Request Body</h2>
-    <p>Constraints on the request record reject bad input before the controller method runs.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record CreateTaskRequest(
-        @NotBlank @Size(max = 100) String title) { }</code></pre>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@PostMapping
-public ResponseEntity&lt;TaskItemResponse&gt; create(
-        @Valid @RequestBody CreateTaskRequest request) { ... }</code></pre>
-    <ul>
-      <li><p><code class="inline-java">@Valid</code> checks the constraints; a failure answers <code>400 Bad Request</code>.</p></li>
-      <li><p><code class="inline-java">@Size</code> with <code>max = 100</code> matches the <code>length = 100</code> column from the JPA lecture.</p></li>
-      <li><p>The Service keeps its own title check, because the JavaFX side calls it too.</p></li>
-      <li><p>Validation needs the <code>spring-boot-starter-validation</code> dependency.</p></li>
-    </ul>
-  </section>
-
-  <section class="frame">
-    <h2>Exceptions Carry Meaning</h2>
-    <p>A specific exception type lets the web layer choose the right status code.</p>
+    <h2>A Missing Resource</h2>
+    <p>Use a specific exception for a missing task.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public class TaskNotFoundException extends RuntimeException {
     public TaskNotFoundException(Long id) {
         super("Task item " + id + " not found");
     }
 }</code></pre>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Transactional(readOnly = true)
-public TaskItem getTaskItem(Long id) {
-    return repository.findById(id).orElseThrow(() -&gt; new TaskNotFoundException(id));
-}</code></pre>
     <ul>
-      <li><p>A missing task becomes <code>TaskNotFoundException</code>, which should be <code>404</code>.</p></li>
-      <li><p>A blank title is still <code>IllegalArgumentException</code>, which should be <code>400</code>.</p></li>
-      <li><p><code>setDone</code> and <code>deleteTaskItem</code> throw <code>TaskNotFoundException</code> too.</p></li>
+      <li><p>The exception describes a task problem.</p></li>
+      <li><p>It contains no HTTP annotations.</p></li>
+      <li><p>The web layer will map it to <code>404</code>.</p></li>
+      <li><p>Example: <code>TaskNotFoundException.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Handle Errors in One Place</h2>
-    <p><code class="inline-java">@RestControllerAdvice</code> maps exceptions to responses for every controller at once.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@RestControllerAdvice
-public class ApiExceptionHandler {
-    @ExceptionHandler(TaskNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    ApiError notFound(TaskNotFoundException exception) {
-        return new ApiError(404, exception.getMessage());
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    ApiError badRequest(IllegalArgumentException exception) {
-        return new ApiError(400, exception.getMessage());
-    }
+    <h2>Look Up a Task in the Service</h2>
+    <p>The Service decides what a missing row means.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Transactional(readOnly = true)
+public TaskItem getTaskItem(Long id) {
+    return repository.findById(id)
+            .orElseThrow(() -&gt; new TaskNotFoundException(id));
 }</code></pre>
     <ul>
-      <li><p>Controller methods stay short: no <code class="inline-java">try</code>/<code class="inline-java">catch</code> in each one.</p></li>
-      <li><p>An exception with no handler becomes <code>500 Internal Server Error</code>.</p></li>
+      <li><p><code>findById</code> returns an <code>Optional</code>.</p></li>
+      <li><p><code>orElseThrow</code> handles an empty result.</p></li>
+      <li><p>Read, update, and delete use the same exception type.</p></li>
+      <li><p>Example: <code>TaskService.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>The Error Response</h2>
-    <p>Clients get a small, predictable JSON body for every handled error.</p>
+    <p>Handled errors use a consistent JSON shape.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public record ApiError(int status, String message) { }</code></pre>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-http">HTTP/1.1 404 Not Found
 Content-Type: application/json
 
 {"status": 404, "message": "Task item 42 not found"}</code></pre>
     <ul>
-      <li><p>The status code is for programs; the message is for people.</p></li>
-      <li><p>Validation failures use Spring Boot's default <code>400</code> body unless we add a handler for them.</p></li>
+      <li><p>Programs can check the status code.</p></li>
+      <li><p>People can read the message.</p></li>
+      <li><p>Validation and binding errors use the same two fields.</p></li>
+      <li><p>Example: <code>ApiError.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Status Codes for the Task List API</h2>
-    <p>Each endpoint has one success status and a small set of error statuses.</p>
+    <h2>Map a Domain Error to HTTP</h2>
+    <p><code>@RestControllerAdvice</code> handles errors across REST controllers.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@RestControllerAdvice
+public class ApiExceptionHandler {
+    @ExceptionHandler(TaskNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError notFound(TaskNotFoundException exception) {
+        return new ApiError(404, exception.getMessage());
+    }
+}</code></pre>
+    <ul>
+      <li><p><code>@ExceptionHandler</code> selects the exception type.</p></li>
+      <li><p><code>@ResponseStatus</code> sets status <code>404</code>.</p></li>
+      <li><p>The returned <code>ApiError</code> becomes JSON.</p></li>
+      <li><p>Example: <code>ApiExceptionHandler.java</code></p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Map Invalid Input to HTTP</h2>
+    <p>Add a validation handler to the same advice class.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@ExceptionHandler(MethodArgumentNotValidException.class)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public ApiError invalidBody() {
+    return new ApiError(400, "Invalid task fields");
+}</code></pre>
+    <ul>
+      <li><p>Invalid POST titles reach this handler.</p></li>
+      <li><p>A missing PATCH <code>done</code> field reaches it too.</p></li>
+      <li><p>Other handlers map malformed JSON and invalid parameters to <code>400</code>.</p></li>
+      <li><p>Unexpected server failures remain server errors.</p></li>
+      <li><p>Example: <code>ApiExceptionHandler.java</code></p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Common API Errors</h2>
+    <p>Examples from the completed API.</p>
     <table class="compact">
-      <thead><tr><th>Request</th><th>Success</th><th>Errors</th></tr></thead>
+      <thead><tr><th>Request</th><th>Problem</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td><p><code>GET /api/tasks</code></p></td><td><p><code>200</code></p></td><td><p><code>400</code> if <code>done</code> is not true or false</p></td></tr>
-        <tr><td><p><code>GET /api/tasks/{id}</code></p></td><td><p><code>200</code></p></td><td><p><code>404</code></p></td></tr>
-        <tr><td><p><code>POST /api/tasks</code></p></td><td><p><code>201</code></p></td><td><p><code>400</code></p></td></tr>
-        <tr><td><p><code>PATCH /api/tasks/{id}</code></p></td><td><p><code>204</code></p></td><td><p><code>400</code>, <code>404</code></p></td></tr>
-        <tr><td><p><code>DELETE /api/tasks/{id}</code></p></td><td><p><code>204</code></p></td><td><p><code>404</code></p></td></tr>
+        <tr><td><p><code>GET /api/tasks?done=maybe</code></p></td><td><p>Invalid Boolean filter</p></td><td><p><code>400</code></p></td></tr>
+        <tr><td><p><code>GET /api/tasks/abc</code></p></td><td><p>Invalid numeric id</p></td><td><p><code>400</code></p></td></tr>
+        <tr><td><p><code>GET /api/tasks/99</code></p></td><td><p>Task 99 does not exist</p></td><td><p><code>404</code></p></td></tr>
+        <tr><td><p><code>POST /api/tasks</code></p></td><td><p>Blank or missing title</p></td><td><p><code>400</code></p></td></tr>
+        <tr><td><p><code>PATCH /api/tasks/4</code></p></td><td><p>Missing done field</p></td><td><p><code>400</code></p></td></tr>
+        <tr><td><p><code>DELETE /api/tasks/99</code></p></td><td><p>Task 99 does not exist</p></td><td><p><code>404</code></p></td></tr>
       </tbody>
     </table>
   </section>
 
   <section class="frame">
     <h2>Check: Which Status?</h2>
-    <p>Give the status code the client receives.</p>
+    <p>Give the status code before revealing each answer.</p>
     <ol>
-      <li><p><code>POST /api/tasks</code> with body <code>{"title": ""}</code>.</p></li>
-      <li><p><code>GET /api/tasks/99</code> when task 99 does not exist.</p></li>
-      <li><p><code>DELETE /api/tasks/3</code> succeeds.</p></li>
-      <li><p>A bug in the Service throws a <code>NullPointerException</code>.</p></li>
+      <li>
+        <p><code>POST /api/tasks</code> with <code>{"title": ""}</code>.</p>
+        <p class="fragment" data-fragment-index="0"><code>400 Bad Request</code>: <code>@NotBlank</code> rejects the title.</p>
+      </li>
+      <li>
+        <p><code>GET /api/tasks/99</code> when task 99 is missing.</p>
+        <p class="fragment" data-fragment-index="1"><code>404 Not Found</code>: the task does not exist.</p>
+      </li>
+      <li>
+        <p><code>DELETE /api/tasks/3</code> succeeds.</p>
+        <p class="fragment" data-fragment-index="2"><code>204 No Content</code>: deletion succeeded.</p>
+      </li>
+      <li>
+        <p>An unexpected <code>NullPointerException</code> occurs in the Service.</p>
+        <p class="fragment" data-fragment-index="3"><code>500 Internal Server Error</code>: an unexpected server failure.</p>
+      </li>
     </ol>
-    <p>Try each answer before the next slide.</p>
   </section>
 
-  <section class="frame">
-    <h2>Check: Answers</h2>
-    <ol>
-      <li><p><code>400 Bad Request</code>: <code class="inline-java">@NotBlank</code> rejects the empty title.</p></li>
-      <li><p><code>404 Not Found</code>: the Service throws <code>TaskNotFoundException</code>.</p></li>
-      <li><p><code>204 No Content</code>: success with no body.</p></li>
-      <li><p><code>500 Internal Server Error</code>: no handler covers it, and it is the server's fault.</p></li>
-    </ol>
-  </section>
 </section>
 
 <section>
@@ -558,47 +712,154 @@ Content-Type: application/json
   </section>
 
   <section class="frame">
-    <h2>Try the API with curl</h2>
-    <p><code>curl</code> sends any HTTP request from the terminal, so we can test methods a browser cannot send.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-bash">curl -i -X POST http://localhost:8080/api/tasks \
-     -H "Content-Type: application/json" \
-     -d '{"title": "Review REST"}'
-
-curl "http://localhost:8080/api/tasks?done=false"
-
-curl -i -X PATCH http://localhost:8080/api/tasks/1 \
-     -H "Content-Type: application/json" -d '{"done": true}'
-
-curl -i -X DELETE http://localhost:8080/api/tasks/1</code></pre>
+    <h2>The Complete Task Workflow</h2>
+    <p>Run <code>WebApp</code>, then run <code>TaskApiDemo</code> as Java applications.</p>
+    <table class="compact">
+      <thead><tr><th>Step</th><th>Request</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><p>Create</p></td><td><p><code>POST /api/tasks</code></p></td><td><p><code>201</code> and <code>Location</code></p></td></tr>
+        <tr><td><p>Read</p></td><td><p><code>GET {Location}</code></p></td><td><p><code>200</code> and task JSON</p></td></tr>
+        <tr><td><p>Update</p></td><td><p><code>PATCH {Location}</code></p></td><td><p><code>204</code></p></td></tr>
+        <tr><td><p>Filter</p></td><td><p><code>GET /api/tasks?done=true</code></p></td><td><p><code>200</code> and a JSON array</p></td></tr>
+        <tr><td><p>Delete</p></td><td><p><code>DELETE {Location}</code></p></td><td><p><code>204</code></p></td></tr>
+        <tr><td><p>Read again</p></td><td><p><code>GET {Location}</code></p></td><td><p><code>404</code> and error JSON</p></td></tr>
+      </tbody>
+    </table>
     <ul>
-      <li><p><code>-X</code> sets the method, <code>-H</code> adds a header, and <code>-d</code> sends a body.</p></li>
-      <li><p><code>-i</code> shows the status line and headers.</p></li>
+      <li><p>The demo follows the URL returned in <code>Location</code>.</p></li>
+      <li><p>Example: <code>TaskApiDemo.java</code></p></li>
     </ul>
   </section>
 
   <section class="frame">
-    <h2>Test the Web Layer with MockMvc</h2>
-    <p>A web-layer test sends a fake request to the controller and checks the response, without starting a server.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@WebMvcTest(TaskApiController.class)
-class TaskApiControllerTest {
-    @Autowired
-    MockMvc mockMvc;
-
-    @MockitoBean
-    TaskService service;
-
-    @Test
-    void rejectsBlankTitle() throws Exception {
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\": \"   \"}"))
-                .andExpect(status().isBadRequest());
-    }
+    <h2>MockMvc Test Setup</h2>
+    <p>Test the request pipeline without a listening HTTP server.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@SpringBootTest
+@AutoConfigureMockMvc
+class ApiErrorTest {
+    @Autowired MockMvc mvc;
+    @Autowired TaskRepository repository;
 }</code></pre>
     <ul>
-      <li><p><code class="inline-java">@WebMvcTest</code> starts only the web layer: no Tomcat and no database.</p></li>
-      <li><p><code class="inline-java">@MockitoBean</code> supplies a stand-in <code>TaskService</code>.</p></li>
-      <li><p>This test checks the API contract: a blank title must answer <code>400</code>.</p></li>
+      <li><p><code>@SpringBootTest</code> loads the application beans.</p></li>
+      <li><p>The real Service and Repository use temporary H2.</p></li>
+      <li><p>MockMvc sends requests through Spring MVC.</p></li>
+      <li><p>Example: <code>ApiErrorTest.java</code></p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Test an Invalid Request</h2>
+    <p>A blank title must return <code>400</code> without saving a task.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java" style="padding-top: 12px; padding-bottom: 12px;">repository.deleteAll();
+
+mvc.perform(post("/api/tasks")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"title\":\"   \"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400));
+assertEquals(0, repository.count());</code></pre>
+    <ul>
+      <li><p><code>perform</code> sends the request.</p></li>
+      <li><p><code>andExpect</code> checks the HTTP response.</p></li>
+      <li><p><code>$.status</code> selects the <code>status</code> field in the JSON body.</p></li>
+      <li><p>The final assertion checks the database.</p></li>
+      <li><p>Example: <code>ApiErrorTest.java</code></p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Optional: Command Line Requests</h1>
+  </section>
+
+  <section class="frame">
+    <h2>curl on macOS and Linux</h2>
+    <p>curl sends HTTP requests from a terminal.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-bash">curl -i http://localhost:8080/api/tasks
+
+curl -i -X POST http://localhost:8080/api/tasks \
+     -H "Content-Type: application/json" \
+     -d '{"title":"Review REST"}'</code></pre>
+    <ul>
+      <li><p>Start <code>WebApp</code> before sending requests.</p></li>
+      <li><p><code>-i</code> shows the status and response headers.</p></li>
+      <li><p><code>-X</code> chooses the method.</p></li>
+      <li><p><code>-H</code> adds a header.</p></li>
+      <li><p><code>-d</code> supplies the request body.</p></li>
+      <li><p>In Bash or Zsh, <code>\</code> continues the command on the next line.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>curl on Windows</h2>
+    <p>Use these commands in <strong>Command Prompt (cmd.exe)</strong>.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">curl.exe -i http://localhost:8080/api/tasks
+
+curl.exe -i -X POST http://localhost:8080/api/tasks ^
+     -H "Content-Type: application/json" ^
+     -d "{\"title\":\"Review REST\"}"</code></pre>
+    <ul>
+      <li><p>Modern Windows 10 and 11 include curl.</p></li>
+      <li><p>Start <code>WebApp</code> before sending requests.</p></li>
+      <li><p>In Command Prompt, <code>^</code> continues the command on the next line.</p></li>
+      <li><p>In PowerShell, use <code>curl.exe</code> to call the curl program.</p></li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section class="title-slide slide level1">
+    <h1>Optional: HTML Views</h1>
+  </section>
+
+  <section class="frame">
+    <h2><code class="inline-java">@Controller</code> and <code class="inline-java">@RestController</code></h2>
+    <p>Both annotations use Spring MVC routing.</p>
+    <table class="compact">
+      <thead><tr><th>Annotation</th><th>Typical return value</th><th>Response</th></tr></thead>
+      <tbody>
+        <tr><td><p><code>@Controller</code></p></td><td><p>A view name</p></td><td><p>Rendered HTML</p></td></tr>
+        <tr><td><p><code>@RestController</code></p></td><td><p>A response object</p></td><td><p>Here, JSON</p></td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><p><code>@RestController</code> includes <code>@ResponseBody</code>.</p></li>
+      <li><p>Our REST endpoints use <code>@RestController</code>.</p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>A Controller for an HTML View</h2>
+    <p>The same Service can also supply data for a web page.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@GetMapping("/tasks")
+public String tasks(Model model) {
+    model.addAttribute("tasks", service.findAllTaskItems());
+    return "tasks";
+}</code></pre>
+    <ul>
+      <li><p>This method belongs to a <code>@Controller</code> class.</p></li>
+      <li><p><code>Model</code> holds the data for this response.</p></li>
+      <li><p><code>"tasks"</code> is the view name.</p></li>
+      <li><p>Example: <code>TaskPageController.java</code></p></li>
+    </ul>
+  </section>
+
+  <section class="frame">
+    <h2>Render Tasks as HTML</h2>
+    <p>Thymeleaf renders the template on the server.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-html">&lt;h1&gt;Task List&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li th:each="item : ${tasks}"
+      th:text="${item}"&gt;Task item&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+    <ul>
+      <li><p><code>th:each</code> loops over the tasks.</p></li>
+      <li><p><code>th:text</code> writes escaped text.</p></li>
+      <li><p><code>GET /tasks</code> returns HTML.</p></li>
+      <li><p><code>GET /api/tasks</code> returns JSON.</p></li>
+      <li><p>Example: <code>tasks.html</code></p></li>
     </ul>
   </section>
 </section>
@@ -611,38 +872,28 @@ class TaskApiControllerTest {
   <section class="frame">
     <h2>Common Mistakes</h2>
     <ul>
-      <li><p>Putting verbs in URLs, such as <code>/api/createTask</code>.</p></li>
-      <li><p>Answering <code>200 OK</code> for everything, including errors.</p></li>
-      <li><p>Returning JPA entities directly as JSON.</p></li>
-      <li><p>Putting task rules in the controller instead of the Service.</p></li>
-      <li><p>Forgetting <code class="inline-java">@RequestBody</code>, so the JSON body is ignored.</p></li>
-      <li><p>Forgetting <code class="inline-java">@Valid</code>, so the constraints are never checked.</p></li>
-      <li><p>Building without the <code>-parameters</code> compiler flag, so Spring cannot match <code>{id}</code> to the <code>id</code> parameter. <code>spring-boot-starter-parent</code> turns it on.</p></li>
+      <li><p>Using GET to change task data.</p></li>
+      <li><p>Confusing <code>Content-Type</code> with <code>Accept</code>.</p></li>
+      <li><p>Exposing entity fields without choosing the public JSON shape.</p></li>
+      <li><p>Forgetting <code>@Valid</code> on a constrained request body.</p></li>
+      <li><p>Using primitive <code>boolean</code> for a required PATCH field.</p></li>
+      <li><p>Putting task rules in the controller.</p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>Key Takeaways</h2>
     <ul>
-      <li><p>HTTP requests carry a method, a URL, headers, and a body; responses carry a status code.</p></li>
-      <li><p>REST URLs name resources, methods name actions, and JSON carries the data.</p></li>
-      <li><p><code class="inline-java">@PathVariable</code>, <code class="inline-java">@RequestParam</code>, and <code class="inline-java">@RequestBody</code> read request data.</p></li>
-      <li><p><code class="inline-java">@RestControllerAdvice</code> turns exceptions into the right status codes.</p></li>
-      <li><p>The web controller and the JavaFX controller share one <code>TaskService</code>.</p></li>
+      <li><p>HTTP methods describe operations on resources.</p></li>
+      <li><p>URLs identify resources.</p></li>
+      <li><p>JSON represents resource data.</p></li>
+      <li><p>Spring binds request data to Java parameters.</p></li>
+      <li><p>Controllers call the Service and shape the response.</p></li>
+      <li><p>Validation and error handlers produce clear failures.</p></li>
+      <li><p>MockMvc checks responses and database effects.</p></li>
     </ul>
   </section>
 
-  <section class="frame">
-    <h2>Next: Many Requests at Once</h2>
-    <p>A web server answers many clients at the same time.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">request A → worker thread 1 → TaskService
-request B → worker thread 2 → TaskService</code></pre>
-    <ul>
-      <li><p>Tomcat runs each request on a worker thread from a pool.</p></li>
-      <li><p>Singleton beans such as <code>TaskService</code> are shared by those threads.</p></li>
-      <li><p>Next lecture: concurrency, and how to share objects safely between threads.</p></li>
-    </ul>
-  </section>
 </section>
 
 </div>

@@ -147,7 +147,7 @@ public class TaskItem {
 }</code></pre>
     <ul>
       <li><p><code class="inline-java">@Entity</code> marks the class as an entity.</p></li>
-      <li><p><code class="inline-java">@Table</code> names the table; without it, the name comes from the class.</p></li>
+      <li><p><code class="inline-java">@Table</code> names the table. Without it, the name comes from the class.</p></li>
       <li><p><code class="inline-java">@Id</code> marks the identity field</li>
         <li><code class="inline-java">@GeneratedValue</code> With <code>GenerationType.IDENTITY</code>, the database generates the key when the row is inserted</li>
     </ul>
@@ -413,24 +413,43 @@ spring.jpa.show-sql=true</code></pre>
     <h1>Service Layer and Transactions</h1>
   </section>
   <section class="frame">
-  <h2>What Is a Service?</h2>
-  <p>A service is a class that provides application operations.</p>
-  <ul>
-    <li><p>Its methods represent actions such as adding a task or marking it done.</p></li>
-    <li><p>It coordinates entities and Repository calls to carry out those actions.</p></li>
-    <li><p>It can group the database work for an operation into one transaction.</p></li>
-  </ul>
-</section>
-  <section class="frame">
-    <h2>Where Do Task Operations Go?</h2>
-    <p><code>TaskService</code> groups task operations into transactions.</p>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController → TaskModel → TaskService → TaskRepository</code></pre>
+    <h2>Task Operations and Task-List State</h2>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController → TaskModel → TaskRepository</code></pre>
     <ul>
-      <li><p><code>TaskModel</code> holds the current task list.</p></li>
-      <li><p>The Controller supplies that list to the View with <code>showTasks</code>.</p></li>
-      <li><p><code>TaskService</code> coordinates task operations and transactions.</p></li>
-      <li><p>Both belong to the application tier; the Service is not a new tier.</p></li>
+      <li><p><code>TaskModel</code> coordinates task operations through the Repository.</p></li>
+      <li><p>It holds the current task list used by the View.</p></li>
+      <li><p>It refreshes that list after stored tasks change.</p></li>
     </ul>
+    <p>A Service can separate task operations from the Model's task-list state.</p>
+  </section>
+
+  <section class="frame">
+    <h2>What Is a Service?</h2>
+    <p>A Service is a class that provides application operations.</p>
+    <table class="compact">
+      <thead><tr><th>Component</th><th>Responsibility</th></tr></thead>
+      <tbody>
+        <tr><td><p><code>TaskModel</code></p></td><td><p>Keep and refresh the current task list</p></td></tr>
+        <tr><td><p><code>TaskService</code></p></td><td><p>Coordinate adding, completing, and deleting tasks</p></td></tr>
+        <tr><td><p><code>TaskRepository</code></p></td><td><p>Store and retrieve entities</p></td></tr>
+      </tbody>
+    </table>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController → TaskModel → TaskService → TaskRepository</code></pre>
+    <p><code>TaskItem</code> validates its title. The Model and Service belong to the application tier.</p>
+    <p>A separate Service is optional.</p>
+  </section>
+
+  <section class="frame">
+    <h2>Another Caller for TaskService</h2>
+    <p>Desktop and console callers can use the same task operations.</p>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Desktop: TaskController → TaskModel → TaskService
+Console: RepositoryDemo ───────────→ TaskService</code></pre>
+    <ul>
+      <li><p>Both callers use <code>addTaskItem</code> and <code>setDone</code>.</p></li>
+      <li><p>The console caller does not maintain the Model's task list.</p></li>
+      <li><p>Repository methods remain available for direct queries.</p></li>
+    </ul>
+    <p>Example: <code>jpa/springdata/RepositoryDemo.java</code></p>
   </section>
 
   <section class="frame">
@@ -445,9 +464,8 @@ public class TaskService {
     }
 }</code></pre>
     <ul>
+      <li><p><code class="inline-java">@Service</code> lets component scanning register this class as a Spring bean.</p></li>
       <li><p>Spring passes the generated <code>TaskRepository</code> to the constructor.</p></li>
-      <li><p>For this Service, Spring uses a subclass-based transaction proxy.</p></li>
-      <li><p>The class and its transactional methods must therefore stay non-<code class="inline-java">final</code>.</p></li>
     </ul>
   </section>
 
@@ -470,7 +488,7 @@ public TaskItem addTaskItem(String title) {
 
   <section class="frame">
     <h2>Change a Managed Task Item</h2>
-    <p>Inside a transaction, loading and changing the entity is enough. There is no <code>save</code> call.</p>
+    <p>The Service loads a task and changes it within one transaction.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">@Transactional
 public void setDone(Long id, boolean done) {
     TaskItem item = repository.findById(id)
@@ -479,14 +497,13 @@ public void setDone(Long id, boolean done) {
     item.setDone(done); // Managed: no save() needed.
 }</code></pre>
     <ul>
-      <li><p><code>findById</code> returns an <code>Optional</code>. The Service uses <code>orElseThrow</code> when the task is missing.</p></li>
-      <li><p><code>findById</code> returns a managed entity.</p></li>
-      <li><p>JPA writes the <code>UPDATE</code> during flush; commit makes the change permanent.</p></li>
+      <li><p><code>findById</code> returns an <code>Optional</code>. <code>orElseThrow</code> reports a missing task.</p></li>
+      <li><p>The task stays managed while <code>setDone</code> changes it.</p></li>
     </ul>
     <p>Example: <code>jpa/springdata/RepositoryDemo.java</code></p>
-    <p><strong>Check:</strong> In this desktop app, with no outer transaction, what happens if we remove <code class="inline-java">@Transactional</code> from <code>setDone</code>?</p>
+    <p><strong>Check:</strong> With no outer transaction, what happens if <code>setDone</code> has no <code class="inline-java">@Transactional</code>?</p>
     <p class="fragment"><strong>Answer:</strong> <code>findById</code> runs in its own transaction. The entity is detached when it returns, so changing it without <code>save</code> does not update the database.</p>
-    
+
   </section>
 
 
@@ -499,52 +516,31 @@ public List&lt;TaskItem&gt; findAllTaskItems() {
     return repository.findAll(Sort.by("id"));
 }</code></pre>
     <ul>
-      <li><p><code>readOnly = true</code> is an optimization hint; with Hibernate, it can avoid dirty checks.</p></li>
-      <li><p><code>TaskModel</code> gets one simple method to call.</p></li>
+      <li><p><code>readOnly = true</code> is an optimization hint. With Hibernate, it can avoid dirty checks.</p></li>
+      <li><p>It does not guarantee that the database blocks writes.</p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2><code>TaskModel</code> Calls the Service</h2>
-    <p>The JavaFX side barely changes: <code>TaskModel</code> calls the Service instead of the Repository.</p>
+    <p><code>TaskModel</code> delegates the operation, then refreshes its current list.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void addTask(String title) {
-    service.addTaskItem(title); // Rules + transaction
-    reload(); // Refresh the Model's saved rows.
+    service.addTaskItem(title);
+    reload();
 }
 
 private void reload() {
     tasks = List.copyOf(service.findAllTaskItems());
 }</code></pre>
     <ul>
-      <li><p><code>TaskModel</code> delegates the operation. The Service creates the entity, which validates its title.</p></li>
+      <li><p><code>reload()</code> reads saved tasks after the Service call completes.</p></li>
+      <li><p><code>List.copyOf</code> creates an unmodifiable list.</p></li>
       <li><p><code>TaskController</code> still talks only to <code>TaskModel</code>.</p></li>
     </ul>
     <p>Example: <code>jpa/task/TaskModel.java</code></p>
   </section>
 
-  <section class="frame">
-    <h2>Trace an Add Request</h2>
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">TaskController → TaskModel → TaskService
-              → TaskRepository → Hibernate → H2</code></pre>
-    <ol>
-      <li><p>Who checks the title?</p></li>
-      <li><p>Who starts the transaction?</p></li>
-      <li><p>Who calls <code>save</code>?</p></li>
-      <li><p>Who writes the <code>INSERT</code>?</p></li>
-    </ol>
-  </section>
 
-  <section class="frame">
-    <h2>Trace: Answers</h2>
-    <ol>
-      <li><p><code>TaskItem.rename</code>, called by the constructor inside <code>TaskService.addTaskItem</code>.</p></li>
-      <li><p>Spring, because <code>addTaskItem</code> is <code class="inline-java">@Transactional</code>.</p></li>
-      <li><p><code>TaskService</code> calls <code>repository.save(...)</code>.</p></li>
-      <li><p>Hibernate, working through JPA, writes the <code>INSERT</code> into H2.</p></li>
-    </ol>
-    <p>Example: <code>jpa/springdata/TaskApp.java</code></p>
-    <p>Add a task, mark it done, then close and rerun to check persistence.</p>
-  </section>
 </section>
 
 <section>
@@ -565,8 +561,8 @@ class TaskRepositoryTest {
       <li><p><code class="inline-java">@DataJpaTest</code> loads the JPA test beans and uses embedded H2 for this example.</p></li>
       <li><p>Each test runs in a transaction that rolls back afterward.</p></li>
     </ul>
-    <p>Service tests check task rules and transaction boundaries.</p>
-    <p>Example: <code>jpa/springdata/TaskServiceTest.java</code></p>
+    <p>Service tests check application operations and transaction boundaries.</p>
+    <p>Example: <code>jpa/springdata/TaskRepositoryTest.java</code></p>
   </section>
 
   <section class="frame">
@@ -582,7 +578,7 @@ void savesAndFindsTaskItem() {
     assertEquals("Review JPA", found.getTitle());
 }</code></pre>
     <ul>
-      <li><p><code>flush()</code> sends pending SQL; it does not commit the test transaction.</p></li>
+      <li><p><code>flush()</code> sends pending SQL. It does not commit the test transaction.</p></li>
       <li><p><code>clear()</code> detaches managed entities, so the lookup cannot reuse <code>saved</code>.</p></li>
     </ul>
     <p>Example: <code>jpa/springdata/TaskRepositoryTest.java</code></p>
@@ -597,33 +593,28 @@ void savesAndFindsTaskItem() {
       <li><p>Using a <code class="inline-java">final</code> Service class or method with a subclass-based transaction proxy.</p></li>
       <li><p>Forgetting that <code>findById</code> returns an <code>Optional</code>.</p></li>
       <li><p>Writing very long derived query names.</p></li>
-      <li><p>Putting task rules in the Controller or the Repository.</p></li>
+      <li><p>Putting application operations in UI event handlers.</p></li>
     </ul>
   </section>
-</section>
 
-<section>
-  <section class="title-slide slide level1">
-    <h1>Summary</h1>
-  </section>
 
   <section class="frame">
     <h2>Key Takeaways</h2>
     <ul>
-      <li><p>ORM maps objects to rows; JPA is the standard, and Hibernate implements it.</p></li>
+      <li><p>ORM maps objects to rows. JPA is the standard, and Hibernate implements it.</p></li>
       <li><p>An entity needs <code class="inline-java">@Entity</code>, an <code class="inline-java">@Id</code>, and a no-argument constructor.</p></li>
-      <li><p>Managed changes are written during flush; commit makes them permanent.</p></li>
+      <li><p>Managed changes are written during flush. commit makes them permanent.</p></li>
       <li><p>Spring Data JPA creates Repository implementations from interfaces.</p></li>
-      <li><p><code>TaskItem</code> validates its title. <code>TaskService</code> coordinates task operations and transaction boundaries.</p></li>
+      <li><p>A Service can separate application operations and transaction boundaries from the Model's task-list state.</p></li>
     </ul>
   </section>
 
   <section class="frame">
     <h2>Reusing the Service with Spring Web</h2>
-    <p>A web Controller can call the same <code>TaskService</code>.</p>
+    <p>A web Controller can call <code>TaskService</code> without <code>TaskModel</code>.</p>
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">JavaFX: button click → TaskController → TaskModel → TaskService
 Web:    HTTP request → Web Controller ──────────→ TaskService</code></pre>
-    <p>The input changes; the Service and Repository stay the same.</p>
+    <p>The entity, Service, and Repository can serve both desktop and web callers.</p>
   </section>
 </section>
 
