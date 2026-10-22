@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="2625" viewBox="0 0 1000 2625" role="img" aria-labelledby="title desc">
+  <title id="title">Insertion sort: one complete run with conditions and updates</title>
+  <desc id="desc">Sort 7, 3, 5, 2 in three passes. Each pass shows i, the saved key, and initial j. Each while-condition check is evaluated before showing the resulting array write and j update. When j becomes -1 the boundary check fails, so arr[-1] is never read. In pass 2, 3 is not greater than key 5, so shifting stops and 5 is inserted at index 1. Orange outlines identify written cells; green cells form the sorted section after insertion. Final array: 2, 3, 5, 7.</desc>
+  <rect width="1000" height="2625" fill="white" />
+  <text x="24" y="32" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Insertion sort: [7, 3, 5, 2]</text>
+  <text x="24" y="77" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Keep key saved while checking and shifting larger values.</text>
+  <text x="24" y="112" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Orange outline = cell written. Green = sorted section.</text>
+  <text x="24" y="161" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Pass 1 (i = 1)</text>
+  <text x="24" y="199" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">key = arr[i] = 3; j = i - 1 = 0</text>
+  <rect x="24" y="231" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="263" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="95" y="310" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="231" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="263" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="310" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="231" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="263" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="379" y="310" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="231" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="263" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="310" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="231" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="263" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 3</text>
+  <line x1="24" y1="320" x2="976" y2="320" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="346" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Check: (j &gt;= 0) &amp;&amp; (arr[j] &gt; key)</text>
+  <text x="24" y="384" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j = 0: (0 &gt;= 0) &amp;&amp; (7 &gt; 3) is true.</text>
+  <text x="24" y="420" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Shift: arr[1] = arr[0] (copy 7); --j changes 0 to -1.</text>
+  <rect x="24" y="459" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="491" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="95" y="538" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="459" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="237" y="491" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="237" y="538" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="459" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="491" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="379" y="538" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="459" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="491" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="538" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="459" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="491" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 3</text>
+  <line x1="24" y1="560" x2="976" y2="560" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="586" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Check: (j &gt;= 0) &amp;&amp; (arr[j] &gt; key)</text>
+  <text x="24" y="624" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j = -1: (-1 &gt;= 0) is false. Stop; arr[j] is not read.</text>
+  <text x="24" y="660" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Insert: arr[j + 1] = key; arr[0] = 3.</text>
+  <rect x="24" y="699" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  <text x="95" y="731" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="95" y="778" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="699" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="731" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="237" y="778" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="699" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="731" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="379" y="778" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="699" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="731" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="778" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="699" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="731" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 3</text>
+  <line x1="24" y1="800" x2="976" y2="800" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="826" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Pass 2 (i = 2)</text>
+  <text x="24" y="864" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">key = arr[i] = 5; j = i - 1 = 1</text>
+  <rect x="24" y="896" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="928" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="95" y="975" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="896" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="928" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="237" y="975" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="896" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="928" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="379" y="975" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="896" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="928" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="975" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="896" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="928" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 5</text>
+  <line x1="24" y1="985" x2="976" y2="985" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="1011" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Check: (j &gt;= 0) &amp;&amp; (arr[j] &gt; key)</text>
+  <text x="24" y="1049" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j = 1: (1 &gt;= 0) &amp;&amp; (7 &gt; 5) is true.</text>
+  <text x="24" y="1085" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Shift: arr[2] = arr[1] (copy 7); --j changes 1 to 0.</text>
+  <rect x="24" y="1124" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="1156" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="95" y="1203" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="1124" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="1156" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="237" y="1203" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="1124" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="379" y="1156" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="379" y="1203" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="1124" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="1156" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="1203" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="1124" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="1156" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 5</text>
+  <line x1="24" y1="1225" x2="976" y2="1225" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="1251" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Check: (j &gt;= 0) &amp;&amp; (arr[j] &gt; key)</text>
+  <text x="24" y="1289" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j = 0: (0 &gt;= 0) &amp;&amp; (3 &gt; 5) is false. Stop.</text>
+  <text x="24" y="1325" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Insert: arr[j + 1] = key; arr[1] = 5.</text>
+  <rect x="24" y="1364" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="1396" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="95" y="1443" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="1364" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  <text x="237" y="1396" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="237" y="1443" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="1364" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="1396" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="379" y="1443" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="1364" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="1396" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="1443" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="1364" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="1396" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 5</text>
+  <line x1="24" y1="1465" x2="976" y2="1465" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="1491" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Pass 3 (i = 3)</text>
+  <text x="24" y="1529" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">key = arr[i] = 2; j = i - 1 = 2</text>
+  <rect x="24" y="1561" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="1593" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="95" y="1640" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="1561" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="1593" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="237" y="1640" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="1561" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="1593" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="379" y="1640" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="1561" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="1593" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="1640" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="1561" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="1593" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 2</text>
+  <line x1="24" y1="1650" x2="976" y2="1650" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="1676" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Check: (j &gt;= 0) &amp;&amp; (arr[j] &gt; key)</text>
+  <text x="24" y="1714" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j = 2: (2 &gt;= 0) &amp;&amp; (7 &gt; 2) is true.</text>
+  <text x="24" y="1750" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Shift: arr[3] = arr[2] (copy 7); --j changes 2 to 1.</text>
+  <rect x="24" y="1789" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="1821" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="95" y="1868" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="1789" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="1821" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="237" y="1868" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="1789" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="1821" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="379" y="1868" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="1789" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="521" y="1821" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="521" y="1868" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="1789" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="1821" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 2</text>
+  <line x1="24" y1="1890" x2="976" y2="1890" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="1916" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Check: (j &gt;= 0) &amp;&amp; (arr[j] &gt; key)</text>
+  <text x="24" y="1954" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j = 1: (1 &gt;= 0) &amp;&amp; (5 &gt; 2) is true.</text>
+  <text x="24" y="1990" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Shift: arr[2] = arr[1] (copy 5); --j changes 1 to 0.</text>
+  <rect x="24" y="2029" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="2061" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="95" y="2108" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="2029" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="2061" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="237" y="2108" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="2029" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="379" y="2061" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="379" y="2108" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="2029" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="2061" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="521" y="2108" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="2029" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="2061" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 2</text>
+  <line x1="24" y1="2130" x2="976" y2="2130" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="2156" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Check: (j &gt;= 0) &amp;&amp; (arr[j] &gt; key)</text>
+  <text x="24" y="2194" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j = 0: (0 &gt;= 0) &amp;&amp; (3 &gt; 2) is true.</text>
+  <text x="24" y="2230" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Shift: arr[1] = arr[0] (copy 3); --j changes 0 to -1.</text>
+  <rect x="24" y="2269" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="2301" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="95" y="2348" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="2269" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="237" y="2301" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="2348" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="2269" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="2301" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="379" y="2348" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="2269" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="2301" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="521" y="2348" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="2269" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="2301" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 2</text>
+  <line x1="24" y1="2370" x2="976" y2="2370" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="2396" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Check: (j &gt;= 0) &amp;&amp; (arr[j] &gt; key)</text>
+  <text x="24" y="2434" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j = -1: (-1 &gt;= 0) is false. Stop; arr[j] is not read.</text>
+  <text x="24" y="2470" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Insert: arr[j + 1] = key; arr[0] = 2.</text>
+  <rect x="24" y="2509" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  <text x="95" y="2541" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="95" y="2588" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="2509" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="2541" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="2588" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="2509" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="2541" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text x="379" y="2588" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="2509" width="142" height="64" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="2541" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="521" y="2588" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="744" y="2509" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="844" y="2541" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">key = 2</text>
+</svg>

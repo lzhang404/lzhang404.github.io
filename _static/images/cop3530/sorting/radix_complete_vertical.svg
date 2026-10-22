@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2080" viewBox="0 0 2000 2080" role="img" aria-labelledby="title desc">
+  <title id="title">Three radix passes with missing digit positions treated as zero</title>
+  <desc id="desc">One complete LSD radix sort of 213, 7, 42, 105, mixing three-, one-, and two-digit values. Each of the three passes shows all ten buckets 0 through 9 horizontally, including empty buckets. Ones gives 42, 213, 105, 7. Tens gives 105, 7, 213, 42. The missing tens digit of 7 is zero, so it follows 105 into bucket 0. The missing hundreds digits of 7 and 42 are zero, so hundreds bucket 0 holds 7 then 42. Hundreds bucket 1 holds 105 and bucket 2 holds 213. Gathering gives the sorted array 7, 42, 105, 213. All values participate in every pass. Stop before thousands because the maximum value 213 divided by 1000 is zero.</desc>
+  <rect width="2000" height="2080" fill="white" />
+  <text x="38" y="34" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">LSD radix sort: [213, 7, 42, 105]</text>
+  <text x="38" y="82" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Missing digit positions count as 0. Every value participates in all three passes.</text>
+  <text x="38" y="140" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Pass 1: ones digit (exp = 1)</text>
+  <text x="38" y="188" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">1. Read the array from left to right</text>
+  <rect x="38" y="218" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="128" y="249" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <rect x="218" y="218" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="308" y="249" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <rect x="398" y="218" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="488" y="249" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <rect x="578" y="218" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="668" y="249" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <text x="38" y="330" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">2. Append each value to its ones-digit bucket</text>
+  <text x="38" y="374" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Current digit = (value / 1) % 10.</text>
+  <text x="126" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="38" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="0" data-pass="1" />
+  <text x="318" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="230" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="1" data-pass="1" />
+  <text x="510" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="422" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="2" data-pass="1" />
+  <rect x="426" y="444" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="510" y="468" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <text x="702" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="614" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="3" data-pass="1" />
+  <rect x="618" y="444" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="702" y="468" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <text x="894" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <rect x="806" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="4" data-pass="1" />
+  <text x="1086" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <rect x="998" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="5" data-pass="1" />
+  <rect x="1002" y="444" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="1086" y="468" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <text x="1278" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">6</text>
+  <rect x="1190" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="6" data-pass="1" />
+  <text x="1470" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <rect x="1382" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="7" data-pass="1" />
+  <rect x="1386" y="444" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="1470" y="468" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="1662" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <rect x="1574" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="8" data-pass="1" />
+  <text x="1854" y="416" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <rect x="1766" y="440" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="9" data-pass="1" />
+  <text x="38" y="607" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">3. Gather buckets 0 to 9; read each from top to bottom</text>
+  <rect x="38" y="641" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="128" y="672" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <rect x="218" y="641" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="308" y="672" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <rect x="398" y="641" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="488" y="672" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <rect x="578" y="641" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="668" y="672" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <line x1="38" y1="760" x2="1962" y2="760" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="38" y="790" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Pass 2: tens digit (exp = 10)</text>
+  <text x="38" y="838" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">1. Read the array from left to right</text>
+  <rect x="38" y="868" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="128" y="899" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <rect x="218" y="868" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="308" y="899" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <rect x="398" y="868" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="488" y="899" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <rect x="578" y="868" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="668" y="899" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="38" y="980" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">2. Append each value to its tens-digit bucket</text>
+  <text x="38" y="1024" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">(7 / 10) % 10 = 0: no tens digit means bucket 0.</text>
+  <text x="126" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="38" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="0" data-pass="2" />
+  <rect x="42" y="1094" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="126" y="1118" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <rect x="42" y="1148" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="126" y="1172" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="318" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="230" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="1" data-pass="2" />
+  <rect x="234" y="1094" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="318" y="1118" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <text x="510" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="422" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="2" data-pass="2" />
+  <text x="702" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="614" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="3" data-pass="2" />
+  <text x="894" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <rect x="806" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="4" data-pass="2" />
+  <rect x="810" y="1094" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="894" y="1118" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <text x="1086" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <rect x="998" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="5" data-pass="2" />
+  <text x="1278" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">6</text>
+  <rect x="1190" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="6" data-pass="2" />
+  <text x="1470" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <rect x="1382" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="7" data-pass="2" />
+  <text x="1662" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <rect x="1574" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="8" data-pass="2" />
+  <text x="1854" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <rect x="1766" y="1090" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="9" data-pass="2" />
+  <text x="38" y="1257" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">3. Gather buckets 0 to 9; read each from top to bottom</text>
+  <rect x="38" y="1291" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="128" y="1322" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <rect x="218" y="1291" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="308" y="1322" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <rect x="398" y="1291" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="488" y="1322" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <rect x="578" y="1291" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="668" y="1322" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <line x1="38" y1="1410" x2="1962" y2="1410" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="38" y="1440" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Pass 3: hundreds digit (exp = 100)</text>
+  <text x="38" y="1488" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">1. Read the array from left to right</text>
+  <rect x="38" y="1518" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="128" y="1549" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <rect x="218" y="1518" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="308" y="1549" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <rect x="398" y="1518" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="488" y="1549" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <rect x="578" y="1518" width="180" height="62" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="668" y="1549" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <text x="38" y="1630" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">2. Append each value to its hundreds-digit bucket</text>
+  <text x="38" y="1674" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">(7 / 100) % 10 = 0; (42 / 100) % 10 = 0: both use bucket 0.</text>
+  <text x="126" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="38" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="0" data-pass="3" />
+  <rect x="42" y="1744" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="126" y="1768" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <rect x="42" y="1798" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="126" y="1822" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <text x="318" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="230" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="1" data-pass="3" />
+  <rect x="234" y="1744" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="318" y="1768" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <text x="510" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="422" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="2" data-pass="3" />
+  <rect x="426" y="1744" width="168" height="48" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="2" />
+  <text x="510" y="1768" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <text x="702" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="614" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="3" data-pass="3" />
+  <text x="894" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <rect x="806" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="4" data-pass="3" />
+  <text x="1086" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  <rect x="998" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="5" data-pass="3" />
+  <text x="1278" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">6</text>
+  <rect x="1190" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="6" data-pass="3" />
+  <text x="1470" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <rect x="1382" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="7" data-pass="3" />
+  <text x="1662" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <rect x="1574" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="8" data-pass="3" />
+  <text x="1854" y="1716" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <rect x="1766" y="1740" width="176" height="128" rx="0" fill="white" stroke="#94a3b8" stroke-width="2" data-bucket="9" data-pass="3" />
+  <text x="38" y="1907" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">3. Gather buckets 0 to 9; read each from top to bottom</text>
+  <rect x="38" y="1941" width="180" height="62" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="128" y="1972" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <rect x="218" y="1941" width="180" height="62" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="308" y="1972" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">42</text>
+  <rect x="398" y="1941" width="180" height="62" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="488" y="1972" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">105</text>
+  <rect x="578" y="1941" width="180" height="62" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  <text x="668" y="1972" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">213</text>
+  <text x="38" y="2035" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Stop: 213 / 1000 = 0. All three digit positions have been processed.</text>
+</svg>

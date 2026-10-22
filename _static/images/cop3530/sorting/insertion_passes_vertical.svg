@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="750" viewBox="0 0 700 750" role="img" aria-labelledby="title desc">
+  <title id="title">Insertion sort passes</title>
+  <desc id="desc">Read down the image. Each pass grows the sorted prefix. Start 7, 3, 5, 2. Insert 3, insert 5, and insert 2 to obtain 2, 3, 5, 7.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#e8730c" />
+    </marker>
+  </defs>
+  <rect width="700" height="750" fill="white" />
+  <g transform="translate(0 -14)">
+    <text x="36" y="42" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600" fill="#111827" text-anchor="start" dominant-baseline="middle">Green = sorted prefix</text>
+  </g>
+  <g transform="translate(0 -51.0)">
+    <text x="36" y="126" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Step 0: Start</text>
+  </g>
+  <g transform="translate(-626 20)">
+    <rect x="650" y="90" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  </g>
+  <g transform="translate(-626 20)">
+    <text x="725" y="126" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  </g>
+  <g transform="translate(-626 20)">
+    <rect x="800" y="90" width="150" height="72" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  </g>
+  <g transform="translate(-626 20)">
+    <text x="875" y="126" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  </g>
+  <g transform="translate(-626 20)">
+    <rect x="950" y="90" width="150" height="72" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  </g>
+  <g transform="translate(-626 20)">
+    <text x="1025" y="126" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  </g>
+  <g transform="translate(-626 20)">
+    <rect x="1100" y="90" width="150" height="72" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  </g>
+  <g transform="translate(-626 20)">
+    <text x="1175" y="126" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  </g>
+  <g transform="translate(0 -9.0)">
+    <text x="36" y="254" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Step 1: Insert 3</text>
+  </g>
+  <g transform="translate(-626 62)">
+    <rect x="650" y="218" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  </g>
+  <g transform="translate(-626 62)">
+    <text x="725" y="254" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  </g>
+  <g transform="translate(-626 62)">
+    <rect x="800" y="218" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  </g>
+  <g transform="translate(-626 62)">
+    <text x="875" y="254" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  </g>
+  <g transform="translate(-626 62)">
+    <rect x="950" y="218" width="150" height="72" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  </g>
+  <g transform="translate(-626 62)">
+    <text x="1025" y="254" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  </g>
+  <g transform="translate(-626 62)">
+    <rect x="1100" y="218" width="150" height="72" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  </g>
+  <g transform="translate(-626 62)">
+    <text x="1175" y="254" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  </g>
+  <g transform="translate(0 33.0)">
+    <text x="36" y="382" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Step 2: Insert 5</text>
+  </g>
+  <g transform="translate(-626 104)">
+    <rect x="650" y="346" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#10293b" stroke-width="3" />
+  </g>
+  <g transform="translate(-626 104)">
+    <text x="725" y="382" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  </g>
+  <g transform="translate(-626 104)">
+    <rect x="800" y="346" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  </g>
+  <g transform="translate(-626 104)">
+    <text x="875" y="382" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  </g>
+  <g transform="translate(-626 104)">
+    <rect x="950" y="346" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  </g>
+  <g transform="translate(-626 104)">
+    <text x="1025" y="382" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  </g>
+  <g transform="translate(-626 104)">
+    <rect x="1100" y="346" width="150" height="72" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  </g>
+  <g transform="translate(-626 104)">
+    <text x="1175" y="382" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  </g>
+  <g transform="translate(0 75.0)">
+    <text x="36" y="510" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Step 3: Insert 2</text>
+  </g>
+  <g transform="translate(-626 146)">
+    <rect x="650" y="474" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  </g>
+  <g transform="translate(-626 146)">
+    <text x="725" y="510" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  </g>
+  <g transform="translate(-626 146)">
+    <rect x="800" y="474" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  </g>
+  <g transform="translate(-626 146)">
+    <text x="875" y="510" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  </g>
+  <g transform="translate(-626 146)">
+    <rect x="950" y="474" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  </g>
+  <g transform="translate(-626 146)">
+    <text x="1025" y="510" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">5</text>
+  </g>
+  <g transform="translate(-626 146)">
+    <rect x="1100" y="474" width="150" height="72" rx="0" fill="#bfe3c6" stroke="#e8730c" stroke-width="5" />
+  </g>
+  <g transform="translate(-626 146)">
+    <text x="1175" y="510" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  </g>
+</svg>

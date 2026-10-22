@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="2031" viewBox="0 0 1000 2031" role="img" aria-labelledby="title desc">
+  <title id="title">Hoare partition: conditions, swaps, and the returned boundary</title>
+  <desc id="desc">One call to partition of 9, 3, 8, 2, 7 with the saved middle value 8 as pivot. The left scan skips values below 8; the right scan skips values above 8. The first pair is 9 and 7: swap them, then set i to 1 and j to 3. The next left scan skips 3 and stops at 8; the right scan stops at 2. Swap 8 and 2, then set i to 3 and j to 2. The outer loop condition fails. Return j equals 2. Indices 0 through 2 hold 7, 3, 2, all at most 8. Indices 3 through 4 hold 8, 9, all at least 8. The left range still needs sorting.</desc>
+  <rect width="1000" height="2031" fill="white" />
+  <text x="24" y="34" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">Hoare partition: [9, 3, 8, 2, 7]</text>
+  <text x="24" y="78" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Goal: left values &lt;= 8; right values &gt;= 8.</text>
+  <text x="24" y="114" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">i/j = scan indices. Orange outline = swapped cell.</text>
+  <text x="24" y="171" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">0. Save the middle value as the pivot</text>
+  <text x="24" y="209" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">pivot = arr[2] = 8; i = low = 0; j = high = 4.</text>
+  <rect x="24" y="281" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="313" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <text x="95" y="365" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <text x="95" y="254" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">i</text>
+  <rect x="166" y="281" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="313" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="365" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="281" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="313" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <text x="379" y="365" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="281" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="313" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="365" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="592" y="281" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="663" y="313" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="663" y="365" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <text x="663" y="254" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">j</text>
+  <rect x="774" y="281" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="874" y="313" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">pivot = 8</text>
+  <line x1="24" y1="391" x2="976" y2="391" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="417" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">1. Scan: find values that can switch sides</text>
+  <text x="24" y="455" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">i: arr[0] &lt; pivot? 9 &lt; 8 is false; stop at i = 0.</text>
+  <text x="24" y="491" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j: arr[4] &gt; pivot? 7 &gt; 8 is false; stop at j = 4.</text>
+  <text x="24" y="527" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">9 is too large for the left; 7 is too small for the right.</text>
+  <rect x="24" y="599" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="631" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <text x="95" y="683" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <text x="95" y="572" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">i</text>
+  <rect x="166" y="599" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="631" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="683" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="599" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="631" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <text x="379" y="683" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="599" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="631" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="683" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <rect x="592" y="599" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="663" y="631" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="663" y="683" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <text x="663" y="572" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">j</text>
+  <rect x="774" y="599" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="874" y="631" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">pivot = 8</text>
+  <line x1="24" y1="709" x2="976" y2="709" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="735" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">2. Swap 9 and 7</text>
+  <text x="24" y="773" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">i &gt;= j? 0 &gt;= 4 is false; swap arr[0] and arr[4].</text>
+  <text x="24" y="809" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">7 fits the &lt;= 8 group; 9 fits the &gt;= 8 group.</text>
+  <text x="24" y="845" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">++i: 0 to 1; --j: 4 to 3.</text>
+  <rect x="24" y="917" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="95" y="949" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="95" y="1001" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="917" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="949" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="1001" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <text x="237" y="890" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">i</text>
+  <rect x="308" y="917" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="949" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <text x="379" y="1001" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="450" y="917" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="949" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="1001" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="521" y="890" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">j</text>
+  <rect x="592" y="917" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="663" y="949" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <text x="663" y="1001" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <rect x="774" y="917" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="874" y="949" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">pivot = 8</text>
+  <line x1="24" y1="1027" x2="976" y2="1027" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="1053" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">3. Skip 3: it already fits the left group</text>
+  <text x="24" y="1091" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">i: arr[1] &lt; pivot? 3 &lt; 8 is true; i becomes 2.</text>
+  <text x="24" y="1127" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">i: arr[2] &lt; pivot? 8 &lt; 8 is false; stop at i = 2.</text>
+  <text x="24" y="1163" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">j: arr[3] &gt; pivot? 2 &gt; 8 is false; stop at j = 3.</text>
+  <rect x="24" y="1235" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="1267" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="95" y="1319" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="1235" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="1267" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="1319" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="1235" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="1267" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <text x="379" y="1319" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="379" y="1208" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">i</text>
+  <rect x="450" y="1235" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="521" y="1267" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="521" y="1319" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="521" y="1208" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">j</text>
+  <rect x="592" y="1235" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="663" y="1267" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <text x="663" y="1319" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <rect x="774" y="1235" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="874" y="1267" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">pivot = 8</text>
+  <line x1="24" y1="1345" x2="976" y2="1345" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="1371" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">4. Swap 8 and 2</text>
+  <text x="24" y="1409" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">i &gt;= j? 2 &gt;= 3 is false; swap arr[2] and arr[3].</text>
+  <text x="24" y="1445" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">2 belongs on the left; 8 can go right (equal to pivot).</text>
+  <text x="24" y="1481" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">++i: 2 to 3; --j: 3 to 2.</text>
+  <rect x="24" y="1553" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="1585" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="95" y="1637" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="1553" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="1585" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="1637" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="1553" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="379" y="1585" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="379" y="1637" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="379" y="1526" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">j</text>
+  <rect x="450" y="1553" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#e8730c" stroke-width="5" />
+  <text x="521" y="1585" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <text x="521" y="1637" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="521" y="1526" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">i</text>
+  <rect x="592" y="1553" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="663" y="1585" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <text x="663" y="1637" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <rect x="774" y="1553" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="874" y="1585" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">pivot = 8</text>
+  <line x1="24" y1="1663" x2="976" y2="1663" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 7" />
+  <text x="24" y="1689" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="start" dominant-baseline="middle">5. Stop: the indices have crossed</text>
+  <text x="24" y="1727" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">i &lt;= j? 3 &lt;= 2 is false; leave the outer loop.</text>
+  <text x="24" y="1763" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Return j = 2: the last index of the left range.</text>
+  <text x="24" y="1799" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start" dominant-baseline="middle">Partition complete. The left range [7, 3, 2] is still unsorted.</text>
+  <rect x="24" y="1871" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="95" y="1903" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">7</text>
+  <text x="95" y="1955" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">0</text>
+  <rect x="166" y="1871" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="237" y="1903" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="237" y="1955" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">1</text>
+  <rect x="308" y="1871" width="142" height="64" rx="0" fill="#a8c9eb" stroke="#10293b" stroke-width="3" />
+  <text x="379" y="1903" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="379" y="1955" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">2</text>
+  <text x="379" y="1844" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">j</text>
+  <rect x="470" y="1871" width="142" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="541" y="1903" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">8</text>
+  <text x="541" y="1955" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">3</text>
+  <text x="541" y="1844" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">i</text>
+  <rect x="612" y="1871" width="142" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="683" y="1903" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="600" fill="#111827" text-anchor="middle" dominant-baseline="middle">9</text>
+  <text x="683" y="1955" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">4</text>
+  <rect x="774" y="1871" width="200" height="64" rx="0" fill="#fcd9a3" stroke="#10293b" stroke-width="3" />
+  <text x="874" y="1903" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#111827" text-anchor="middle" dominant-baseline="middle">pivot = 8</text>
+  <text x="237" y="1996" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">left: values &lt;= 8</text>
+  <text x="612" y="1996" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">right: values &gt;= 8</text>
+</svg>
