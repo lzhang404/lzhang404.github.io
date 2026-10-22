@@ -535,7 +535,7 @@
 <section class="frame" id="radix-code">
 <h2>Radix sort: implementation and trace</h2>
 <p>Trace three passes for <code>[213, 7, 42, 105]</code>; missing positions count as <code>0</code>.</p><div class="flex-container">
-<div style="width:54%; min-width:0; margin-right:2%;"><pre data-fontsize="small"><code class="language-cpp" tabindex="0">// All input values must be nonnegative.
+<div style="width:70%; min-width:0; margin-right:2%;"><pre data-fontsize="small"><code class="language-cpp" tabindex="0">// All input values must be nonnegative.
 void radixSort(std::vector&lt;int&gt;&amp; arr) {
     if (arr.empty()) return;
     int maxValue = *std::max_element(
@@ -560,7 +560,7 @@ void radixSort(std::vector&lt;int&gt;&amp; arr) {
 <li><p><code>(value / exp) % 10</code>: extract the current digit.</p>
 </li>
 </ul></div>
-<div style="width:44%; min-width:0;"><img style="display:block; width:100%; max-width:100%; height:auto; margin:0;" src="../_static/images/cop3530/sorting/radix_complete_vertical.svg" alt="Three complete LSD radix passes on 213,7,42,105 with all ten buckets 0–9 visible horizontally. Ones gives 42,213,105,7. Tens gives 105,7,213,42; 7 uses bucket 0 because its tens digit is missing. Hundreds gives 7,42,105,213; both 7 and 42 use bucket 0 because their hundreds digits are missing. All values participate in every pass."></div>
+<div style="width:20%; min-width:0;"><img style="display:block; width:100%; max-width:100%; height:auto; margin:0;" src="../_static/images/cop3530/sorting/radix_complete_vertical.svg" alt="Three complete LSD radix passes on 213,7,42,105 with all ten buckets 0–9 visible horizontally. Ones gives 42,213,105,7. Tens gives 105,7,213,42; 7 uses bucket 0 because its tens digit is missing. Hundreds gives 7,42,105,213; both 7 and 42 use bucket 0 because their hundreds digits are missing. All values participate in every pass."></div>
 </div>
 </section>
 
