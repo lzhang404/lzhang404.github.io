@@ -5,793 +5,1011 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 
-  <title>Map ADT &amp; Hashing Technique</title>
+  <title>Map ADT &amp; Hashing — Revised</title>
 
-  <!-- Same styling pattern as your other Reveal exports -->
   <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
   <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
   <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
   <script src="../_static/design-tabs.js?v=20260918"></script>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    /* Local styles for the revised deck's editable tables. */
+    .reveal .hash-array { width: 100%; table-layout: fixed; font-size: 0.80em; margin: 0.5em 0; }
+    .reveal .hash-array th, .reveal .hash-array td { border: 1px solid #b7c1ca; padding: 0.25em 0.12em; text-align: center; }
+    .reveal .hash-array th:first-child { width: 5.5em; text-align: left; padding-left: 0.3em; }
+    .reveal .hash-array thead { color: #2f4a64; background: #edf1f4; }
+    .reveal .hash-array .probe { background: #fbe6cc; color: #733b0c; }
+    .reveal .hash-array .found { background: #d8ebdf; color: #174d2c; font-weight: 600; }
+    .reveal .hash-array .deleted { background: #eee5f3; color: #653d7c; }
+    .reveal .trace-table { font-size: 0.80em; margin: 0.45em 0; }
+    .reveal .trace-table th, .reveal .trace-table td { padding: 0.24em 0.35em; vertical-align: top; }
+    .reveal .question { color: #914817; font-weight: 600; }
+    .reveal .source { font-size: 0.48em; margin-top: 0.8em; }
+    .reveal .example-note { font-size: 0.80em; }
+  </style>
 </head>
+
 
 <body>
   <div class="reveal">
     <div class="slides" role="main">
 
-      <!-- =========================================================
-           Title
-           ========================================================= -->
+      <!-- Introduction -->
       <section>
         <section data-background-color="white"
                  data-background-image="../_static/logo.png"
                  data-background-size="50%"
                  data-background-position="top center"
-                 data-background-repeat="no-repeat">
-          <h1>Map ADT &amp; Hashing Technique</h1>
+                 data-background-repeat="no-repeat" id="hash-slide-01">
+          <h1>Map ADT &amp; Hashing</h1>
           <div class="subtitle docutils container">
             <p>Liting Zhang</p>
             <p>University of West Florida</p>
           </div>
         </section>
-      </section>
 
-      <!-- =========================================================
-           Overview
-           ========================================================= -->
+        
+      </section>
       <section>
-        <section class="frame">
+        <section class="frame" id="hash-slide-02">
           <h2>Outline</h2>
           <ul>
-            <li><p><strong>Map ADT</strong>: keys, values, and common operations</p></li>
-            <li><p><strong>Hashing basics</strong>: key, hash code, compression, and table index</p></li>
-            <li><p><strong>Collision handling</strong>: chaining, linear probing, quadratic probing, double hashing</p></li>
-            <li><p><strong>Deletion and resizing</strong>: tombstones, load factor, and rehashing</p></li>
-            <li><p><strong>Hash function design</strong>: simple strategies and exercises</p></li>
-            <li><p><strong>Cryptographic hashing</strong>: security-focused hashing vs table hashing</p></li>
-          </ul>
+            <li><p>Map ADT: keys, values, operations</p></li>
+            <li><p>Hashing: hash function, hash code, table index</p></li>
+            <li><p>Collisions: chaining and probing</p></li>
+            <li><p>Deletion: Empty and Deleted slots</p></li>
+            <li><p>Performance: table fullness and resizing</p></li>
+            <li><p>Hash functions and cryptographic hashing</p></li>
+</ul>
         </section>
 
-        <section class="frame">
+        <section class="frame" id="hash-slide-03">
           <h2>Learning goals</h2>
-          <p>After this lecture, you should be able to</p>
           <ul>
-            <li><p>Explain what a map stores and how map operations behave</p></li>
-            <li><p>Explain how hashing work</p></li>
-            <li><p>Explain why collisions happen and compare common solutions</p></li>
-            <li><p>Explain why deletion is tricky in open addressing</p></li>
-            <li><p>Use load factor to explain when resizing is needed</p></li>
-          </ul>
+            <li><p>Describe map operations.</p></li>
+            <li><p>Distinguish hash functions, hash codes, and table indices.</p></li>
+            <li><p>Trace insertion and search.</p></li>
+            <li><p>Compare collision-handling methods.</p></li>
+            <li><p>Explain deletion and resizing.</p></li>
+</ul>
+        </section>
+      </section>
+      <!-- Map ADT -->
+      <section>
+        <section class="title-slide slide level1" id="hash-slide-04">
+          <h1>Map ADT</h1>
+
         </section>
 
-        <section class="frame">
-          <h2>Big idea</h2>
+        <section class="frame" id="hash-slide-05">
+          <h2>A student directory</h2>
           <ul>
             <li><p>A <strong>map</strong> stores key-value pairs.</p></li>
-            <li><p>A <strong>hash table</strong> uses an array to make search, insert, and delete fast on average.</p></li>
-          
           </ul>
-          </section>
-      </section>
-
-      <!-- =========================================================
-           Map ADT
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Map ADT</h1>
-        </section>
-
-        <section class="frame">
-          <h2>What is a map?</h2>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Student ID (key)</th><th scope="col">Student name (value)</th></tr></thead>
+            <tbody>
+              <tr><td>22</td><td>Vera</td></tr>
+              <tr><td>33</td><td>Maria</td></tr>
+              <tr><td>44</td><td>Paola</td></tr>
+            </tbody>
+          </table>
           <ul>
-            <li><p>A <strong>map</strong> associates each <strong>key</strong> with a <strong>value</strong>.</p></li>
             <li><p>Keys are unique.</p></li>
-            <li><p>Values do not need to be unique.</p></li>
-            <li><p>The main purpose is fast retrieval by key.</p></li>
+            <li><p>Values may repeat.</p></li>
+            <li><p>An existing key can receive a new value.</p></li>
+            <li><p><code class="inline">get(33)</code> returns <code class="inline">&quot;Maria&quot;</code>.</p></li>
           </ul>
         </section>
 
-        <section class="frame">
+        
+
+        <section class="frame" id="hash-slide-07">
           <h2>Core map operations</h2>
-          <ul>
-            <li><p><strong>insert(key, value)</strong>: add a pair or update an existing key</p></li>
-            <li><p><strong>get(key)</strong>: return the value for a key</p></li>
-            <li><p><strong>remove(key)</strong>: delete a key-value pair</p></li>
-            <li><p><strong>contains(key)</strong>: test whether a key is present</p></li>
-            <li><p><strong>size()</strong>: number of key-value pairs</p></li>
-          </ul>
+          <table class="trace-table"><thead><tr><th scope="col">Operation</th><th scope="col">Meaning</th></tr></thead><tbody><tr><td><code class="inline">insert(key, value)</code></td><td>Add a pair or update its value.</td></tr><tr><td><code class="inline">get(key)</code></td><td>Return the value or report absence.</td></tr><tr><td><code class="inline">contains(key)</code></td><td>Check whether the key exists.</td></tr><tr><td><code class="inline">remove(key)</code></td><td>Delete the key-value pair.</td></tr><tr><td><code class="inline">size()</code></td><td>Return the number of pairs.</td></tr></tbody></table>
         </section>
 
-        <section class="frame">
-          <h2>Example of a map</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">studentID  ->  student name
-
-48         ->  "Vera"
-23         ->  "Maria"
-86         ->  "Paola"</code></pre>
+        <section class="frame" id="hash-slide-08">
+          <h2>Hash map and hash set</h2>
+          <table class="trace-table"><thead><tr><th scope="col">Structure</th><th scope="col">Contents</th><th scope="col">Example</th></tr></thead><tbody><tr><td>Hash map</td><td>Unique keys with values</td><td><code class="inline">get(33)</code> returns Maria</td></tr><tr><td>Hash set</td><td>Unique elements</td><td><code class="inline">contains(33)</code> returns true or false</td></tr></tbody></table>
           <ul>
-            <li><p>The key is the student ID.</p></li>
-            <li><p>The value is the student name.</p></li>
-            <li><p>Search is based on the key, not the value.</p></li>
-          </ul>
+            <li><p>Both use hash tables.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
-          <h2>Why maps are useful</h2>
+        <section class="frame" id="hash-slide-09">
+          <h2>Direct indexing</h2>
           <ul>
-            <li><p>Fast lookup of information</p></li>
-            <li><p>Dictionaries and glossaries</p></li>
-            <li><p>User accounts and authentication systems</p></li>
-            <li><p>Caches and symbol tables</p></li>
-            <li><p>Frequency counting and indexing</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Implementation challenge</h2>
-          <ul>
-            <li><p>Keys may be large integers, strings, or other types of data.</p></li>
-            <li><p>Direct indexing is often impossible or wasteful.</p></li>
-            <li><p>We need a way to convert many possible keys into a small set of array positions.</p></li>
-            <li><p>That is where hashing comes in.</p></li>
-          </ul>
+            <li><p>Use the key as an array index.</p></li>
+            <li><p>Possible IDs: 0 through 999,999,999.</p></li>
+            <li><p>Required array: one billion slots.</p></li>
+            <li><p>A small class leaves most slots unused.</p></li>
+            <li><p>Hashing uses a smaller array.</p></li>
+</ul>
         </section>
       </section>
 
-      <!-- =========================================================
-           Hashing Basics
-           ========================================================= -->
+      <!-- Hashing Basics -->
       <section>
-        <section class="title-slide slide level1">
+        <section class="title-slide slide level1" id="hash-slide-10">
           <h1>Hashing Basics</h1>
+
         </section>
 
-        <section class="frame">
-          <h2>Key vs hash code vs table index</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">key  --hash function-->  hash code  --compression-->  table index</code></pre>
-          <ul>
-            <li><p>The <strong>key</strong> is the original data.</p></li>
-            <li><p>The <strong>hash code</strong> is a numeric result produced from the key.</p></li>
-            <li><p>The <strong>table index</strong> is the final bucket location in the array.</p></li>
-          </ul>
-        </section>
+        <section class="frame" id="hash-slide-11">
+<h2>Hash function and hash code</h2>
+<p>We want to store the student entry <code class="inline">(22, &quot;Vera&quot;)</code>.</p><ol>
+  <li><p>Start with the <strong>key</strong>: <code class="inline">22</code>.</p></li>
+  <li><p>Use the rule <code class="inline">h(x) = x</code>. This rule is our <strong>hash function</strong>.</p></li>
+  <li><p>Apply it: <code class="inline">h(22) = 22</code>. The numeric result is the <strong>hash code</strong>.</p></li>
+</ol><p>Our table has only 11 slots. Hash code 22 still needs to become a valid array index.</p>
 
-        <section class="frame">
-          <h2>Hash function</h2>
-          <ul>
-            <li><p>A <strong>hash function</strong> takes a key and computes a numeric value.</p></li>
-            <li><p>That numeric value is called the <strong>hash code</strong>.</p></li>
-            <li><p>The hash code may be much larger than the table size.</p></li>
-            <li><p>So the hash code is usually not the final array position.</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">hashCode = hash(key)</code></pre>
-        </section>
+</section>
 
-        <section class="frame">
-          <h2>Compression step</h2>
-          <ul>
-            <li><p>The table has only a limited number of buckets.</p></li>
-            <li><p>So we convert the hash code into a valid index.</p></li>
-            <li><p>A common rule is modulo by the table size.</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">index = hashCode % tableSize</code></pre>
-        </section>
+        
 
-        <section class="frame">
-          <h2>Integer example</h2>
-          <ul>
-            <li><p>Suppose the key is <code class="inline">42</code>.</p></li>
-            <li><p>Suppose the hash function for integers is <code class="inline">hash(x) = x</code>.</p></li>
-            <li><p>Suppose the table size is <code class="inline">10</code>.</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">key = 42
-hashCode = hash(42) = 42
-index = 42 % 10 = 2</code></pre>
-        </section>
+        <section class="frame" id="table-index-definition">
+<h2>Compression and table index</h2>
+<p>Continue with hash code 22 and a table of <code class="inline">m = 11</code> slots.</p><ol>
+  <li><p>Valid indices run from 0 through <code class="inline">m - 1</code>, so here they are 0 through 10.</p></li>
+  <li><p>Use <strong>compression</strong> to fit the code into that range: <code class="inline">index = hashCode % m</code>.</p></li>
+  <li><p>Compute <code class="inline">22 % 11 = 0</code>. The result, 0, is the <strong>table index</strong>.</p></li>
+</ol>
 
-        <section class="frame">
-          <h2>Another integer example</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">key = 86
-hashCode = hash(86) = 86
-index = 86 % 10 = 6</code></pre>
-          <ul>
-            <li><p>The key is <code class="inline">86</code>.</p></li>
-            <li><p>The hash code is <code class="inline">86</code>.</p></li>
-            <li><p>The final bucket is index <code class="inline">6</code>.</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">index :   0   1   2              3                4   5   6                7   8   9
-entry :  [ ] [ ] [(42, "Jan")] [(23, "Maria")] [ ] [ ] [(86, "Paola")] [ ] [ ] [ ]</code></pre>
-        </section>
+</section>
 
+        <section class="frame" id="hash-slide-12">
+<h2>Integer hashing example</h2>
+<p>Key <code class="inline">22</code> gives hash code <code class="inline">h(22) = 22</code> and table index <code class="inline">22 % 11 = 0</code>.</p><table class="hash-array">
+<thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+<tbody>
+<tr><th scope="row">Entry</th><td class="found">22</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+</tbody>
+</table><ul>
+  <li><p>Store the pair <code class="inline">(22, &quot;Vera&quot;)</code> in slot 0.</p></li>
+  <li><p>The drawing shows its key. Each dot marks an Empty slot.</p></li>
+</ul>
 
+</section>
 
-        <section class="frame">
+        
+
+        <section class="frame" id="hash-slide-14">
           <h2>Collision</h2>
           <ul>
-            <li><p>A <strong>collision</strong> happens when two different keys produce the same table index.</p></li>
-            <li><p>Two keys can even have different meanings but still land in the same bucket.</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">key = 86
-hashCode = 86
-index = 86 % 10 = 6
-
-key = 6
-hashCode = 6
-index = 6 % 10 = 6
-
-different keys -> same index -> collision</code></pre>
+            <li><p><code class="inline">h(k) = k</code>, <code class="inline">m = 11</code>.</p></li>
+</ul>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Key</th><th scope="col">Hash code</th><th scope="col">Table index</th></tr></thead>
+            <tbody>
+              <tr><td>22</td><td>22</td><td>0</td></tr>
+              <tr><td>33</td><td>33</td><td>0</td></tr>
+              <tr><td>44</td><td>44</td><td>0</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Different keys produce the same table index.</p></li>
+            <li><p>Keep every distinct key.</p></li>
+            <li><p>Compare keys to identify the correct entry.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
-          <h2>Terminology note</h2>
+        <section class="frame" id="hash-slide-15">
+          <h2>Why collisions occur</h2>
           <ul>
-            <li><p>Some books use “hash function” to mean the whole process from key to final index.</p></li>
-            <li><p>For this course, we separate the ideas.</p></li>
-            <li><p><strong>Hash function</strong> produces the hash code.</p></li>
-            <li><p><strong>Compression step</strong> produces the table index.</p></li>
-          </ul>
+            <li><p>Possible keys outnumber array slots.</p></li>
+            <li><p>Different keys can map to the same slot.</p></li>
+            <li><p>Good hash functions spread keys across slots.</p></li>
+            <li><p>Collision handling remains necessary.</p></li>
+</ul>
         </section>
       </section>
 
-      <!-- =========================================================
-           Hash Table Applications
-           ========================================================= -->
+      <!-- Collision Handling -->
       <section>
-        <section class="title-slide slide level1">
-          <h1>Hash Table Applications</h1>
-        </section>
-
-        <section class="frame">
-          <h2>Hash map</h2>
-          <ul>
-            <li><p>A <strong>hash map</strong> implements the Map ADT using a hash table.</p></li>
-            <li><p>It stores unique keys with associated values.</p></li>
-            <li><p>Common behaviors are insert, get, update, and remove.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Hash set</h2>
-          <ul>
-            <li><p>A <strong>hash set</strong> implements the Set ADT using a hash table.</p></li>
-            <li><p>It stores only unique keys.</p></li>
-            <li><p>Common behaviors are add, remove, and membership testing.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Why hash tables are popular</h2>
-          <ul>
-            <li><p>Average-case operations are often O(1).</p></li>
-            <li><p>They are a natural choice for caches and dictionaries.</p></li>
-            <li><p>They are widely used in programming languages and systems software.</p></li>
-          </ul>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Collision Handling
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
+        <section class="title-slide slide level1" id="hash-slide-16">
           <h1>Collision Handling</h1>
+
         </section>
 
-        <section class="frame">
-          <h2>Two main strategies</h2>
+        <section class="frame" id="hash-slide-17">
+          <h2>Collision strategies</h2>
+          <table class="trace-table"><thead><tr><th scope="col">Method</th><th scope="col">Collision handling</th></tr></thead><tbody><tr><td><strong>Chaining</strong></td><td>Store entries in the same bucket.</td></tr><tr><td><strong>Open addressing</strong></td><td>Find another slot inside the array.</td></tr></tbody></table>
           <ul>
-            <li><p><strong>Chaining</strong>: each table slot stores a bucket or linked list</p></li>
-            <li><p><strong>Open addressing</strong>: all entries stay inside the table itself</p></li>
-          </ul>
+            <li><p>Keys: 22, 33, 44.</p></li>
+            <li><p>Hash function: <code class="inline">h(k) = k</code>.</p></li>
+            <li><p>Table size: 11.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
-          <h2>Chaining</h2>
-          <ul>
-            <li><p>Each array position points to a linked list or bucket.</p></li>
-            <li><p>If multiple keys hash to the same index, they are stored in that bucket.</p></li>
-            <li><p>This makes collisions easy to represent.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
+        <section class="frame" id="hash-slide-18">
           <h2>Chaining example</h2>
-          <p>Suppose <code class="inline">h(x) = x</code> and table size is 10.</p>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">table[0] -> (10, "item1") -> (20, "item2")
-table[6] -> (16, "item3") -> (86, "item4")
-table[9] -> ( 9, "item5")</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Chaining trade-offs</h2>
           <ul>
-            <li><p>Easy to implement</p></li>
-            <li><p>Works even when the table gets fairly full</p></li>
-            <li><p>Uses extra pointer or bucket memory</p></li>
-            <li><p>If one bucket gets long, search time grows in that bucket</p></li>
-          </ul>
+            <li><p>Each array position holds a linked list.</p></li>
+</ul>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Array index</th><th scope="col">Entries in the bucket</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td><code class="inline">(22, &quot;Vera&quot;)</code>, <code class="inline">(33, &quot;Maria&quot;)</code>, <code class="inline">(44, &quot;Paola&quot;)</code></td></tr>
+              <tr><td>1 through 10</td><td>Empty</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p><code class="inline">get(33)</code>: compute <code class="inline">33 % 11 = 0</code>.</p></li>
+            <li><p>Compare key 22, then key 33.</p></li>
+            <li><p>Key 33 matches: return Maria.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
+        <section class="frame" id="hash-slide-19">
+<h2>Chaining trade-offs</h2>
+<p>Our search for 33 scanned the linked list in bucket 0.</p><ul>
+  <li><p><strong>Search work:</strong> search and removal scan one bucket. More entries in that bucket mean more key comparisons.</p></li>
+  <li><p><strong>Worst case:</strong> if all n keys share that bucket, a search can examine all n entries: O(n).</p></li>
+  <li><p><strong>Storage:</strong> each bucket can grow, so entries may outnumber array slots. Linked-list nodes require extra pointer memory.</p></li>
+</ul>
+
+</section>
+
+        <section class="frame" id="hash-slide-20">
           <h2>Open addressing</h2>
           <ul>
-            <li><p>All keys stay in the array itself.</p></li>
-            <li><p>When a collision occurs, the table probes for another slot.</p></li>
-            <li><p>No external linked lists are used.</p></li>
-            <li><p>This saves pointer memory but makes deletion more delicate.</p></li>
-          </ul>
+            <li><p>One entry per occupied array slot.</p></li>
+            <li><p>Entry: key and associated value.</p></li>
+            <li><p>After a collision, check another slot.</p></li>
+            <li><p>A <strong>probe</strong> checks one candidate slot.</p></li>
+            <li><p>Insertion and search follow the same probe sequence.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
+        <section class="frame" id="hash-slide-21">
           <h2>Linear probing</h2>
           <ul>
-            <li><p>After a collision, check the next slot, then the next, and so on.</p></li>
-            <li><p>The probe rule is</p></li>
+            <li><p>Compute <code class="inline">h(k) % m</code>.</p></li>
+            <li><p>After a collision, check the next slot.</p></li>
+            <li><p>After index m − 1, continue at index 0.</p></li>
+
+            <li><p><code class="inline">index(k, i) = (h(k) + i) % m</code></p></li>
           </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">index(i) = (h(k) + i) % m
-i = 0, 1, 2, 3, ...</code></pre>
+          <table class="trace-table"><thead><tr><th scope="col">Symbol</th><th scope="col">Meaning</th></tr></thead><tbody><tr><td>k</td><td>Key</td></tr><tr><td>m</td><td>Table size</td></tr><tr><td>i</td><td>Probe number: 0, 1, 2, …</td></tr></tbody></table>
         </section>
 
-        <section class="frame">
-          <h2>Linear probing example</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">
-bucket size m = 7
-h(k) = k 
-index(k) = (h(k) + i) % 7
-
-insert 3, h(k) = 3
-  i = 0, index(k) = (3 + 0) % 7 = 3
-
-insert 24, h(k) = 24
-  i = 0, index(k) = (24 + 0) % 7 = 3, occupied
-  i = 1, index(k) = (24 + 1) % 7 = 4
-
-insert 52, h(k) = 52
-  i = 0, index(k) = (52 + 0) % 7 = 3, occupied
-  i = 1, index(k) = (52 + 1) % 7 = 4, occupied
-  i = 2, index(k) = (52 + 2) % 7 = 5</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Primary clustering</h2>
+        <section class="frame" id="hash-slide-22">
+          <h2>Linear probing: first collision</h2>
           <ul>
-            <li><p>Linear probing tends to create long consecutive blocks of occupied slots.</p></li>
-            <li><p>New keys near that region often join the same block.</p></li>
-            <li><p>This is called <strong>primary clustering</strong>.</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">
-Before more insertions
-[  ][  ][A ][B ][C ][  ][  ][  ]
-
-After several nearby collisions
-[  ][  ][A ][B ][C ][D ][E ][F ]</code></pre>
-
+            <li><p>Empty table, <code class="inline">m = 11</code>, <code class="inline">h(k) = k</code>.</p></li>
+            <li><p>Insert 22, then 33.</p></li>
+</ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">After 22</th><td class="found">22</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+              <tr><th scope="row">After 33</th><td class="probe">22</td><td class="found">33</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>22: index 0 is empty.</p></li>
+            <li><p>33: index 0 is occupied by 22.</p></li>
+            <li><p>Next index: 1. Store 33.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
+        <section class="frame" id="hash-slide-23">
+          <h2>Linear probing: another collision</h2>
+          <ul>
+            <li><p>Insert key 44.</p></li>
+            <li><p>First check: <code class="inline">44 % 11 = 0</code>.</p></li>
+</ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Before</th><td>22</td><td>33</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+              <tr><th scope="row">After</th><td class="probe">22</td><td class="probe">33</td><td class="found">44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Probe number i</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th></tr></thead>
+            <tbody>
+              <tr><td>Index checked</td><td>0</td><td>1</td><td>2</td></tr>
+              <tr><td>Result</td><td>Key 22</td><td>Key 33</td><td>Empty: insert 44</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame" id="hash-slide-24">
+          <h2>Successful search</h2>
+          <ul>
+            <li><p><code class="inline">get(44)</code>.</p></li>
+            <li><p>First check: <code class="inline">44 % 11 = 0</code>.</p></li>
+</ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Entry</th><td class="probe">22</td><td class="probe">33</td><td class="found">44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <table class="trace-table"><thead><tr><th scope="col">Index</th><th scope="col">Stored key</th><th scope="col">Action</th></tr></thead><tbody><tr><td>0</td><td>22</td><td>Different key: continue.</td></tr><tr><td>1</td><td>33</td><td>Different key: continue.</td></tr><tr><td>2</td><td>44</td><td>Match: return Paola.</td></tr></tbody></table>
+        </section>
+
+        <section class="frame" id="hash-slide-25">
+          <h2>Unsuccessful search</h2>
+          <ul>
+            <li><p><code class="inline">get(55)</code>.</p></li>
+            <li><p>First check: <code class="inline">55 % 11 = 0</code>.</p></li>
+</ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Entry</th><td class="probe">22</td><td class="probe">33</td><td class="probe">44</td><td class="found">&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Indices 0, 1, 2: different keys.</p></li>
+            <li><p>Index 3: Empty.</p></li>
+            <li><p>Stop: key 55 is absent.</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="hash-slide-26">
+          <h2>Exercise: linear probing</h2>
+          <ul>
+            <li><p>Empty table, <code class="inline">m = 11</code>, <code class="inline">h(k) = k</code>.</p></li>
+            <li><p>Insert in order: <strong>9, 20, 31, 42</strong>.</p></li>
+</ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Entry</th><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>List the indices checked.</p></li>
+            <li><p>Fill the array.</p></li>
+            <li><p>Which insertion first wraps to index 0?</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="hash-slide-27">
+          <h2>Linear probing result</h2>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Key</th><th scope="col">Indices checked</th><th scope="col">Final index</th></tr></thead>
+            <tbody>
+              <tr><td>9</td><td>9</td><td>9</td></tr>
+              <tr><td>20</td><td>9, 10</td><td>10</td></tr>
+              <tr><td>31</td><td>9, 10, 0</td><td>0</td></tr>
+              <tr><td>42</td><td>9, 10, 0, 1</td><td>1</td></tr>
+            </tbody>
+          </table>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Entry</th><td class="found">31</td><td class="found">42</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>9</td><td>20</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Key 31 first wraps from index 10 to 0.</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="hash-slide-28">
+          <h2>Primary clustering</h2>
+<p>Return to the student directory with keys 22, 33, and 44.</p>
+          <ul>
+            <li><p>Insert key 12.</p></li>
+            <li><p>First check: <code class="inline">12 % 11 = 1</code>.</p></li>
+</ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Before</th><td>22</td><td>33</td><td>44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+              <tr><th scope="row">After</th><td>22</td><td class="probe">33</td><td class="probe">44</td><td class="found">12</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p><strong>Cluster:</strong> consecutive occupied slots.</p></li>
+            <li><p>New collisions can extend the cluster.</p></li>
+            <li><p>Larger clusters require more probes.</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="hash-slide-29">
           <h2>Quadratic probing</h2>
           <ul>
-            <li><p>Use square offsets instead of moving one slot at a time.</p></li>
-            <li><p>The probe rule is</p></li>
+            <li><p>Use square offsets: 0, 1, 4, 9, …</p></li>
+            <li><p>Calculate each probe from <code class="inline">h(k)</code>.</p></li>
+
+            <li><p><code class="inline">index(k, i) = (h(k) + i * i) % m</code></p></li>
           </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">index(i) = (h(k) + i^2) % m</code></pre>
+          <table class="trace-table"><thead><tr><th scope="col">Probe number i</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th></tr></thead><tbody><tr><td>Offset</td><td>0</td><td>1</td><td>4</td><td>9</td></tr><tr><td>Index: h(k) = 22, m = 11</td><td>0</td><td>1</td><td>4</td><td>9</td></tr></tbody></table>
         </section>
 
-        <section class="frame">
-          <h2>Quadratic probing example</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">
-bucket size m = 7
-h(k) = k 
-index(k) = (h(k) + i^2) % 7
-
-insert 3, h(k) = 3
-  i = 0, index(k) = (3 + 0) % 7 = 3
-
-insert 24, h(k) = 24
-  i = 0, index(k) = (24 + 0) % 7 = 3, occupied
-  i = 1, index(k) = (24 + 1) % 7 = 4
-
-insert 52, h(k) = 52
-  i = 0, index(k) = (52 + 0) % 7 = 3, occupied
-  i = 1, index(k) = (52 + 1) % 7 = 4, occupied
-  i = 2, index(k) = (52 + 2^2) % 7 = 0</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Quadratic probing trade-offs</h2>
+        <section class="frame" id="hash-slide-30">
+          <h2>Linear and quadratic probing</h2>
           <ul>
-            <li><p>Reduces primary clustering</p></li>
-            <li><p>Can still suffer from secondary clustering</p></li>
-            <li><p>May fail to reach every slot if the table size is chosen poorly</p></li>
-            <li><p>Often works best with prime-sized tables</p></li>
-          </ul>
+            <li><p>Empty tables, <code class="inline">m = 11</code>, <code class="inline">h(k) = k</code>.</p></li>
+            <li><p>Insert 22, 33, 44.</p></li>
+</ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Linear</th><td>22</td><td>33</td><td class="probe">44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+              <tr><th scope="row">Quadratic</th><td>22</td><td>33</td><td>&middot;</td><td>&middot;</td><td class="found">44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Key</th><th scope="col">Quadratic probe sequence</th></tr></thead>
+            <tbody>
+              <tr><td>22</td><td>0</td></tr>
+              <tr><td>33</td><td>0, 1</td></tr>
+              <tr><td>44</td><td>0, 1, 4</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Key 44: linear index 2, quadratic index 4.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
+        <section class="frame" id="hash-slide-31">
+          <h2>Secondary clustering</h2>
+          <ul>
+            <li><p>Keys 33 and 44 both produce index 0.</p></li>
+</ul>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Key</th><th scope="col">Quadratic candidate indices with m = 11</th></tr></thead>
+            <tbody>
+              <tr><td>33</td><td>0, 1, 4, 9, 5, 3, …</td></tr>
+              <tr><td>44</td><td>0, 1, 4, 9, 5, 3, …</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Same computed index: same quadratic probe sequence.</p></li>
+            <li><p>This is <strong>secondary clustering</strong>.</p></li>
+            <li><p>Square offsets reduce primary clustering.</p></li>
+</ul>
+          <aside class="notes"><p>Sources: <a href="https://opendsa-server.cs.vt.edu/ODSA/StandaloneModules/help/20221201151914/html/HashCImproved.html">OpenDSA: improved collision resolution</a></p></aside>
+        </section>
+
+        <section class="frame" id="hash-slide-32">
+          <h2>Quadratic probing limits</h2>
+          <ul>
+            <li><p><code class="inline">index(k, i) = (h(k) + i * i) % m</code></p></li>
+            <li><p>Example: <code class="inline">m = 11</code>, <code class="inline">h(k) = 22</code>.</p></li>
+            <li><p>Probe indices: 0, 1, 4, 9, 5, 3, …</p></li>
+            <li><p>Some indices repeat. Other slots remain unreachable.</p></li>
+            <li><p>Insertion may fail even when free slots remain.</p></li>
+          </ul>
+<aside class="notes"><p>Sources: <a href="https://opendsa-server.cs.vt.edu/ODSA/StandaloneModules/help/20221201151914/html/HashCImproved.html">OpenDSA: improved collision resolution</a></p></aside>
+        </section>
+
+        <section class="frame" id="hash-slide-33">
+          <h2>Exercise: quadratic probing</h2>
+          <ul>
+            <li><p>Empty table, <code class="inline">m = 11</code>, <code class="inline">h(k) = k</code>.</p></li>
+            <li><p>Insert in order: <strong>27, 18, 29, 28, 40</strong>.</p></li>
+
+            <li><p><code class="inline">index(k, i) = (h(k) + i * i) % 11</code></p></li>
+          </ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Entry</th><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>List all indices checked for key 40.</p></li>
+            <li><p>Where would linear probing place key 40?</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="hash-slide-34">
+          <h2>Quadratic probing result</h2>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Key</th><th scope="col">Indices checked</th><th scope="col">Final index</th></tr></thead>
+            <tbody>
+              <tr><td>27</td><td>5</td><td>5</td></tr>
+              <tr><td>18</td><td>7</td><td>7</td></tr>
+              <tr><td>29</td><td>7, 8</td><td>8</td></tr>
+              <tr><td>28</td><td>6</td><td>6</td></tr>
+              <tr><td>40</td><td>7, 8, 0</td><td>0</td></tr>
+            </tbody>
+          </table>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Entry</th><td class="found">40</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>27</td><td>28</td><td>18</td><td>29</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Key 40: third probe <code class="inline">(40 + 4) % 11 = 0</code>.</p></li>
+            <li><p>Linear probing: key 40 goes to index 9.</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="hash-slide-35">
           <h2>Double hashing</h2>
           <ul>
-            <li><p>Use one hash for the starting position.</p></li>
-            <li><p>Use a second hash for the step size.</p></li>
-            <li><p>This usually spreads probes out better than linear or quadratic probing.</p></li>
+            <li><p><code class="inline">h1(k)</code>: hash code for the first index.</p></li>
+            <li><p><code class="inline">h2(k)</code>: distance between successive probe indices.</p></li>
+            <li><p><code class="inline">i</code>: probe number, 0, 1, 2, …</p></li>
+            <li><p><code class="inline">index(k, i) = (h1(k) + i * h2(k)) % m</code></p></li>
+            <li><p>First probe: <code class="inline">i = 0</code>, so <code class="inline">index(k, 0) = h1(k) % m</code>.</p></li>
           </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">index(i) = (h1(k) + i * h2(k)) % m</code></pre>
         </section>
 
-        <section class="frame">
-          <h2>Double hashing example</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">
-bucket size: m = 11
-h1(k) = k
-h2(k) = 7 - (k % 7)
-index(k) = (h1(k) + i * h2(k)) % 11
-
-insert 22
-  h1(k) = 22, h2(k) = 7 - (22 % 7) = 7 - 1 = 6
-  i = 0, index(k) = (22 + 0 * 6) % 11 = 22 % 11 = 0
-
-insert 33
-  h1(k) = 33, h2(k) = 7 - (33 % 7) = 7 - 5 = 2
-  i = 0, index(k) = (33 + 0 * 2) % 11 = 33 % 11 = 0
-  collision at bucket 0
-
-  i = 1, index(k) = (33 + 1 * 2) % 11 = 35 % 11 = 2
-  bucket 2 is empty, place 33 at bucket 2
-
-insert 44
-  h1(k) = 44, h2(k) = 7 - (44 % 7) = 7 - 2 = 5
-  i = 0
-  index(k) = (44 + 0 * 5) % 11 = 44 % 11 = 0
-  collision at bucket 0
-
-  i = 1
-  index(k) = (44 + 1 * 5) % 11 = 49 % 11 = 5
-  bucket 5 is empty
-  place 44 at bucket 5
-
-insert 55
-  h1(k) = 55
-  h2(k) = 7 - (55 % 7) = 7 - 6 = 1
-  i = 0
-  index(k) = (55 + 0 * 1) % 11 = 55 % 11 = 0
-  collision at bucket 0
-
-  i = 1
-  index(k) = (55 + 1 * 1) % 11 = 56 % 11 = 1
-  bucket 1 is empty
-  place 55 at bucket 1</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Comparison of methods</h2>
-          <table>
-            <thead>
-              <tr><th>Method</th><th>Main issue</th><th>Memory</th><th>Notes</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Chaining</td><td>Long buckets</td><td>Higher</td><td>Simple and flexible</td></tr>
-              <tr><td>Linear probing</td><td>Primary clustering</td><td>Low</td><td>Very simple</td></tr>
-              <tr><td>Quadratic probing</td><td>Secondary clustering</td><td>Low</td><td>Better spread</td></tr>
-              <tr><td>Double hashing</td><td>More complex hashing</td><td>Low</td><td>Often best spread</td></tr>
-            </tbody>
+        <section class="frame" id="hash-slide-36">
+          <h2>Double hashing: insert 22</h2>
+          <ul>
+            <li><p><code class="inline">m = 11</code>, <code class="inline">h1(k) = k</code>.</p></li>
+            <li><p><code class="inline">h2(k) = 7 - (k % 7)</code></p></li>
+            <li><p><code class="inline">index(k, i) = (h1(k) + i * h2(k)) % m</code></p></li>
+          </ul>
+          <table class="trace-table">
+            <colgroup><col style="width:78%"><col style="width:22%"></colgroup>
+            <thead><tr><th scope="col">Calculation</th><th scope="col">Result</th></tr></thead>
+            <tbody><tr><td><code class="inline">h2(22) = 7 - (22 % 7) = 7 - 1 = 6</code></td><td>h2(22) = 6</td></tr><tr><td><code class="inline">index(22, 0) = (22 + 0 * 6) % 11 = 0</code></td><td>Empty: insert 22.</td></tr></tbody>
           </table>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody><tr><th scope="row">Entry</th><td class="found">22</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr></tbody>
+          </table>
+        </section>
+
+        <section class="frame" id="hash-slide-37">
+          <h2>Double hashing: insert 33</h2>
+          <ul>
+            <li><p><code class="inline">m = 11</code>, <code class="inline">h1(k) = k</code>.</p></li>
+            <li><p><code class="inline">h2(k) = 7 - (k % 7)</code></p></li>
+            <li><p><code class="inline">index(k, i) = (h1(k) + i * h2(k)) % m</code></p></li>
+          </ul>
+          <table class="trace-table">
+            <colgroup><col style="width:78%"><col style="width:22%"></colgroup>
+            <thead><tr><th scope="col">Calculation</th><th scope="col">Result</th></tr></thead>
+            <tbody><tr><td><code class="inline">h2(33) = 7 - (33 % 7) = 7 - 5 = 2</code></td><td>h2(33) = 2</td></tr><tr><td><code class="inline">index(33, 0) = (33 + 0 * 2) % 11 = 0</code></td><td>Occupied by 22.</td></tr><tr><td><code class="inline">index(33, 1) = (33 + 1 * 2) % 11 = 2</code></td><td>Empty: insert 33.</td></tr></tbody>
+          </table>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody><tr><th scope="row">Entry</th><td class="found">22</td><td>&middot;</td><td class="found">33</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr></tbody>
+          </table>
+        </section>
+
+        <section class="frame" id="double-hashing-insert-44">
+          <h2>Double hashing: insert 44</h2>
+          <ul>
+            <li><p><code class="inline">m = 11</code>, <code class="inline">h1(k) = k</code>.</p></li>
+            <li><p><code class="inline">h2(k) = 7 - (k % 7)</code></p></li>
+            <li><p><code class="inline">index(k, i) = (h1(k) + i * h2(k)) % m</code></p></li>
+          </ul>
+          <table class="trace-table">
+            <colgroup><col style="width:78%"><col style="width:22%"></colgroup>
+            <thead><tr><th scope="col">Calculation</th><th scope="col">Result</th></tr></thead>
+            <tbody><tr><td><code class="inline">h2(44) = 7 - (44 % 7) = 7 - 2 = 5</code></td><td>h2(44) = 5</td></tr><tr><td><code class="inline">index(44, 0) = (44 + 0 * 5) % 11 = 0</code></td><td>Occupied by 22.</td></tr><tr><td><code class="inline">index(44, 1) = (44 + 1 * 5) % 11 = 5</code></td><td>Empty: insert 44.</td></tr></tbody>
+          </table>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody><tr><th scope="row">Entry</th><td class="found">22</td><td>&middot;</td><td class="found">33</td><td>&middot;</td><td>&middot;</td><td class="found">44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr></tbody>
+          </table>
+        </section>
+
+        <section class="frame" id="prime-table-size">
+          <h2>Prime table size</h2>
+          <ul>
+            <li><p>A <strong>prime number</strong> is an integer greater than 1 and D\divisible only by 1 and itself.</p></li>
+            <li><p>Examples: 2, 3, 5, 7, 11, 23.</p></li>
+            <li><p><strong>Prime table size:</strong> the number of slots is prime.</p></li>
+            <li><p>Example: <code class="inline">m = 11</code>.</p></li>
+          </ul>
+        </section>
+
+<section class="frame" id="h2-and-table-size">
+          <h2>h2(k) and table size</h2>
+          <ul>
+            <li><p><code class="inline">h2(k)</code> must be nonzero.</p></li>
+            <li><p><code class="inline">h2(k)</code> and <code class="inline">m</code> share no factor except 1.</p></li>
+            <li><p>This allows probes to reach every slot.</p></li>
+            <li><p>Prime <code class="inline">m</code>: choose <code class="inline">1 &lt;= h2(k) &lt;= m - 1</code>.</p></li>
+            <li><p>With <code class="inline">h1(k) = 0</code>: <code class="inline">index(k, i) = (0 + i * h2(k)) % m</code>.</p></li>
+          </ul>
+          <table class="trace-table"><thead><tr><th scope="col">m</th><th scope="col">h2(k)</th><th scope="col">Indices checked</th></tr></thead><tbody><tr><td>10</td><td>2</td><td>0, 2, 4, 6, 8, 0, …</td></tr><tr><td>11</td><td>2</td><td>0, 2, 4, 6, 8, 10, 1, 3, 5, 7, 9, 0</td></tr></tbody></table>
+<aside class="notes"><p>Sources: <a href="https://tarjotin.cs.aalto.fi/CS-A1140/2020/notes/hashing-tables.html">Aalto University: hashing and hash tables</a></p></aside>
+        </section>
+
+<section class="frame" id="hash-slide-38">
+          <h2>Comparison of collision methods</h2>
+          <table class="trace-table"><thead><tr><th scope="col">Method</th><th scope="col">Storage or probe rule</th><th scope="col">Main limitation</th></tr></thead><tbody><tr><td>Chaining</td><td>Shared bucket</td><td>Long buckets, extra memory</td></tr><tr><td>Linear probing</td><td>Consecutive slots</td><td>Primary clustering</td></tr><tr><td>Quadratic probing</td><td>Square offsets</td><td>Secondary clustering, unreachable slots</td></tr><tr><td>Double hashing</td><td>Key-dependent <code class="inline">h2(k)</code></td><td>Extra hash computation</td></tr></tbody></table>
+          <ul>
+            <li><p>All methods compare actual keys.</p></li>
+</ul>
         </section>
       </section>
 
-      <!-- =========================================================
-           Deletion and Resizing
-           ========================================================= -->
+      <!-- Deletion and Resizing -->
       <section>
-        <section class="title-slide slide level1">
+        <section class="title-slide slide level1" id="hash-slide-39">
           <h1>Deletion &amp; Resizing</h1>
+
         </section>
 
-        <section class="frame">
-          <h2>Why deletion is hard in open addressing</h2>
+        <section class="frame" id="hash-slide-40">
+          <h2>Deletion problem</h2>
           <ul>
-            <li><p>Search depends on following a probe sequence.</p></li>
-            <li><p>If a removed slot becomes completely empty too soon, a later search may stop early.</p></li>
-            <li><p>That can make an existing key appear missing.</p></li>
+            <li><p><code class="inline">m = 11</code>, <code class="inline">h(k) = k</code>.</p></li>
+            <li><p><code class="inline">index(k, i) = (h(k) + i) % m</code></p></li>
+            <li><p>Remove key 22 from index 0.</p></li>
+          </ul>
+<table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Before</th><td>22</td><td>33</td><td>44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+              <tr><th scope="row">Cleared</th><td class="probe">&middot;</td><td>33</td><td class="found">44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Search for 44: <code class="inline">index(44, 0) = (44 + 0) % 11 = 0</code>.</p></li>
+            <li><p>Index 0 is Empty: search stops.</p></li>
+            <li><p>Key 44 remains at index 2, but appears absent.</p></li>
           </ul>
         </section>
 
-        <section class="frame">
-          <h2>Deletion problem example</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">
-Suppose:
-- table size m = 10
-- hash function h(k) = k
-- index = h(k) % 10
-- collision rule: linear probing
-  next index = (start index + i) % 10, for i = 0, 1, 2, ...
-
-After inserting 15, 25, 35 in order, the hash table looks like this:
-
-index :   0   1   2   3   4   5    6    7    8   9
-entry :  [ ] [ ] [ ] [ ] [ ] [15] [25] [35] [ ] [ ]
-
-Suppose we remove 15 from table[5].
-
-If we simply mark table[5] as Empty, the table becomes:
-
-index :   0   1   2   3   4   5   6    7    8   9
-entry :  [ ] [ ] [ ] [ ] [ ] [ ] [25] [35] [ ] [ ]
-
-Search for 35
-  h(35) = 35
-  start index = 35 % 10 = 5
-  i = 0 -> index = (5 + 0) % 10 = 5
-  table[5] is Empty, search stop
-               </code></pre>
-        </section>
-
-        <section class="frame">
+        <section class="frame" id="hash-slide-41">
           <h2>Deleted marker</h2>
           <ul>
-            <li><p>Instead of marking a removed slot as <strong>Empty</strong>, mark it as <strong>Deleted</strong>.</p></li>
-            <li><p>Search continues past deleted slots.</p></li>
-            <li><p>Insertion may reuse a deleted slot later.</p></li>
+            <li><p><code class="inline">D</code>: Deleted, also called a tombstone.</p></li>
+            <li><p><code class="inline">index(k, i) = (h(k) + i) % 11</code></p></li>
           </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Slot states</h2>
-          <table>
-            <thead>
-              <tr><th>State</th><th>Meaning</th><th>Search behavior</th></tr>
-            </thead>
+<table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
             <tbody>
-              <tr><td>Empty</td><td>Never used</td><td>Stop</td></tr>
-              <tr><td>Occupied</td><td>Contains a key</td><td>Check key</td></tr>
-              <tr><td>Deleted</td><td>Previously used</td><td>Keep probing</td></tr>
+              <tr><th scope="row">Entry</th><td class="deleted">D</td><td class="probe">33</td><td class="found">44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
             </tbody>
           </table>
+          <table class="trace-table">
+            <colgroup><col style="width:78%"><col style="width:22%"></colgroup>
+            <thead><tr><th scope="col">Calculation</th><th scope="col">Result</th></tr></thead>
+            <tbody><tr><td><code class="inline">index(44, 0) = (44 + 0) % 11 = 0</code></td><td>Deleted: continue.</td></tr><tr><td><code class="inline">index(44, 1) = (44 + 1) % 11 = 1</code></td><td>Key 33: continue.</td></tr><tr><td><code class="inline">index(44, 2) = (44 + 2) % 11 = 2</code></td><td>Key 44: found.</td></tr></tbody>
+          </table>
+<aside class="notes"><p>Sources: <a href="https://opendsa-server.cs.vt.edu/ODSA/Books/quinnipiac/csc215/fall-2020/CSC_215_Fall_2020/html/HashDel.html">OpenDSA: deletion</a></p></aside>
         </section>
 
-        <section class="frame">
-          <h2>Backward shift deletion</h2>
+        
+
+        <section class="frame" id="hash-slide-43">
+<h2>Search past a Deleted slot</h2>
+<p>Try <code class="inline">insert(33, &quot;Maria Chen&quot;)</code>.</p><table class="hash-array">
+<thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+<tbody>
+<tr><th scope="row">Entry</th><td class="deleted">D</td><td class="found">33</td><td>44</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+</tbody>
+</table><ol>
+  <li><p>Remember Deleted index 0, but continue searching.</p></li>
+  <li><p>Key 33 already exists at index 1. Update its value there.</p></li>
+  <li><p>Leave index 0 Deleted. Using it now would create a duplicate key.</p></li>
+</ol>
+<aside class="notes"><p>Sources: <a href="https://opendsa-server.cs.vt.edu/ODSA/Books/quinnipiac/csc215/fall-2020/CSC_215_Fall_2020/html/HashDel.html">OpenDSA: deletion</a></p></aside>
+</section>
+
+<section class="frame" id="reuse-deleted-new-key">
+<h2>Reusing a deleted slot</h2>
+<p>Now insert the new entry <code class="inline">(55, &quot;Nina&quot;)</code>. Its first index is <code class="inline">55 % 11 = 0</code>.</p><table class="hash-array">
+<thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+<tbody>
+<tr><th scope="row">Before</th><td class="deleted">D</td><td class="probe">33</td><td class="probe">44</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+<tr><th scope="row">After</th><td class="found">55</td><td>33</td><td>44</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+</tbody>
+</table><ol>
+  <li><p>Remember Deleted index 0. Continue past keys 33 and 44.</p></li>
+  <li><p>Index 3 is Empty, so key 55 is absent.</p></li>
+  <li><p>Insert the new pair at the remembered index 0.</p></li>
+</ol>
+
+</section>
+
+<section class="frame" id="hash-slide-42">
+          <h2>Slot states</h2>
+          <table class="trace-table"><thead><tr><th scope="col">State</th><th scope="col">Search</th><th scope="col">Insertion</th></tr></thead><tbody><tr><td><strong>Empty</strong></td><td>Stop: key absent.</td><td>Use this or an earlier Deleted slot.</td></tr><tr><td><strong>Occupied</strong></td><td>Match: found. Otherwise: continue.</td><td>Matching key: update. Otherwise: continue.</td></tr><tr><td><strong>Deleted</strong></td><td>Continue probing.</td><td>Remember the slot and continue.</td></tr></tbody></table>
           <ul>
-            <li><p>This technique is mainly used with linear probing.</p></li>
-            <li><p>Instead of leaving tombstones, shift later entries backward when safe.</p></li>
-            <li><p>This reduces buildup of deleted markers.</p></li>
-            <li><p>Deletion is more expensive, but future searches can be faster.</p></li>
-          </ul>
+            <li><p>Deleted slots preserve search paths after removal.</p></li>
+            <li><p>Check at most m positions.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
+        <section class="frame" id="hash-slide-56">
+          <h2>Backward-shift deletion</h2>
+          <ul>
+            <li><p>Linear probing can repair some gaps by shifting entries.</p></li>
+</ul>
+          <table class="hash-array">
+            <thead><tr><th scope="col">Index</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Before</th><td>22</td><td>33</td><td>44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+              <tr><th scope="row">Remove 22</th><td class="found">33</td><td class="found">44</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td><td>&middot;</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Keys 33 and 44 both produce index 0.</p></li>
+            <li><p>Both remain reachable after shifting backward.</p></li>
+            <li><p>Move an entry only within its valid probe sequence.</p></li>
+            <li><p>Avoids tombstones, but adds deletion work.</p></li>
+</ul>
+          <aside class="notes"><p>Sources: <a href="https://opendsa-server.cs.vt.edu/ODSA/Books/quinnipiac/csc215/fall-2020/CSC_215_Fall_2020/html/HashDel.html">OpenDSA: deletion</a></p></aside>
+        </section>
+
+        <section class="frame" id="hash-slide-44">
           <h2>Load factor</h2>
           <ul>
-            <li><p>Performance depends strongly on how full the table is.</p></li>
-            <li><p>The <strong>load factor</strong> measures that fullness.</p></li>
+            <li><p><strong>Load factor α:</strong> how full the table is.</p></li>
+            <li><p><code class="inline">n</code>: number of stored keys.</p></li>
+            <li><p><code class="inline">m</code>: number of array slots.</p></li>
+            <li><p><code class="inline">α = n / m</code></p></li>
           </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">load factor α = number of stored keys / table size</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Why resize?</h2>
+<table class="trace-table">
+            <thead><tr><th scope="col">Live entries n</th><th scope="col">Table size m</th><th scope="col">Load factor α</th></tr></thead>
+            <tbody>
+              <tr><td>3</td><td>11</td><td>3 / 11 ≈ 0.27</td></tr>
+              <tr><td>8</td><td>11</td><td>8 / 11 ≈ 0.73</td></tr>
+            </tbody>
+          </table>
           <ul>
-            <li><p>As the load factor grows, collisions become more common.</p></li>
-            <li><p>Probe chains and bucket lengths get longer.</p></li>
-            <li><p>Operations become slower.</p></li>
-            <li><p>Resizing restores performance by giving keys more room.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Typical resize rule</h2>
-          <ul>
-            <li><p>When the load factor passes a threshold, allocate a larger table.</p></li>
-            <li><p>For open addressing, the threshold is often around 0.5 to 0.75.</p></li>
-            <li><p>Then reinsert all stored keys into the new table.</p></li>
+            <li><p>Open addressing: α ≈ 0.27 means about 27% occupied.</p></li>
+            <li><p>Chaining: α may exceed 1.</p></li>
           </ul>
         </section>
 
-        <section class="frame">
-          <h2>Why rehashing is necessary</h2>
+        <section class="frame" id="hash-slide-45">
+          <h2>Fullness and search cost</h2>
           <ul>
-            <li><p>The final index depends on the table size.</p></li>
-            <li><p>If the table size changes, the old indices are no longer valid.</p></li>
-            <li><p>Every key must be hashed again and compressed using the new size.</p></li>
-          </ul>
+            <li><p>More occupied slots: more probing.</p></li>
+            <li><p>Longer buckets: more key comparisons.</p></li>
+            <li><p>Deleted slots cannot stop a search.</p></li>
+            <li><p>Many deletions can leave long search paths.</p></li>
+            <li><p>Rebuilding removes Deleted markers.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
-          <h2>Resize cost</h2>
+        
+
+        
+
+        <section class="frame" id="hash-slide-46">
+          <h2>Resizing and rebuilding</h2>
+          <table class="trace-table"><thead><tr><th scope="col">Condition</th><th scope="col">Action</th></tr></thead><tbody><tr><td>Quadratic probing with square offsets</td><td>Use prime sizes. Keep α below 0.5.</td></tr><tr><td>Linear probing or double hashing</td><td>Choose a load threshold below 1.</td></tr><tr><td>Many Deleted markers</td><td>Rebuild to remove tombstones.</td></tr></tbody></table>
           <ul>
-            <li><p>A resize takes O(n) time because all existing keys are reinserted.</p></li>
-            <li><p>But resizing happens only occasionally.</p></li>
-            <li><p>So insertion is still O(1) amortized in a typical design.</p></li>
-          </ul>
+            <li><p>Track stored keys and Deleted slots.</p></li>
+            <li><p>Both affect performance.</p></li>
+</ul>
+          <aside class="notes"><p>Sources: <a href="https://opendsa-server.cs.vt.edu/ODSA/StandaloneModules/help/20221201151914/html/HashCImproved.html">OpenDSA: improved collision resolution</a> <a href="https://opendsa-server.cs.vt.edu/ODSA/Books/quinnipiac/csc215/fall-2020/CSC_215_Fall_2020/html/HashDel.html">OpenDSA: deletion</a></p></aside>
         </section>
+
+        <section class="frame" id="hash-slide-47">
+          <h2>Rehashing into a larger table</h2>
+          <ul>
+            <li><p>Linear probing: grow from 11 slots to 23.</p></li>
+</ul>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Key</th><th scope="col">Old slot, m = 11</th><th scope="col">New index, m = 23</th></tr></thead>
+            <tbody>
+              <tr><td>22</td><td>0</td><td>22 % 23 = 22</td></tr>
+              <tr><td>33</td><td>1</td><td>33 % 23 = 10</td></tr>
+              <tr><td>44</td><td>2</td><td>44 % 23 = 21</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Reinsert entries using the new table size.</p></li>
+            <li><p>Discard Deleted markers.</p></li>
+            <li><p>Hash codes may remain unchanged.</p></li>
+            <li><p>Recalculate indices with the new size.</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="resize-work-example">
+<h2>A resizing example</h2>
+<p>Use linear probing. Start with 8 slots and double capacity before the load would exceed 0.5.</p><table class="trace-table">
+<thead><tr><th scope="col">Before insertion</th><th scope="col">Live entries</th><th scope="col">Capacity change</th><th scope="col">Entries reinserted</th></tr></thead>
+<tbody>
+<tr><td>5th</td><td>4</td><td>8 to 16</td><td>4</td></tr>
+<tr><td>9th</td><td>8</td><td>16 to 32</td><td>8</td></tr>
+<tr><td>17th</td><td>16</td><td>32 to 64</td><td>16</td></tr>
+</tbody>
+</table><p>Across the first 32 insertions, rebuilding reinserts <code class="inline">4 + 8 + 16 = 28</code> entries.</p><p>Doubling creates a longer interval before the next rebuild.</p>
+
+</section>
+
+<section class="frame" id="hash-slide-48">
+<h2>Resize cost</h2>
+<p>The previous example spread 28 reinsertions across 32 insertions.</p><ol>
+  <li><p>One rebuild reinserts n live entries: O(n) expected time.</p></li>
+  <li><p>Growing by a constant factor keeps the total rebuilding work proportional to the number of insertions.</p></li>
+  <li><p>Spread across those insertions, the cost is O(1) expected amortized per insertion.</p></li>
+</ol><p>An individual insertion that triggers resizing can still take O(n) expected time.</p>
+
+</section>
       </section>
 
-      <!-- =========================================================
-           Hash Function Design
-           ========================================================= -->
+      <!-- Hash Function Design -->
       <section>
-        <section class="title-slide slide level1">
+        <section class="title-slide slide level1" id="hash-slide-49">
           <h1>Hash Function Design</h1>
+
         </section>
 
-        <section class="frame">
-          <h2>Goals of a good hash function</h2>
+        <section class="frame" id="hash-slide-50">
+<h2>Hash function correctness</h2>
+<p>Search recomputes an index from the key. It must be able to find the entry inserted earlier.</p><ul>
+  <li><p>The same key must keep the same hash code.</p></li>
+  <li><p>Keys that compare equal must have equal hash codes.</p></li>
+  <li><p>Different keys may share a hash code. Compare actual keys to identify an entry.</p></li>
+</ul>
+<aside class="notes"><p>Sources: <a href="https://opendatastructures.org/ods-cpp/5_3_Hash_Codes.html">Open Data Structures: hash codes</a></p></aside>
+</section>
+
+<section class="frame" id="hash-function-efficiency">
+<h2>Hash function efficiency</h2>
+<ul>
+  <li><p><strong>Distribution:</strong> spread typical inputs across the table slots. Fewer collisions mean shorter buckets or probe sequences.</p></li>
+  <li><p><strong>Computation:</strong> produce the code quickly. String hashing must process the characters.</p></li>
+</ul><p>An O(1) hashing assumption requires bounded-size keys or cached hash codes.</p>
+
+</section>
+
+        <section class="frame" id="hash-slide-51">
+          <h2>Integer-key patterns</h2>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Key</th><th scope="col">h(k) = k</th><th scope="col">Index with m = 11</th></tr></thead>
+            <tbody>
+              <tr><td>22</td><td>22</td><td>0</td></tr>
+              <tr><td>33</td><td>33</td><td>0</td></tr>
+              <tr><td>44</td><td>44</td><td>0</td></tr>
+            </tbody>
+          </table>
           <ul>
-            <li><p>Deterministic</p></li>
-            <li><p>Fast to compute</p></li>
-            <li><p>Spreads keys uniformly</p></li>
-            <li><p>Produces few collisions for typical inputs</p></li>
-            <li><p>Avoids obvious input patterns</p></li>
-          </ul>
+            <li><p>Multiples of 11 all produce index 0.</p></li>
+            <li><p>Modulo can preserve patterns in the keys.</p></li>
+            <li><p>A prime table size cannot fix every poor hash function.</p></li>
+</ul>
         </section>
 
-        <section class="frame">
-          <h2>Modulo hashing</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">hashCode = key
-index = hashCode % N</code></pre>
-          <ul>
-            <li><p>Very simple and fast</p></li>
-            <li><p>Works well when keys are well distributed</p></li>
-            <li><p>Can behave poorly when keys have patterns related to <code class="inline">N</code></p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
+        <section class="frame" id="hash-slide-52">
           <h2>Mid-square hashing</h2>
           <ul>
             <li><p>Square the key.</p></li>
-            <li><p>Take middle digits or bits from the result.</p></li>
-            <li><p>This can reduce some simple patterns in the input.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Multiplicative hashing</h2>
-          <ul>
-            <li><p>Repeatedly multiply by a constant and add the next value or character.</p></li>
-            <li><p>This is common for strings and sequences.</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">hashCode = ((hashCode * A) + nextValue)</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Exercise: linear probing</h2>
-          <ul>
-            <li><p>Table size: 7</p></li>
-            <li><p>Hash function: <code class="inline">hashCode = key</code></p></li>
-            <li><p>Compression: <code class="inline">index = hashCode % 7</code></p></li>
-            <li><p>Insert: 10, 20, 15</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Exercise result</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">10 -> hashCode 10 -> index 3
-20 -> hashCode 20 -> index 6
-15 -> hashCode 15 -> index 1
-
-index : 0  1   2  3   4  5  6
-entry : [ ][15][ ][10][ ][ ][20]</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Exercise: quadratic probing</h2>
-          <ul>
-            <li><p>Table size: 11</p></li>
-            <li><p>Hash function: <code class="inline">hashCode = key</code></p></li>
-            <li><p>Base index: <code class="inline">hashCode % 11</code></p></li>
-            <li><p>Insert: 27, 18, 29, 28, 30</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Quadratic probing result</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">27 -> base index 5
-18 -> base index 7
-29 -> base index 7 occupied, then 8
-28 -> base index 6
-30 -> base index 8 occupied, then 9
-
-index : 0 1 2 3 4 5  6  7  8  9 10
-entry : [ ][ ][ ][ ][ ][27][28][18][29][30][ ]</code></pre>
-        </section>
-</section>
-      
-      <!-- =========================================================
-           Cryptographic Hashing
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Cryptographic Hashing</h1>
-        </section>
-
-        <section class="frame">
-          <h2>What is cryptographic hashing?</h2>
-          <ul>
-            <li><p>A cryptographic hash function maps data of any size to a fixed-size digest.</p></li>
-            <li><p>It is designed for security, not just fast indexing.</p></li>
-            <li><p>Small changes in input should create very different outputs.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Important properties</h2>
-          <ul>
-            <li><p>Deterministic</p></li>
-            <li><p>Fast to compute</p></li>
-            <li><p>Hard to reverse</p></li>
-            <li><p>Hard to find two inputs with the same digest</p></li>
-            <li><p>Small input changes should dramatically change the output</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Common uses</h2>
-          <ul>
-            <li><p>Password storage</p></li>
-            <li><p>File integrity checks</p></li>
-            <li><p>Digital signatures</p></li>
-            <li><p>Blockchain and security systems</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Hash table hashing vs cryptographic hashing</h2>
-          <table>
-            <thead>
-              <tr><th>Purpose</th><th>Hash table hashing</th><th>Cryptographic hashing</th></tr>
-            </thead>
+            <li><p>Use four digits, including leading zeros.</p></li>
+            <li><p>Take the middle two digits.</p></li>
+            <li><p>Compress to a valid index.</p></li>
+</ul>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Key</th><th scope="col">Square</th><th scope="col">Middle two digits</th><th scope="col">Index with m = 11</th></tr></thead>
             <tbody>
-              <tr><td>Main goal</td><td>Fast indexing</td><td>Security</td></tr>
-              <tr><td>Speed</td><td>Very fast</td><td>Fast but more complex</td></tr>
-              <tr><td>Collision resistance</td><td>Helpful</td><td>Essential</td></tr>
-              <tr><td>Reversibility</td><td>Not central</td><td>Should be infeasible</td></tr>
+              <tr><td>44</td><td>1936</td><td>93</td><td>93 % 11 = 5</td></tr>
             </tbody>
           </table>
+          <ul>
+            <li><p>Fixed digit widths make the rule consistent.</p></li>
+            <li><p>Even distribution is not guaranteed.</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="hash-slide-13">
+          <h2>String hashing example</h2>
+          <ul>
+            <li><p>Character codes: A = 65, B = 66.</p></li>
+            <li><p>Initial hash code: 0.</p></li>
+
+            <li><p><code class="inline">hashCode = 31 * hashCode + characterCode</code></p></li>
+          </ul>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Character processed</th><th scope="col">Calculation</th><th scope="col">Hash code</th></tr></thead>
+            <tbody>
+              <tr><td>A</td><td><code class="inline">31 * 0 + 65</code></td><td>65</td></tr>
+              <tr><td>B</td><td><code class="inline">31 * 65 + 66</code></td><td>2081</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Key: <code class="inline">&quot;AB&quot;</code>.</p></li>
+            <li><p>Hash code: 2081.</p></li>
+            <li><p>Table index: <code class="inline">2081 % 11 = 2</code>.</p></li>
+</ul>
+          <aside class="notes"><p>Sources: <a href="https://opendatastructures.org/ods-cpp/5_3_Hash_Codes.html">Open Data Structures: hash codes</a></p></aside>
+        </section>
+
+<section class="frame" id="hash-slide-53">
+          <h2>Polynomial string hashing</h2>
+          <ul>
+            <li><p>Initial hash code: 0.</p></li>
+            <li><p>Multiply by 31, then add each character code.</p></li>
+            <li><p>Character codes: A = 65, B = 66.</p></li>
+
+            <li><p><code class="inline">hashCode = 31 * hashCode + characterCode</code></p></li>
+          </ul>
+          <table class="trace-table">
+            <thead><tr><th scope="col">String</th><th scope="col">Code, starting from 0</th><th scope="col">Index with m = 11</th></tr></thead>
+            <tbody>
+              <tr><td>AB</td><td>31 × 65 + 66 = 2081</td><td>2</td></tr>
+              <tr><td>BA</td><td>31 × 66 + 65 = 2111</td><td>10</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Character order affects the hash code.</p></li>
+            <li><p>Adding character codes alone gives AB and BA equal codes.</p></li>
+</ul>
+          <aside class="notes"><p>Sources: <a href="https://opendatastructures.org/ods-cpp/5_3_Hash_Codes.html">Open Data Structures: hash codes</a></p></aside>
+        </section>
+
+        <section class="frame" id="hash-slide-54">
+          <h2>Operation costs</h2>
+          <table class="trace-table">
+            <thead><tr><th scope="col">Operation</th><th scope="col">With suitable hashing and controlled load</th><th scope="col">Worst case in a typical table</th></tr></thead>
+            <tbody>
+              <tr><td>Search</td><td>O(1) expected</td><td>O(n)</td></tr>
+              <tr><td>Insert</td><td>O(1) expected amortized</td><td>O(n) probes without resizing</td></tr>
+              <tr><td>Remove</td><td>O(1) expected</td><td>O(n)</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Assumptions: bounded-size keys and constant-time comparison.</p></li>
+            <li><p>Expected costs require good hashing and controlled load.</p></li>
+            <li><p>Resizing adds rebuilding cost.</p></li>
+</ul>
         </section>
       </section>
 
-      <!-- =========================================================
-           Wrap-up
-           ========================================================= -->
+      <!-- Cryptographic Hashing -->
       <section>
-        <section class="title-slide slide level1">
-          <h1>Wrap-up</h1>
+        <section class="title-slide slide level1" id="hash-slide-55">
+          <h1>Cryptographic Hashing</h1>
+
         </section>
 
-        <section class="frame">
-          <h2>Summary</h2>
+        
+
+        <section class="frame" id="hash-slide-57">
+          <h2>Table hashing and cryptographic hashing</h2>
+          <table class="trace-table"><thead><tr><th scope="col">Aspect</th><th scope="col">Table hashing</th><th scope="col">Cryptographic hashing</th></tr></thead><tbody><tr><td>Goal</td><td>Fast lookup</td><td>Security</td></tr><tr><td>Output</td><td>Hash code, then array index</td><td>Fixed-size digest</td></tr><tr><td>Collisions</td><td>Compare actual keys</td><td>Hard to find equal digests</td></tr><tr><td>Uses</td><td>Maps, sets, caches</td><td>Integrity checks, digital signatures</td></tr></tbody></table>
           <ul>
-            <li><p>Maps store key-value pairs with unique keys.</p></li>
-            <li><p>Hashing is best explained as <strong>key -> hash code -> table index</strong>.</p></li>
-            <li><p>Collisions are unavoidable and must be handled carefully.</p></li>
-            <li><p>Open addressing needs careful deletion and resizing rules.</p></li>
-            <li><p>Hash function quality strongly affects performance.</p></li>
+            <li><p>Compression can create collisions even with cryptographic digests.</p></li>
+</ul>
+        </section>
+
+        <section class="frame" id="hash-slide-58">
+<h2>Extension: password hashing</h2>
+<p>Two accounts choose the password <code class="inline">&quot;summer123&quot;</code>. An attacker obtains their stored password hashes.</p><ol>
+  <li><p>With the same unsalted scheme, hashing one guess lets the attacker test it against both accounts.</p></li>
+  <li><p>A unique random <strong>salt</strong> for each stored password forces the attacker to recompute the guess for each salt.</p></li>
+  <li><p>A dedicated password-hashing scheme uses deliberately expensive computation, making repeated guesses costly.</p></li>
+</ol><p>A generic fast hash alone is insufficient.</p>
+<aside class="notes"><p>Sources: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html">OWASP: password storage</a></p></aside>
+</section>
+      </section>
+
+      <!-- Wrap-up -->
+      <section>
+        <section class="title-slide slide level1" id="hash-slide-59">
+          <h1>Wrap-up</h1>
+
+        </section>
+
+        <section class="frame" id="hash-slide-60">
+          <h2>Key takeaways</h2>
+          <ul>
+            <li><p>Map: unique keys with associated values.</p></li>
+            <li><p>Hash function: key to hash code.</p></li>
+            <li><p>Compression: hash code to table index.</p></li>
+            <li><p>Collisions: chaining or probing.</p></li>
+            <li><p>Deletion: preserve the search path.</p></li>
+            <li><p>Load factor and resizing affect performance.</p></li>
+</ul>
+        </section>
+
+        
+
+        <section class="frame" id="hash-slide-62">
+          <h2>Concept check</h2>
+          <ul>
+            <li><p>Different keys, same index: replace or keep both? <span class="fragment" data-fragment-index="0"><em>→ <code>Keep both.</code></em></span></p></li>
+            <li><p>Empty versus Deleted: when does search stop? <span class="fragment" data-fragment-index="1"><em>→ <code>Empty: stop. Deleted: continue.</code></em></span></p></li>
+            <li><p>Prime size: does square-offset probing reach every slot? <span class="fragment" data-fragment-index="2"><em>→ <code>No.</code></em></span></p></li>
+            <li><p>Larger table: can entries keep their old positions? <span class="fragment" data-fragment-index="3"><em>→ <code>No. Reinsert entries.</code></em></span></p></li>
           </ul>
         </section>
       </section>
