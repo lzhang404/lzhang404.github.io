@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>COP4027 Midterm 2 Review (Revised)</title>
+  <link rel="stylesheet" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css?v=20260918d" />
+  <link rel="stylesheet" href="../_static/idea.css?v=20260921a" />
+  <script src="../_static/design-tabs.js?v=20260921a"></script>
+  <style>
+    .reveal .review-columns,
+    .reveal .review-split {
+      display: block;
+    }
+    .reveal .practice-table th:not(:first-child),
+    .reveal .practice-table td:not(:first-child) {
+      text-align: center;
+    }
+    .reveal table.compact {
+      font-size: 1em;
+    }
+    .reveal .practice-table .mark {
+      color: #397843;
+      font-weight: 700;
+    }
+    .reveal .prompt-line {
+      margin-top: 0.55em;
+      padding: 0;
+      border: 0;
+      background: none;
+    }
+    .reveal .answer-line {
+      color: inherit;
+      font-weight: normal;
+    }
+    .reveal .muted-line {
+      color: #5d5851;
+      font-size: 0.9em;
+    }
+  </style>
+</head><body><div class="reveal"><div class="slides" role="main">
+<section><section class="title-slide" id="cover" data-background-color="white" data-background-image="../_static/logo.png" data-background-position="top center" data-background-repeat="no-repeat" data-background-size="50%"><h1>Midterm 2 Review</h1></section></section>
+<section>
+<section class="frame" id="exam-overview">
+<h2>Exam Format and Rules</h2>
+<ul>
+<li><p><strong>Coverage:</strong> slide decks 7–12</p></li>
+<li><p><strong>Time and points:</strong> 75 minutes, 100 points</p></li>
+<li><p><strong>Question types:</strong> choice, matching, categorization, blanks, and short responses</p></li>
+<li><p><strong>Delivery:</strong> LockDown Browser</p></li>
+<li><p><strong>Allowed:</strong> the exam computer and one double-sided letter-size cheat sheet</p></li>
+<li><p><strong>Not allowed:</strong> any other visible electronics</p></li>
+</ul>
+</section>
+<section class="frame" id="roadmap">
+<h2>Roadmap</h2>
+<ol>
+<li><p><strong>Application architecture:</strong> assign responsibilities.</p></li>
+<li><p><strong>Persistence and data consistency:</strong> store data and group changes.</p></li>
+<li><p><strong>Spring:</strong> connect components, repositories, and HTTP requests.</p></li>
+</ol>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1" id="architecture-section"><h1>1. Application Architecture</h1></section>
+<section class="frame" id="three-tiers">
+<h2>Three-Tier Architecture</h2>
+<p><strong>Three-tier architecture</strong> separates responsibilities through defined interfaces.</p>
+<table class="compact"><thead><tr><th>Tier</th><th>Responsibility</th><th>Typical classes</th></tr></thead><tbody>
+<tr><td><strong>Presentation</strong></td><td>Input, events, and results</td><td>View, desktop or web Controller</td></tr>
+<tr><td><strong>Application</strong></td><td>Domain state, rules, and coordination</td><td>Domain objects, Model, Service</td></tr>
+<tr><td><strong>Data</strong></td><td>Loading, saving, and mapping</td><td>Repository and implementation</td></tr>
+</tbody></table>
+<ul>
+<li><p>The tiers can run in one Java program.</p></li>
+<li><p>A new UI can reuse the application rules.</p></li>
+<li><p>A new storage implementation can reuse the same rules.</p></li>
+</ul>
+</section>
+<section class="frame" id="mvc-roles">
+<h2>MVC in Desktop and Web Applications</h2>
+<table class="compact"><thead><tr><th>Part</th><th>Responsibility</th><th>Examples in this course</th></tr></thead><tbody>
+<tr><td><strong>Model</strong></td><td>Own application state and valid operations</td><td>UI-independent Model or Service</td></tr>
+<tr><td><strong>View</strong></td><td>Render state and results</td><td>JavaFX screen or REST client</td></tr>
+<tr><td><strong>Controller</strong></td><td>Handle input and call application operations</td><td>Desktop or web Controller</td></tr>
+</tbody></table>
+<p class="prompt-line"><strong>Boundary check:</strong> the Model should not read JavaFX controls or HTTP request objects.</p>
+</section>
+<section class="frame" id="shared-rules">
+<h2>Shared Rules Belong in the Application</h2>
+<table class="compact"><thead><tr><th>Caller</th><th>Caller-specific work</th><th>Shared call</th></tr></thead><tbody>
+<tr><td>Desktop Controller</td><td>Read and check control values.</td><td>Call the shared operation.</td></tr>
+<tr><td>Web Controller</td><td>Bind and validate request data.</td><td>Call the same operation.</td></tr>
+</tbody></table>
+<p><strong>Question:</strong> Is web validation enough to enforce nonblank titles?</p>
+<div class="fragment answer-line">
+<p><strong>Answer:</strong> No.</p>
+<ul>
+<li><p>Web validation protects web requests.</p></li>
+<li><p>A desktop caller can bypass it.</p></li>
+<li><p>The shared operation must enforce the rule.</p></li>
+</ul>
+</div>
+</section>
+<section class="frame" id="repository-contract">
+<h2>Interfaces Keep Storage Replaceable</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">interface TaskRepository {
+    List&lt;TaskItem&gt; findAll();
+    void add(String title);
+}</code></pre></div>
+<div>
+<ul>
+<li><p>Application code depends on this contract.</p></li>
+<li><p>Memory and JDBC implementations stay behind it.</p></li>
+<li><p>Replacing storage should not change callers.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="frame" id="plain-di">
+<h2>Constructor Dependency Injection</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">class TaskModel {
+    private final TaskRepository repository;
+    TaskModel(TaskRepository repository) {
+        this.repository = repository;
+    }
+}</code></pre></div>
+<div>
+<ul>
+<li><p>Plain Java can inject the repository.</p></li>
+<li><p>Tests can supply a substitute.</p></li>
+<li><p>Spring can assemble the same dependency.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="frame" id="application-trace">
+<h2>An Operation Crosses the Three Tiers</h2>
+<img src="../_static/images/cop4027/three-tier-task.png" alt="Task List across three tiers. Presentation contains the View and Controller. Application contains TaskModel. Data contains TaskRepository and the database. Requests move toward the data tier, and responses return toward presentation." />
+<p class="prompt-line">Follow one request to the database, then follow the returned data back to the View.</p>
+</section>
+<section class="frame" id="design-critique">
+<h2>Which Tier Owns Each Responsibility?</h2>
+<p>A desktop interface and a web interface use the same Task application.</p>
+<table class="compact practice-table"><thead><tr><th>Responsibility</th><th>Presentation</th><th>Application</th><th>Data</th></tr></thead><tbody>
+<tr><td>Handle a button click or HTTP input</td><td class="mark"><span class="fragment">✓</span></td><td></td><td></td></tr>
+<tr><td>Enforce the nonblank title rule for every caller</td><td></td><td class="mark"><span class="fragment">✓</span></td><td></td></tr>
+<tr><td>Coordinate two related database changes</td><td></td><td class="mark"><span class="fragment">✓</span></td><td></td></tr>
+<tr><td>Execute SQL and map result rows</td><td></td><td></td><td class="mark"><span class="fragment">✓</span></td></tr>
+<tr><td>Render the result or HTTP response</td><td class="mark"><span class="fragment">✓</span></td><td></td><td></td></tr>
+</tbody></table>
+<p class="fragment prompt-line">A third interface can reuse the same application operation and repository boundary.</p>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1" id="persistence-section"><h1>2. Persistence and Data Consistency</h1></section>
+<section class="frame" id="storage-choice">
+<h2>Persistence Units and Access Patterns</h2>
+<p>Persistence preserves data after the process ends.</p>
+<table class="compact"><thead><tr><th>Approach</th><th>Unit of storage</th><th>Access pattern</th></tr></thead><tbody>
+<tr><td>In-memory collection</td><td>Objects in the running process</td><td>Data is lost when the process ends.</td></tr>
+<tr><td>Java serialization</td><td>A reachable object graph</td><td>Load and rewrite a small Java snapshot.</td></tr>
+<tr><td>Relational database</td><td>Tables and rows</td><td>Search and update selected records.</td></tr>
+</tbody></table>
+<p class="prompt-line">Choose storage by the access pattern, then keep that choice behind the repository.</p>
+</section>
+<section class="frame" id="serialization">
+<h2>Serialization Outcomes</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">class WorkspaceLayout implements Serializable {
+    private static final long serialVersionUID = 7L;
+    Map&lt;String, Integer&gt; paneWidths = new HashMap&lt;&gt;();
+    transient boolean previewOpen = true;
+}</code></pre>
+<p class="muted-line">Before saving, <code class="inline inline-java">paneWidths</code> contains two entries.</p></div>
+<div>
+<table class="compact"><thead><tr><th>After loading</th><th>Result</th></tr></thead><tbody>
+<tr><td><code class="inline inline-java">paneWidths.size()</code></td><td><span class="fragment answer-line">2</span></td></tr>
+<tr><td><code class="inline inline-java">previewOpen</code></td><td><span class="fragment answer-line"><code class="inline inline-java">false</code></span></td></tr>
+<tr><td>UID changed to <code class="inline inline-java">8L</code></td><td><span class="fragment answer-line">Loading fails</span></td></tr>
+</tbody></table>
+<p class="fragment prompt-line">Every reachable, non-transient object must also be serializable.</p>
+</div>
+</div>
+</section>
+<section class="frame" id="jdbc-workflow">
+<h2>JDBC: From Java to Database Rows</h2>
+<table class="compact"><thead><tr><th>Step</th><th>Repository work</th></tr></thead><tbody>
+<tr><td><strong>1. Connect</strong></td><td>Open a database connection</td></tr>
+<tr><td><strong>2. Prepare</strong></td><td>Create SQL with placeholders</td></tr>
+<tr><td><strong>3. Bind</strong></td><td>Supply parameter values</td></tr>
+<tr><td><strong>4. Execute</strong></td><td>Send the SQL</td></tr>
+<tr><td><strong>5. Read</strong></td><td>Interpret rows or an affected-row count</td></tr>
+<tr><td><strong>6. Close</strong></td><td>Release JDBC resources</td></tr>
+</tbody></table>
+<p class="prompt-line">The repository owns the JDBC workflow and returns ordinary Java data.</p>
+</section>
+<section class="frame" id="jdbc-bind">
+<h2>Prepared SQL Parameters</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">String sql = &quot;INSERT INTO tasks (title, done) VALUES (?, ?)&quot;;
+try (PreparedStatement s = connection.prepareStatement(sql)) {
+    s.setString(1, title);
+    s.setBoolean(2, false);
+    int changed = s.executeUpdate();
+}</code></pre></div>
+<div>
+<ul>
+<li><p>Parameter positions start at 1.</p></li>
+<li><p>Placeholders bind values, not table or column names.</p></li>
+<li><p><code class="inline inline-java">executeUpdate()</code> returns the affected-row count.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="frame" id="jdbc-execution">
+<h2>JDBC Execution Results</h2>
+<p>Choose an execution method by its result type.</p>
+<table class="compact"><thead><tr><th>API</th><th>Typical SQL</th><th>Returned result</th></tr></thead><tbody>
+<tr><td><code class="inline inline-java">executeQuery()</code></td><td>SELECT</td><td><code class="inline inline-java">ResultSet</code></td></tr>
+<tr><td><code class="inline inline-java">executeUpdate()</code></td><td>INSERT, UPDATE, DELETE</td><td>Affected-row count</td></tr>
+<tr><td><code class="inline inline-java">execute()</code></td><td>General SQL execution</td><td>Whether the first result is a ResultSet</td></tr>
+</tbody></table>
+<p><strong>Question:</strong> No rows match an UPDATE. What count is returned?</p>
+<p class="fragment answer-line"><strong>Answer:</strong> 0. Successful SQL can affect no rows.</p>
+</section>
+<section class="frame" id="resultset">
+<h2>ResultSet Cursor and Rows</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">try (ResultSet rows = statement.executeQuery()) {
+    while (rows.next()) {
+        tasks.add(new TaskItem(rows.getLong(&quot;id&quot;),
+            rows.getString(&quot;title&quot;), rows.getBoolean(&quot;done&quot;)));
+    }
+}</code></pre></div>
+<div>
+<ul>
+<li><p>The cursor starts before the first row.</p></li>
+<li><p><code class="inline inline-java">next()</code> advances it and reports whether a row exists.</p></li>
+</ul>
+<p class="fragment prompt-line">Empty result: the first <code class="inline inline-java">next()</code> returns <code class="inline inline-java">false</code>.</p>
+</div>
+</div>
+</section>
+<section class="frame" id="jdbc-lifetime">
+<h2>JDBC Resource Lifetime</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">try (Connection c = connect();
+     PreparedStatement s = c.prepareStatement(sql);
+     ResultSet rows = s.executeQuery()) {
+    // Convert rows into ordinary Java objects.
+}</code></pre></div>
+<div>
+<ul>
+<li><p>Try-with-resources closes all three resources.</p></li>
+<li><p>Committed rows remain stored after closing.</p></li>
+<li><p>Returning <code class="inline inline-java">ResultSet</code> exposes JDBC and resource lifetime.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="frame" id="orm-roles">
+<h2>ORM Automates Object-to-Row Mapping</h2>
+<p>ORM automates mapping between objects and database rows.</p>
+<table class="compact"><thead><tr><th>Technology</th><th>Responsibility</th></tr></thead><tbody>
+<tr><td><strong>ORM</strong></td><td>Map objects and fields to tables and columns.</td></tr>
+<tr><td><strong>JPA</strong></td><td>Define standard persistence APIs and mapping rules.</td></tr>
+<tr><td><strong>Hibernate</strong></td><td>Implement JPA and execute the persistence work.</td></tr>
+<tr><td><strong>Spring Data JPA</strong></td><td>Provide repository abstractions and supported implementations.</td></tr>
+</tbody></table>
+<ul>
+<li><p>JDBC requires manual binding and row mapping.</p></li>
+<li><p>ORM delegates mapping to the provider.</p></li>
+</ul>
+</section>
+<section class="frame" id="entity-shape">
+<h2>Entity Mapping and Construction</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">@Entity
+public class TaskItem {
+    @Id @GeneratedValue private Long id;
+    private String title;
+    protected TaskItem() { }
+}</code></pre></div>
+<div>
+<table class="compact"><thead><tr><th>Requirement</th><th>This class</th></tr></thead><tbody>
+<tr><td>Entity annotation</td><td><code class="inline inline-java">@Entity</code></td></tr>
+<tr><td>Primary key</td><td><code class="inline inline-java">@Id</code></td></tr>
+<tr><td>No-argument constructor</td><td>Protected</td></tr>
+<tr><td>Class and persistent members</td><td>Non-final</td></tr>
+</tbody></table>
+<p class="prompt-line">A record cannot serve as a JPA entity.</p>
+</div>
+</div>
+</section>
+<section class="frame" id="entity-rules">
+<h2>Mapping Constraints and Application Rules</h2>
+<pre data-fontsize="small" data-frame="leftline"><code class="language-java">@Column(nullable = false, length = 100)
+private String title;</code></pre>
+<table class="compact"><thead><tr><th>Check</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="inline inline-java">@Column</code></td><td>Describe column mapping and constraints</td></tr>
+<tr><td>Database NOT NULL</td><td>Stored value cannot be null</td></tr>
+<tr><td>Application nonblank rule</td><td>Reject null, empty, or whitespace-only input</td></tr>
+<tr><td>Application operation rule</td><td>Check domain conditions before changing state</td></tr>
+</tbody></table>
+<p><strong>Question:</strong> Does NOT NULL reject a title containing only spaces?</p>
+<p class="fragment answer-line"><strong>Answer:</strong> No. Application code needs a nonblank check.</p>
+</section>
+<section class="frame" id="transaction-boundary">
+<h2>A Transaction Defines One Unit of Work</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">EntityTransaction transaction = entityManager.getTransaction();
+transaction.begin();
+TaskItem first = entityManager.find(TaskItem.class, firstId);
+TaskItem second = entityManager.find(TaskItem.class, secondId);
+first.setDone(true);
+second.setDone(true);
+transaction.commit();</code></pre></div>
+<div>
+<p>Both changes belong to one unit of work.</p>
+<ul>
+<li><p><strong>Success:</strong> commit both changes.</p></li>
+<li><p><strong>Failure:</strong> roll back both changes.</p></li>
+</ul>
+<p class="fragment prompt-line">Two separate commits cannot provide the same all-or-nothing guarantee.</p>
+</div>
+</div>
+</section>
+<section class="frame" id="entity-states">
+<h2>Persistence Context: Which Objects Are Tracked?</h2>
+<p><strong>Persistence context:</strong> the set of entities managed by an <code class="inline inline-java">EntityManager</code></p>
+<table class="compact"><thead><tr><th>State</th><th>Meaning</th><th>Example transition</th></tr></thead><tbody>
+<tr><td>New</td><td>Not yet managed or stored</td><td><code class="inline inline-java">new</code> creates an instance</td></tr>
+<tr><td>Managed</td><td>Tracked by this context</td><td><code class="inline inline-java">find()</code> or <code class="inline inline-java">persist()</code></td></tr>
+<tr><td>Detached</td><td>Identity remains, tracking has ended</td><td><code class="inline inline-java">clear()</code> detaches all</td></tr>
+<tr><td>Removed</td><td>Managed and marked for deletion</td><td><code class="inline inline-java">remove()</code></td></tr>
+</tbody></table>
+<ul>
+<li><p>A detached entity remains a usable Java object.</p></li>
+<li><p>Automatic change tracking has ended.</p></li>
+</ul>
+</section>
+<section class="frame" id="dirty-checking">
+<h2>Dirty Checking of Managed Entities</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">EntityTransaction transaction = entityManager.getTransaction();
+transaction.begin();
+TaskItem task = entityManager.find(TaskItem.class, id);
+task.setDone(true);
+transaction.commit();</code></pre></div>
+<div>
+<ul>
+<li><p><code class="inline inline-java">find()</code> returns a managed entity.</p></li>
+<li><p>The setter changes its tracked state.</p></li>
+<li><p>Commit flushes the pending change.</p></li>
+<li><p>Detached changes are not synchronized automatically.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="frame" id="flush-clear">
+<h2>Flush, Clear, Commit, and Rollback</h2>
+<table class="compact"><thead><tr><th>Operation</th><th>Database effect</th><th>Tracking effect</th></tr></thead><tbody>
+<tr><td><code class="inline inline-java">flush()</code></td><td>Send pending SQL inside the transaction</td><td>Entities remain managed</td></tr>
+<tr><td><code class="inline inline-java">clear()</code></td><td>No commit and no undo</td><td>Detach all entities</td></tr>
+<tr><td><code class="inline inline-java">commit()</code></td><td>Make transaction changes permanent</td><td>Complete the transaction</td></tr>
+<tr><td><code class="inline inline-java">rollback()</code></td><td>Cancel uncommitted changes, including flushed SQL</td><td>End the transaction</td></tr>
+</tbody></table>
+<p class="prompt-line"><code class="inline inline-java">flush()</code> synchronizes. Only <code class="inline inline-java">commit()</code> makes the transaction permanent.</p>
+</section>
+<section class="frame" id="rollback-practice">
+<h2>Rollback: Java Object vs. Database Row</h2>
+<p>Assume the task row starts with <code class="inline inline-java">done = false</code> and every call succeeds.</p>
+<pre data-fontsize="small" data-frame="leftline"><code class="language-java">EntityTransaction transaction = entityManager.getTransaction();
+transaction.begin();
+TaskItem task = entityManager.find(TaskItem.class, taskId);
+task.setDone(true);
+entityManager.flush();
+transaction.rollback();</code></pre>
+<ol>
+<li><p><strong>Question:</strong> Immediately after <code class="inline inline-java">task.setDone(true)</code>, what does <code class="inline inline-java">task.isDone()</code> return?</p>
+<p class="fragment answer-line"><strong>Answer:</strong> <code class="inline inline-java">true</code>. The setter changed the in-memory Java object.</p></li>
+<li><p><strong>Question:</strong> A new transaction reloads the task after rollback. What value comes from the database?</p>
+<p class="fragment answer-line"><strong>Answer:</strong> <code class="inline inline-java">false</code>. Flush sent the SQL, but rollback canceled it before commit.</p></li>
+</ol>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1" id="spring-section"><h1>3. Spring: Assembling and Running the Application</h1></section>
+<section class="frame" id="spring-container">
+<h2>Spring Connects Application Components</h2>
+<p>A <strong>bean</strong> is an object managed by Spring’s application context.</p>
+<table class="compact"><thead><tr><th>Spring feature</th><th>What it connects</th></tr></thead><tbody>
+<tr><td>Core and dependency injection</td><td>Controllers, Services, and repositories</td></tr>
+<tr><td>Spring Data JPA</td><td>Repository interfaces and JPA operations</td></tr>
+<tr><td>Spring MVC</td><td>HTTP requests and controller methods</td></tr>
+</tbody></table>
+<ul>
+<li><p>Spring Boot starts the application context.</p></li>
+<li><p>The context creates and connects the beans.</p></li>
+</ul>
+</section>
+<section class="frame" id="component-scan">
+<h2>Bean Registration and Injection</h2>
+<table class="compact"><thead><tr><th>Mechanism</th><th>What it does</th></tr></thead><tbody>
+<tr><td><code class="inline inline-java">@Configuration</code> + <code class="inline inline-java">@Bean</code></td><td>Define beans through factory methods.</td></tr>
+<tr><td><code class="inline inline-java">@ComponentScan</code></td><td>Search specified packages for components.</td></tr>
+<tr><td><code class="inline inline-java">@Component</code></td><td>Mark a general component.</td></tr>
+<tr><td><code class="inline inline-java">@Service</code> / <code class="inline inline-java">@Repository</code></td><td>Mark application or data-access components.</td></tr>
+</tbody></table>
+<ul>
+<li><p>Maven adds libraries, not beans.</p></li>
+<li><p>Scanning skips an unannotated helper.</p></li>
+<li><p>A single constructor needs no <code class="inline inline-java">@Autowired</code>.</p></li>
+</ul>
+</section>
+<section class="frame" id="bean-selection">
+<h2>Dependency Resolution</h2>
+<div class="review-split">
+<div><table class="compact"><thead><tr><th>Eligible beans</th><th>Result</th></tr></thead><tbody>
+<tr><td>None</td><td>Bean creation fails: missing dependency</td></tr>
+<tr><td>One</td><td>Inject that bean</td></tr>
+<tr><td>Several, one <code class="inline inline-java">@Primary</code></td><td>Default for an unqualified dependency</td></tr>
+<tr><td>Several, no unique match</td><td>Bean creation fails: ambiguous dependency</td></tr>
+</tbody></table></div>
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">TaskService(
+    @Qualifier(&quot;diskRepository&quot;)
+    TaskRepository repository) {
+    this.repository = repository;
+}</code></pre>
+<p><strong>Question:</strong> Does a qualifier create a bean?</p>
+<p class="fragment answer-line"><strong>Answer:</strong> No. <code class="inline inline-java">@Qualifier</code> selects an already registered bean.</p></div>
+</div>
+</section>
+<section class="frame" id="repository-api">
+<h2>Spring Data Supplies Common Operations</h2>
+<p>Spring Data implements <code class="inline inline-java">JpaRepository</code> for the declared entity and ID types.</p>
+<pre data-fontsize="small" data-frame="leftline"><code class="language-java">interface TaskRepository extends JpaRepository&lt;TaskItem, Long&gt; {
+}</code></pre>
+<table class="compact"><thead><tr><th>Operation</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="inline inline-java">findAll()</code></td><td>Read entities, optionally with a Sort.</td></tr>
+<tr><td><code class="inline inline-java">findById()</code></td><td>Looks up an ID and returns an Optional.</td></tr>
+<tr><td><code class="inline inline-java">save()</code></td><td>Persist a new entity or merge its state</td></tr>
+<tr><td><code class="inline inline-java">deleteById()</code></td><td>Delete by ID</td></tr>
+</tbody></table>
+</section>
+<section class="frame" id="derived-queries">
+<h2>Derived Query Name Parts</h2>
+<pre data-fontsize="small" data-frame="leftline"><code class="language-java">List&lt;TaskItem&gt; findByTitleContainingIgnoreCase(String text);</code></pre>
+<table class="compact"><thead><tr><th>Part</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>Title</td><td>Property to search</td></tr>
+<tr><td><code class="inline inline-java">Containing</code></td><td>Text may appear anywhere in the value</td></tr>
+<tr><td><code class="inline inline-java">IgnoreCase</code></td><td>Ignore uppercase / lowercase differences</td></tr>
+</tbody></table>
+<p><strong>Question:</strong> Which titles match a search for “jpa”?</p>
+<p class="fragment answer-line"><strong>Answer:</strong> “Review JPA” and “jpa notes”. Request sorting separately when order matters.</p>
+</section>
+<section class="frame" id="service-transactions">
+<h2>Spring Manages the Transaction Boundary</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">@Transactional
+public void completeTasks(Long firstId, Long secondId) {
+    repository.findById(firstId).orElseThrow().setDone(true);
+    repository.findById(secondId).orElseThrow().setDone(true);
+}</code></pre></div>
+<div>
+<ul>
+<li><p>Both changes share that transaction.</p></li>
+<li><p>Success commits both changes.</p></li>
+<li><p>An unchecked exception rolls both back by default.</p></li>
+</ul>
+<p class="prompt-line">Call the injected Service through Spring’s transaction proxy.</p>
+</div>
+</div>
+</section>
+<section class="frame" id="read-only">
+<h2>Read-Only Transactions Declare Intent</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">@Transactional(readOnly = true)
+public List&lt;TaskItem&gt; listTasks() {
+    return repository.findAll();
+}</code></pre></div>
+<div>
+<ul>
+<li><p>Database queries still run.</p></li>
+<li><p>Supporting infrastructure may reduce write-related work.</p></li>
+<li><p>Returned Java objects can still have mutable fields.</p></li>
+<li><p>Attempted writes are not guaranteed to throw exceptions.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="frame" id="rest-resources">
+<h2>Resources and Stateless Requests</h2>
+<p>A web API exposes application operations through HTTP.</p>
+<table class="compact"><thead><tr><th>Concept</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>Resource</td><td>Something the API identifies, such as a task.</td></tr>
+<tr><td>Resource URL</td><td>Collection: <code>/api/tasks</code>. Item: <code>/api/tasks/17</code>.</td></tr>
+<tr><td>Representation</td><td>Selected resource data, often JSON.</td></tr>
+<tr><td>Stateless request</td><td>Carries the information needed to understand it.</td></tr>
+</tbody></table>
+<ul>
+<li><p>Each request identifies its target.</p></li>
+<li><p>Database state can still persist.</p></li>
+</ul>
+</section>
+<section class="frame" id="http-messages">
+<h2>HTTP: Request and Response Parts</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-http">POST /api/tasks HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{&quot;title&quot;:&quot;Prepare demo&quot;}</code></pre>
+</div>
+<div><table class="compact"><thead><tr><th>Part</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>Method and target</td><td>Requested operation and resource</td></tr>
+<tr><td><code>Content-Type</code></td><td>Format of this message’s body</td></tr>
+<tr><td><code>Accept</code></td><td>Requested response format</td></tr>
+<tr><td>Body</td><td>Optional message data</td></tr>
+</tbody></table></div>
+</div>
+</section>
+<section class="frame" id="resource-methods">
+<h2>HTTP Methods and Resource Operations</h2>
+<table class="compact"><thead><tr><th>Intent</th><th>Method</th><th>Example target</th></tr></thead><tbody>
+<tr><td>Read a collection</td><td>GET</td><td><code>/api/tasks?done=false</code></td></tr>
+<tr><td>Read one item</td><td>GET</td><td><code>/api/tasks/17</code></td></tr>
+<tr><td>Create an item</td><td>POST</td><td><code>/api/tasks</code></td></tr>
+<tr><td>Change selected fields</td><td>PATCH</td><td><code>/api/tasks/17</code></td></tr>
+<tr><td>Delete an item</td><td>DELETE</td><td><code>/api/tasks/17</code></td></tr>
+</tbody></table>
+<p class="prompt-line">The same path with a different method can select a different operation.</p>
+</section>
+<section class="frame" id="request-pipeline">
+<h2>Spring MVC Request Pipeline</h2>
+<table class="compact"><thead><tr><th>Step</th><th>Framework or application work</th></tr></thead><tbody>
+<tr><td><strong>1. Receive</strong></td><td>Accept the HTTP request</td></tr>
+<tr><td><strong>2. Route</strong></td><td>Select a handler by method and path</td></tr>
+<tr><td><strong>3. Bind</strong></td><td>Convert request data to Java values</td></tr>
+<tr><td><strong>4. Validate</strong></td><td>Check request constraints</td></tr>
+<tr><td><strong>5. Execute</strong></td><td>Controller calls the Service, then the Repository</td></tr>
+<tr><td><strong>6. Respond</strong></td><td>Serialize data or translate an error</td></tr>
+</tbody></table>
+</section>
+<section class="frame" id="request-routing">
+<h2>Request Routing and Handler Selection</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">@RestController
+@RequestMapping(&quot;/api/tasks&quot;)
+class TaskApiController {
+    @GetMapping(&quot;/{id}&quot;)
+    TaskItemResponse find(@PathVariable(&quot;id&quot;) Long id) { ... }
+}</code></pre></div>
+<div>
+<table class="compact"><tbody>
+<tr><th>Method</th><td><code>GET</code></td></tr>
+<tr><th>Combined path</th><td><code>/api/tasks/{id}</code></td></tr>
+<tr><th>Java method name</th><td>Does not select the route</td></tr>
+</tbody></table>
+<p><strong>Question:</strong> Which request matches?</p>
+<p class="fragment answer-line"><strong>Answer:</strong> <code>GET /api/tasks/17</code></p>
+</div>
+</div>
+</section>
+<section class="frame" id="request-binding">
+<h2>Request Binding</h2>
+<table class="compact"><thead><tr><th>Input location</th><th>Example</th><th>Annotation</th></tr></thead><tbody>
+<tr><td>Path segment</td><td><code>/api/tasks/17</code></td><td><code class="inline inline-java">@PathVariable</code></td></tr>
+<tr><td>Query string</td><td><code>?done=false</code></td><td><code class="inline inline-java">@RequestParam</code></td></tr>
+<tr><td>JSON body</td><td><code>{&quot;title&quot;:&quot;Prepare demo&quot;}</code></td><td><code class="inline inline-java">@RequestBody</code></td></tr>
+</tbody></table>
+<p><strong>Question:</strong> The id cannot become a <code class="inline inline-java">Long</code>. Is the Service called?</p>
+<p class="fragment answer-line"><strong>Answer:</strong> No. Binding fails before the controller body runs.</p>
+</section>
+<section class="frame" id="request-validation">
+<h2>Request Validation</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">record CreateTaskRequest(
+    @NotBlank @Size(max = 100) String title) { }
+
+@PostMapping
+TaskItemResponse createTask(
+        @Valid @RequestBody CreateTaskRequest request) {
+    return taskService.createTask(request.title());
+}</code></pre></div>
+<div>
+<table class="compact"><thead><tr><th>Annotation</th><th>Effect</th></tr></thead><tbody>
+<tr><td><code class="inline inline-java">@Valid</code></td><td>Run validation before the controller body</td></tr>
+<tr><td><code class="inline inline-java">@NotBlank</code></td><td>Reject null, empty, and whitespace-only input</td></tr>
+<tr><td><code class="inline inline-java">@Size</code></td><td>Constrain length</td></tr>
+</tbody></table>
+<p class="prompt-line">Shared application rules still apply to every caller.</p>
+</div>
+</div>
+</section>
+<section class="frame" id="response-shape">
+<h2>Response Objects and Serialization</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">record TaskItemResponse(
+    Long id,
+    String title,
+    boolean done) { }</code></pre></div>
+<div><table class="compact"><thead><tr><th>Stage</th><th>Work</th></tr></thead><tbody>
+<tr><td>Application result</td><td>Contains the completed operation’s data</td></tr>
+<tr><td>Response object</td><td>Selects the public fields</td></tr>
+<tr><td>Spring MVC</td><td>Serializes the object, usually as JSON</td></tr>
+</tbody></table></div>
+</div>
+</section>
+<section class="frame" id="created-response">
+<h2>Success: Status, Headers, and Body</h2>
+<div class="review-split">
+<div><pre data-fontsize="small" data-frame="leftline"><code class="language-java">return ResponseEntity
+    .created(URI.create(&quot;/api/tasks/17&quot;))
+    .body(response);</code></pre></div>
+<div><table class="compact"><thead><tr><th>Response part</th><th>Value</th></tr></thead><tbody>
+<tr><td>Status</td><td><strong>201 Created</strong></td></tr>
+<tr><td><code>Location</code></td><td><code>/api/tasks/17</code></td></tr>
+<tr><td>Body</td><td>The supplied response object</td></tr>
+</tbody></table>
+<p class="prompt-line"><code class="inline inline-java">ResponseEntity</code> controls all three parts.</p></div>
+</div>
+</section>
+<section class="frame" id="error-status">
+<h2>HTTP Error Translation</h2>
+<table class="compact"><thead><tr><th>Cause</th><th>Typical status</th></tr></thead><tbody>
+<tr><td>Malformed input, failed conversion, or request validation</td><td>400 Bad Request</td></tr>
+<tr><td>Required resource does not exist</td><td>404 Not Found</td></tr>
+<tr><td>Unexpected server failure</td><td>500 Internal Server Error</td></tr>
+</tbody></table>
+<ul>
+<li><p><code class="inline inline-java">@RestControllerAdvice</code> shares error handling across controllers.</p></li>
+<li><p><code class="inline inline-java">@ExceptionHandler</code> selects the exception to handle.</p></li>
+<li><p><code class="inline inline-java">@ResponseStatus</code> or <code class="inline inline-java">ResponseEntity</code> selects the HTTP status.</p></li>
+<li><p>The handler returns the error response object.</p></li>
+</ul>
+</section>
+<section class="frame" id="complete-flow">
+<h2>Desktop and Web Call the Same Application</h2>
+<table class="compact"><thead><tr><th>Step</th><th>Desktop caller</th><th>Web caller</th></tr></thead><tbody>
+<tr><td>Input</td><td>Read controls and handle an event.</td><td>Route, bind, and validate the request.</td></tr>
+<tr><td>Dispatch</td><td>Controller calls the Model or Service.</td><td>Controller calls the Service.</td></tr>
+<tr><td>Result</td><td>Refresh View or show an error.</td><td>Return status, headers, and data.</td></tr>
+</tbody></table>
+<p><strong>Verify through either interface:</strong></p>
+<ul>
+<li><p>The result is correct.</p></li>
+<li><p>The stored data is correct.</p></li>
+<li><p>A failed operation leaves no partial changes.</p></li>
+</ul>
+</section>
+</section>
+</div></div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script>
+Reveal.initialize({disableLayout:true,controls:true,progress:true,hash:true,center:false,transition:"slide",slideNumber:"c/t",scrollActivationWidth:1,mouseWheel:false,width:1600,height:900,plugins:[RevealNotes,RevealHighlight]});
+</script></body></html>
