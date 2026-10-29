@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Midterm 2 Review</title>
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <script src="../_static/design-tabs.js?v=20260918"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides" role="main">
+
+      <section>
+        <section data-background-color="white" data-background-image="../_static/logo.png" data-background-size="50%"
+          data-background-position="top center" data-background-repeat="no-repeat" class="title-slide">
+          <h1>Midterm 2 Review</h1>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Review Map
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Review Map</h1>
+        </section>
+
+        <section id="exam-overview" class="frame">
+          <h2>Midterm 2 overview</h2>
+          <table>
+            <thead><tr><th>Question group</th><th>Selection</th><th>Points</th></tr></thead>
+            <tbody>
+              <tr><td>True/False</td><td>7 questions</td><td>14</td></tr>
+              <tr><td>Multiple choice</td><td>10 questions</td><td>30</td></tr>
+              <tr><td>Fill in C++ code</td><td>2 questions</td><td>16</td></tr>
+              <tr><td>Short answer and partition trace</td><td>2 questions</td><td>18</td></tr>
+              <tr><td>C++ coding</td><td>2 questions</td><td>22</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p><strong>Total:</strong> 100 points</p></li>
+            <li><p><strong>Logistics and allowed resources:</strong> Follow the Midterm 2 instructions in Canvas.</p></li>
+          </ul>
+        </section>
+
+        <section id="review-focus" class="frame">
+          <h2>Concepts to review</h2>
+          <ul>
+            <li><p>ADTs, interfaces, linked-list implementations, stacks, queues, and deques</p></li>
+            <li><p>Function templates, class templates, pass by reference, and template organization</p></li>
+            <li><p>Singly-linked pointer updates, empty cases, and destructors</p></li>
+            <li><p>Insertion sort, quicksort, merge sort, radix sort, stability, and storage</p></li>
+            <li><p>Hash functions, compression, collisions, chaining, and probing</p></li>
+            <li><p>Expected and worst-case complexity for searching and sorting</p></li>
+          </ul>
+        </section>
+
+        <section id="review-skills" class="frame">
+          <h2>What you should be able to do</h2>
+          <ul>
+            <li><p><strong>Distinguish:</strong> identify an ADT interface and a concrete implementation.</p></li>
+            <li><p><strong>Trace:</strong> follow pointer updates, queue operations, partition scans, radix passes, and hash probes.</p></li>
+            <li><p><strong>Compare:</strong> choose a complexity, storage requirement, or stability property with its assumptions.</p></li>
+            <li><p><strong>Write:</strong> complete short template, linked-list, queue, and search code.</p></li>
+            <li><p><strong>Read tests:</strong> infer the required public methods and edge-case behavior.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: ADTs and Templates
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>ADTs and Templates</h1>
+        </section>
+
+        <section id="adt-interface-implementation" class="frame">
+          <h2>ADT and implementation</h2>
+          <table>
+            <thead><tr><th>Abstraction</th><th>Defines</th><th>Examples</th></tr></thead>
+            <tbody>
+              <tr><td><strong>ADT</strong></td><td>Available operations and their behavior</td><td>List, stack, queue, deque, map, set</td></tr>
+              <tr><td><strong>Implementation</strong></td><td>How data and state are stored</td><td>Array, singly-linked list, doubly-linked list, hash table</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>A linked list exposes nodes and pointers, so it describes an implementation.</p></li>
+            <li><p>The same linked structure can implement several ADTs.</p></li>
+            <li><p>An ADT class declaration can list public operations without exposing private storage.</p></li>
+          </ul>
+        </section>
+
+        <section id="adt-ordering" class="frame">
+          <h2>Stack, queue, and deque behavior</h2>
+          <table>
+            <thead><tr><th>ADT</th><th>Insert</th><th>Remove</th><th>Ordering rule</th></tr></thead>
+            <tbody>
+              <tr><td>Stack</td><td>Top</td><td>Top</td><td>LIFO</td></tr>
+              <tr><td>Queue</td><td>Rear</td><td>Front</td><td>FIFO</td></tr>
+              <tr><td>Deque</td><td>Either end</td><td>Either end</td><td>Chosen by the operation</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>A deque supports all queue operations and additional operations at the other end.</p></li>
+            <li><p>A linked list can implement a queue, but the linked list itself does not define FIFO behavior.</p></li>
+          </ul>
+        </section>
+
+        <section id="adt-interface-practice" class="frame">
+          <h2>Practice: declare an ADT interface</h2>
+          <p>Declare a generic queue interface with four public operations. Do not expose its storage.</p>
+          <pre data-fontsize="small"><code class="language-cpp">template &lt;typename T&gt;
+class Queue {
+public:
+  void enqueue(T value);
+  T dequeue();
+  T peek();
+  bool isEmpty();
+};</code></pre>
+          <ul>
+            <li><p>The methods describe queue behavior.</p></li>
+            <li><p>No array, node, head, or rear field appears in the public interface.</p></li>
+            <li><p>A different implementation can keep the same interface.</p></li>
+          </ul>
+        </section>
+
+        <section id="template-essentials" class="frame">
+          <h2>Function and class templates</h2>
+          <pre data-fontsize="small"><code class="language-cpp">template &lt;typename T&gt;
+T larger(T a, T b) {
+  return a &lt; b ? b : a;
+}
+
+template &lt;typename T&gt;
+class Box {
+  T value;
+};</code></pre>
+          <ul>
+            <li><p><code>T</code> is a placeholder for a type chosen when the template is used.</p></li>
+            <li><p>Templates reuse one algorithm or class design for several compatible types.</p></li>
+            <li><p>The chosen type must support every operation used by the template.</p></li>
+            <li><p>Templates complement function overloading; they do not replace every overload.</p></li>
+          </ul>
+        </section>
+
+        <section id="reference-swap" class="frame">
+          <h2>Pass by reference</h2>
+          <pre data-fontsize="small"><code class="language-cpp">template &lt;typename T&gt;
+void exchange(T&amp; first, T&amp; second) {
+  T saved = first;
+  first = second;
+  second = saved;
+}</code></pre>
+          <ul>
+            <li><p>C++ passes ordinary parameters by value unless the parameter type contains <code>&amp;</code>.</p></li>
+            <li><p>References let the function modify the caller's variables.</p></li>
+            <li><p>Both parameters need reference types for a swap-like function.</p></li>
+          </ul>
+        </section>
+
+        <section id="function-template-practice" class="frame">
+          <h2>Practice: generic first match</h2>
+          <pre data-fontsize="small"><code class="language-cpp">template &lt;typename T&gt;
+int firstMatch(const T values[], int size, T target) {
+  for (int i = 0; i &lt; size; ++i) {
+    if (values[i] == target) return i;
+  }
+  return -1;
+}</code></pre>
+          <ul>
+            <li><p>The array element type and target type use the same template parameter.</p></li>
+            <li><p>The function requires <code>T</code> to support <code>==</code>.</p></li>
+            <li><p>The search checks at most <code>n</code> elements, so its worst-case time is O(n).</p></li>
+          </ul>
+        </section>
+
+        <section id="template-organization" class="frame">
+          <h2>Template definitions must be visible</h2>
+          <ul>
+            <li><p>The compiler generates a concrete function or class when a template is instantiated.</p></li>
+            <li><p>It must see the full template definition at that point.</p></li>
+            <li><p>For this course, place a template's declaration and definition in one header file.</p></li>
+            <li><p>A larger project may include a <code>.tpp</code> file from the bottom of the header.</p></li>
+          </ul>
+          <pre data-fontsize="small"><code class="language-text">ordinary class: declarations in .hpp, definitions in .cpp
+template:       declarations and definitions visible from .hpp</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Linked Lists and Queues
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Linked Lists and Queues</h1>
+        </section>
+
+        <section id="list-invariants" class="frame">
+          <h2>Singly-linked list invariants</h2>
+          <pre data-fontsize="small"><code class="language-cpp">class Node {
+public:
+  int value;
+  Node* next;
+};
+
+Node* head;
+Node* tail;</code></pre>
+          <ul>
+            <li><p>An empty list has <code>head == nullptr</code> and <code>tail == nullptr</code>.</p></li>
+            <li><p>In a non-empty list, <code>head</code> points to the first node and <code>tail</code> points to the last.</p></li>
+            <li><p>The last node satisfies <code>tail-&gt;next == nullptr</code>.</p></li>
+            <li><p>Save a pointer before overwriting the only route to a node.</p></li>
+          </ul>
+        </section>
+
+        <section id="prepend" class="frame">
+          <h2>Prepend a node</h2>
+          <pre data-fontsize="small"><code class="language-cpp">void prepend(int value) {
+  Node* node = new Node{value, nullptr};
+  if (head == nullptr) {
+    head = node;
+    tail = node;
+  } else {
+    node-&gt;next = head;
+    head = node;
+  }
+}</code></pre>
+          <ul>
+            <li><p>Empty case: both pointers identify the one new node.</p></li>
+            <li><p>Non-empty case: connect the new node before moving <code>head</code>.</p></li>
+            <li><p><code>tail</code> does not change when the old list was non-empty.</p></li>
+          </ul>
+        </section>
+
+        <section id="linked-queue-state" class="frame">
+          <h2>Linked queue state</h2>
+          <pre data-fontsize="small"><code class="language-cpp">class TicketQueue {
+  int size;
+  Node* head;  // front
+  Node* tail;  // rear
+public:
+  TicketQueue() : size(0), head(nullptr), tail(nullptr) {}
+};</code></pre>
+          <ul>
+            <li><p>Enqueue at the tail and dequeue at the head.</p></li>
+            <li><p>The head stores the oldest item; the tail stores the newest item.</p></li>
+            <li><p>An empty queue has size 0 and both pointers equal to <code>nullptr</code>.</p></li>
+            <li><p>Keeping both pointers makes enqueue and dequeue O(1).</p></li>
+          </ul>
+        </section>
+
+        <section id="linked-queue-enqueue" class="frame">
+          <h2>Linked queue: enqueue</h2>
+          <pre data-fontsize="small"><code class="language-cpp">void enqueue(int value) {
+  Node* node = new Node{value, nullptr};
+  if (head == nullptr)
+    head = node;
+  else
+    tail-&gt;next = node;
+  tail = node;
+  ++size;
+}</code></pre>
+          <ul>
+            <li><p>When the queue is empty, the new node becomes both front and rear.</p></li>
+            <li><p>Otherwise, connect the old tail before moving <code>tail</code>.</p></li>
+            <li><p>The old head does not move.</p></li>
+          </ul>
+        </section>
+
+        <section id="linked-queue-dequeue" class="frame">
+          <h2>Linked queue: dequeue</h2>
+          <pre data-fontsize="small"><code class="language-cpp">int dequeue() {
+  if (head == nullptr) return -1;
+  Node* old = head;
+  int result = old-&gt;value;
+  head = head-&gt;next;
+  if (head == nullptr) tail = nullptr;
+  delete old;
+  --size;
+  return result;
+}</code></pre>
+          <ul>
+            <li><p>Save the value and next pointer before deleting the node.</p></li>
+            <li><p>Removing the final node must clear both head and tail.</p></li>
+            <li><p>Peek returns <code>head-&gt;value</code> without changing any pointer or the size.</p></li>
+          </ul>
+        </section>
+
+        <section id="queue-tests-destruction" class="frame">
+          <h2>Read tests as a contract</h2>
+          <pre data-fontsize="small"><code class="language-cpp">TicketQueue q;
+q.enqueue(4);
+q.enqueue(9);
+CHECK(q.length() == 2);
+CHECK(q.dequeue() == 4);
+CHECK(q.peek() == 9);
+CHECK(q.length() == 1);</code></pre>
+          <ul>
+            <li><p>The tests require FIFO order, a non-removing <code>peek</code>, and an accurate length.</p></li>
+            <li><p>Implement the public behavior the tests use, including the specified empty result.</p></li>
+            <li><p>A destructor can repeatedly remove the head until no nodes remain.</p></li>
+          </ul>
+          <pre data-fontsize="small"><code class="language-cpp">~TicketQueue() {
+  while (head != nullptr) dequeue();
+}</code></pre>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Sorting
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Sorting</h1>
+        </section>
+
+        <section id="sorting-families" class="frame">
+          <h2>Sorting families and time</h2>
+          <table>
+            <thead><tr><th>Algorithm</th><th>Family</th><th>Typical time</th><th>Worst time</th></tr></thead>
+            <tbody>
+              <tr><td>Insertion sort</td><td>Comparison</td><td>Θ(n²)</td><td>Θ(n²)</td></tr>
+              <tr><td>Quicksort</td><td>Comparison</td><td>Θ(n log n) average</td><td>Θ(n²)</td></tr>
+              <tr><td>Merge sort</td><td>Comparison</td><td>Θ(n log n)</td><td>Θ(n log n)</td></tr>
+              <tr><td>LSD radix sort</td><td>Digit-based</td><td>Θ(d(n + k))</td><td>Θ(d(n + k))</td></tr>
+            </tbody>
+          </table>
+          <p>Calling an algorithm “fast” refers to its growth under stated assumptions. It does not guarantee the smallest running time for every input.</p>
+        </section>
+
+        <section id="sorting-space-stability" class="frame">
+          <h2>Extra storage and stability</h2>
+          <table>
+            <thead><tr><th>Algorithm</th><th>Extra arrays or buckets</th><th>Stable?</th></tr></thead>
+            <tbody>
+              <tr><td>Insertion sort</td><td>None</td><td>Yes, when shifting only larger keys</td></tr>
+              <tr><td>Quicksort</td><td>None for partition</td><td>No for the class partition</td></tr>
+              <tr><td>Merge sort</td><td>Θ(n) temporary array</td><td>Yes, when the left value wins ties</td></tr>
+              <tr><td>LSD radix sort</td><td>Θ(n + k) buckets</td><td>Yes, with stable digit passes</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p><strong>In place:</strong> rearranges the original data without an auxiliary array proportional to n.</p></li>
+            <li><p><strong>Stable:</strong> equal keys keep their original relative order.</p></li>
+          </ul>
+        </section>
+
+        <section id="radix-rounds" class="frame">
+          <h2>Radix sort rounds</h2>
+          <p>For decimal LSD radix sort, the largest number determines the number of digit passes.</p>
+          <pre data-fontsize="small"><code class="language-text">values: 8, 63, 407, 1205
+
+ones -> tens -> hundreds -> thousands</code></pre>
+          <ul>
+            <li><p>The largest value, 1205, has four decimal digits.</p></li>
+            <li><p>The algorithm performs four bucket-and-collection rounds.</p></li>
+            <li><p>A missing digit counts as 0, so every value participates in every round.</p></li>
+            <li><p>Preserve arrival order inside each bucket.</p></li>
+          </ul>
+        </section>
+
+        <section id="partition-code" class="frame">
+          <h2>Hoare partition from class</h2>
+          <pre data-fontsize="small"><code class="language-cpp">int partition(int arr[], int low, int high) {
+  int pivot = arr[low + (high - low) / 2];
+  int i = low, j = high;
+  while (i &lt;= j) {
+    while (arr[i] &lt; pivot) ++i;
+    while (arr[j] &gt; pivot) --j;
+    if (i &gt;= j) break;
+    std::swap(arr[i], arr[j]);
+    ++i;
+    --j;
+  }
+  return j;
+}</code></pre>
+          <ul>
+            <li><p>Save the middle element's value as the pivot.</p></li>
+            <li><p>Move <code>i</code> past values smaller than the pivot and <code>j</code> past values larger than it.</p></li>
+            <li><p>Complete the entire function call. One swap is not one partition round.</p></li>
+            <li><p>The returned index is a split boundary; it need not be the pivot's final position.</p></li>
+          </ul>
+        </section>
+
+        <section id="partition-practice" class="frame">
+          <h2>Practice: one complete partition call</h2>
+          <p>Trace <code>partition(values, 0, 6)</code> for:</p>
+          <pre data-fontsize="small"><code class="language-text">{11, 4, 15, 7, 2, 13, 9}</code></pre>
+          <ol>
+            <li><p>Calculate the middle index and identify the pivot value.</p></li>
+            <li><p>Move <code>i</code> and <code>j</code> using the two scan conditions.</p></li>
+            <li><p>Show every swap and both index updates.</p></li>
+            <li><p>Give the final array and the index returned by the function.</p></li>
+          </ol>
+        </section>
+
+        <section id="partition-answer" class="frame">
+          <h2>Partition trace</h2>
+          <ol>
+            <li><p><strong>Start:</strong> middle index 3, pivot 7, <code>i = 0</code>, <code>j = 6</code>.<code>{11,&nbsp;4,&nbsp;15,&nbsp;7,&nbsp;2,&nbsp;13,&nbsp;9}</code></p></li>
+            <li>
+              <p><strong>First scan:</strong></p>
+              <ol>
+                <li><p><code>i = 0</code>, <code>arr[i] = 11</code>. Since <code>11 &gt; 7</code>, stop <code>i</code> at index 0.</p></li>
+                <li><p><code>j = 6</code>, <code>arr[6] = 9</code>. Since <code>9 &gt; 7</code>, <code>j--</code>.<br><code>j = 5</code>, <code>arr[5] = 13</code>. Since <code>13 &gt; 7</code>, <code>j--</code>.<br><code>j = 4</code>, <code>arr[4] = 2</code>. Since <code>2 &lt; 7</code>, stop <code>j</code> at index 4.</p></li>
+                <li><p><strong>Swap:</strong> <code>arr[0]</code> with <code>arr[4]</code>.<code>{2,&nbsp;4,&nbsp;15,&nbsp;7,&nbsp;11,&nbsp;13,&nbsp;9}</code></p></li>
+                <li><p>After the swap, <code>i++</code> and <code>j--</code>. Now <code>i = 1</code> and <code>j = 3</code>.</p></li>
+              </ol>
+            </li>
+            <li>
+              <p><strong>Second scan:</strong></p>
+              <ol>
+                <li><p><code>i = 1</code>, <code>arr[1] = 4</code>. Since <code>4 &lt; 7</code>, <code>i++</code>.<br><code>i = 2</code>, <code>arr[2] = 15</code>. Since <code>15 &gt; 7</code>, stop <code>i</code> at index 2.</p></li>
+                <li><p><code>j = 3</code>, <code>arr[3] = 7</code>. Since 7 equals the pivot, stop <code>j</code> at index 3.</p></li>
+                <li><p><strong>Swap:</strong> <code>arr[2]</code> with <code>arr[3]</code>.<code>{2,&nbsp;4,&nbsp;7,&nbsp;15,&nbsp;11,&nbsp;13,&nbsp;9}</code></p></li>
+                <li><p>After the swap, <code>i++</code> and <code>j--</code>. Now <code>i = 3</code> and <code>j = 2</code>.</p></li>
+              </ol>
+            </li>
+            <li><p><strong>Stop:</strong> <code>i &gt; j</code>. Return <code>j = 2</code>. Next ranges: <code>[0, 2]</code> and <code>[3, 6]</code>.</p></li>
+          </ol>
+        </section>
+
+        <section id="complexity-order" class="frame">
+          <h2>Order common growth rates</h2>
+          <pre data-fontsize="small"><code class="language-text">expected hash-table lookup: O(1)
+linear search:             O(n)
+merge sort:               O(n log n)
+selection sort:           O(n²)</code></pre>
+          <p>From least to greatest asymptotic growth:</p>
+          <p><code>O(1) &lt; O(n) &lt; O(n log n) &lt; O(n²)</code></p>
+          <ul>
+            <li><p>Expected, best-case, average-case, and worst-case bounds are different claims.</p></li>
+            <li><p>A lower growth rate does not mean an algorithm is always faster for every small input.</p></li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Hash Tables
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Hash Tables</h1>
+        </section>
+
+        <section id="hash-pipeline" class="frame">
+          <h2>Key, hash code, and index</h2>
+          <ol>
+            <li><p><strong>Key:</strong> <code>k</code></p></li>
+            <li><p><strong>Hash code:</strong> <code>h(k)</code></p></li>
+            <li><p><strong>Table index:</strong> <code>h(k) % m</code></p></li>
+            <li><p><strong>Bucket check:</strong> compare actual keys.</p></li>
+          </ol>
+          <ul>
+            <li><p>Different keys may share an index.</p></li>
+            <li><p>Keep both entries and resolve the collision.</p></li>
+          </ul>
+        </section>
+
+        <section id="collision-methods" class="frame">
+          <h2>Collision methods and capacity</h2>
+          <table>
+            <thead><tr><th>Method</th><th>Where colliding entries go</th><th>Capacity fact</th></tr></thead>
+            <tbody>
+              <tr><td>Chaining</td><td>Same bucket's linked structure</td><td>Stored entries may exceed the bucket count</td></tr>
+              <tr><td>Open addressing</td><td>Other buckets in the same array</td><td>At most one live entry per bucket</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Linear, quadratic, and double hashing are open-addressing probe rules.</p></li>
+            <li><p>A full open-addressed table cannot accept another entry without resizing or reusing a deleted slot.</p></li>
+          </ul>
+        </section>
+
+        <section id="hash-cost" class="frame">
+          <h2>Hash-table lookup cost</h2>
+          <table>
+            <thead><tr><th>Condition</th><th>Lookup time</th><th>Reason</th></tr></thead>
+            <tbody>
+              <tr><td>Suitable hashing and controlled load</td><td>O(1) expected</td><td>Short bucket or probe sequence</td></tr>
+              <tr><td>Many collisions or poor distribution</td><td>Can reach O(n)</td><td>Many keys must be examined</td></tr>
+              <tr><td>Sorted array with binary search</td><td>O(log n) worst case</td><td>Discard half of the range per comparison</td></tr>
+            </tbody>
+          </table>
+          <p>“Expected O(1)” does not mean “always faster.” Compare the same case, assumptions, and input size.</p>
+        </section>
+
+        <section id="linear-probing-practice" class="frame">
+          <h2>Practice: linear probing</h2>
+          <p>Use table size 7, <code>h(x) = 2x + 1</code>, and:</p>
+          <p><code>index(x, i) = (h(x) + i) % 7</code></p>
+          <p>Insert in order: <strong>4, 10, 3, 11</strong>.</p>
+          <table>
+            <thead><tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead>
+            <tbody><tr><th>Key</th><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr></tbody>
+          </table>
+          <ul>
+            <li><p>For each key, start with <code>i = 0</code>.</p></li>
+            <li><p>Increase <code>i</code> only after an occupied bucket.</p></li>
+          </ul>
+        </section>
+
+        <section id="linear-probing-answer" class="frame">
+          <h2>Linear probing result</h2>
+          <table>
+            <thead><tr><th>Key</th><th>Calculation</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>4</td>
+                <td><code>h(4) = 2(4) + 1 = 9</code><br><code>index(4, 0) = (9 + 0) % 7 = 2</code></td>
+                <td>Empty: insert at index 2.</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td><code>h(10) = 2(10) + 1 = 21</code><br><code>index(10, 0) = (21 + 0) % 7 = 0</code></td>
+                <td>Empty: insert at index 0.</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><code>h(3) = 2(3) + 1 = 7</code><br><code>index(3, 0) = (7 + 0) % 7 = 0</code><br><code>index(3, 1) = (7 + 1) % 7 = 1</code></td>
+                <td>Index 0 contains 10.<br>Insert at index 1.</td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td><code>h(11) = 2(11) + 1 = 23</code><br><code>index(11, 0) = (23 + 0) % 7 = 2</code><br><code>index(11, 1) = (23 + 1) % 7 = 3</code></td>
+                <td>Index 2 contains 4.<br>Insert at index 3.</td>
+              </tr>
+            </tbody>
+          </table>
+          <table>
+            <thead><tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead>
+            <tbody><tr><th>Key</th><td>10</td><td>3</td><td>4</td><td>11</td><td>·</td><td>·</td><td>·</td></tr></tbody>
+          </table>
+        </section>
+
+        <section id="quadratic-probing-practice" class="frame">
+          <h2>Practice: quadratic probing</h2>
+          <p>Use table size 11 and:</p>
+          <p><code>index(x, i) = (x + i²) % 11</code>, for <code>i = 0, 1, 2, ...</code></p>
+          <p>Insert in order: <strong>5, 16, 27, 38</strong>.</p>
+          <table>
+            <thead><tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+            <tbody><tr><th>Key</th><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr></tbody>
+          </table>
+          <p>Recalculate every candidate from the original key and the current value of <code>i</code>.</p>
+        </section>
+
+        <section id="quadratic-probing-answer" class="frame">
+          <h2>Quadratic probing result</h2>
+          <table>
+            <thead><tr><th>Key</th><th>Calculation</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>5</td>
+                <td><code>index(5, 0) = (5 + 0²) % 11 = 5</code></td>
+                <td>Empty: insert at index 5.</td>
+              </tr>
+              <tr>
+                <td>16</td>
+                <td><code>index(16, 0) = (16 + 0²) % 11 = 5</code><br><code>index(16, 1) = (16 + 1²) % 11 = 6</code></td>
+                <td>Index 5 contains 5.<br>Insert at index 6.</td>
+              </tr>
+              <tr>
+                <td>27</td>
+                <td><code>index(27, 0) = (27 + 0²) % 11 = 5</code><br><code>index(27, 1) = (27 + 1²) % 11 = 6</code><br><code>index(27, 2) = (27 + 2²) % 11 = 9</code></td>
+                <td>Indices 5 and 6 are occupied.<br>Insert at index 9.</td>
+              </tr>
+              <tr>
+                <td>38</td>
+                <td><code>index(38, 0) = (38 + 0²) % 11 = 5</code><br><code>index(38, 1) = (38 + 1²) % 11 = 6</code><br><code>index(38, 2) = (38 + 2²) % 11 = 9</code><br><code>index(38, 3) = (38 + 3²) % 11 = 3</code></td>
+                <td>Indices 5, 6, and 9 are occupied.<br>Insert at index 3.</td>
+              </tr>
+            </tbody>
+          </table>
+          <table>
+            <thead><tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+            <tbody><tr><th>Key</th><td>·</td><td>·</td><td>·</td><td>38</td><td>·</td><td>5</td><td>16</td><td>·</td><td>·</td><td>27</td><td>·</td></tr></tbody>
+          </table>
+        </section>
+
+        <section id="double-hashing-practice" class="frame">
+          <h2>Practice: double hashing</h2>
+          <p>Use table size 11 and:</p>
+          <p><code>h1(x) = x</code>, <code>h2(x) = 7 - (x % 7)</code></p>
+          <p><code>index(x, i) = (h1(x) + i * h2(x)) % 11</code></p>
+          <p>Insert in order: <strong>22, 33, 44</strong>.</p>
+          <table>
+            <thead><tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+            <tbody><tr><th>Key</th><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr></tbody>
+          </table>
+          <p>Calculate both hash values before testing the probe indices.</p>
+        </section>
+
+        <section id="double-hashing-answer" class="frame">
+          <h2>Double hashing result</h2>
+          <table>
+            <thead><tr><th>Key</th><th>Calculation</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>22</td>
+                <td><code>h1(22) = 22</code><br><code>h2(22) = 7 - (22 % 7) = 6</code><br><code>index(22, 0) = (22 + 0 * 6) % 11 = 0</code></td>
+                <td>Empty: insert at index 0.</td>
+              </tr>
+              <tr>
+                <td>33</td>
+                <td><code>h1(33) = 33</code><br><code>h2(33) = 7 - (33 % 7) = 2</code><br><code>index(33, 0) = (33 + 0 * 2) % 11 = 0</code><br><code>index(33, 1) = (33 + 1 * 2) % 11 = 2</code></td>
+                <td>Index 0 contains 22.<br>Insert at index 2.</td>
+              </tr>
+              <tr>
+                <td>44</td>
+                <td><code>h1(44) = 44</code><br><code>h2(44) = 7 - (44 % 7) = 5</code><br><code>index(44, 0) = (44 + 0 * 5) % 11 = 0</code><br><code>index(44, 1) = (44 + 1 * 5) % 11 = 5</code></td>
+                <td>Index 0 contains 22.<br>Insert at index 5.</td>
+              </tr>
+            </tbody>
+          </table>
+          <table>
+            <thead><tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+            <tbody><tr><th>Key</th><td>22</td><td>·</td><td>33</td><td>·</td><td>·</td><td>44</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr></tbody>
+          </table>
+        </section>
+      </section>
+
+      <!-- =========================================================
+           SECTION: Final Check
+           ========================================================= -->
+      <section>
+        <section class="title-slide slide level1">
+          <h1>Final Check</h1>
+        </section>
+
+        <section id="practice-prompts" class="frame">
+          <h2>Practice without memorizing</h2>
+          <ul>
+            <li><p>Write a four-method ADT interface without implementation fields.</p></li>
+            <li><p>Complete a generic swap-like function using references.</p></li>
+            <li><p>Trace prepend, enqueue, and dequeue for empty, one-node, and multi-node states.</p></li>
+            <li><p>Infer required methods and return values from a short test.</p></li>
+            <li><p>Compare time, extra storage, and stability across the four sorting algorithms.</p></li>
+            <li><p>Trace a complete Hoare partition call and state the returned split index.</p></li>
+            <li><p>Compute every candidate index in linear, quadratic, and double hashing.</p></li>
+          </ul>
+        </section>
+
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../_static/revealjs/dist/reveal.js"></script>
+  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
+  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+  <script src="../_static/revealjs/plugin/math/math.js"></script>
+
+  <script>
+    var revealjsConfig = new Object();
+    Object.assign(revealjsConfig,
+      {
+        "disableLayout": true,
+        "controls": true,
+        "progress": true,
+        "hash": true,
+        "center": true,
+        "transition": "slide",
+        "slideNumber": true,
+        "scrollActivationWidth": null,
+        "mouseWheel": false,
+        "width": 800, "height": 540
+      });
+
+    revealjsConfig.plugins = [
+      RevealNotes, RevealHighlight, RevealMath,
+    ];
+
+    Reveal.initialize(revealjsConfig);
+  </script>
+
+</body>
+
+</html>
