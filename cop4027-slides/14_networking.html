@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Network Programming in Java</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=20260921a" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  <script src="../_static/design-tabs.js?v=20260921a"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides" role="main">
+
+<section>
+  <section data-background-color="white" data-background-image="../_static/logo.png"
+           data-background-size="50%" data-background-position="top center"
+           data-background-repeat="no-repeat" class="title-slide">
+    <h1>Network Programming in Java</h1>
+    <div class="subtitle docutils container">
+      <p><strong>Advanced Programming</strong></p>
+      <p>Liting Zhang</p>
+    </div>
+  </section>
+</section>
+
+<section id="network-foundations">
+<section class="title-slide slide level1">
+  <h1>Network Foundations</h1>
+</section>
+
+<section class="frame" id="collaborative-story">
+  <h2>Collaborative Story</h2>
+  <p>A collaborative story is a client-server program in which several clients add lines to one shared story.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">Maya:  SAY The door opened.
+Noah:  SAY A cold wind entered.
+Luna:  HISTORY</code></pre>
+  <ul>
+    <li><p>Each client connects to one story server.</p></li>
+    <li><p>The server keeps one shared order.</p></li>
+    <li><p>The protocol defines messages and replies.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="network-connects-programs">
+  <h2>Network Connections</h2>
+  <p>A computer network connects devices so their programs can exchange data. A socket represents one program's connection.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Socket socket = new Socket(&quot;localhost&quot;, 5050)) {
+    System.out.println(socket.isConnected());
+}</code></pre>
+  <ul>
+    <li><p>The client names the computer and the destination program.</p></li>
+    <li><p>The connected socket carries bytes between the programs.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="localhost-network">
+  <h2>Localhost and Loopback</h2>
+  <p><code>localhost</code> is the hostname for the current computer's loopback interface.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ServerSocket server = new ServerSocket(5050);
+Socket client = new Socket(&quot;localhost&quot;, 5050);</code></pre>
+  <ul>
+    <li><p><code>localhost</code> means this computer.</p></li>
+    <li><p>The bytes still pass through the networking system.</p></li>
+    <li><p>Loopback removes routers and Wi-Fi from the first test.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="endpoint">
+  <h2>Network Endpoints</h2>
+  <p>An endpoint combines a host with a port.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">InetSocketAddress endpoint =
+        new InetSocketAddress(&quot;lab.example.edu&quot;, 5050);
+
+Socket socket = new Socket();
+socket.connect(endpoint);</code></pre>
+  <table class="compact">
+    <thead><tr><th>Value</th><th>Question it answers</th></tr></thead>
+    <tbody>
+      <tr><td><p><code>lab.example.edu</code></p></td><td><p>Which computer?</p></td></tr>
+      <tr><td><p><code>5050</code></p></td><td><p>Which program on that computer?</p></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="frame" id="dns-name-to-address">
+  <h2>DNS Resolution</h2>
+  <p>DNS stands for Domain Name System. It maps a domain name to one or more IP addresses.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">for (InetAddress address :
+        InetAddress.getAllByName(&quot;example.com&quot;)) {
+    System.out.println(address.getHostAddress());
+}</code></pre>
+  <ul>
+    <li><p>The name is convenient for people and configuration.</p></li>
+    <li><p>One name can publish several addresses.</p></li>
+    <li><p>A DNS failure happens before a TCP connection begins.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="ipv4-ipv6">
+  <h2>IP Addresses</h2>
+  <p>IP stands for Internet Protocol. IPv4 and IPv6 are its two address formats.</p>
+  <table class="compact">
+    <thead><tr><th>Address family</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><p>IPv4</p></td><td><p><code>192.0.2.24</code></p></td></tr>
+      <tr><td><p>IPv6</p></td><td><p><code>2001:db8::24</code></p></td></tr>
+    </tbody>
+  </table>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">InetAddress address = InetAddress.getByName(host);
+System.out.println(address.getClass().getSimpleName());
+System.out.println(address.getHostAddress());</code></pre>
+  <p><code>InetAddress</code> lets the program work with either family.</p>
+</section>
+
+<section class="frame" id="port-selects-program">
+  <h2>Port Numbers</h2>
+  <p>A port number identifies a network service or process on one computer.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ServerSocket storyServer = new ServerSocket(5050);
+     ServerSocket statusServer = new ServerSocket(5051)) {
+    // Each port belongs to a different listening socket.
+}</code></pre>
+  <ul>
+    <li><p>The IP address gets traffic to the computer.</p></li>
+    <li><p>The port gets traffic to the listening program.</p></li>
+    <li><p>Only one listener can normally own the same local address and port.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="common-port-numbers">
+  <h2>Common Port Numbers</h2>
+  <p>Well-known ports identify widely used network services.</p>
+  <table class="compact">
+    <thead><tr><th>Port</th><th>Service</th><th>Common use</th></tr></thead>
+    <tbody>
+      <tr><td><p><code>22</code></p></td><td><p>SSH</p></td><td><p>Secure remote login</p></td></tr>
+      <tr><td><p><code>53</code></p></td><td><p>DNS</p></td><td><p>Domain-name lookup</p></td></tr>
+      <tr><td><p><code>80</code></p></td><td><p>HTTP</p></td><td><p>Web traffic</p></td></tr>
+      <tr><td><p><code>443</code></p></td><td><p>HTTPS</p></td><td><p>Encrypted web traffic</p></td></tr>
+      <tr><td><p><code>8080</code></p></td><td><p>HTTP alternate</p></td><td><p>Alternate web service</p></td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><p>The server listens on the port for its service.</p></li>
+    <li><p>Our story server uses <code>5050</code> as a custom application port.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="connection-identity">
+  <h2>TCP Connection Identity</h2>
+  <p>TCP stands for Transmission Control Protocol. A client endpoint and server endpoint identify one connection.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Socket socket = new Socket(&quot;localhost&quot;, 5050)) {
+    System.out.println(socket.getLocalSocketAddress());
+    System.out.println(socket.getRemoteSocketAddress());
+}</code></pre>
+  <ul>
+    <li><p>The operating system usually chooses the client's temporary port.</p></li>
+    <li><p>Many clients can connect to the same server port.</p></li>
+  </ul>
+</section>
+
+</section>
+
+<section id="socket-connections">
+<section class="title-slide slide level1">
+  <h1>Socket Connections</h1>
+</section>
+
+<section class="frame" id="server-listens">
+  <h2>Listening Sockets</h2>
+  <p>A listening socket waits on a port for new client connections.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ServerSocket server = new ServerSocket(5050)) {
+    System.out.println(&quot;Listening on &quot; + server.getLocalPort());
+    Socket client = server.accept();
+}</code></pre>
+  <ul>
+    <li><p><code>ServerSocket</code> owns the listening port.</p></li>
+    <li><p><code>accept()</code> waits for a client connection.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="client-connect">
+  <h2>Client Connections</h2>
+  <p>A client starts a connection to a listening server and configures how long network waits may last.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Socket socket = new Socket();
+socket.connect(
+        new InetSocketAddress(host, port),
+        2_000);                    // connection setup
+socket.setSoTimeout(3_000);        // incoming data</code></pre>
+  <ul>
+    <li><p>The server must already own the listening endpoint.</p></li>
+    <li><p>The connect timeout and read timeout protect different waits.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="accepted-socket">
+  <h2>Accepted Connections</h2>
+  <p>An accepted socket represents one established client connection.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Socket client = server.accept();
+
+System.out.println(client.getRemoteSocketAddress());
+System.out.println(client.getLocalSocketAddress());</code></pre>
+  <ul>
+    <li><p>The listening socket remains ready for future clients.</p></li>
+    <li><p>The accepted socket carries one client conversation.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="resource-lifetime">
+  <h2>Connection Lifecycle</h2>
+  <p>A connection begins at setup and ends when either program closes its socket.</p>
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Socket socket = new Socket(host, port);
+     BufferedReader in = reader(socket);
+     PrintWriter out = writer(socket)) {
+    out.println(&quot;HISTORY&quot;);
+    System.out.println(in.readLine());
+}</code></pre>
+  <p>Leaving the block closes the streams and socket after success or failure.</p>
+</section>
+
+<section class="frame" id="client-server-responsibilities">
+  <h2>Client and Server Responsibilities</h2>
+  <p>The client starts a connection. The server owns the listening endpoint and protects shared resources.</p>
+  <table class="compact">
+    <thead><tr><th>Client</th><th>Server</th></tr></thead>
+    <tbody>
+      <tr><td><p>Choose the endpoint.</p></td><td><p>Own the listening endpoint.</p></td></tr>
+      <tr><td><p>Start the connection.</p></td><td><p>Accept connections.</p></td></tr>
+      <tr><td><p>Send valid messages.</p></td><td><p>Validate every message.</p></td></tr>
+      <tr><td><p>Interpret replies.</p></td><td><p>Protect shared state.</p></td></tr>
+      <tr><td><p>Close the session.</p></td><td><p>Clean up ended sessions.</p></td></tr>
+    </tbody>
+  </table>
+</section>
+
+</section>
+
+<section id="tcp-streams-protocols">
+<section class="title-slide slide level1">
+  <h1>TCP Messages</h1>
+</section>
+
+<section class="frame" id="tcp-stream">
+  <h2>TCP Byte Streams</h2>
+  <p>TCP provides an ordered byte stream and reports connection failure to the application.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">OutputStream out = socket.getOutputStream();
+out.write(firstBytes);
+out.write(secondBytes);</code></pre>
+  <ul>
+    <li><p>The receiver observes the bytes in the same order.</p></li>
+    <li><p>TCP detects loss and retransmits while the connection remains usable.</p></li>
+    <li><p>The application sees a stream, not TCP packets.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="tcp-not-messages">
+  <h2>TCP Message Boundaries</h2>
+  <p>TCP preserves byte order but does not preserve application message boundaries.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">out.write(&quot;SAY hello\n&quot;.getBytes(UTF_8));
+out.write(&quot;SAY again\n&quot;.getBytes(UTF_8));
+
+int count = in.read(buffer);</code></pre>
+  <p>One <code>read()</code> can return part of a line, one line, or both lines.</p>
+  <ul>
+    <li><p>Write calls do not define messages.</p></li>
+    <li><p>The application protocol must define each boundary.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="encoding">
+  <h2>Character Encoding</h2>
+  <p>A character encoding defines how text maps to bytes.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">BufferedReader in = new BufferedReader(
+        new InputStreamReader(socket.getInputStream(), UTF_8));
+
+PrintWriter out = new PrintWriter(
+        socket.getOutputStream(), true, UTF_8);</code></pre>
+  <ul>
+    <li><p>Text becomes bytes before transmission.</p></li>
+    <li><p>Bytes become text after reception.</p></li>
+    <li><p>An explicit encoding makes both conversions agree.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="line-framing">
+  <h2>Line-Based Framing</h2>
+  <p>Line-based framing uses a newline character to end each text message.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">out.println(&quot;SAY hello&quot;);
+String reply = in.readLine();</code></pre>
+  <p><code>println()</code> ends one message. <code>readLine()</code> waits for that boundary.</p>
+</section>
+
+<section class="frame" id="length-framing">
+  <h2>Length-Prefixed Framing</h2>
+  <p>Length-prefixed framing sends the message size before the message bytes.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">byte[] payload = message.getBytes(UTF_8);
+out.writeInt(payload.length);
+out.write(payload);
+
+int length = in.readInt();
+byte[] received = in.readNBytes(length);</code></pre>
+  <ul>
+    <li><p>The first value says how many bytes belong to the message.</p></li>
+    <li><p>The receiver reads exactly that number of bytes.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="protocol-meaning">
+  <h2>Application Protocols</h2>
+  <p>An application protocol defines the messages that two programs understand and how they respond.</p>
+  <table class="compact">
+    <thead><tr><th>Client message</th><th>Server action</th></tr></thead>
+    <tbody>
+      <tr><td><p><code>JOIN Maya</code></p></td><td><p>Associate a name with this connection.</p></td></tr>
+      <tr><td><p><code>SAY The door opened.</code></p></td><td><p>Add a line and broadcast it.</p></td></tr>
+      <tr><td><p><code>HISTORY</code></p></td><td><p>Return the current story.</p></td></tr>
+      <tr><td><p><code>QUIT</code></p></td><td><p>End the session.</p></td></tr>
+    </tbody>
+  </table>
+  <p>Both programs must agree on commands, fields, replies, and error behavior.</p>
+</section>
+
+<section class="frame" id="parse-message">
+  <h2>Server Message Parsing</h2>
+  <p>Parsing separates a received message into its command and data.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String[] fields = line.split(&quot; &quot;, 2);
+String command = fields[0];
+
+switch (command) {
+    case &quot;HISTORY&quot; -&gt; sendHistory();
+    case &quot;SAY&quot; -&gt; addLine(fields);
+    case &quot;QUIT&quot; -&gt; closeSession();
+    default -&gt; reply(&quot;ERROR unknown_command&quot;);
+}</code></pre>
+  <p>Malformed input receives a protocol error instead of reaching application logic.</p>
+</section>
+
+</section>
+
+<section id="concurrent-server-design">
+<section class="title-slide slide level1">
+  <h1>Concurrent Servers</h1>
+</section>
+
+<section class="frame" id="many-connections">
+  <h2>Multiple Client Connections</h2>
+  <p>A concurrent server handles several connected clients during the same period.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">while (!server.isClosed()) {
+    Socket client = server.accept();
+    clients.submit(() -&gt; handle(client));
+}</code></pre>
+  <ul>
+    <li><p>The accept loop returns quickly to the listening socket.</p></li>
+    <li><p>Each submitted task owns one connected socket.</p></li>
+    <li><p>A slow client does not stop the server from accepting another client.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="virtual-threads">
+  <h2>Virtual Threads and Sockets</h2>
+  <p>A virtual thread lets one handler use blocking socket operations without occupying a platform thread while it waits.</p>
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (var clients = Executors.newVirtualThreadPerTaskExecutor();
+     var server = new ServerSocket(5050)) {
+    while (!server.isClosed()) {
+        Socket client = server.accept();
+        clients.submit(() -&gt; handle(client));
+    }
+}</code></pre>
+  <p>Each connected client receives one virtual-thread task.</p>
+</section>
+
+<section class="frame" id="connection-handler">
+  <h2>Connection Handlers</h2>
+  <p>A connection handler reads and responds to one client socket.</p>
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">void handle(Socket socket) {
+    try (socket;
+         BufferedReader in = reader(socket);
+         PrintWriter out = writer(socket)) {
+        for (String line; (line = in.readLine()) != null; ) {
+            if (!process(line, out)) break;
+        }
+    } catch (IOException e) {
+        logDisconnect(socket, e);
+    }
+}</code></pre>
+  <p>An end-of-stream, <code>QUIT</code>, or I/O failure ends this handler.</p>
+</section>
+
+<section class="frame" id="shared-state">
+  <h2>Shared Server State</h2>
+  <p>Shared server state is data that several connection handlers can access.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">final class StoryRoom {
+    private final List&lt;String&gt; story = new ArrayList&lt;&gt;();
+    private final Set&lt;ClientConnection&gt; clients =
+            ConcurrentHashMap.newKeySet();
+}</code></pre>
+  <ul>
+    <li><p>Every handler can add a story line.</p></li>
+    <li><p>Every handler can add or remove a connected client.</p></li>
+    <li><p>Shared state needs concurrency rules from the moment it is introduced.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="multi-step-rule">
+  <h2>Atomic State Changes</h2>
+  <p>An atomic state change completes as one indivisible operation.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">List&lt;String&gt; snapshot;
+synchronized (story) {
+    story.add(entry);
+    snapshot = List.copyOf(story);
+}</code></pre>
+  <ul>
+    <li><p>The new entry and snapshot belong to one state transition.</p></li>
+    <li><p>A thread-safe collection alone does not combine two operations.</p></li>
+    <li><p>The copy can be sent after releasing the lock.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="broadcast-order">
+  <h2>Broadcast Ordering</h2>
+  <p>A broadcast sends one event to every connected client.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">long id = nextId.incrementAndGet();
+broadcastQueue.put(new StoryEvent(id, text));</code></pre>
+  <ul>
+    <li><p>Client handlers place events into one queue.</p></li>
+    <li><p>One broadcaster removes events and sends them in queue order.</p></li>
+    <li><p>Every client can observe the same story sequence.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="slow-client">
+  <h2>Backpressure from Slow Clients</h2>
+  <p>Backpressure occurs when data arrives faster than a client can consume it.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">boolean accepted = client.outbox().offer(event);
+if (!accepted) {
+    client.close();
+}</code></pre>
+  <ul>
+    <li><p>Socket writes can block when the peer stops reading.</p></li>
+    <li><p>A bounded per-client queue prevents unlimited memory growth.</p></li>
+    <li><p>The protocol needs a policy for clients that cannot keep up.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="disconnect-cleanup">
+  <h2>Disconnect Cleanup</h2>
+  <p>Disconnect cleanup removes a finished connection and releases its resources.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">clients.add(client);
+try {
+    client.runSession();
+} finally {
+    clients.remove(client);
+    client.close();
+}</code></pre>
+  <ul>
+    <li><p>Cleanup must run after normal exit and failure.</p></li>
+    <li><p>A stale client must not remain in later broadcasts.</p></li>
+  </ul>
+</section>
+
+</section>
+
+<section id="reliability-security">
+<section class="title-slide slide level1">
+  <h1>Reliability and Security</h1>
+</section>
+
+<section class="frame" id="network-failures">
+  <h2>Network Failure Stages</h2>
+  <p>A network failure can happen before connection or during data transfer.</p>
+  <table class="compact">
+    <thead><tr><th>Observation</th><th>Likely stage</th></tr></thead>
+    <tbody>
+      <tr><td><p><code>UnknownHostException</code></p></td><td><p>The name could not be resolved.</p></td></tr>
+      <tr><td><p><code>ConnectException</code></p></td><td><p>No server accepted the endpoint.</p></td></tr>
+      <tr><td><p><code>SocketTimeoutException</code></p></td><td><p>A configured wait expired.</p></td></tr>
+      <tr><td><p><code>readLine()</code> returns <code>null</code></p></td><td><p>The peer ended its output stream.</p></td></tr>
+      <tr><td><p><code>SocketException</code></p></td><td><p>The connection failed during I/O.</p></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="frame" id="network-limits">
+  <h2>Network Limits</h2>
+  <p>Network limits bound the memory and work that one connection can consume.</p>
+  <table class="compact">
+    <thead><tr><th>Limit</th><th>Server response</th></tr></thead>
+    <tbody>
+      <tr><td><p>Message bytes</p></td><td><p>Reject an oversized message.</p></td></tr>
+      <tr><td><p>Messages per second</p></td><td><p>Delay, reject, or disconnect.</p></td></tr>
+      <tr><td><p>Idle time</p></td><td><p>Close an abandoned session.</p></td></tr>
+      <tr><td><p>Queued outbound bytes</p></td><td><p>Drop a client that cannot keep up.</p></td></tr>
+    </tbody>
+  </table>
+  <p>The framing rule supplies a place to enforce the message-size limit.</p>
+</section>
+
+<section class="frame" id="retry-duplicate">
+  <h2>Retry Duplication</h2>
+  <p>A retry repeats a request after a missing reply, even when the first request may have succeeded.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">SAY 8f4c2e18 The hallway was empty.</code></pre>
+  <ul>
+    <li><p>The server may apply the change before the reply disappears.</p></li>
+    <li><p>The client cannot infer the result from a broken connection.</p></li>
+    <li><p>A request identifier lets the server recognize a repeated command.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="peer-identity">
+  <h2>Peer Address and User Identity</h2>
+  <p>A peer address identifies a network endpoint, not the person using it.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">AUTH eyJhbGciOi...
+SAY The hallway was empty.</code></pre>
+  <ul>
+    <li><p>The remote address identifies the network endpoint.</p></li>
+    <li><p>Authentication identifies the user or calling program.</p></li>
+    <li><p>The server validates authorization before changing protected state.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="tls">
+  <h2>TLS Protection</h2>
+  <p>TLS stands for Transport Layer Security. It protects data sent over a connection.</p>
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">SSLSocketFactory factory =
+        (SSLSocketFactory) SSLSocketFactory.getDefault();
+
+try (SSLSocket socket =
+        (SSLSocket) factory.createSocket(host, 443)) {
+    socket.startHandshake();
+}</code></pre>
+  <ul>
+    <li><p>TLS encrypts the connection.</p></li>
+    <li><p>The handshake authenticates the server through its certificate.</p></li>
+    <li><p>Application messages still need framing and validation.</p></li>
+  </ul>
+</section>
+
+</section>
+
+<section id="udp-communication">
+<section class="title-slide slide level1">
+  <h1>UDP Communication</h1>
+</section>
+
+<section class="frame" id="udp-send">
+  <h2>UDP Datagrams</h2>
+  <p>UDP stands for User Datagram Protocol. It sends independent messages called datagrams.</p>
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">InetAddress host = InetAddress.getByName(&quot;localhost&quot;);
+byte[] data = &quot;status?&quot;.getBytes(UTF_8);
+
+try (DatagramSocket socket = new DatagramSocket()) {
+    socket.send(new DatagramPacket(
+            data, data.length, host, 5051));
+
+    byte[] buffer = new byte[1_024];
+    DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
+    socket.receive(reply);
+}</code></pre>
+  <ul>
+    <li><p>No connection setup occurs before <code>send()</code>.</p></li>
+    <li><p>Each <code>receive()</code> returns one datagram.</p></li>
+    <li><p>A buffer that is too small truncates the datagram.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="udp-guarantees">
+  <h2>UDP Delivery Behavior</h2>
+  <p>UDP sends datagrams without adding delivery or ordering guarantees.</p>
+  <ul>
+    <li><p>A datagram can be lost.</p></li>
+    <li><p>Datagrams can arrive out of order.</p></li>
+    <li><p>A datagram can arrive more than once.</p></li>
+    <li><p>The application decides whether any of those cases need recovery.</p></li>
+  </ul>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">request-id: 42
+payload: status?</code></pre>
+  <p>An identifier can connect a reply or duplicate to the original request.</p>
+</section>
+
+<section class="frame" id="tcp-udp-choice">
+  <h2>TCP and UDP Selection</h2>
+  <p>Transport choice depends on whether the application needs a stream or independent datagrams.</p>
+  <table class="compact">
+    <thead><tr><th>Requirement</th><th>Better starting point</th></tr></thead>
+    <tbody>
+      <tr><td><p>Every story line must arrive in order.</p></td><td><p>TCP</p></td></tr>
+      <tr><td><p>A newer live position replaces an older one.</p></td><td><p>UDP may fit.</p></td></tr>
+      <tr><td><p>The application wants a byte stream.</p></td><td><p>TCP</p></td></tr>
+      <tr><td><p>The application wants independent datagrams.</p></td><td><p>UDP</p></td></tr>
+    </tbody>
+  </table>
+  <p>Speed alone does not decide the transport.</p>
+</section>
+
+</section>
+
+<section id="testing-diagnosis">
+<section class="title-slide slide level1">
+  <h1>Testing and Diagnosis</h1>
+</section>
+
+<section class="frame" id="log-endpoints">
+  <h2>Connection Logging</h2>
+  <p>Connection logging records which session and endpoints produced an event.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String connectionId = UUID.randomUUID().toString();
+System.out.printf(&quot;[%s] connected local=%s remote=%s%n&quot;,
+        connectionId,
+        socket.getLocalSocketAddress(),
+        socket.getRemoteSocketAddress());</code></pre>
+  <ul>
+    <li><p>The identifier connects later events to one session.</p></li>
+    <li><p>The endpoints show which connection produced the event.</p></li>
+    <li><p>Logs should exclude secrets and full authentication tokens.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="inspect-listener">
+  <h2>Listening-Port Inspection</h2>
+  <p>A listening-port check shows whether a server owns the expected port.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-bash"># macOS or Linux
+lsof -nP -iTCP:5050 -sTCP:LISTEN
+
+# Windows
+netstat -ano | findstr :5050</code></pre>
+  <ul>
+    <li><p>No listener means the client cannot connect to that port.</p></li>
+    <li><p>The process identifier reveals which program owns the port.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="speak-protocol">
+  <h2>Text Protocol Testing</h2>
+  <p>A direct text client sends protocol messages without the application GUI.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-bash">nc localhost 5050
+JOIN Maya
+SAY The door opened.
+HISTORY
+QUIT</code></pre>
+  <ul>
+    <li><p>A direct client separates protocol behavior from interface behavior.</p></li>
+    <li><p>Each newline sends one line-framed message.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="free-test-port">
+  <h2>Dynamic Test Ports</h2>
+  <p>A dynamic test port is a free port chosen by the operating system for one test.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ServerSocket server = new ServerSocket(0)) {
+    int port = server.getLocalPort();
+    // Start the server task, then connect the test client to this port.
+}</code></pre>
+  <ul>
+    <li><p>Port <code>0</code> requests an available temporary port.</p></li>
+    <li><p>The test avoids a fixed port that another process may own.</p></li>
+    <li><p>The server and client still use real loopback sockets.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="multi-client-test">
+  <h2>Multi-Client Testing</h2>
+  <p>A multi-client test runs several connections against the same server.</p>
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (var clients = Executors.newVirtualThreadPerTaskExecutor()) {
+    Future&lt;String&gt; first = clients.submit(
+            () -&gt; sendLine(port, &quot;SAY first&quot;));
+    Future&lt;String&gt; second = clients.submit(
+            () -&gt; sendLine(port, &quot;SAY second&quot;));
+
+    assertValidReply(first.get());
+    assertValidReply(second.get());
+}</code></pre>
+  <p>The final assertions should also inspect the server's recorded order and state.</p>
+</section>
+
+</section>
+
+<section id="network-design">
+<section class="title-slide slide level1">
+  <h1>Network Design</h1>
+</section>
+
+<section class="frame" id="network-contracts">
+  <h2>Network Program Contracts</h2>
+  <p>A network contract states what both programs must agree on.</p>
+  <table class="compact">
+    <thead><tr><th>Contract</th><th>Decision</th></tr></thead>
+    <tbody>
+      <tr><td><p>Endpoint</p></td><td><p>Host, port, and name resolution</p></td></tr>
+      <tr><td><p>Transport</p></td><td><p>TCP stream or UDP datagrams</p></td></tr>
+      <tr><td><p>Protocol</p></td><td><p>Framing, encoding, commands, and replies</p></td></tr>
+      <tr><td><p>Operations</p></td><td><p>Concurrency, limits, timeouts, security, and recovery</p></td></tr>
+    </tbody>
+  </table>
+  <p>Correct socket code cannot repair an undefined protocol or missing failure policy.</p>
+</section>
+
+<section class="frame" id="java-networking-apis">
+  <h2>Java 21 Networking APIs</h2>
+  <p>Java 21 provides socket, address, and datagram APIs in <code>java.net</code>.</p>
+  <ul>
+    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/InetAddress.html">InetAddress</a></p></li>
+    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/Socket.html">Socket</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/ServerSocket.html">ServerSocket</a></p></li>
+    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/DatagramSocket.html">DatagramSocket</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/DatagramPacket.html">DatagramPacket</a></p></li>
+    <li><p><a href="https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html">Virtual Threads</a></p></li>
+  </ul>
+</section>
+
+</section>
+
+</div>
+</div>
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+  var revealjsConfig = new Object();
+  Object.assign(revealjsConfig, {
+    "disableLayout": true,
+    "controls": true,
+    "progress": true,
+    "hash": true,
+    "center": true,
+    "transition": "slide",
+    "slideNumber": true,
+    "scrollActivationWidth": null,
+    "mouseWheel": false,
+    "width": 800,
+    "height": 540
+  });
+
+  revealjsConfig.plugins = [
+    RevealNotes,
+    RevealHighlight,
+    RevealMath,
+  ];
+
+  Reveal.initialize(revealjsConfig);
+</script>
+
+</body>
+</html>
