@@ -1,0 +1,55 @@
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 230"
+         role="img"
+         aria-labelledby="pool-title pool-desc"
+         style="display:block; width:96%; max-height:235px; margin:10px auto;">
+
+      <title id="pool-title">Tasks submitted to a thread pool</title>
+
+      <desc id="pool-desc">
+        Submitted tasks wait in a queue.
+        Thread A and Thread B take tasks from the queue and run them.
+      </desc>
+
+      <defs>
+        <marker id="pool-arrow"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="4"
+                orient="auto">
+          <path d="M0,0 L8,4 L0,8" fill="#2f4a64" />
+        </marker>
+      </defs>
+
+      <g font-family="Source Sans Pro, Helvetica, sans-serif"
+         font-size="32"
+         fill="#2d2a26">
+
+        <text x="40" y="120">submit(task)</text>
+
+        <path d="M245,110 H370"
+              stroke="#2f4a64"
+              stroke-width="4"
+              marker-end="url(#pool-arrow)" />
+
+        <rect x="400" y="60" width="425" height="100"
+              fill="#f8dac5"
+              stroke="#2f4a64"
+              stroke-width="3" />
+
+        <text x="445" y="120">Task queue: C, D, E</text>
+
+        <path d="M850,110 H970 V55 H1040 M970,110 V180 H1040"
+              fill="none"
+              stroke="#2f4a64"
+              stroke-width="4"
+              marker-end="url(#pool-arrow)" />
+
+        <rect x="1070" y="15" width="315" height="80" fill="#dbe8f1" />
+        <text x="1100" y="66">Thread A: task A</text>
+
+        <rect x="1070" y="140" width="315" height="80" fill="#dbe8f1" />
+        <text x="1100" y="191">Thread B: task B</text>
+
+      </g>
+    </svg>

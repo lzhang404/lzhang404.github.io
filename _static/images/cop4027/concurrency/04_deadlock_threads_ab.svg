@@ -1,0 +1,51 @@
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 280"
+         role="img"
+         aria-labelledby="deadlock-title deadlock-desc"
+         style="display:block; width:96%; max-height:245px; margin:8px auto;">
+
+      <title id="deadlock-title">Two threads wait for each other's lock</title>
+
+      <desc id="deadlock-desc">
+        Thread A holds Lock 1 and waits for Lock 2.
+        Thread B holds Lock 2 and waits for Lock 1.
+      </desc>
+
+      <defs>
+        <marker id="deadlock-arrow"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="4"
+                orient="auto">
+          <path d="M0,0 L8,4 L0,8" fill="#a14d22" />
+        </marker>
+      </defs>
+
+      <g font-family="Source Sans Pro, Helvetica, sans-serif"
+         font-size="32"
+         fill="#2d2a26">
+
+        <rect x="70" y="10" width="515" height="75" fill="#f8dac5" />
+        <text x="105" y="58">Thread A holds Lock 1</text>
+
+        <rect x="840" y="190" width="530" height="75" fill="#dbe8f1" />
+        <text x="875" y="238">Thread B holds Lock 2</text>
+
+        <path d="M585,45 H1100 V170"
+              fill="none"
+              stroke="#a14d22"
+              stroke-width="4"
+              marker-end="url(#deadlock-arrow)" />
+
+        <text x="790" y="35">Waits for Lock 2</text>
+
+        <path d="M840,230 H330 V105"
+              fill="none"
+              stroke="#a14d22"
+              stroke-width="4"
+              marker-end="url(#deadlock-arrow)" />
+
+        <text x="370" y="220">Waits for Lock 1</text>
+
+      </g>
+    </svg>

@@ -61,18 +61,6 @@ Luna:  HISTORY</code></pre>
   </ul>
 </section>
 
-<section class="frame" id="localhost-network">
-  <h2>Localhost and Loopback</h2>
-  <p><code>localhost</code> is the hostname for the current computer's loopback interface.</p>
-  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ServerSocket server = new ServerSocket(5050);
-Socket client = new Socket(&quot;localhost&quot;, 5050);</code></pre>
-  <ul>
-    <li><p><code>localhost</code> means this computer.</p></li>
-    <li><p>The bytes still pass through the networking system.</p></li>
-    <li><p>Loopback removes routers and Wi-Fi from the first test.</p></li>
-  </ul>
-</section>
-
 <section class="frame" id="endpoint">
   <h2>Network Endpoints</h2>
   <p>An endpoint combines a host with a port.</p>
@@ -90,20 +78,6 @@ socket.connect(endpoint);</code></pre>
   </table>
 </section>
 
-<section class="frame" id="dns-name-to-address">
-  <h2>DNS Resolution</h2>
-  <p>DNS stands for Domain Name System. It maps a domain name to one or more IP addresses.</p>
-  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">for (InetAddress address :
-        InetAddress.getAllByName(&quot;example.com&quot;)) {
-    System.out.println(address.getHostAddress());
-}</code></pre>
-  <ul>
-    <li><p>The name is convenient for people and configuration.</p></li>
-    <li><p>One name can publish several addresses.</p></li>
-    <li><p>A DNS failure happens before a TCP connection begins.</p></li>
-  </ul>
-</section>
-
 <section class="frame" id="ipv4-ipv6">
   <h2>IP Addresses</h2>
   <p>IP stands for Internet Protocol. IPv4 and IPv6 are its two address formats.</p>
@@ -118,6 +92,32 @@ socket.connect(endpoint);</code></pre>
 System.out.println(address.getClass().getSimpleName());
 System.out.println(address.getHostAddress());</code></pre>
   <p><code>InetAddress</code> lets the program work with either family.</p>
+</section>
+
+<section class="frame" id="dns-name-to-address">
+  <h2>DNS Resolution</h2>
+  <p>DNS stands for Domain Name System. It maps a domain name to one or more IP addresses.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">for (InetAddress address :
+        InetAddress.getAllByName(&quot;example.com&quot;)) {
+    System.out.println(address.getHostAddress());
+}</code></pre>
+  <ul>
+    <li><p>The name is convenient for people and configuration.</p></li>
+    <li><p>One name can publish several addresses.</p></li>
+    <li><p>A DNS failure happens before a TCP connection begins.</p></li>
+  </ul>
+</section>
+
+<section class="frame" id="localhost-network">
+  <h2>Localhost and Loopback</h2>
+  <p><code>localhost</code> is the hostname for the current computer's loopback interface.</p>
+  <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ServerSocket server = new ServerSocket(5050);
+Socket client = new Socket(&quot;localhost&quot;, 5050);</code></pre>
+  <ul>
+    <li><p><code>localhost</code> means this computer.</p></li>
+    <li><p>The bytes still pass through the networking system.</p></li>
+    <li><p>Loopback removes routers and Wi-Fi from the first test.</p></li>
+  </ul>
 </section>
 
 <section class="frame" id="port-selects-program">
@@ -149,7 +149,7 @@ System.out.println(address.getHostAddress());</code></pre>
   </table>
   <ul>
     <li><p>The server listens on the port for its service.</p></li>
-    <li><p>Our story server uses <code>5050</code> as a custom application port.</p></li>
+    <li><p>The story server uses <code>5050</code> as a custom application port.</p></li>
   </ul>
 </section>
 
@@ -350,16 +350,16 @@ switch (command) {
 </section>
 
 <section class="frame" id="many-connections">
-  <h2>Multiple Client Connections</h2>
-  <p>A concurrent server handles several connected clients during the same period.</p>
+  <h2>Serial Connection Handling</h2>
+  <p>A serial server finishes one client session before it can handle the next client.</p>
   <pre data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">while (!server.isClosed()) {
     Socket client = server.accept();
-    clients.submit(() -&gt; handle(client));
+    handle(client);
 }</code></pre>
   <ul>
-    <li><p>The accept loop returns quickly to the listening socket.</p></li>
-    <li><p>Each submitted task owns one connected socket.</p></li>
-    <li><p>A slow client does not stop the server from accepting another client.</p></li>
+    <li><p><code>accept()</code> waits for a connection.</p></li>
+    <li><p><code>handle(client)</code> then waits for that client's messages.</p></li>
+    <li><p>Other clients remain pending until the handler returns.</p></li>
   </ul>
 </section>
 
@@ -488,18 +488,18 @@ try {
 </section>
 
 <section class="frame" id="network-limits">
-  <h2>Network Limits</h2>
-  <p>Network limits bound the memory and work that one connection can consume.</p>
+  <h2>Resource Limits</h2>
+  <p>Resource limits bound the work that clients can create for the server.</p>
   <table class="compact">
     <thead><tr><th>Limit</th><th>Server response</th></tr></thead>
     <tbody>
       <tr><td><p>Message bytes</p></td><td><p>Reject an oversized message.</p></td></tr>
       <tr><td><p>Messages per second</p></td><td><p>Delay, reject, or disconnect.</p></td></tr>
       <tr><td><p>Idle time</p></td><td><p>Close an abandoned session.</p></td></tr>
-      <tr><td><p>Queued outbound bytes</p></td><td><p>Drop a client that cannot keep up.</p></td></tr>
+      <tr><td><p>Open connections</p></td><td><p>Refuse or defer new connections.</p></td></tr>
     </tbody>
   </table>
-  <p>The framing rule supplies a place to enforce the message-size limit.</p>
+  <p>Backpressure controls slow outbound delivery. Resource limits control other per-client and server-wide costs.</p>
 </section>
 
 <section class="frame" id="retry-duplicate">
@@ -685,6 +685,17 @@ QUIT</code></pre>
   <h1>Network Design</h1>
 </section>
 
+<section class="frame" id="java-networking-apis">
+  <h2>Java 21 Networking APIs</h2>
+  <p>Java 21 provides socket, address, and datagram APIs in <code>java.net</code>.</p>
+  <ul>
+    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/InetAddress.html">InetAddress</a></p></li>
+    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/Socket.html">Socket</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/ServerSocket.html">ServerSocket</a></p></li>
+    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/DatagramSocket.html">DatagramSocket</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/DatagramPacket.html">DatagramPacket</a></p></li>
+    <li><p><a href="https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html">Virtual Threads</a></p></li>
+  </ul>
+</section>
+
 <section class="frame" id="network-contracts">
   <h2>Network Program Contracts</h2>
   <p>A network contract states what both programs must agree on.</p>
@@ -698,17 +709,6 @@ QUIT</code></pre>
     </tbody>
   </table>
   <p>Correct socket code cannot repair an undefined protocol or missing failure policy.</p>
-</section>
-
-<section class="frame" id="java-networking-apis">
-  <h2>Java 21 Networking APIs</h2>
-  <p>Java 21 provides socket, address, and datagram APIs in <code>java.net</code>.</p>
-  <ul>
-    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/InetAddress.html">InetAddress</a></p></li>
-    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/Socket.html">Socket</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/ServerSocket.html">ServerSocket</a></p></li>
-    <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/DatagramSocket.html">DatagramSocket</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/DatagramPacket.html">DatagramPacket</a></p></li>
-    <li><p><a href="https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html">Virtual Threads</a></p></li>
-  </ul>
 </section>
 
 </section>
