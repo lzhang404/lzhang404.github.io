@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <title>Java Concurrency</title>
+
+  <link rel="stylesheet" type="text/css" href="../_static/revealjs/dist/reveal.css?v=40f0a724" />
+  <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=20260921a" />
+  <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  <script src="../_static/design-tabs.js?v=20260921a"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+
+<div class="reveal">
+<div class="slides" role="main">
+
+
+<!-- =========================================================
+     TITLE
+     ========================================================= -->
+
+<section>
+  <section data-background-color="white"
+           data-background-image="../_static/logo.png"
+           data-background-size="50%"
+           data-background-position="top center"
+           data-background-repeat="no-repeat"
+           class="title-slide">
+
+    <h1>Java Concurrency</h1>
+
+    <div class="subtitle docutils container">
+      <p><strong>Advanced Programming</strong></p>
+      <p>Liting Zhang</p>
+    </div>
+  </section>
+</section>
+
+
+<!-- =========================================================
+     LEARNING GOALS
+     ========================================================= -->
+
+<section>
+
+  <section class="frame" id="learning-goals">
+    <h2>Learning Goals</h2>
+
+    <ul>
+      <li><p>Distinguish concurrency from parallel execution.</p></li>
+      <li><p>Separate a task from the thread that runs it.</p></li>
+      <li><p>Explain why a shared update can fail.</p></li>
+      <li><p>Choose a coordination or execution tool for the problem.</p></li>
+      <li><p>Handle completion, failure, and cancellation.</p></li>
+    </ul>
+  </section>
+
+</section>
+
+
+<!-- =========================================================
+     CONCURRENCY AND THREADS
+     ========================================================= -->
+
+<section id="basics">
+
+  <section class="title-slide slide level1">
+    <h1>Concurrency and Threads</h1>
+  </section>
+
+
+  <section class="frame" id="why-concurrency">
+    <h2>Why Use Concurrency?</h2>
+
+    <ul>
+      <li><p>Keep an application responsive during slow work.</p></li>
+      <li><p>Handle several independent requests.</p></li>
+      <li><p>Use multiple CPU cores for suitable calculations.</p></li>
+      <li><p>Example: load a file while the user keeps working.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="task-thread">
+    <h2>Processes, Threads, and Tasks</h2>
+
+    <ul>
+      <li><p>A <strong>process</strong> is a running program.</p></li>
+      <li>
+        <p>A <strong>thread</strong> is one path of execution inside a process.</p>
+        <ul>
+          <li><p>Threads share the process heap but keep separate call stacks.</p></li>
+        </ul>
+      </li>
+      <li>
+        <p>A <strong>task</strong> is work that a thread can execute.</p>
+        <ul>
+          <li><p>One thread can execute several tasks over time.</p></li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="concurrency-parallelism">
+    <h2>Concurrency and Parallelism</h2>
+
+    <img src="../_static/images/cop4027/concurrency/01_concurrent_parallel_threads_ab.png"
+         alt="On one core, Thread A and Thread B alternate. On two cores, Thread A and Thread B run at the same time."
+         style="display:block; margin:12px auto; width:94%; max-height:430px; object-fit:contain;" />
+
+    <ul>
+      <li>
+        <p><strong>Concurrency:</strong> tasks make progress during overlapping periods.</p>
+        <ul>
+          <li><p>One CPU core can switch between concurrent tasks.</p></li>
+        </ul>
+      </li>
+
+      <li>
+        <p><strong>Parallelism:</strong> tasks execute at the same time.</p>
+        <ul>
+          <li><p>Multiple CPU cores can run tasks in parallel.</p></li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="workload-types">
+    <h2>CPU-Bound and I/O-Bound Work</h2>
+
+    <ul>
+      <li><p><strong>CPU-bound work</strong> spends most of its time calculating.</p></li>
+      <li><p><strong>I/O-bound work</strong> spends most of its time waiting.</p></li>
+      <li><p>While one task waits for I/O, another can use the CPU.</p></li>
+      <li><p>Parallel CPU work needs independent tasks and available cores.</p></li>
+      <li><p>Thread creation, switching, and coordination add overhead.</p></li>
+      <li><p>More threads do not guarantee faster execution.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="representing-runnable">
+    <h2>Representing a Task with Runnable</h2>
+
+    <ul>
+      <li><p>A <strong>functional interface</strong> has one abstract method.</p></li>
+      <li><p><code class="inline-java">Runnable</code> declares <code class="inline-java">run()</code>.</p></li>
+      <li><p>A <strong>lambda</strong> provides the method implementation.</p></li>
+      <li><p>A named class is useful when a task needs reuse or extra structure.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class GreetingTask implements Runnable {
+    @Override
+    public void run() {
+        System.out.println("Hello");
+    }
+}
+
+Runnable named = new GreetingTask();
+Runnable lambda = () -> System.out.println("Hello");</code></pre>
+  </section>
+
+
+  <section class="frame" id="creating-thread">
+    <h2>Creating and Starting a Thread</h2>
+
+    <ul>
+      <li><p>The <strong>main thread</strong> begins by executing <code class="inline-java">main()</code>.</p></li>
+      <li><p><code class="inline-java">Runnable</code> defines the worker's task.</p></li>
+      <li>
+        <p><code class="inline-java">new Thread(task)</code> creates a thread object.</p>
+        <ul>
+          <li><p>Creating the object does not run the task.</p></li>
+        </ul>
+      </li>
+      <li>
+        <p><code class="inline-java">start()</code> starts the new thread, which executes the task.</p>
+        <ul>
+          <li><p>The current thread can continue while the worker runs.</p></li>
+        </ul>
+      </li>
+      <li><p>Each <code class="inline-java">Thread</code> object can be started only once.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Runnable task = () -> System.out.println("Hello");
+Thread worker = new Thread(task, "Thread A");
+worker.start();</code></pre>
+  </section>
+
+
+  <section class="frame" id="start-vs-run">
+    <h2>start() and run()</h2>
+
+    <ul>
+      <li><p><code class="inline-java">run()</code> is an ordinary method call on the <strong>current thread</strong>.</p></li>
+      <li><p><code class="inline-java">start()</code> starts a <strong>new thread</strong>, which calls <code class="inline-java">run()</code>.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Runnable task = () ->
+        System.out.println(Thread.currentThread().getName());
+Thread worker = new Thread(task, "Thread A");
+
+worker.run();   // main
+worker.start(); // Thread A</code></pre>
+  </section>
+
+
+
+
+  <section class="frame" id="scheduling">
+    <h2>Thread Scheduling</h2>
+
+    <ul>
+      <li><p>The scheduler decides which runnable thread executes.</p></li>
+      <li><p>Starting first does not guarantee finishing first.</p></li>
+      <li><p>The output order may change across runs.</p></li>
+      <li><p>A correct program must tolerate valid scheduling changes.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="joining">
+    <h2>Waiting for Completion with join()</h2>
+
+    <ul>
+      <li><p>Both workers can make progress after their <code class="inline-java">start()</code> calls.</p></li>
+      <li><p><code class="inline-java">worker.join()</code> waits until that worker terminates.</p></li>
+      <li><p>The final message appears after both <code class="inline-java">join()</code> calls return.</p></li>
+      <li><p><code class="inline-java">join()</code> can throw <code class="inline-java">InterruptedException</code>.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void runWorkers() throws InterruptedException {
+    Thread first = new Thread(() -> System.out.println("Hello"));
+    Thread second = new Thread(() -> System.out.println("Bye"));
+    first.start();
+    second.start();
+    first.join();
+    second.join();
+    System.out.println("Both finished");
+}</code></pre>
+
+    <ul>
+      <li><p>Example: <code>threads/ThreadBasicsDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="join-vs-sleep">
+    <h2>join() and sleep() Solve Different Problems</h2>
+
+    <p><strong>join()</strong></p>
+
+    <ul>
+      <li><p>Waits for another thread to finish.</p></li>
+      <li><p>Expresses a real completion dependency.</p></li>
+      <li><p>A timed join may return before completion.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void startAndWait(Thread worker) throws InterruptedException {
+    worker.start();
+    worker.join();
+}</code></pre>
+
+    <p><strong>sleep()</strong></p>
+
+    <ul>
+      <li><p>Pauses the <strong>current</strong> thread.</p></li>
+      <li><p>Does not know whether another task finished.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void pause() throws InterruptedException {
+    Thread.sleep(100);
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="blocking-calls">
+    <h2>Blocking and Non-Blocking Calls</h2>
+
+    <ul>
+      <li><p>A <strong>blocking call</strong> makes the calling thread wait.</p></li>
+      <li><p><code class="inline-java">worker.join()</code> waits for completion.</p></li>
+      <li><p><code class="inline-java">Thread.sleep(100)</code> waits for time to pass.</p></li>
+      <li><p>A <strong>non-blocking call</strong> lets the caller continue.</p></li>
+      <li><p><code class="inline-java">worker.start()</code> does not wait for the worker to finish.</p></li>
+      <li><p><strong>Asynchronous work</strong> proceeds separately from the caller.</p></li>
+      <li><p>Asynchronous work can still make blocking calls.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="interruption">
+    <h2>Interruption Requests Cooperation</h2>
+
+    <ul>
+      <li>
+        <p><code class="inline-java">worker.interrupt()</code> requests interruption.</p>
+        <ul>
+          <li><p>It does not forcibly kill the worker.</p></li>
+          <li><p>Interruptible waits can throw <code class="inline-java">InterruptedException</code>.</p></li>
+        </ul>
+      </li>
+
+      <li><p>Task code decides how to respond to the request.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="interrupted-task">
+    <h2>Interruption During a Wait</h2>
+
+    <ul>
+      <li><p><strong>Interrupt status</strong> records an interruption request.</p></li>
+      <li><p><code class="inline-java">sleep()</code> responds to interruption by throwing <code class="inline-java">InterruptedException</code> and clearing that status.</p></li>
+      <li><p>Restore the status when higher-level code should observe the interruption.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Runnable task = () -> {
+    try {
+        Thread.sleep(1000);
+        System.out.println("Work finished");
+    } catch (InterruptedException exception) {
+        Thread.currentThread().interrupt();
+        return;
+    }
+};
+Thread worker = new Thread(task, "Thread A");
+worker.start();
+worker.interrupt();</code></pre>
+
+    <ul>
+      <li><p>Example: <code>threads/InterruptionDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="interrupted-work">
+    <h2>Interruption During Active Work</h2>
+
+    <ul>
+      <li><p>A calculation does not automatically throw <code class="inline-java">InterruptedException</code> when interrupted.</p></li>
+      <li><p><code class="inline-java">isInterrupted()</code> checks the current interrupt status without clearing it.</p></li>
+      <li><p>Check between small units of work so the task can stop promptly.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Runnable task = () -> {
+    long total = 0;
+    for (long n = 1; n &lt;= 1_000_000_000L; n++) {
+        if (Thread.currentThread().isInterrupted()) {
+            return;
+        }
+        total += n;
+    }
+    System.out.println(total);
+};</code></pre>
+  </section>
+
+
+  <section class="frame" id="basics-check">
+    <h2>Quick Check: Starting and Waiting</h2>
+
+    <ul>
+      <li><p>To run a task concurrently with the current thread, call <code class="inline-java">worker.run()</code> or <code class="inline-java">worker.start()</code>?</p></li>
+
+      <li class="fragment"><p><strong>Answer:</strong> <code class="inline-java">worker.start()</code>. Calling <code class="inline-java">run()</code> directly stays on the current thread.</p></li>
+
+      <li class="fragment"><p>Is <code class="inline-java">Thread.sleep(100)</code> a reliable way to wait for a worker to finish?</p></li>
+
+      <li class="fragment"><p><strong>Answer:</strong> No. Use <code class="inline-java">worker.join()</code>.</p></li>
+
+      <li class="fragment"><p>If the main thread calls <code class="inline-java">worker.interrupt()</code>, must the worker terminate immediately?</p></li>
+
+      <li class="fragment"><p><strong>Answer:</strong> No. The worker must handle the request cooperatively.</p></li>
+    </ul>
+  </section>
+
+</section>
+
+
+<!-- =========================================================
+     SHARED STATE AND SYNCHRONIZATION
+     ========================================================= -->
+
+<section id="shared-data">
+
+  <section class="title-slide slide level1">
+    <h1>Shared State and Synchronization</h1>
+  </section>
+
+
+  <section class="frame" id="shared-counter">
+    <h2>Shared Object References</h2>
+
+    <ul>
+      <li><p><strong>Shared mutable state</strong> can be changed by multiple threads.</p></li>
+      <li><p>Two threads can reference the same object.</p></li>
+      <li><p>A local reference may still point to shared state.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Counter {
+    private int value;
+
+    public void increment() {
+        value++;
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="unsafe-counter">
+    <h2>Nonatomic Counter Updates</h2>
+
+    <ul>
+      <li><p>An <strong>atomic operation</strong> behaves as one indivisible action.</p></li>
+      <li><p><code>value++</code> performs a read, an addition, and a write.</p></li>
+      <li><p>Another thread can run between those steps.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Counter counter = new Counter();
+Thread first = new Thread(counter::increment, "Thread A");
+Thread second = new Thread(counter::increment, "Thread B");
+first.start();
+second.start();</code></pre>
+  </section>
+
+
+  <section class="frame" id="lost-update">
+    <h2>Race Condition: A Lost Update</h2>
+
+    <img src="../_static/images/cop4027/concurrency/02_race_condition.png"
+         alt="Thread A and Thread B both read 0, add 1, and write 1. The final shared value is 1 instead of 2."
+         style="display:block; margin:12px auto; width:94%; max-height:370px; object-fit:contain;" />
+
+    <ul>
+      <li><p>Both threads read <code>0</code>, compute <code>1</code>, and write <code>1</code>.</p></li>
+      <li><p>A <strong>race condition</strong> makes correctness depend on thread timing.</p></li>
+      <li><p><strong>Thread-safe code</strong> remains correct under concurrent execution.</p></li>
+      <li><p>One successful run does not prove thread safety.</p></li>
+      <li><p>Example: <code>shared/LostUpdateDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="critical-section">
+    <h2>Mutual Exclusion Protects a Critical Section</h2>
+
+    <ul>
+      <li><p>A <strong>critical section</strong> accesses shared state.</p></li>
+      <li><p><strong>Mutual exclusion</strong> allows one thread at a time.</p></li>
+      <li><p>Java objects have a <strong>monitor</strong> used by <code class="inline-java">synchronized</code>.</p></li>
+      <li><p>Lock the complete read-change-write sequence.</p></li>
+      <li><p>Use the same lock for every conflicting access.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="synchronized-counter">
+    <h2>synchronized Methods</h2>
+
+    <ul>
+      <li><p>An instance <code class="inline-java">synchronized</code> method locks <code class="inline-java">this</code>.</p></li>
+      <li><p>Calls on the <strong>same object</strong> therefore use the same monitor.</p></li>
+      <li><p>Two different objects have different monitors.</p></li>
+      <li><p>A <code class="inline-java">static synchronized</code> method locks the class object.</p></li>
+      <li><p>The JVM releases the monitor automatically when the method exits.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class SafeCounter {
+    private int value;
+    public synchronized void increment() {
+        value++;
+    }
+    public synchronized int value() {
+        return value;
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="synchronized-block">
+    <h2>synchronized Blocks</h2>
+
+    <ul>
+      <li><p>A block can protect only the operation that needs the lock.</p></li>
+      <li><p>Use a stable lock object.</p></li>
+      <li><p>Use that same lock for every conflicting access to the protected state.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class BlockCounter {
+    private final Object lock = new Object();
+    private int value;
+
+    public void increment() {
+        synchronized (lock) {
+            value++;
+        }
+    }
+}</code></pre>
+
+    <ul>
+      <li><p>Example: <code>shared/CounterDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="synchronized-trace">
+    <h2>The Update with Synchronization</h2>
+
+    <img src="../_static/images/cop4027/concurrency/03_synchronized_update_threads_ab.png"
+         alt="Thread A locks, reads 0, writes 1, and unlocks. Thread B waits for the same lock, then locks, reads 1, writes 2, and unlocks."
+         style="display:block; width:96%; max-height:300px; margin:16px auto; object-fit:contain;" />
+
+    <ul>
+      <li><p>Thread B waits while Thread A holds the lock.</p></li>
+      <li><p>Thread B then reads the updated value.</p></li>
+      <li><p>Two increments now produce <code>2</code>.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="compound-operation">
+    <h2>Compound Operations and Invariants</h2>
+
+    <ul>
+      <li><p>A critical section can protect several steps as one operation.</p></li>
+      <li><p>The balance check and subtraction form a <strong>compound operation</strong>.</p></li>
+      <li><p>Two <code>80</code> withdrawals cannot succeed from a balance of <code>100</code>.</p></li>
+      <li><p>An <strong>invariant</strong> is a rule every operation must preserve.</p></li>
+      <li><p>For positive withdrawals, the balance stays nonnegative.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Account {
+    private int balance = 100;
+    public synchronized boolean tryWithdraw(int amount) {
+        if (balance &lt; amount) {
+            return false;
+        }
+        balance -= amount;
+        return true;
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="thread-states">
+    <h2>Java Thread States</h2>
+
+    <ul>
+      <li><p><code class="inline-java">NEW</code>: created but not started.</p></li>
+      <li><p><code class="inline-java">RUNNABLE</code>: executing or ready to execute.</p></li>
+      <li><p><code class="inline-java">BLOCKED</code>: waiting to acquire a monitor used by <code class="inline-java">synchronized</code>.</p></li>
+      <li><p><code class="inline-java">WAITING</code>: waiting without a timeout, as in <code class="inline-java">join()</code>.</p></li>
+      <li><p><code class="inline-java">TIMED_WAITING</code>: waiting with a time limit, as in <code class="inline-java">sleep()</code>.</p></li>
+      <li><p><code class="inline-java">TERMINATED</code>: execution has ended.</p></li>
+    </ul>
+
+    <p>Java uses <code class="inline-java">RUNNABLE</code>, not a separate <code class="inline-java">RUNNING</code> state. <code class="inline-java">BLOCKED</code> specifically means waiting for a monitor.</p>
+  </section>
+
+
+  <section class="frame" id="safety-liveness-deadlock">
+    <h2>Safety and Liveness</h2>
+
+    <img src="../_static/images/cop4027/concurrency/04_deadlock_threads_ab.png"
+         alt="Thread A holds Lock 1 and waits for Lock 2, while Thread B holds Lock 2 and waits for Lock 1, creating a deadlock cycle."
+         style="display:block; width:96%; max-height:245px; margin:8px auto; object-fit:contain;" />
+
+    <ul>
+      <li><p><strong>Safety:</strong> an incorrect state or result does not occur.</p></li>
+      <li><p><strong>Liveness:</strong> useful work can eventually make progress.</p></li>
+      <li><p><strong>Deadlock:</strong> threads wait permanently for resources held by one another.</p></li>
+      <li><p><strong>Starvation:</strong> one thread repeatedly fails to obtain a needed resource.</p></li>
+      <li><p>Prevent deadlock by acquiring locks in a consistent order.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="atomicity-visibility">
+    <h2>Atomicity and Visibility</h2>
+
+    <ul>
+      <li><p><strong>Atomicity:</strong> an operation behaves as one indivisible update.</p></li>
+      <li><p><strong>Visibility:</strong> other threads can reliably observe a write.</p></li>
+
+      <li><p><code class="inline-java">synchronized</code> provides both mutual exclusion and visibility.</p></li>
+      <li>
+        <p>Releasing a monitor <strong>happens-before</strong> a later acquisition of the same monitor.</p>
+        <ul>
+          <li><p>The acquiring thread observes earlier protected writes.</p></li>
+        </ul>
+      </li>
+      <li><p>A successful <code class="inline-java">join()</code> also makes the completed worker's writes visible to the caller.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="volatile-flag">
+    <h2>Visibility for a Stop Flag</h2>
+
+    <ul>
+      <li><p>Use <code class="inline-java">volatile</code> for a shared stop flag.</p></li>
+      <li><p><code class="inline-java">volatile</code> makes flag updates visible across threads.</p></li>
+      <li><p>It does not make <code>value++</code> atomic.</p></li>
+      <li><p>A flag change does not wake a sleeping thread.</p></li>
+      <li><p>Interruption can wake an interruptible wait.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class StopFlag {
+    private volatile boolean stopRequested;
+    public void requestStop() {
+        stopRequested = true;
+    }
+    public boolean shouldStop() {
+        return stopRequested;
+    }
+}</code></pre>
+
+    <ul>
+      <li><p>Example: <code>shared/VolatileStopDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="atomic-counter">
+    <h2>AtomicInteger Updates</h2>
+
+    <ul>
+      <li><p><code class="inline-java">incrementAndGet()</code> performs one atomic update.</p></li>
+      <li><p><code class="inline-java">get()</code> reads the current value.</p></li>
+      <li><p>Separate atomic calls do not automatically form one atomic transaction.</p></li>
+      <li><p>Use a lock when correctness depends on several fields or several steps.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">AtomicInteger count = new AtomicInteger();
+
+count.incrementAndGet();
+System.out.println(count.get());</code></pre>
+
+    <ul>
+      <li><p>Example: <code>shared/AtomicCounterDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="concurrent-map">
+    <h2>Shared Counts by Job Type</h2>
+
+    <ul>
+      <li><p>A map can track a separate count for each job type.</p></li>
+      <li><p>Separate <code class="inline-java">get()</code> and <code class="inline-java">put()</code> calls can lose updates.</p></li>
+      <li><p><code class="inline-java">ConcurrentHashMap</code> supports concurrent access.</p></li>
+      <li><p><code class="inline-java">merge()</code> performs one atomic update for a key.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ConcurrentHashMap&lt;String, Integer&gt; counts = new ConcurrentHashMap&lt;&gt;();
+
+counts.merge("reports", 1, Integer::sum);
+counts.merge("emails", 1, Integer::sum);</code></pre>
+
+    <ul>
+      <li><p>Example: <code>shared/ConcurrentMapDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="reduce-sharing">
+    <h2>Reduce Shared Mutable State</h2>
+
+    <ul>
+      <li><p><strong>Task confinement:</strong> keep mutable data owned by one task.</p></li>
+      <li><p>Each task builds its own report text.</p></li>
+      <li><p>Return an immutable <code class="inline-java">String</code> that other tasks cannot change.</p></li>
+      <li><p><code class="inline-java">final</code> prevents reference reassignment.</p></li>
+      <li><p><code class="inline-java">final</code> does not make an object immutable.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static String buildReport(String name) {
+    StringBuilder text = new StringBuilder();
+    text.append("Report for ").append(name);
+    return text.toString();
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="sharing-check">
+    <h2>Quick Check: Fix the Counter</h2>
+
+    <ul>
+      <li><p>Two threads share a counter. Each increments its <code class="inline-java">int</code> field <code>value</code> once using <code>value++</code>.</p></li>
+      <li><p>Would <code class="inline-java">Thread.sleep(100)</code> before each increment prevent a lost update?</p></li>
+
+      <li class="fragment"><p><strong>Answer:</strong> No. Sleep provides no protection.</p></li>
+
+      <li class="fragment"><p>Would <code class="inline-java">volatile int value</code> make <code>value++</code> atomic?</p></li>
+
+      <li class="fragment"><p><strong>Answer:</strong> No. Volatile provides visibility, not an atomic increment.</p></li>
+
+      <li class="fragment"><p>Would making the shared counter's <code>increment()</code> method <code class="inline-java">synchronized</code> protect both updates?</p></li>
+
+      <li class="fragment"><p><strong>Answer:</strong> Yes. Both calls acquire the same counter's monitor.</p></li>
+    </ul>
+  </section>
+
+</section>
+
+
+<!-- =========================================================
+     WAITING AND THREAD COORDINATION
+     ========================================================= -->
+
+<section id="coordination">
+
+  <section class="title-slide slide level1">
+    <h1>Waiting and Thread Coordination</h1>
+  </section>
+
+
+  <section class="frame" id="lock-vs-condition">
+    <h2>Lock Availability and Account Balance</h2>
+
+    <ul>
+      <li><p>A withdrawal can wait until enough funds are available.</p></li>
+      <li><p><strong>Waiting for a lock:</strong> another thread owns the account's monitor.</p></li>
+      <li><p><strong>Waiting for state:</strong> the balance is too low.</p></li>
+      <li><p>Release the monitor while waiting so another thread can deposit.</p>
+        <ul>
+          <li><p><code class="inline-java">Thread.sleep(100)</code> keeps any locks the current thread holds.</p></li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="monitor-wait">
+    <h2>Waiting for Sufficient Funds</h2>
+
+    <ul>
+      <li><p>A <code class="inline-java">synchronized</code> method owns the account's monitor.</p></li>
+      <li><p><code class="inline-java">wait()</code> releases the monitor while waiting.</p></li>
+      <li><p><code class="inline-java">wait()</code> reacquires the monitor before returning.</p></li>
+      <li><p>Recheck the balance in <code class="inline-java">while</code> after every wakeup.</p>
+        <ul>
+          <li><p>Another withdrawal may use the funds first.</p></li>
+          <li><p>A spurious wakeup may occur without notification.</p></li>
+        </ul>
+      </li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class MonitorBankAccount {
+    private int balance = 20;
+    public synchronized void withdraw(int amount)
+            throws InterruptedException {
+        while (balance &lt; amount) {
+            wait();
+        }
+        balance -= amount;
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="monitor-deposit">
+    <h2>Deposits and Monitor Notification</h2>
+
+    <ul>
+      <li><p><code class="inline-java">notifyAll()</code> wakes all threads waiting on that account.</p>
+        <ul>
+          <li><p><code class="inline-java">notify()</code> wakes one waiter instead.</p></li>
+        </ul>
+      </li>
+      <li><p>Notification does not release the monitor.</p></li>
+      <li><p>Each awakened thread must reacquire the monitor and recheck the balance.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public synchronized void deposit(int amount) {
+    balance += amount;
+    notifyAll();
+}</code></pre>
+
+    <p>The deposit raises the balance to <code>60</code>. Thread A can then withdraw <code>50</code>.</p>
+
+    <ul>
+      <li><p>Example: <code>coordination/MonitorBankAccountDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="reentrant-lock">
+    <h2>Explicit Locking with ReentrantLock</h2>
+
+    <ul>
+      <li><p><code class="inline-java">ReentrantLock</code> adds timed and interruptible acquisition to mutual exclusion.</p></li>
+      <li><p><code class="inline-java">lock()</code> waits for ownership.</p></li>
+      <li><p>A reentrant lock may be acquired again by its owner.</p></li>
+      <li><p>Release with <code class="inline-java">unlock()</code> in <code class="inline-java">finally</code>, even if an exception occurs.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class LockingBankAccount {
+    private int balance = 20;
+    private final ReentrantLock lock = new ReentrantLock();
+    public void deposit(int amount) {
+        lock.lock();
+        try {
+            balance += amount;
+        } finally {
+            lock.unlock();
+        }
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="lock-acquisition">
+    <h2>Timed and Interruptible Lock Acquisition</h2>
+
+    <ul>
+      <li><p><code class="inline-java">tryLock()</code> returns immediately: <code class="inline-java">true</code> if acquired, otherwise <code class="inline-java">false</code>.</p></li>
+      <li><p>Timed <code class="inline-java">tryLock()</code> waits only for the specified duration.</p></li>
+      <li><p>Interruption can end the timed wait.</p></li>
+      <li><p><code class="inline-java">lockInterruptibly()</code> waits for ownership but allows interruption to end the wait.</p></li>
+      <li><p>Unlock only after successful acquisition.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public boolean tryDeposit(int amount) throws InterruptedException {
+    if (!lock.tryLock(100, TimeUnit.MILLISECONDS)) {
+        return false;
+    }
+    try {
+        balance += amount;
+        return true;
+    } finally {
+        lock.unlock();
+    }
+}</code></pre>
+
+    <ul>
+      <li><p>Example: <code>coordination/LockingBankAccount.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="condition-wait">
+    <h2>Waiting for State to Change with Condition</h2>
+
+    <ul>
+      <li><p>A <code class="inline-java">Condition</code> belongs to a specific lock.</p></li>
+      <li><p>The condition holds threads waiting for sufficient funds.</p></li>
+      <li><p>A withdrawal can proceed only when <code>balance &gt;= amount</code>.</p></li>
+      <li><p><code class="inline-java">await()</code> releases the lock while waiting.</p></li>
+      <li><p><code class="inline-java">await()</code> reacquires the lock before returning.</p></li>
+      <li><p>Use <code class="inline-java">while</code> to recheck the balance after every wakeup.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final ReentrantLock lock = new ReentrantLock();
+private final Condition funds = lock.newCondition();
+
+public void withdraw(int amount) throws InterruptedException {
+    lock.lock();
+    try {
+        while (balance &lt; amount) {
+            funds.await();
+        }
+        balance -= amount;
+    } finally {
+        lock.unlock();
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="condition-deposit">
+    <h2>Deposits and Condition Signalling</h2>
+
+    <ul>
+      <li><p>Update the balance and signal under the same lock.</p></li>
+      <li><p><code class="inline-java">signalAll()</code> wakes all waiters on <code>funds</code>.</p>
+        <ul>
+          <li><p><code class="inline-java">signal()</code> wakes one waiter instead.</p></li>
+        </ul>
+      </li>
+      <li><p>Signalling does not release the lock.</p></li>
+      <li><p>Waiters reacquire the lock before rechecking the balance.</p></li>
+      <li><p>Every method that adds funds must signal.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void deposit(int amount) {
+    lock.lock();
+    try {
+        balance += amount;
+        funds.signalAll();
+    } finally {
+        lock.unlock();
+    }
+}</code></pre>
+
+    <ul>
+      <li><p>Example: <code>coordination/LockingBankAccountDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="waiting-api-comparison">
+    <h2>Monitor and Condition APIs</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Operation</th>
+          <th>Object monitor</th>
+          <th>Lock + Condition</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Wait and release the associated lock</td>
+          <td><code class="inline-java">wait()</code></td>
+          <td><code class="inline-java">await()</code></td>
+        </tr>
+        <tr>
+          <td>Wake one waiter</td>
+          <td><code class="inline-java">notify()</code></td>
+          <td><code class="inline-java">signal()</code></td>
+        </tr>
+        <tr>
+          <td>Wake all waiters</td>
+          <td><code class="inline-java">notifyAll()</code></td>
+          <td><code class="inline-java">signalAll()</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ul>
+      <li><p>Own the matching monitor or lock when calling these methods.</p></li>
+      <li><p>Keep monitor waiters and <code class="inline-java">Condition</code> waiters separate. Use the matching notification methods.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="choosing-locks">
+    <h2>synchronized or ReentrantLock?</h2>
+
+    <ul>
+      <li><p>For straightforward mutual exclusion, <code class="inline-java">synchronized</code> handles locking and unlocking automatically.</p></li>
+      <li><p>For timed or interruptible acquisition, use <code class="inline-java">ReentrantLock</code>.</p></li>
+      <li><p>For separate wait sets on one lock, create multiple <code class="inline-java">Condition</code> objects.</p></li>
+      <li><p>Both approaches support waiting for state to change. Waiting alone does not require <code class="inline-java">ReentrantLock</code>.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="waiting-check">
+    <h2>Quick Check: Which Waiter Can Proceed?</h2>
+
+    <p>The balance is <code>0</code>. Thread A is waiting to withdraw <code>100</code>. Thread B is waiting to withdraw <code>20</code>.</p>
+    <p>A deposit adds <code>20</code> and calls <code class="inline-java">notify()</code> once.</p>
+    <p>Could Thread B remain waiting even though enough funds are available for it?</p>
+    <p class="fragment"><strong>Answer:</strong> Yes. <code class="inline-java">notify()</code> may wake Thread A, which must wait again. <code class="inline-java">notifyAll()</code> lets both recheck, allowing Thread B to withdraw.</p>
+  </section>
+
+
+  <section class="frame" id="blocking-queue">
+    <h2>Producer–Consumer Handoff</h2>
+
+    <ul>
+      <li><p>A producer creates file-processing jobs. A consumer takes and processes them.</p></li>
+      <li><p>The producer waits while the queue is full.</p></li>
+      <li><p>The consumer waits while the queue is empty.</p></li>
+      <li><p><code class="inline-java">BlockingQueue</code> handles the locking and signalling for these conditions.</p></li>
+      <li><p><code class="inline-java">put()</code> blocks while the queue is full.</p></li>
+      <li><p><code class="inline-java">take()</code> blocks while the queue is empty.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void produce(BlockingQueue&lt;String&gt; jobs) {
+    try {
+        jobs.put("report.csv");
+    } catch (InterruptedException exception) {
+        Thread.currentThread().interrupt();
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="blocking-queue-run">
+    <h2>Running the Producer and Consumer</h2>
+
+    <ul>
+      <li><p>The producer and consumer share one queue.</p></li>
+      <li><p><code class="inline-java">take()</code> waits until a job is available.</p></li>
+      <li><p>Both <code class="inline-java">take()</code> and <code class="inline-java">join()</code> can be interrupted.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void handoff() throws InterruptedException {
+    BlockingQueue&lt;String&gt; jobs = new ArrayBlockingQueue&lt;&gt;(10);
+    Thread producer = new Thread(() -> produce(jobs), "Thread A");
+    producer.start();
+    String job = jobs.take();
+    System.out.println("Processing " + job);
+    producer.join();
+}</code></pre>
+
+    <ul>
+      <li><p>Example: <code>coordination/BlockingQueueDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+</section>
+
+
+<!-- =========================================================
+     TASK EXECUTION AND ASYNCHRONOUS RESULTS
+     ========================================================= -->
+
+<section id="executors">
+
+  <section class="title-slide slide level1">
+    <h1>Task Execution and Asynchronous Results</h1>
+  </section>
+
+
+  <section class="frame" id="executor-concept">
+    <h2>ExecutorService and Worker Threads</h2>
+
+    <img src="../_static/images/cop4027/concurrency/05_executor_thread_pool.png"
+         alt="Tasks are submitted to a queue. Tasks C, D, and E wait while Thread A runs task A and Thread B runs task B."
+         style="display:block; width:96%; max-height:235px; margin:10px auto; object-fit:contain;" />
+
+    <ul>
+      <li><p><strong>Thread pool:</strong> managed workers that reuse threads for successive tasks.</p></li>
+      <li><p><code class="inline-java">ExecutorService</code> assigns submitted tasks to workers.</p></li>
+      <li><p>A fixed pool limits the number of active workers.</p></li>
+      <li><p>Additional tasks wait in the executor's queue.</p></li>
+    </ul>
+  </section>
+
+
+
+
+  <section class="frame" id="runnable-callable">
+  <h2>Task Results: Runnable and Callable</h2>
+
+  <ul>
+    <li><p><code class="inline-java">Runnable.run()</code> performs work but returns no result.</p></li>
+
+    <li>
+      <p><code class="inline-java">Callable&lt;T&gt;.call()</code> performs work and returns a value of type <code class="inline-java">T</code>.</p>
+      <ul>
+        <li><p><code class="inline-java">call()</code> may declare checked exceptions. <code class="inline-java">run()</code> cannot.</p></li>
+      </ul>
+    </li>
+  </ul>
+
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Runnable message = () -> System.out.println("Done");
+Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
+</section>
+
+
+  <section class="frame" id="executor-results">
+  <h2>Future: A Result That May Arrive Later</h2>
+
+  <ul>
+    <li><p><code class="inline-java">Future&lt;T&gt;</code> represents a result that may arrive later.</p></li>
+    <li><p><code class="inline-java">submit()</code> returns a <code class="inline-java">Future</code>.</p></li>
+    <li><p><code class="inline-java">get()</code> blocks the calling thread if the result is not ready.</p></li>
+    <li><p>Submit independent tasks before waiting for their values.</p></li>
+    <li><p>Try-with-resources closes the executor, waiting for its tasks to finish.</p></li>
+  </ul>
+
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void totalResults()
+        throws InterruptedException, ExecutionException {
+    try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
+        Future&lt;Integer&gt; first = pool.submit(() -> 6 * 7);
+        Future&lt;Integer&gt; second = pool.submit(() -> 5 * 5);
+        int total = first.get() + second.get();
+        System.out.println(total); // 67
+    }
+}</code></pre>
+
+  <ul>
+    <li><p>Example: <code>executors/ExecutorFutureDemo.java</code></p></li>
+  </ul>
+</section>
+
+
+  <section class="frame" id="executor-limits">
+    <h2>Executor Resource Limits</h2>
+
+    <ul>
+      <li><p>A fixed thread pool limits active workers.</p></li>
+      <li><p><code class="inline-java">newFixedThreadPool()</code> uses an unbounded task queue.</p></li>
+      <li><p>Pending work can exhaust memory if submissions outpace processing.</p></li>
+      <li><p>A bounded queue limits pending work.</p></li>
+      <li><p>A full queue requires a rejection or backpressure policy.</p></li>
+      <li><p>The component that owns the executor must close it when finished.</p></li>
+      <li><p><code class="inline-java">close()</code> rejects new submissions.</p></li>
+      <li><p><code class="inline-java">close()</code> waits for submitted tasks to finish.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="future-outcomes">
+    <h2>What Can Happen to a Future?</h2>
+
+    <ul>
+      <li><p><strong>Success:</strong> <code class="inline-java">get()</code> returns the result.</p></li>
+      <li><p><strong>Task failure:</strong> <code class="inline-java">ExecutionException</code> wraps the task's exception.</p></li>
+      <li><p><code class="inline-java">getCause()</code> retrieves the original exception.</p></li>
+      <li><p><strong>Interrupted caller:</strong> <code class="inline-java">InterruptedException</code> concerns the waiting thread.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void printResult(Future&lt;Integer&gt; future)
+        throws InterruptedException {
+    try {
+        System.out.println(future.get());
+    } catch (ExecutionException exception) {
+        System.out.println("Task failed: " + exception.getCause());
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="future-timeout">
+    <h2>Future Timeouts and Cancellation</h2>
+
+    <ul>
+      <li><p>A timed <code class="inline-java">get()</code> can throw <code class="inline-java">TimeoutException</code>.</p></li>
+      <li><p>A timeout ends this wait. It does not stop the task.</p></li>
+      <li><p><code class="inline-java">cancel(true)</code> requests cancellation.</p></li>
+      <li><p>Cancellation may interrupt the worker.</p></li>
+      <li><p>The task must cooperate with cancellation.</p></li>
+      <li><p>After successful cancellation, <code class="inline-java">get()</code> throws <code class="inline-java">CancellationException</code>.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void printWithinDeadline(Future&lt;Integer&gt; future)
+        throws InterruptedException, ExecutionException {
+    try {
+        System.out.println(future.get(100, TimeUnit.MILLISECONDS));
+    } catch (TimeoutException exception) {
+        future.cancel(true);
+        System.out.println("Task took too long");
+    }
+}</code></pre>
+
+    <ul>
+      <li><p>Example: <code>executors/FutureTimeoutDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="completable-future">
+    <h2>Results and Stages with CompletableFuture</h2>
+
+    <ul>
+      <li><p><code class="inline-java">Future.get()</code> retrieves a result.</p></li>
+      <li><p><code class="inline-java">CompletableFuture</code> can attach the next computation.</p></li>
+      <li><p>A <strong>stage</strong> is one step in that computation.</p></li>
+      <li><p><code class="inline-java">supplyAsync()</code> submits work that produces a value to the given executor.</p></li>
+      <li><p><code class="inline-java">CompletableFuture.join()</code> returns the stage result.</p></li>
+      <li><p><code class="inline-java">join()</code> blocks while the result is unavailable.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
+    CompletableFuture&lt;String&gt; message = CompletableFuture
+            .supplyAsync(() -> "Report ready", pool);
+
+    System.out.println(message.join());
+}</code></pre>
+  </section>
+
+
+<section class="frame" id="future-pipeline">
+  <h2>Dependent Work: One Result Feeds the Next</h2>
+
+  <ul>
+    <li><p>Some work cannot start until an earlier result is ready.</p></li>
+    <li><p><code class="inline-java">thenApply()</code> transforms a successful result.</p></li>
+    <li><p>The transformation runs after its input becomes ready.</p></li>
+  </ul>
+
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
+    CompletableFuture&lt;Integer&gt; length = CompletableFuture
+            .supplyAsync(() -> "Concurrency", pool)
+            .thenApply(String::length);
+
+    System.out.println(length.join()); // 11
+}</code></pre>
+</section>
+
+
+<section class="frame" id="future-combine">
+  <h2>Independent Work: Start Both, Combine Later</h2>
+
+  <ul>
+    <li><p>Submit independent tasks before waiting for either result.</p></li>
+    <li><p><code class="inline-java">thenCombine()</code> waits for two successful results.</p></li>
+    <li><p>The combining function receives both results.</p></li>
+  </ul>
+
+  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
+    CompletableFuture&lt;String&gt; user = CompletableFuture
+            .supplyAsync(() -> "Alice", pool);
+    CompletableFuture&lt;Integer&gt; orders = CompletableFuture
+            .supplyAsync(() -> 3, pool);
+
+    CompletableFuture&lt;String&gt; summary = user.thenCombine(orders,
+            (name, count) -> name + " has " + count + " orders");
+    System.out.println(summary.join()); // Alice has 3 orders
+}</code></pre>
+
+  <ul>
+    <li><p>Example: <code>executors/CompletableFutureDemo.java</code></p></li>
+  </ul>
+</section>
+
+
+<section class="frame" id="pipeline-failure">
+  <h2>Stage Failure and Cancellation</h2>
+
+  <ul>
+    <li><p>If an earlier stage fails, its normal transformation steps are skipped.</p></li>
+    <li><p><code class="inline-java">join()</code> reports failure with <code class="inline-java">CompletionException</code>.</p></li>
+    <li><p><code class="inline-java">get()</code> reports failure with <code class="inline-java">ExecutionException</code>.</p></li>
+    <li><p><code class="inline-java">CompletableFuture.cancel(true)</code> marks the result as cancelled.</p></li>
+    <li><p>It does not interrupt the underlying computation.</p></li>
+  </ul>
+</section>
+
+
+  <section class="frame" id="javafx-connection">
+    <h2>JavaFX: Keep Slow Work Off the UI Thread</h2>
+
+    <ul>
+      <li><p>A file can load in the background while the interface stays responsive.</p></li>
+      <li><p>JavaFX UI updates run on the <strong>JavaFX Application Thread</strong>.</p></li>
+      <li><p>Submit slow work to an executor.</p></li>
+      <li><p>Do not block the UI thread with <code class="inline-java">get()</code> or <code class="inline-java">join()</code>.</p></li>
+      <li><p>Use <code class="inline-java">Platform.runLater()</code> for the UI update.</p></li>
+    </ul>
+  </section>
+</section>
+
+
+<!-- =========================================================
+     VIRTUAL THREADS
+     ========================================================= -->
+
+<section id="modern-concurrency">
+
+  <section class="title-slide slide level1">
+    <h1>Virtual Threads</h1>
+  </section>
+
+
+  <section class="frame" id="virtual-thread-concept">
+    <h2>Why Virtual Threads?</h2>
+
+    <ul>
+      <li><p>A <strong>platform thread</strong> is tied to an OS thread.</p></li>
+
+      <li><p>A <strong>virtual thread</strong> is a lightweight thread managed by the JVM.</p></li>
+
+      <li><p>When a virtual thread waits, its platform thread can run other work.</p></li>
+
+      <li><p>This makes virtual threads useful when many tasks spend time waiting on I/O.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="virtual-thread-example">
+    <h2>One Virtual Thread per Task</h2>
+
+    <ul>
+      <li><p>Each submitted task receives a virtual thread.</p></li>
+      <li><p>Tasks can use ordinary blocking code.</p></li>
+      <li><p><code class="inline-java">get()</code> waits when we need the result.</p></li>
+    </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void runVirtualTask()
+        throws InterruptedException, ExecutionException {
+    try (ExecutorService executor =
+            Executors.newVirtualThreadPerTaskExecutor()) {
+        Future&lt;String&gt; report = executor.submit(() -> {
+            Thread.sleep(100);  // simulate waiting for I/O
+            return "Report ready";
+        });
+        System.out.println(report.get());
+    }
+}</code></pre>
+  </section>
+
+
+  <section class="frame" id="virtual-thread-limits">
+    <h2>What Virtual Threads Do Not Solve</h2>
+
+    <ul>
+      <li><p>Shared mutable state still needs synchronization.</p></li>
+
+      <li><p>Virtual threads do not speed up CPU-heavy work.</p></li>
+
+      <li><p>Scarce resources still need limits, such as database connections.</p></li>
+
+      <li><p>Blocking inside <code class="inline-java">synchronized</code> can reduce Java 21 scalability.</p></li>
+    </ul>
+
+    <ul>
+      <li><p>Example: <code>executors/VirtualThreadDemo.java</code></p></li>
+    </ul>
+  </section>
+
+
+</section>
+
+
+<!-- =========================================================
+     SUMMARY
+     ========================================================= -->
+
+<section id="closing">
+
+  <section class="title-slide slide level1">
+    <h1>Summary</h1>
+  </section>
+
+
+  <section class="frame" id="choose-tools">
+    <h2>Choose a Tool for the Job</h2>
+
+    <ul>
+      <li><p>Simple shared state: <code class="inline-java">synchronized</code>.</p></li>
+      <li><p>Waiting on an object: <code class="inline-java">wait()</code> and <code class="inline-java">notifyAll()</code> under <code class="inline-java">synchronized</code>.</p></li>
+      <li><p>One shared counter: <code class="inline-java">AtomicInteger</code>.</p></li>
+      <li><p>Extra lock control and separate wait sets: <code class="inline-java">ReentrantLock</code> and <code class="inline-java">Condition</code>.</p></li>
+      <li><p>Producer-consumer handoff: <code class="inline-java">BlockingQueue</code>.</p></li>
+      <li><p>Task execution and results: <code class="inline-java">ExecutorService</code> and <code class="inline-java">Future</code>.</p></li>
+      <li><p>Dependent result stages: <code class="inline-java">CompletableFuture</code>.</p></li>
+      <li><p>Many blocking tasks: virtual threads.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="takeaways">
+    <h2>Key Takeaways</h2>
+
+    <ul>
+      <li><p>A task describes work. A thread executes work.</p></li>
+      <li><p><code class="inline-java">start()</code> starts a new thread. Calling <code class="inline-java">run()</code> directly does not.</p></li>
+      <li><p>Shared mutable state may require both atomicity and visibility.</p></li>
+      <li><p>Mutual exclusion prevents conflicting critical sections from overlapping.</p></li>
+      <li><p>Correctness requires both safety and liveness.</p></li>
+      <li><p><code class="inline-java">wait()</code> and <code class="inline-java">await()</code> reacquire their lock before returning. Recheck shared state in a <code class="inline-java">while</code> loop.</p></li>
+      <li><p>Completion, failure, interruption, timeout, and cancellation are part of task design.</p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="references-basics">
+    <h2>Java 21 References: Basics</h2>
+
+    <ul>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.html">Thread API</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.State.html">Thread states</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html">Object monitor methods: wait, notify, and notifyAll</a></p></li>
+      <li><p><a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html">Java Language Specification: Threads and Locks</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/atomic/AtomicInteger.html">AtomicInteger API</a></p></li>
+    </ul>
+  </section>
+
+
+  <section class="frame" id="references-advanced">
+    <h2>Java 21 References: Concurrency Utilities</h2>
+
+    <ul>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ExecutorService.html">ExecutorService API</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Executors.html">Executors factory methods</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/Condition.html">Condition API</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/ReentrantLock.html">ReentrantLock API</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/BlockingQueue.html">BlockingQueue API</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html">ConcurrentHashMap API</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletableFuture.html">CompletableFuture API</a></p></li>
+      <li><p><a href="https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html">Virtual Threads Guide</a></p></li>
+    </ul>
+  </section>
+
+</section>
+
+
+
+
+</div>
+</div>
+
+
+<!-- =========================================================
+     REVEAL.JS
+     ========================================================= -->
+
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+
+<script>
+  var revealjsConfig = new Object();
+
+  Object.assign(revealjsConfig, {
+    "disableLayout": true,
+    "controls": true,
+    "progress": true,
+    "hash": true,
+    "center": true,
+    "transition": "slide",
+    "slideNumber": true,
+    "scrollActivationWidth": null,
+    "mouseWheel": false,
+    "width": 800,
+    "height": 540
+  });
+
+  revealjsConfig.plugins = [
+    RevealNotes,
+    RevealHighlight,
+    RevealMath,
+  ];
+
+  Reveal.initialize(revealjsConfig);
+</script>
+
+</body>
+</html>
