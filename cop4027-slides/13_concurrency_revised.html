@@ -139,12 +139,22 @@
     <h2>CPU-Bound and I/O-Bound Work</h2>
 
     <ul>
-      <li><p><strong>CPU-bound work</strong> spends most of its time calculating.</p></li>
-      <li><p><strong>I/O-bound work</strong> spends most of its time waiting.</p></li>
-      <li><p>While one task waits for I/O, another can use the CPU.</p></li>
-      <li><p>Parallel CPU work needs independent tasks and available cores.</p></li>
-      <li><p>Thread creation, switching, and coordination add overhead.</p></li>
-      <li><p>More threads do not guarantee faster execution.</p></li>
+      <li><p><strong>CPU-bound work</strong> spends most of its time calculating.</p>
+        <ul>
+          <li><p>Parallel speedup needs independent tasks and available cores.</p></li>
+        </ul>
+      </li>
+      <li><p><strong>I/O-bound work</strong> spends most of its time waiting.</p>
+        <ul>
+          <li><p>Another task can use the CPU during that wait.</p></li>
+        </ul>
+      </li>
+      <li><p><strong>Concurrency has overhead.</strong></p>
+        <ul>
+          <li><p>Thread creation, switching, and coordination consume resources.</p></li>
+          <li><p>More threads do not guarantee faster execution.</p></li>
+        </ul>
+      </li>
     </ul>
   </section>
 
@@ -153,10 +163,17 @@
     <h2>Representing a Task with Runnable</h2>
 
     <ul>
-      <li><p>A <strong>functional interface</strong> has one abstract method.</p></li>
-      <li><p><code class="inline-java">Runnable</code> declares <code class="inline-java">run()</code>.</p></li>
-      <li><p>A <strong>lambda</strong> provides the method implementation.</p></li>
-      <li><p>A named class is useful when a task needs reuse or extra structure.</p></li>
+      <li><p>A <strong>functional interface</strong> has one abstract method.</p>
+        <ul>
+          <li><p><code class="inline-java">Runnable</code> declares <code class="inline-java">run()</code>.</p></li>
+        </ul>
+      </li>
+      <li><p>A task can provide the <code class="inline-java">Runnable</code> implementation in two forms.</p>
+        <ul>
+          <li><p>A <strong>lambda</strong> provides a compact implementation.</p></li>
+          <li><p>A named class supports reuse or extra structure.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class GreetingTask implements Runnable {
@@ -288,13 +305,22 @@ worker.start(); // Thread A</code></pre>
     <h2>Blocking and Non-Blocking Calls</h2>
 
     <ul>
-      <li><p>A <strong>blocking call</strong> makes the calling thread wait.</p></li>
-      <li><p><code class="inline-java">worker.join()</code> waits for completion.</p></li>
-      <li><p><code class="inline-java">Thread.sleep(100)</code> waits for time to pass.</p></li>
-      <li><p>A <strong>non-blocking call</strong> lets the caller continue.</p></li>
-      <li><p><code class="inline-java">worker.start()</code> does not wait for the worker to finish.</p></li>
-      <li><p><strong>Asynchronous work</strong> proceeds separately from the caller.</p></li>
-      <li><p>Asynchronous work can still make blocking calls.</p></li>
+      <li><p>A <strong>blocking call</strong> makes the calling thread wait.</p>
+        <ul>
+          <li><p><code class="inline-java">worker.join()</code> waits for completion.</p></li>
+          <li><p><code class="inline-java">Thread.sleep(100)</code> waits for time to pass.</p></li>
+        </ul>
+      </li>
+      <li><p>A <strong>non-blocking call</strong> lets the caller continue.</p>
+        <ul>
+          <li><p><code class="inline-java">worker.start()</code> returns before the worker finishes.</p></li>
+        </ul>
+      </li>
+      <li><p><strong>Asynchronous work</strong> proceeds separately from the caller.</p>
+        <ul>
+          <li><p>It can still make blocking calls.</p></li>
+        </ul>
+      </li>
     </ul>
   </section>
 
@@ -320,9 +346,12 @@ worker.start(); // Thread A</code></pre>
     <h2>Interruption During a Wait</h2>
 
     <ul>
-      <li><p><strong>Interrupt status</strong> records an interruption request.</p></li>
-      <li><p><code class="inline-java">sleep()</code> responds to interruption by throwing <code class="inline-java">InterruptedException</code> and clearing that status.</p></li>
-      <li><p>Restore the status when higher-level code should observe the interruption.</p></li>
+      <li><p><strong>Interrupt status</strong> records an interruption request.</p>
+        <ul>
+          <li><p><code class="inline-java">sleep()</code> throws <code class="inline-java">InterruptedException</code> and clears the status.</p></li>
+          <li><p>Restore it when higher-level code should observe the request.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Runnable task = () -> {
@@ -402,9 +431,12 @@ worker.interrupt();</code></pre>
     <h2>Shared Object References</h2>
 
     <ul>
-      <li><p><strong>Shared mutable state</strong> can be changed by multiple threads.</p></li>
-      <li><p>Two threads can reference the same object.</p></li>
-      <li><p>A local reference may still point to shared state.</p></li>
+      <li><p><strong>Shared mutable state</strong> can be changed by multiple threads.</p>
+        <ul>
+          <li><p>Two threads can reference the same object.</p></li>
+          <li><p>A local reference may still point to that shared object.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Counter {
@@ -422,8 +454,12 @@ worker.interrupt();</code></pre>
 
     <ul>
       <li><p>An <strong>atomic operation</strong> behaves as one indivisible action.</p></li>
-      <li><p><code>value++</code> performs a read, an addition, and a write.</p></li>
-      <li><p>Another thread can run between those steps.</p></li>
+      <li><p><code>value++</code> is not atomic.</p>
+        <ul>
+          <li><p>It performs a read, an addition, and a write.</p></li>
+          <li><p>Another thread can run between those steps.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Counter counter = new Counter();
@@ -455,11 +491,17 @@ second.start();</code></pre>
     <h2>Mutual Exclusion Protects a Critical Section</h2>
 
     <ul>
-      <li><p>A <strong>critical section</strong> accesses shared state.</p></li>
-      <li><p><strong>Mutual exclusion</strong> allows one thread at a time.</p></li>
+      <li><p>A <strong>critical section</strong> accesses shared state.</p>
+        <ul>
+          <li><p>Protect the complete read-change-write sequence.</p></li>
+        </ul>
+      </li>
+      <li><p><strong>Mutual exclusion</strong> allows one thread at a time.</p>
+        <ul>
+          <li><p>Every conflicting access must use the same lock.</p></li>
+        </ul>
+      </li>
       <li><p>Java objects have a <strong>monitor</strong> used by <code class="inline-java">synchronized</code>.</p></li>
-      <li><p>Lock the complete read-change-write sequence.</p></li>
-      <li><p>Use the same lock for every conflicting access.</p></li>
     </ul>
   </section>
 
@@ -532,11 +574,17 @@ second.start();</code></pre>
     <h2>Compound Operations and Invariants</h2>
 
     <ul>
-      <li><p>A critical section can protect several steps as one operation.</p></li>
-      <li><p>The balance check and subtraction form a <strong>compound operation</strong>.</p></li>
-      <li><p>Two <code>80</code> withdrawals cannot succeed from a balance of <code>100</code>.</p></li>
-      <li><p>An <strong>invariant</strong> is a rule every operation must preserve.</p></li>
-      <li><p>For positive withdrawals, the balance stays nonnegative.</p></li>
+      <li><p>A <strong>compound operation</strong> combines several steps into one critical section.</p>
+        <ul>
+          <li><p>The balance check and subtraction must stay together.</p></li>
+          <li><p>Two <code>80</code> withdrawals cannot both succeed from <code>100</code>.</p></li>
+        </ul>
+      </li>
+      <li><p>An <strong>invariant</strong> is a rule every operation must preserve.</p>
+        <ul>
+          <li><p>For positive withdrawals, the balance stays nonnegative.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class Account {
@@ -730,11 +778,16 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
 
     <ul>
       <li><p>A withdrawal can wait until enough funds are available.</p></li>
-      <li><p><strong>Waiting for a lock:</strong> another thread owns the account's monitor.</p></li>
-      <li><p><strong>Waiting for state:</strong> the balance is too low.</p></li>
-      <li><p>Release the monitor while waiting so another thread can deposit.</p>
+      <li><p>Two different conditions can make the thread wait.</p>
         <ul>
-          <li><p><code class="inline-java">Thread.sleep(100)</code> keeps any locks the current thread holds.</p></li>
+          <li><p><strong>Lock unavailable:</strong> another thread owns the account's monitor.</p></li>
+          <li><p><strong>State unavailable:</strong> the balance is too low.</p></li>
+        </ul>
+      </li>
+      <li><p>Release the monitor while waiting for state.</p>
+        <ul>
+          <li><p>This allows another thread to deposit.</p></li>
+          <li><p><code class="inline-java">Thread.sleep(100)</code> would keep the monitor.</p></li>
         </ul>
       </li>
     </ul>
@@ -746,8 +799,12 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
 
     <ul>
       <li><p>A <code class="inline-java">synchronized</code> method owns the account's monitor.</p></li>
-      <li><p><code class="inline-java">wait()</code> releases the monitor while waiting.</p></li>
-      <li><p><code class="inline-java">wait()</code> reacquires the monitor before returning.</p></li>
+      <li><p><code class="inline-java">wait()</code> changes monitor ownership.</p>
+        <ul>
+          <li><p>It releases the monitor while waiting.</p></li>
+          <li><p>It reacquires the monitor before returning.</p></li>
+        </ul>
+      </li>
       <li><p>Recheck the balance in <code class="inline-java">while</code> after every wakeup.</p>
         <ul>
           <li><p>Another withdrawal may use the funds first.</p></li>
@@ -773,13 +830,18 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
     <h2>Deposits and Monitor Notification</h2>
 
     <ul>
-      <li><p><code class="inline-java">notifyAll()</code> wakes all threads waiting on that account.</p>
+      <li><p>Notification wakes threads waiting on that account.</p>
         <ul>
+          <li><p><code class="inline-java">notifyAll()</code> wakes all waiters.</p></li>
           <li><p><code class="inline-java">notify()</code> wakes one waiter instead.</p></li>
         </ul>
       </li>
-      <li><p>Notification does not release the monitor.</p></li>
-      <li><p>Each awakened thread must reacquire the monitor and recheck the balance.</p></li>
+      <li><p>Notification does not transfer monitor ownership.</p>
+        <ul>
+          <li><p>The notifying thread keeps the monitor until it exits.</p></li>
+          <li><p>Awakened threads reacquire it and recheck the balance.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public synchronized void deposit(int amount) {
@@ -824,10 +886,13 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
     <h2>Timed and Interruptible Lock Acquisition</h2>
 
     <ul>
-      <li><p><code class="inline-java">tryLock()</code> returns immediately: <code class="inline-java">true</code> if acquired, otherwise <code class="inline-java">false</code>.</p></li>
-      <li><p>Timed <code class="inline-java">tryLock()</code> waits only for the specified duration.</p></li>
-      <li><p>Interruption can end the timed wait.</p></li>
-      <li><p><code class="inline-java">lockInterruptibly()</code> waits for ownership but allows interruption to end the wait.</p></li>
+      <li><p><code class="inline-java">tryLock()</code> supports bounded acquisition attempts.</p>
+        <ul>
+          <li><p>The basic form returns immediately with success or failure.</p></li>
+          <li><p>The timed form waits for a limit and can be interrupted.</p></li>
+        </ul>
+      </li>
+      <li><p><code class="inline-java">lockInterruptibly()</code> waits for ownership but can be interrupted.</p></li>
       <li><p>Unlock only after successful acquisition.</p></li>
     </ul>
 
@@ -853,12 +918,19 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
     <h2>Waiting for State to Change with Condition</h2>
 
     <ul>
-      <li><p>A <code class="inline-java">Condition</code> belongs to a specific lock.</p></li>
-      <li><p>The condition holds threads waiting for sufficient funds.</p></li>
-      <li><p>A withdrawal can proceed only when <code>balance &gt;= amount</code>.</p></li>
-      <li><p><code class="inline-java">await()</code> releases the lock while waiting.</p></li>
-      <li><p><code class="inline-java">await()</code> reacquires the lock before returning.</p></li>
-      <li><p>Use <code class="inline-java">while</code> to recheck the balance after every wakeup.</p></li>
+      <li><p>A <code class="inline-java">Condition</code> belongs to a specific lock.</p>
+        <ul>
+          <li><p>It groups threads waiting for the same state change.</p></li>
+          <li><p>Here, they wait for sufficient funds.</p></li>
+        </ul>
+      </li>
+      <li><p><code class="inline-java">await()</code> changes lock ownership.</p>
+        <ul>
+          <li><p>It releases the lock while waiting.</p></li>
+          <li><p>It reacquires the lock before returning.</p></li>
+        </ul>
+      </li>
+      <li><p>Recheck <code>balance &gt;= amount</code> in a <code class="inline-java">while</code> loop.</p></li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final ReentrantLock lock = new ReentrantLock();
@@ -883,13 +955,16 @@ public void withdraw(int amount) throws InterruptedException {
 
     <ul>
       <li><p>Update the balance and signal under the same lock.</p></li>
-      <li><p><code class="inline-java">signalAll()</code> wakes all waiters on <code>funds</code>.</p>
+      <li><p>Signalling wakes waiters on <code>funds</code>.</p>
         <ul>
-          <li><p><code class="inline-java">signal()</code> wakes one waiter instead.</p></li>
+          <li><p><code class="inline-java">signalAll()</code> wakes all, while <code class="inline-java">signal()</code> wakes one.</p></li>
         </ul>
       </li>
-      <li><p>Signalling does not release the lock.</p></li>
-      <li><p>Waiters reacquire the lock before rechecking the balance.</p></li>
+      <li><p>Signalling does not transfer lock ownership.</p>
+        <ul>
+          <li><p>The caller keeps the lock, and waiters reacquire it before rechecking.</p></li>
+        </ul>
+      </li>
       <li><p>Every method that adds funds must signal.</p></li>
     </ul>
 
@@ -972,12 +1047,19 @@ public void withdraw(int amount) throws InterruptedException {
     <h2>Producer–Consumer Handoff</h2>
 
     <ul>
-      <li><p>A producer creates file-processing jobs. A consumer takes and processes them.</p></li>
-      <li><p>The producer waits while the queue is full.</p></li>
-      <li><p>The consumer waits while the queue is empty.</p></li>
-      <li><p><code class="inline-java">BlockingQueue</code> handles the locking and signalling for these conditions.</p></li>
-      <li><p><code class="inline-java">put()</code> blocks while the queue is full.</p></li>
-      <li><p><code class="inline-java">take()</code> blocks while the queue is empty.</p></li>
+      <li><p><strong>Producer–consumer handoff</strong> separates job creation from processing.</p>
+        <ul>
+          <li><p>The producer creates file-processing jobs.</p></li>
+          <li><p>The consumer takes and processes them.</p></li>
+        </ul>
+      </li>
+      <li><p><code class="inline-java">BlockingQueue</code> coordinates capacity and availability.</p>
+        <ul>
+          <li><p><code class="inline-java">put()</code> blocks while the queue is full.</p></li>
+          <li><p><code class="inline-java">take()</code> blocks while the queue is empty.</p></li>
+          <li><p>The queue handles the required locking and signalling.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void produce(BlockingQueue&lt;String&gt; jobs) {
@@ -1036,10 +1118,17 @@ public void withdraw(int amount) throws InterruptedException {
          style="display:block; width:96%; max-height:235px; margin:10px auto; object-fit:contain;" />
 
     <ul>
-      <li><p><strong>Thread pool:</strong> managed workers that reuse threads for successive tasks.</p></li>
-      <li><p><code class="inline-java">ExecutorService</code> assigns submitted tasks to workers.</p></li>
-      <li><p>A fixed pool limits the number of active workers.</p></li>
-      <li><p>Additional tasks wait in the executor's queue.</p></li>
+      <li><p><code class="inline-java">ExecutorService</code> separates task submission from thread management.</p>
+        <ul>
+          <li><p>It assigns submitted tasks to available workers.</p></li>
+        </ul>
+      </li>
+      <li><p>A <strong>thread pool</strong> manages reusable worker threads.</p>
+        <ul>
+          <li><p>A fixed pool limits active workers.</p></li>
+          <li><p>Additional tasks wait in the executor's queue.</p></li>
+        </ul>
+      </li>
     </ul>
   </section>
 
@@ -1069,10 +1158,13 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
   <h2>Future: A Result That May Arrive Later</h2>
 
   <ul>
-    <li><p><code class="inline-java">Future&lt;T&gt;</code> represents a result that may arrive later.</p></li>
-    <li><p><code class="inline-java">submit()</code> returns a <code class="inline-java">Future</code>.</p></li>
-    <li><p><code class="inline-java">get()</code> blocks the calling thread if the result is not ready.</p></li>
-    <li><p>Submit independent tasks before waiting for their values.</p></li>
+    <li><p><code class="inline-java">Future&lt;T&gt;</code> represents a result that may arrive later.</p>
+      <ul>
+        <li><p><code class="inline-java">submit()</code> returns the <code class="inline-java">Future</code>.</p></li>
+        <li><p><code class="inline-java">get()</code> blocks if the result is not ready.</p></li>
+      </ul>
+    </li>
+    <li><p>Submit independent tasks before waiting for either value.</p></li>
     <li><p>Try-with-resources closes the executor, waiting for its tasks to finish.</p></li>
   </ul>
 
@@ -1096,14 +1188,23 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
     <h2>Executor Resource Limits</h2>
 
     <ul>
-      <li><p>A fixed thread pool limits active workers.</p></li>
-      <li><p><code class="inline-java">newFixedThreadPool()</code> uses an unbounded task queue.</p></li>
-      <li><p>Pending work can exhaust memory if submissions outpace processing.</p></li>
-      <li><p>A bounded queue limits pending work.</p></li>
-      <li><p>A full queue requires a rejection or backpressure policy.</p></li>
-      <li><p>The component that owns the executor must close it when finished.</p></li>
-      <li><p><code class="inline-java">close()</code> rejects new submissions.</p></li>
-      <li><p><code class="inline-java">close()</code> waits for submitted tasks to finish.</p></li>
+      <li><p>A fixed thread pool limits active workers.</p>
+        <ul>
+          <li><p><code class="inline-java">newFixedThreadPool()</code> uses an unbounded task queue.</p></li>
+          <li><p>Pending work can exhaust memory when submissions arrive too quickly.</p></li>
+        </ul>
+      </li>
+      <li><p>A bounded queue limits pending work.</p>
+        <ul>
+          <li><p>A full queue needs a rejection or backpressure policy.</p></li>
+        </ul>
+      </li>
+      <li><p>The executor's owner must close it.</p>
+        <ul>
+          <li><p><code class="inline-java">close()</code> rejects new submissions.</p></li>
+          <li><p>It waits for submitted tasks to finish.</p></li>
+        </ul>
+      </li>
     </ul>
   </section>
 
@@ -1113,8 +1214,11 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
 
     <ul>
       <li><p><strong>Success:</strong> <code class="inline-java">get()</code> returns the result.</p></li>
-      <li><p><strong>Task failure:</strong> <code class="inline-java">ExecutionException</code> wraps the task's exception.</p></li>
-      <li><p><code class="inline-java">getCause()</code> retrieves the original exception.</p></li>
+      <li><p><strong>Task failure:</strong> <code class="inline-java">ExecutionException</code> wraps the task's exception.</p>
+        <ul>
+          <li><p><code class="inline-java">getCause()</code> retrieves the original exception.</p></li>
+        </ul>
+      </li>
       <li><p><strong>Interrupted caller:</strong> <code class="inline-java">InterruptedException</code> concerns the waiting thread.</p></li>
     </ul>
 
@@ -1133,12 +1237,17 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
     <h2>Future Timeouts and Cancellation</h2>
 
     <ul>
-      <li><p>A timed <code class="inline-java">get()</code> can throw <code class="inline-java">TimeoutException</code>.</p></li>
-      <li><p>A timeout ends this wait. It does not stop the task.</p></li>
-      <li><p><code class="inline-java">cancel(true)</code> requests cancellation.</p></li>
-      <li><p>Cancellation may interrupt the worker.</p></li>
-      <li><p>The task must cooperate with cancellation.</p></li>
-      <li><p>After successful cancellation, <code class="inline-java">get()</code> throws <code class="inline-java">CancellationException</code>.</p></li>
+      <li><p>A <strong>timeout</strong> limits how long the caller waits.</p>
+        <ul>
+          <li><p>Timed <code class="inline-java">get()</code> can throw <code class="inline-java">TimeoutException</code> while the task keeps running.</p></li>
+        </ul>
+      </li>
+      <li><p><code class="inline-java">cancel(true)</code> requests cancellation.</p>
+        <ul>
+          <li><p>It may interrupt the worker, but the task must cooperate.</p></li>
+          <li><p>After cancellation, <code class="inline-java">get()</code> throws <code class="inline-java">CancellationException</code>.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void printWithinDeadline(Future&lt;Integer&gt; future)
@@ -1162,11 +1271,17 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
 
     <ul>
       <li><p><code class="inline-java">Future.get()</code> retrieves a result.</p></li>
-      <li><p><code class="inline-java">CompletableFuture</code> can attach the next computation.</p></li>
-      <li><p>A <strong>stage</strong> is one step in that computation.</p></li>
-      <li><p><code class="inline-java">supplyAsync()</code> submits work that produces a value to the given executor.</p></li>
-      <li><p><code class="inline-java">CompletableFuture.join()</code> returns the stage result.</p></li>
-      <li><p><code class="inline-java">join()</code> blocks while the result is unavailable.</p></li>
+      <li><p><code class="inline-java">CompletableFuture</code> connects a result to later computations.</p>
+        <ul>
+          <li><p>A <strong>stage</strong> is one step in the computation.</p></li>
+          <li><p><code class="inline-java">supplyAsync()</code> starts a value-producing stage.</p></li>
+        </ul>
+      </li>
+      <li><p><code class="inline-java">join()</code> returns a stage's result.</p>
+        <ul>
+          <li><p>It blocks while the result is unavailable.</p></li>
+        </ul>
+      </li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
@@ -1182,9 +1297,12 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
   <h2>Dependent Work: One Result Feeds the Next</h2>
 
   <ul>
-    <li><p>Some work cannot start until an earlier result is ready.</p></li>
-    <li><p><code class="inline-java">thenApply()</code> transforms a successful result.</p></li>
-    <li><p>The transformation runs after its input becomes ready.</p></li>
+    <li><p><strong>Dependent work</strong> waits for an earlier result.</p>
+      <ul>
+        <li><p><code class="inline-java">thenApply()</code> transforms a successful result.</p></li>
+        <li><p>The transformation runs after its input becomes ready.</p></li>
+      </ul>
+    </li>
   </ul>
 
   <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
@@ -1201,9 +1319,17 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
   <h2>Independent Work: Start Both, Combine Later</h2>
 
   <ul>
-    <li><p>Submit independent tasks before waiting for either result.</p></li>
-    <li><p><code class="inline-java">thenCombine()</code> waits for two successful results.</p></li>
-    <li><p>The combining function receives both results.</p></li>
+    <li><p><strong>Independent work</strong> can start at the same time.</p>
+      <ul>
+        <li><p>Submit both tasks before waiting for either result.</p></li>
+      </ul>
+    </li>
+    <li><p><code class="inline-java">thenCombine()</code> joins two successful results.</p>
+      <ul>
+        <li><p>It waits until both results are ready.</p></li>
+        <li><p>The combining function receives both values.</p></li>
+      </ul>
+    </li>
   </ul>
 
   <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
@@ -1227,11 +1353,17 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
   <h2>Stage Failure and Cancellation</h2>
 
   <ul>
-    <li><p>If an earlier stage fails, its normal transformation steps are skipped.</p></li>
-    <li><p><code class="inline-java">join()</code> reports failure with <code class="inline-java">CompletionException</code>.</p></li>
-    <li><p><code class="inline-java">get()</code> reports failure with <code class="inline-java">ExecutionException</code>.</p></li>
-    <li><p><code class="inline-java">CompletableFuture.cancel(true)</code> marks the result as cancelled.</p></li>
-    <li><p>It does not interrupt the underlying computation.</p></li>
+    <li><p><strong>Exceptional completion</strong> skips normal transformation stages.</p>
+      <ul>
+        <li><p><code class="inline-java">join()</code> reports <code class="inline-java">CompletionException</code>.</p></li>
+        <li><p><code class="inline-java">get()</code> reports <code class="inline-java">ExecutionException</code>.</p></li>
+      </ul>
+    </li>
+    <li><p><code class="inline-java">CompletableFuture.cancel(true)</code> marks the result as cancelled.</p>
+      <ul>
+        <li><p>It does not interrupt the underlying computation.</p></li>
+      </ul>
+    </li>
   </ul>
 </section>
 
@@ -1240,11 +1372,14 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
     <h2>JavaFX: Keep Slow Work Off the UI Thread</h2>
 
     <ul>
-      <li><p>A file can load in the background while the interface stays responsive.</p></li>
-      <li><p>JavaFX UI updates run on the <strong>JavaFX Application Thread</strong>.</p></li>
-      <li><p>Submit slow work to an executor.</p></li>
-      <li><p>Do not block the UI thread with <code class="inline-java">get()</code> or <code class="inline-java">join()</code>.</p></li>
-      <li><p>Use <code class="inline-java">Platform.runLater()</code> for the UI update.</p></li>
+      <li><p>Keep the <strong>JavaFX Application Thread</strong> responsive.</p>
+        <ul>
+          <li><p>Submit slow work to an executor.</p></li>
+          <li><p>Do not call blocking <code class="inline-java">get()</code> or <code class="inline-java">join()</code> on the UI thread.</p></li>
+          <li><p>Use <code class="inline-java">Platform.runLater()</code> for the UI update.</p></li>
+        </ul>
+      </li>
+      <li><p>Background loading lets the interface remain responsive.</p></li>
     </ul>
   </section>
 </section>
@@ -1267,11 +1402,12 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
     <ul>
       <li><p>A <strong>platform thread</strong> is tied to an OS thread.</p></li>
 
-      <li><p>A <strong>virtual thread</strong> is a lightweight thread managed by the JVM.</p></li>
-
-      <li><p>When a virtual thread waits, its platform thread can run other work.</p></li>
-
-      <li><p>This makes virtual threads useful when many tasks spend time waiting on I/O.</p></li>
+      <li><p>A <strong>virtual thread</strong> is a lightweight JVM-managed thread.</p>
+        <ul>
+          <li><p>When it waits, the platform thread can run other work.</p></li>
+          <li><p>This benefits workloads with many I/O waits.</p></li>
+        </ul>
+      </li>
     </ul>
   </section>
 
@@ -1303,12 +1439,13 @@ Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
     <h2>What Virtual Threads Do Not Solve</h2>
 
     <ul>
-      <li><p>Shared mutable state still needs synchronization.</p></li>
-
-      <li><p>Virtual threads do not speed up CPU-heavy work.</p></li>
-
-      <li><p>Scarce resources still need limits, such as database connections.</p></li>
-
+      <li><p>Virtual threads improve waiting scalability, not every concurrency concern.</p>
+        <ul>
+          <li><p>Shared mutable state still needs synchronization.</p></li>
+          <li><p>CPU-heavy work does not become faster.</p></li>
+          <li><p>Scarce resources still need limits.</p></li>
+        </ul>
+      </li>
       <li><p>Blocking inside <code class="inline-java">synchronized</code> can reduce Java 21 scalability.</p></li>
     </ul>
 
