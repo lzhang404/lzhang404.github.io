@@ -425,7 +425,7 @@
 void levelorder(Node* root) {
     if (root == NULL) return;
     std::queue&lt;Node*&gt; q;
-    q.enqueue(root);
+    q.push(root);
     while (!q.empty()) processFront(q);
 }</code></pre>
         </section>
@@ -434,10 +434,10 @@ void levelorder(Node* root) {
           <h2>Processing the Queue Front</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline"><code class="language-cpp">void processFront(std::queue&lt;Node*&gt;&amp; q) {
     Node* node = q.front();
-    q.dequeue();
+    q.pop();
     visit(node);
-    if (node-&gt;left) q.enqueue(node-&gt;left);
-    if (node-&gt;right) q.enqueue(node-&gt;right);
+    if (node-&gt;left) q.push(node-&gt;left);
+    if (node-&gt;right) q.push(node-&gt;right);
 }</code></pre>
         </section>
 
@@ -447,13 +447,13 @@ void levelorder(Node* root) {
             <div style="flex:1;min-width:0;"><table>
               <thead><tr><th>operation</th><th>queue</th><th>visited</th></tr></thead>
               <tbody>
-                <tr><td>enqueue(37)</td><td>37</td><td></td></tr>
-                <tr><td>dequeue(), visit(37)</td><td></td><td>37</td></tr>
-                <tr><td>enqueue(23), enqueue(45)</td><td>23 45</td><td>37</td></tr>
-                <tr><td>dequeue(), visit(23)</td><td>45</td><td>37 23</td></tr>
-                <tr><td>enqueue(12), enqueue(29)</td><td>45 12 29</td><td>37 23</td></tr>
-                <tr><td>dequeue(), visit(45)</td><td>12 29</td><td>37 23 45</td></tr>
-                <tr><td>enqueue(41), enqueue(56)</td><td>12 29 41 56</td><td>37 23 45</td></tr>
+                <tr><td>push(37)</td><td>37</td><td></td></tr>
+                <tr><td>pop(), visit(37)</td><td></td><td>37</td></tr>
+                <tr><td>push(23), push(45)</td><td>23 45</td><td>37</td></tr>
+                <tr><td>pop(), visit(23)</td><td>45</td><td>37 23</td></tr>
+                <tr><td>push(12), push(29)</td><td>45 12 29</td><td>37 23</td></tr>
+                <tr><td>pop(), visit(45)</td><td>12 29</td><td>37 23 45</td></tr>
+                <tr><td>push(41), push(56)</td><td>12 29 41 56</td><td>37 23 45</td></tr>
               </tbody>
             </table></div>
             <div style="flex:0 0 36%;min-width:0;">
@@ -471,12 +471,12 @@ void levelorder(Node* root) {
             <div style="flex:1;min-width:0;"><table>
               <thead><tr><th>operation</th><th>queue</th><th>visited</th></tr></thead>
               <tbody>
-                <tr><td>dequeue(), visit(12)</td><td>29 41 56</td><td>37 23 45 12</td></tr>
-                <tr><td>enqueue(1)</td><td>29 41 56 1</td><td>37 23 45 12</td></tr>
-                <tr><td>dequeue(), visit(29)</td><td>41 56 1</td><td>37 23 45 12 29</td></tr>
-                <tr><td>dequeue(), visit(41)</td><td>56 1</td><td>37 23 45 12 29 41</td></tr>
-                <tr><td>dequeue(), visit(56)</td><td>1</td><td>37 23 45 12 29 41 56</td></tr>
-                <tr><td>dequeue(), visit(1)</td><td></td><td>37 23 45 12 29 41 56 1</td></tr>
+                <tr><td>pop(), visit(12)</td><td>29 41 56</td><td>37 23 45 12</td></tr>
+                <tr><td>push(1)</td><td>29 41 56 1</td><td>37 23 45 12</td></tr>
+                <tr><td>pop(), visit(29)</td><td>41 56 1</td><td>37 23 45 12 29</td></tr>
+                <tr><td>pop(), visit(41)</td><td>56 1</td><td>37 23 45 12 29 41</td></tr>
+                <tr><td>pop(), visit(56)</td><td>1</td><td>37 23 45 12 29 41 56</td></tr>
+                <tr><td>pop(), visit(1)</td><td></td><td>37 23 45 12 29 41 56 1</td></tr>
               </tbody>
             </table>
             </div>
