@@ -308,6 +308,8 @@
 
         <section class="frame">
           <h2>Tree Traversal Methods</h2>
+          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
+            <div style="flex:1;min-width:0;">
           <ul>
             <li><p><strong>Inorder</strong></p>
               <ol>
@@ -323,6 +325,10 @@
                 <li><p>Traverse the right subtree</p></li>
               </ol>
             </li>
+          </ul>
+            </div>
+            <div style="flex:1;min-width:0;">
+          <ul>
             <li><p><strong>Postorder</strong></p>
               <ol>
                 <li><p>Traverse the left subtree</p></li>
@@ -337,6 +343,8 @@
               </ol>
             </li>
           </ul>
+            </div>
+          </div>
         </section>
 
         <section class="frame">
@@ -417,7 +425,7 @@
 void levelorder(Node* root) {
     if (root == NULL) return;
     std::queue&lt;Node*&gt; q;
-    q.push(root);
+    q.enqueue(root);
     while (!q.empty()) processFront(q);
 }</code></pre>
         </section>
@@ -426,10 +434,10 @@ void levelorder(Node* root) {
           <h2>Processing the Queue Front</h2>
           <pre data-xleftmargin="3pt" data-frame="leftline"><code class="language-cpp">void processFront(std::queue&lt;Node*&gt;&amp; q) {
     Node* node = q.front();
-    q.pop();
+    q.dequeue();
     visit(node);
-    if (node-&gt;left) q.push(node-&gt;left);
-    if (node-&gt;right) q.push(node-&gt;right);
+    if (node-&gt;left) q.enqueue(node-&gt;left);
+    if (node-&gt;right) q.enqueue(node-&gt;right);
 }</code></pre>
         </section>
 
