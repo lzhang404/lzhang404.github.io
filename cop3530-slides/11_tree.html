@@ -421,23 +421,17 @@
 
         <section class="frame">
           <h2>Level Order Traversal Algorithm</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline"><code class="language-cpp">void processFront(std::queue&lt;Node*&gt;&amp; q);
-void levelorder(Node* root) {
+          <pre data-xleftmargin="3pt" data-frame="leftline"><code class="language-cpp">void levelorder(Node* root) {
     if (root == NULL) return;
     std::queue&lt;Node*&gt; q;
     q.push(root);
-    while (!q.empty()) processFront(q);
-}</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>Processing the Queue Front</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline"><code class="language-cpp">void processFront(std::queue&lt;Node*&gt;&amp; q) {
-    Node* node = q.front();
-    q.pop();
-    visit(node);
-    if (node-&gt;left) q.push(node-&gt;left);
-    if (node-&gt;right) q.push(node-&gt;right);
+    while (!q.empty()) {
+        Node* node = q.front();
+        q.pop();
+        visit(node);
+        if (node-&gt;left) q.push(node-&gt;left);
+        if (node-&gt;right) q.push(node-&gt;right);
+    }
 }</code></pre>
         </section>
 
@@ -766,19 +760,14 @@ height(37) = 1 + max(2, 1)  = 3</code></pre>
         </section>
 
         <section class="frame">
-          <h2>Traversal and Balance Summary</h2>
+          <h2>Tree Traversal Summary</h2>
           <ul>
-            <li><p><strong>Inorder</strong>: Produces sorted BST output</p></li>
-            <li><p><strong>Preorder</strong>: Can copy a tree structure</p></li>
-            <li><p><strong>Postorder</strong>: Can free a tree</p></li>
-            <li><p><strong>Level order</strong>: Uses a queue</p></li>
-            <li><p><strong>Self-balancing BSTs</strong>: AVL and red-black trees keep height O(log n)</p></li>
-            <li><p><strong>B-trees</strong></p>
-              <ul>
-                <li><p>Store multiple keys per node</p></li>
-                <li><p>Allow multiple children per node</p></li>
-              </ul>
-            </li>
+            <li><p><strong>Preorder</strong>: Visit root, then left subtree, then right subtree</p></li>
+            <li><p><strong>Inorder</strong>: Visit left subtree, then root, then right subtree</p></li>
+            <li><p><strong>Postorder</strong>: Visit left subtree, then right subtree, then root</p></li>
+            <li><p><strong>Level order</strong>: Use a queue to visit nodes level by level</p></li>
+            <li><p>Inorder traversal of a BST visits values in sorted order</p></li>
+            <li><p>Each traversal visits all n nodes in O(n) time</p></li>
           </ul>
         </section>
       </section>

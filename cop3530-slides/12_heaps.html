@@ -8,22 +8,31 @@
   <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
   <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
   <script src="../_static/design-tabs.js?v=20260918"></script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <style>
-    table { border-collapse: collapse; width: 100%; font-size: 0.82em; margin: 0.4em 0; }
-    table th, table td { border: 1px solid #ccc; padding: 5px 10px; text-align: left; }
-    table th { background: #e8eaf6; font-weight: 600; }
-    table tr:nth-child(even) td { background: #f5f5f5; }
-    .code-compact pre { font-size: 0.63em; }
+    /* Requested styling is limited to the heapsort trace table. */
+    #heapsort-trace table.trace-table { table-layout: fixed; margin: 0.45em 0; }
+    #heapsort-trace table.trace-table col:nth-child(1) { width: 14%; }
+    #heapsort-trace table.trace-table col:nth-child(2) { width: 18%; }
+    #heapsort-trace table.trace-table col:nth-child(n+3) { width: 34%; }
+    #heapsort-trace table.trace-table th,
+    #heapsort-trace table.trace-table td { padding: 0.3em 0.45em; vertical-align: middle; border-bottom: 1px solid #dce3e8; }
+    #heapsort-trace table.trace-table thead th { background: #eaf0f4; color: var(--r-heading-color); border-bottom: 2px solid var(--r-link-color); font-weight: var(--r-heading-font-weight); }
+    #heapsort-trace table.trace-table tbody td:nth-child(-n+2) { font-variant-numeric: tabular-nums; }
+    #heapsort-trace table.trace-table tbody tr:last-child td { border-bottom: 1px solid #dce3e8; }
+    #heapsort-trace table.trace-table code { white-space: pre; color: inherit; background: none; }
+    #heapsort-trace table.trace-table .trace-array { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; font-family: var(--r-code-font); font-variant-numeric: tabular-nums; }
+    #heapsort-trace table.trace-table .trace-cell { display: inline-block; min-width: 1em; padding: 0.08em 0.12em; text-align: center; border: 1px solid #c7d0d8; }
+    #heapsort-trace table.trace-table .trace-active { background: #ffffff; color: var(--r-main-color); }
+    #heapsort-trace table.trace-table .trace-sorted { background: #e2e8f0; color: #475569; }
+    #heapsort-trace table.trace-table .trace-boundary { padding: 0 0.04em; }
   </style>
 </head>
 <body>
   <div class="reveal">
     <div class="slides" role="main">
-
       <!-- Title -->
       <section>
         <section data-background-color="white"
@@ -39,829 +48,417 @@
         </section>
       </section>
 
-      <!-- Overview -->
-      <section>
+<section>
+<section class="frame" id="outline">
+<h2>Outline</h2>
+<ul>
+  <li><p>Heap shape, heap order, and array representation</p></li>
+  <li><p>Insertion, removal, and their costs</p></li>
+  <li><p>Bottom-up heap construction</p></li>
+  <li><p>Heapsort and priority queues</p></li>
+</ul>
 
-        <section class="frame">
-          <h2>Outline</h2>
-          <ul>
-            <li><p><strong>Heap concept</strong>: complete binary tree, heap property, max-heap vs min-heap</p></li>
-            <li><p><strong>Heap operations</strong>: insert with percolate-up, remove with percolate-down</p></li>
-            <li><p><strong>Array representation</strong>: why arrays work, parent and child index formulas</p></li>
-            <li><p><strong>Heapify</strong>: building a heap from an unsorted array in O(n)</p></li>
-            <li><p><strong>Heapsort</strong>: O(n log n) in-place sorting with heaps</p></li>
-            <li><p><strong>Priority queue</strong>: mapping enqueue and dequeue onto heap operations</p></li>
-          </ul>
-        </section>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1" id="heap-concept">
+  <h1>Heap Concept</h1>
+</section>
 
-        <section class="frame">
-          <h2>Learning Goals</h2>
-          <p>After this lecture, you should be able to</p>
-          <ul>
-            <li><p>Define the heap property and distinguish max-heap from min-heap</p></li>
-            <li><p>Trace insert and explain why the repair path moves upward</p></li>
-            <li><p>Trace remove and explain why the repair path moves downward</p></li>
-            <li><p>Map any heap tree to an array using parent and child index formulas</p></li>
-            <li><p>Read and explain the core loops for insert and remove in array form</p></li>
-            <li><p>Trace heapify on an example and explain why it runs in O(n)</p></li>
-            <li><p>Trace heapsort and explain why the result is sorted</p></li>
-            <li><p>Explain how a heap implements a priority queue and which variant to use</p></li>
-          </ul>
-        </section>
+<section class="frame" id="binary-heap">
+<h2>What Is a Binary Heap?</h2>
+<ul>
+  <li><p>A binary heap stores its nodes in a <strong>complete binary tree</strong>.</p>
+    <ul>
+      <li><p>All levels are full except possibly the last, which fills <strong>left to right</strong>.</p></li>
+      <li><p>With N &ge; 1 nodes, the height is &lfloor;log₂ N&rfloor; edges.</p></li>
+    </ul>
+  </li>
+  <li><p>Every parent follows the <strong>heap property</strong>, placing the maximum or minimum at the root.</p></li>
+  <li><p>Heaps support priority queues and heapsort.</p></li>
+</ul>
+<img width="711" src="../_static/images/cop3530/heap/complete_binary_tree.svg" alt="A six-node complete tree beside a six-node tree with a gap on the last level.">
+</section>
 
-      </section>
 
-      <!-- Heap Concept -->
-      <section>
+<section class="frame" id="heap-order">
+<h2>Max-Heaps and Min-Heaps</h2>
+<ul>
+  <li><p>In a max-heap, each parent &ge; its children, so the root holds a <strong>maximum</strong>.</p></li>
+  <li><p>In a min-heap, each parent &le; its children, so the root holds a minimum.</p></li>
+  <li><p>Equal values are allowed in either heap.</p></li>
+  <li><p>Siblings and separate subtrees have no required order.</p></li>
+</ul>
+<img width="1072" src="../_static/images/cop3530/heap/max_min_heaps.svg" alt="Left: max-heap with parent at least each child and maximum 88 at the root. Right: min-heap with parent at most each child and minimum 33 at the root.">
+</section>
 
-        <section class="title-slide slide level1">
-          <h1>Heap Concept</h1>
-        </section>
+</section>
+<section>
+<section class="title-slide slide level1" id="array-representation">
+  <h1>Array Representation</h1>
+</section>
 
-        <section class="frame">
-          <h2>What Is a Heap?</h2>
-          <p>A heap is a tree-based data structure optimized for fast access to the maximum or minimum element</p>
-          <ul>
-            <li><p><strong>Not fully sorted</strong>: only the root is guaranteed to be the max (or min)</p></li>
-            <li><p><strong>Weaker than a sorted structure</strong>: but much cheaper to maintain</p></li>
-            <li><p><strong>Applications</strong>: scheduling, simulation, priority management, heapsort</p></li>
-            <li><p>A heap is always a <strong>complete binary tree</strong> with one additional ordering rule</p></li>
-          </ul>
-        </section>
+<section class="frame" id="array">
+<h2>A Heap in an Array</h2>
+<div class="sd-row">
+<div class="sd-col sd-col-7">
+<ul>
+  <li><p>Store nodes in level order.</p>
+    <ul>
+      <li><p>Top to bottom, then left to right within each level.</p></li>
+    </ul>
+  </li>
 
-        <section class="frame">
-          <h2>Complete Binary Tree</h2>
-          <p>A heap must be a <strong>complete binary tree</strong>: this shape gives heaps their O(log N) guarantee</p>
-          <ul>
-            <li><p>Every level except possibly the last is fully filled</p></li>
-            <li><p>The last level fills from <strong>left to right</strong>, with no gaps</p></li>
-            <li><p>A complete binary tree with N nodes always has height ⌊log₂ N⌋</p></li>
-            <li><p>This bounded height means percolation never takes more than O(log N) steps</p></li>
-            <li><p>The no-gap property allows the entire tree to be stored in a flat array</p></li>
-          </ul>
-        </section>
+  <li><p>No gaps in storage, so index formulas replace pointers.</p></li>
+  <li><p>Root at index 0, last leaf at index N &minus; 1.</p></li>
+</ul>
+<pre data-fontsize="small"><code class="nohighlight">Value: 72 58 63 55 16 44
+Index:  0  1  2  3  4  5</code></pre>
+</div>
+<div class="sd-col sd-col-5">
+<img width="600" src="../_static/images/cop3530/heap/heap_array_black.svg" alt="Black-and-white heap diagram with values 72,58,63,55,16,44 and array indices 0 through 5.">
+</div>
+</div>
+</section>
 
-        <section class="frame">
-          <h2>The Heap Property</h2>
-          <p>The heap property is a local ordering rule between each node and its children</p>
-          <ul>
-            <li><p><strong>Max-heap property</strong>: every node's key &ge; its children's keys</p></li>
-            <li><p><strong>Min-heap property</strong>: every node's key &le; its children's keys</p></li>
-            <li><p>The property must hold at <em>every</em> node, not just the root</p></li>
-            <li><p>It does <em>not</em> impose any ordering between nodes in different subtrees</p></li>
-            <li><p>As a result, the max (or min) is always at the root, accessible in O(1)</p></li>
-          </ul>
-        </section>
+<section class="frame" id="indices">
+<h2>Parent and Child Indices</h2>
+<ul>
+  <li><p>Parent and child positions depend on index i and heap size N.</p>
+    <ul>
+      <li><p>At i = 1, the parent is 0 and the children are 3 and 4.</p></li>
+    </ul>
+  </li>
+</ul>
+<table>
+  <thead><tr><th>Relative</th><th>Index</th><th>When it exists</th></tr></thead>
+  <tbody>
+    <tr><td>Parent</td><td>&lfloor;(i &minus; 1) / 2&rfloor;</td><td>i &gt; 0</td></tr>
+    <tr><td>Left child</td><td>2i + 1</td><td>2i + 1 &lt; N</td></tr>
+    <tr><td>Right child</td><td>2i + 2</td><td>2i + 2 &lt; N</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><p>Leaves start at &lfloor;N/2&rfloor;.</p>
+    <ul>
+      <li><p>For N &ge; 2, the last parent is &lfloor;N/2&rfloor; &minus; 1.</p></li>
+    </ul>
+  </li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1" id="heap-operations">
+  <h1>Heap Operations</h1>
+</section>
 
-        <section class="frame">
-          <h2>Max-Heap</h2>
-          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;"><ul>
-              <li><p>Each node's key &ge; both children's keys</p></li>
-              <li><p>The root always holds the <strong>maximum</strong> key</p></li>
-              <li><p>The ordering holds along any root-to-leaf path</p></li>
-              <li><p>No guarantee between nodes in different subtrees</p></li>
-              <li><p>Used when the largest item has the highest priority</p></li>
-            </ul></div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/maxheap_example.svg"
-                   alt="Max-heap example: 88 at root, children 80 and 55"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
+<section class="frame" id="insert-trace">
+<h2>Insert into a Max-Heap</h2>
+<ul>
+  <li><p>Append at the next leaf to preserve the complete shape.</p></li>
+  <li><p><strong>Percolate up</strong> while child &gt; parent, stopping at the root or when order holds.</p>
+    <ul>
+      <li><p>Only the new node's ancestor path can violate heap order.</p></li>
+    </ul>
+  </li>
+</ul>
+<img width="1400" src="../_static/images/cop3530/heap/insertion_trace.svg" alt="Insert 90: start with 88,80,55,33; append 90; swap with 80; swap with 88; finish with 90,88,55,33,80.">
+</section>
 
-        <section class="frame">
-          <h2>Min-Heap</h2>
-          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;"><ul>
-              <li><p>Each node's key &le; both children's keys</p></li>
-              <li><p>The root always holds the <strong>minimum</strong> key</p></li>
-              <li><p>Mirror image of a max-heap: only the comparison direction changes</p></li>
-              <li><p>Used when the smallest item has the highest priority</p></li>
-              <li><p><strong>Example</strong>: tech support queue: ticket 1 is served before ticket 10; dequeue removes the minimum in O(log N)</p></li>
-            </ul></div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/minheap_example.svg"
-                   alt="Min-heap example: 33 at root"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-      </section>
-
-      <!-- Heap Operations -->
-      <section>
-
-        <section class="title-slide slide level1">
-          <h1>Heap Operations</h1>
-        </section>
-
-        <section class="frame">
-          <h2>Heap Updates: Insert</h2>
-          <div style="display:flex;gap:0.9em;align-items:flex-start;margin-top:0.5em;">
-            <div style="flex:1;min-width:0;">
-              <p>Insert only threatens one upward path.</p>
-              <ul>
-                <li><p>Add the new value at the next open leaf to preserve the complete-tree shape</p></li>
-                <li><p>If the new value is too large, compare only with its parent</p></li>
-                <li><p>Swap upward until the parent is larger or the value reaches the root</p></li>
-                <li><p>At most one swap per level, so insert is O(log N)</p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 38%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/insert_02_added.svg"
-                   alt="New value added at the next open leaf"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heap Updates: Remove</h2>
-          <div style="display:flex;gap:0.9em;align-items:flex-start;margin-top:0.5em;">
-            <div style="flex:1;min-width:0;">
-              <p>Remove only threatens one downward path.</p>
-              <ul>
-                <li><p>Save the root value to return</p></li>
-                <li><p>Move the last value to the root so the tree stays complete</p></li>
-                <li><p>If the replacement root is too small, swap with the larger child</p></li>
-                <li><p>Continue downward until the heap property is restored; cost is O(log N)</p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 38%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/remove_02_replaced.svg"
-                   alt="Last value moved to the root after deletion"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Insert into a Max-Heap</h2>
-          <div style="display:flex;gap:0.8em;align-items:flex-start;margin-top:0.5em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Place the new key at the next open position so the tree stays complete.</p></li>
-                <li><p>If the new key is too large for its parent, the only possible violation is on that upward chain.</p></li>
-                <li><p>Percolate up until the parent is larger or the node reaches the root.</p></li>
-                <li><p>Worst case: one swap per level, so the cost is O(log N).</p></li>
-              </ul>
-            </div>
-            <div class="code-compact" style="flex:0 0 48%;min-width:0;">
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">arr.push_back(x);
-int i = arr.size() - 1;
-
-while (i &gt; 0) {
-  int p = (i - 1) / 2;
-  if (arr[i] &lt;= arr[p]) break;
-  swap(arr[i], arr[p]);
-  i = p;
-}</code></pre>
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Insert Example: Initial Heap</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Current heap: <code>[88, 80, 55, 33]</code></p></li>
-                <li><p>88 is at the root, and the max-heap property holds everywhere</p></li>
-                <li><p>Goal: insert the value <strong>90</strong></p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/insert_01_initial.svg"
-                   alt="Initial max-heap [88, 80, 55, 33]"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Insert Example: Add at Last Position</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Place 90 at the next open position to preserve the complete-tree shape</p></li>
-                <li><p>New heap: <code>[88, 80, 55, 33, 90]</code></p></li>
-                <li><p>Now <code>90 &gt; 80</code>, so the violation is between the new node and its parent</p></li>
-                <li><p>Begin percolating upward</p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/insert_02_added.svg"
-                   alt="90 added at the next open position"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Insert Example: Swap with 80</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Because <code>90 &gt; 80</code>, swap the new value with its parent</p></li>
-                <li><p>New heap: <code>[88, 90, 55, 33, 80]</code></p></li>
-                <li><p>The inserted value is still too large for its new parent because <code>90 &gt; 88</code></p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/insert_03_swap1.svg"
-                   alt="90 swapped upward with 80"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Insert Example: Swap with 88 and Stop</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Swap again because <code>90 &gt; 88</code></p></li>
-                <li><p>Final heap: <code>[90, 88, 55, 33, 80]</code></p></li>
-                <li><p>90 reaches the root, so there is no parent left to compare against</p></li>
-                <li><p>Insert is complete</p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/insert_04_done.svg"
-                   alt="90 reaches the root after insertion"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Remove Max from a Max-Heap</h2>
-          <div style="display:flex;gap:0.8em;align-items:flex-start;margin-top:0.5em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Save the root value to return later.</p></li>
-                <li><p>Move the last array element to index 0 and shrink the heap so the tree remains complete.</p></li>
-                <li><p>The new root may be too small, so compare with both children and swap with the larger child.</p></li>
-                <li><p>Worst case: one downward swap per level, so the cost is O(log N).</p></li>
-              </ul>
-            </div>
-            <div class="code-compact" style="flex:0 0 48%;min-width:0;">
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">int removed = arr[0];
-arr[0] = arr.back();
-arr.pop_back();
-int i = 0;
-
-while (true) {
-  int l = 2*i + 1, r = 2*i + 2;
-  int largest = i;
-  if (l &lt; arr.size() &amp;&amp; arr[l] &gt; arr[largest]) largest = l;
-  if (r &lt; arr.size() &amp;&amp; arr[r] &gt; arr[largest]) largest = r;
-  if (largest == i) break;
-  swap(arr[i], arr[largest]);
-  i = largest;
-}</code></pre>
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Remove Example: Initial Heap</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Current heap: <code>[90, 88, 55, 33, 80]</code></p></li>
-                <li><p>90 is the maximum, so it is the value removed and returned</p></li>
-                <li><p>The last node is 80</p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/remove_01_initial.svg"
-                   alt="Initial heap before removing 90"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Remove Example: Move 80 to the Root</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Move the last value to the root and delete the old last position</p></li>
-                <li><p>New heap: <code>[80, 88, 55, 33]</code></p></li>
-                <li><p>The shape is preserved, but now the root is too small because <code>80 &lt; 88</code></p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/remove_02_replaced.svg"
-                   alt="80 moved to the root after removing 90"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Remove Example: Swap with the Larger Child</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>Compare the children 88 and 55, then choose the larger child 88</p></li>
-                <li><p>Swap 80 downward with 88</p></li>
-                <li><p>New heap: <code>[88, 80, 55, 33]</code></p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/remove_03_done.svg"
-                   alt="80 swapped downward with 88"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Remove Example: Stop and Finish</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>The node 80 now has only one child, 33</p></li>
-                <li><p>Since <code>80 &gt; 33</code>, the heap property already holds</p></li>
-                <li><p>Removal is complete and 88 is the new maximum</p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/remove_03_done.svg"
-                   alt="Final heap after removal"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-      </section>
-
-      <!-- Array Representation -->
-      <section>
-
-        <section class="title-slide slide level1">
-          <h1>Array Representation</h1>
-        </section>
-
-        <section class="frame">
-          <h2>Why Use an Array?</h2>
-          <p>Heaps are stored in flat arrays, not with pointer-based node structs</p>
-          <ul>
-            <li><p><strong>No gaps</strong>: a complete binary tree fills each level left to right, so no index is wasted</p></li>
-            <li><p><strong>No pointer overhead</strong>: no <code>left</code>, <code>right</code>, or <code>parent</code> fields needed</p></li>
-            <li><p><strong>Level-order mapping</strong>: number nodes top to bottom, left to right, starting at index 0</p></li>
-            <li><p><strong>Navigation by arithmetic</strong>: parent and child indices computed from formulas alone</p></li>
-            <li><p>Better cache performance than pointer-based trees</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Level-Order Indexing</h2>
-          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">
-Array: [72 58 63 55 16 44]
-Index: [0  1  2  3  4  5]
-              </code></pre>
-              <ul>
-              <li><p>Root is at index <strong>0</strong></p></li>
-              <li><p>Left child of node <em>i</em>: index <strong>2i + 1</strong></p></li>
-              <li><p>Right child of node <em>i</em>: index <strong>2i + 2</strong></p></li>
-              <li><p>Parent of node <em>i</em>: index <strong>&lfloor;(i &minus; 1) / 2&rfloor;</strong></p></li>
-              <li><p>Leaf nodes occupy indices &lfloor;N/2&rfloor; through N &minus; 1</p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 48%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/heap_array.svg"
-                   alt="Heap [72,58,63,55,16,44] with array indices"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Parent and Child Index Reference</h2>
-          <table>
-            <thead>
-              <tr><th>Node index</th><th>Parent index</th><th>Child indices</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>0 (root)</td><td>N/A</td><td>1, 2</td></tr>
-              <tr><td>1</td><td>0</td><td>3, 4</td></tr>
-              <tr><td>2</td><td>0</td><td>5, 6</td></tr>
-              <tr><td>3</td><td>1</td><td>7, 8</td></tr>
-              <tr><td><em>i</em></td><td>&lfloor;(<em>i</em> &minus; 1) / 2&rfloor;</td><td>2<em>i</em> + 1 &nbsp;and&nbsp; 2<em>i</em> + 2</td></tr>
-            </tbody>
-          </table>
-          <ul>
-            <li><p>These formulas replace all pointer navigation: no <code>node-&gt;left</code> or <code>node-&gt;right</code></p></li>
-            <li><p>Leaf nodes have no children: their child indices would be &ge; N</p></li>
-          </ul>
-        </section>
-
-      </section>
-
-      <!-- Heapify -->
-      <section>
-
-        <section class="title-slide slide level1">
-          <h1>Heapify</h1>
-        </section>
-
-        <section class="frame">
-          <h2>What Is Heapify?</h2>
-          <p>Heapify converts an unsorted array into a valid max-heap in-place</p>
-          <ul>
-            <li><p><strong>Naive approach</strong>: call insert N times: O(N log N) total</p></li>
-            <li><p><strong>Heapify approach</strong>: apply sift-down to every internal node, bottom-up: O(N) total</p></li>
-            <li><p>Leaf nodes (indices &lfloor;N/2&rfloor; through N &minus; 1) are already valid one-node heaps: skip them</p></li>
-            <li><p>Start at the last internal node (index &lfloor;N/2&rfloor; &minus; 1) and work back to the root</p></li>
-            <li><p>After each sift-down call, the subtree rooted at that node becomes a valid heap</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Heapify Example: Input Array</h2>
-          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;"><ul>
-              <li><p>Input: <code>[77 55 92 67 98 24 42]</code>, N = 7</p></li>
-              <li><p>Last internal node: &lfloor;7/2&rfloor; &minus; 1 = <strong>index 2</strong> (node 92)</p></li>
-              <li><p><strong>i = 2</strong>: children are 24 and 42: both smaller, no swap</p></li>
-              <li><p>Move to i = 1</p></li>
-            </ul></div>
-            <div style="flex:0 0 46%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/heapify_01_input.svg"
-                   alt="Input [77,55,92,67,98,24,42] as a tree"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapify Example: Process i = 1</h2>
-          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;"><ul>
-              <li><p><code>[77 55 92 67 98 24 42]</code></p></li>
-              <li><p><strong>i = 1</strong> (node 55): children are 67 (index 3) and 98 (index 4)</p></li>
-              <li><p>Largest child is 98: 98 &gt; 55, swap 55 and 98</p></li>
-               <li><p><code>[77 98 92 67 55 24 42]</code></p></li>
-              <li><p>55 moves to index 4: it is a leaf, sift-down stops</p></li>
-              <li><p>Subtree at index 1 is now a valid heap</p></li>
-              <li><p>Move to i = 0</p></li>
-            </ul></div>
-            <div style="flex:0 0 46%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/heapify_01_input.svg"
-                   alt="Input [77,55,92,67,98,24,42] as a tree"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-              <img src="../_static/images/cop3530/heap/heapify_02_step1.svg"
-                   alt="After i=1: 98 and 55 swapped"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapify Example: Process i = 0</h2>
-          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;"><ul>
-              <li><p><code>[77 98 92 67 55 24 42]</code></p></li>
-              <li><p><strong>i = 0</strong> (node 77): children are 98 (index 1) and 92 (index 2)</p></li>
-              <li><p>Largest child is 98: 98 &gt; 77, swap 77 and 98</p></li>
-              <li><p> <code>[98 77 92 67 55 24 42]</code></p></li>
-              <li><p>77 sinks to index 1; children of index 1 are 67 and 55: both smaller, stop</p></li>
-              <li><p>Final: <code>[98 77 92 67 55 24 42]</code>: valid max-heap</p></li>
-            </ul></div>
-            <div style="flex:0 0 46%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/heapify_02_step1.svg"
-                   alt="After i=1: 98 and 55 swapped"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-              <img src="../_static/images/cop3530/heap/heapify_03_done.svg"
-                   alt="Final heap [98,77,92,67,55,24,42]"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapify Code and Complexity</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">void heapify(int arr[], int n) {
-    for (int i = n / 2 - 1; i >= 0; --i)
-        siftDown(arr, n, i);   // every internal node, bottom-up
-}</code></pre>
-          <ul>
-            <li><p>Complexity is <strong>O(N)</strong>, not O(N log N)</p></li>
-            <li><p>~N/2 leaf nodes do zero work</p></li>
-            <li><p>~N/4 nodes one level up do at most 1 swap each</p></li>
-            <li><p>~N/8 nodes two levels up do at most 2 swaps each</p></li>
-            <li><p>Total sums to a convergent geometric series: O(N)</p></li>
-          </ul>
-        </section>
-
-      </section>
-
-      <!-- Heapsort -->
-      <section>
-
-        <section class="title-slide slide level1">
-          <h1>Heapsort</h1>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort Overview</h2>
-          <p>Heapsort uses the heap to sort an array in-place</p>
-          <ul>
-            <li><p><strong>Phase 1</strong>: heapify the array: largest element rises to root. Cost: O(N)</p></li>
-            <li><p><strong>Phase 2</strong>: repeat N &minus; 1 times: swap root (current max) with last active element, shrink heap by one, sift new root down. Cost: O(N log N)</p></li>
-            <li><p>Each swap permanently places one element in its final sorted position at the back</p></li>
-            <li><p><strong>Total</strong>: O(N log N), in-place, O(1) extra space, not stable</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort: Phase 1: Heapify</h2>
-          <div style="display:flex;gap:0.5em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;"><ul>
-              <li><p>Input: <code>[1, 2, 3, 5, 6, 4]</code></p></li>
-              <li><p>Apply heapify: 6 rises to the root</p></li>
-              <li><p>Result: <code>[6, 5, 4, 1, 2, 3]</code></p></li>
-              <li><p>Ready to begin extractions</p></li>
-            </ul></div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/heapsort_01_initial.svg"
-                   alt="Initial binary tree [1, 2, 3, 5, 6, 4]"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-              <img src="../_static/images/cop3530/heap/heapsort_02_heapified.svg"
-                   alt="After heapify: [6,5,4,1,2,3]"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort: First Extraction</h2>
-          <ul style="margin-top:0.4em;">
-            <li><p>Start from the max-heap <code>[6, 5, 4, 1, 2, 3]</code></p></li>
-            <li><p>Swap <code>arr[0]</code> and <code>arr[5]</code>: 6 moves to its final sorted position</p></li>
-            <li><p>Reduce the active heap size from 6 to 5</p></li>
-            <li><p>Sift 3 down: <code>3 &lt; 5</code>, swap; now 3 is larger than both children 1 and 2, so stop</p></li>
-            <li><p>Active heap after repair: <code>[5, 3, 4, 1, 2]</code></p></li>
-          </ul>
-          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.2em;align-items:start;justify-items:center;margin-top:0.35em;">
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_02_heapified.svg"
-                   alt="After heapify: [6,5,4,1,2,3]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_03_extraction.svg"
-                   alt="After first extraction: 6 sorted, heap [3,5,4,1,2]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_04_siftdown.svg"
-                   alt="After sifting 3 down, active heap [5,3,4,1,2]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort: Second Extraction</h2>
-          <ul style="margin-top:0.4em;">
-            <li>Start from the active heap [5, 3, 4, 1, 2]</li>
-            <li><p>swap(arr[0], arr[4]): 5 goes to its final position; heap size = 4</p></li>
-            <li><p>Sift 2 down: compare children 3 and 4, then swap with the larger child 4</p></li>
-            <li><p>Active heap: <code>[4, 3, 2, 1]</code></p></li>
-          </ul>
-          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.2em;align-items:start;justify-items:center;margin-top:0.35em;">
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_05_initial2.svg"
-                   alt="Current heap [5, 3, 4, 1, 2, 6]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_06_extraction.svg"
-                   alt="After second extraction: [2,3,4,1,5,6]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_07_siftdown.svg"
-                   alt="After sifting 2 down, active heap [4,3,2,1]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort: Third Extraction</h2>
-          <ul style="margin-top:0.4em;">
-            <li>Start from the active heap [4, 3, 2, 1]</li>
-            <li><p>swap(arr[0], arr[3]): 4 goes to its final position; heap size = 3</p></li>
-            <li><p>Sift 1 down: compare children 3 and 2, then swap with the larger child 3</p></li>
-            <li><p>Active heap: <code>[3, 1, 2]</code></p></li>
-            <li><p>This is still a heap, not a sorted array, so we must keep going until only one active element remains</p></li>
-          </ul>
-          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.2em;align-items:start;justify-items:center;margin-top:0.35em;">
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_08_initial.svg"
-                   alt="Current heap [4,3,2,1,5,6]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_09_extraction.svg"
-                   alt="After third extraction: [1,3,2,4,5,6]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-            <div style="width:100%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_10_siftdown.svg"
-                   alt="After sifting 1 down, active heap [3,1,2]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort: Fourth Extraction</h2>
-          <ul style="margin-top:0.4em;">
-            <li><p>Start from the active heap <code>[3, 1, 2]</code></p></li>
-            <li><p>swap(arr[0], arr[2]): 3 goes to its final position; heap size = 2</p></li>
-            <li><p>The remaining heap is <code>[2, 1]</code>; since <code>2 &gt; 1</code>, no sift-down swap is needed</p></li>
-          </ul>
-          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.35em;align-items:start;justify-items:center;margin-top:0.35em;">
-            <div style="width:50%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_11_initial.svg"
-                   alt="Current heap [3,1,2,4,5,6]"
-                   style="display:block; width:100%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-            <div style="width:50%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_12_extraction4.svg"
-                   alt="After fourth extraction, active heap [2,1]"
-                   style="display:block; width:100%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort: Final Extraction</h2>
-          <ul style="margin-top:0.4em;">
-            <li><p>One heap edge remains: <code>[2, 1]</code></p></li>
-            <li><p>swap(arr[0], arr[1]): 2 goes to its final position</p></li>
-            <li><p>Heap size becomes 1, so the algorithm is done</p></li>
-            <li><p>Final sorted array: <code>[1, 2, 3, 4, 5, 6]</code></p></li>
-          </ul>
-          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.35em;align-items:start;justify-items:center;margin-top:0.35em;">
-            <div style="width:50%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_13_last_initial.svg"
-                   alt="Last active heap [2,1,3,4,5,6]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-            <div style="width:50%;overflow:hidden;">
-              <img src="../_static/images/cop3530/heap/heapsort_14_sorted.svg"
-                   alt="Fully sorted [1,2,3,4,5,6]"
-                   style="display:block; width:110%; max-width:none; height:auto; margin:0 auto 0 -5%;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort: Sorted Result</h2>
-          <div style="display:flex;gap:0.6em;align-items:flex-start;margin-top:0.4em;">
-            <div style="flex:1;min-width:0;">
-              <ul>
-                <li><p>All nodes are in sorted position: no active heap remains</p></li>
-                <li><p>Sorted in-place: no extra array needed</p></li>
-                <li><p>Final result: <code>[1, 2, 3, 4, 5, 6]</code></p></li>
-              </ul>
-            </div>
-            <div style="flex:0 0 44%;min-width:0;">
-              <img src="../_static/images/cop3530/heap/heapsort_14_sorted.svg"
-                   alt="Fully sorted [1,2,3,4,5,6]"
-                   style="display:block; margin: 0.5em auto; max-width: 100%; max-height: 100%; height:auto;">
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Heapsort Implementation</h2>
-          <pre data-xleftmargin="3pt" data-frame="leftline" data-fontsize="\small"><code class="language-cpp">void heapSort(int arr[], int n) {
-    // Phase 1: build max-heap in O(N)
-    for (int i = n / 2 - 1; i >= 0; --i)
-        siftDown(arr, n, i);
-
-    // Phase 2: extract elements one by one
-    for (int end = n - 1; end > 0; --end) {
-        swap(arr[0], arr[end]);   // max to its final position
-        siftDown(arr, end, 0);    // heap is now [0..end-1]
+<section class="frame" id="insert-code">
+<h2>Insertion Code</h2>
+<ul>
+  <li><p>The index i follows the inserted value upward until the heap property holds.</p></li>
+</ul>
+<pre data-fontsize="small"><code class="language-cpp">void insertMax(std::vector&lt;int&gt;&amp; heap, int value) {
+    heap.push_back(value);
+    int i = static_cast&lt;int&gt;(heap.size()) - 1;
+    while (i &gt; 0) {
+        int parent = (i - 1) / 2;
+        if (heap[parent] &gt;= heap[i]) break;
+        std::swap(heap[parent], heap[i]);
+        i = parent;
     }
 }</code></pre>
-          <ul>
-            <li><p><code>siftDown(arr, end, 0)</code> passes <code>end</code> as heap size: sorted region at the back is never touched</p></li>
-            <li><p>Worst-case O(N log N): no degenerate cases like quicksort</p></li>
-          </ul>
-        </section>
 
-      </section>
+</section>
 
-      <!-- Priority Queue -->
-      <section>
+<section class="frame" id="remove-trace">
+<h2>Remove the Maximum</h2>
+<ul>
+  <li><p>Save the root, replace it with the last leaf, and remove the last position.</p>
+    <ul>
+      <li><p>Removing the last leaf preserves the complete shape.</p></li>
+    </ul>
+  </li>
+  <li><p><strong>Percolate down</strong> with the larger child until heap order holds.</p></li>
+</ul>
+<img width="1400" src="../_static/images/cop3530/heap/removal_trace.svg" alt="Remove 90 from 90,88,55,33,80: replace the root with 80, remove the last position, swap 80 with 88, and finish with 88,80,55,33.">
+</section>
 
-        <section class="title-slide slide level1">
-          <h1>Priority Queue</h1>
-        </section>
 
-        <section class="frame">
-          <h2>Priority Queue Concept</h2>
-          <p>A priority queue serves items by priority, not by insertion order</p>
-          <ul>
-            <li><p><strong>Enqueue</strong>: add an item with an associated priority value</p></li>
-            <li><p><strong>Dequeue</strong>: remove and return the item with the highest priority</p></li>
-            <li><p>Unlike a regular queue (FIFO), arrival order does not determine service order</p></li>
-            <li><p><strong>Example</strong>: hospital ER serves patients by medical urgency, not arrival time</p></li>
-            <li><p><strong>Example</strong>: OS scheduler always runs the highest-priority process next</p></li>
-          </ul>
-        </section>
+<section class="frame" id="sift-down">
+<h2>Downward Repair Code</h2>
+<ul>
+  <li><p><code>siftDown</code> repairs index i within the first n items.</p>
+    <ul>
+      <li><p>Both child subtrees must already be heaps.</p></li>
+    </ul>
+  </li>
+</ul>
+<pre data-fontsize="small"><code class="language-cpp">void siftDown(std::vector&lt;int&gt;&amp; heap, int n, int i) {
+    while (2 * i + 1 &lt; n) {          // a left child exists
+        int child = 2 * i + 1;
+        if (child + 1 &lt; n &amp;&amp; heap[child + 1] &gt; heap[child])
+            ++child;                 // choose the larger child
+        if (heap[i] &gt;= heap[child]) break;
+        std::swap(heap[i], heap[child]);
+        i = child;
+    }
+}</code></pre>
+<ul>
+  <li><p>For n = 0 or n = 1, the loop performs no child comparison.</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>Priority Queue Operations</h2>
-          <table>
-            <thead>
-              <tr><th>Operation</th><th>Description</th><th>Example queue [42, 61, 98]</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Enqueue</td><td>Insert by priority</td><td>Enqueue(87) &rarr; [42, 61, 87, 98]</td></tr>
-              <tr><td>Dequeue</td><td>Remove and return highest priority</td><td>Dequeue() &rarr; returns 42</td></tr>
-              <tr><td>Peek</td><td>Read highest priority without removing</td><td>Peek() &rarr; returns 42</td></tr>
-              <tr><td>IsEmpty</td><td>True if no items remain</td><td>Returns false</td></tr>
-              <tr><td>GetLength</td><td>Number of items</td><td>Returns 3</td></tr>
-            </tbody>
-          </table>
-        </section>
+<section class="frame" id="remove-code">
+<h2>Removal Code</h2>
+<ul>
+  <li><p>Save the maximum, replace the root, shrink the heap, and repair downward.</p>
+    <ul>
+      <li><p>An empty heap raises an error. A one-item heap becomes empty without repair.</p></li>
+    </ul>
+  </li>
+</ul>
+<pre data-fontsize="small"><code class="language-cpp">int removeMax(std::vector&lt;int&gt;&amp; heap) {
+    if (heap.empty())
+        throw std::out_of_range(&quot;empty heap&quot;);
+    int maximum = heap[0];
+    heap[0] = heap.back();
+    heap.pop_back();
+    siftDown(heap, static_cast&lt;int&gt;(heap.size()), 0);
+    return maximum;
+}</code></pre>
+</section>
 
-        <section class="frame">
-          <h2>Heap as Priority Queue</h2>
-          <p>A heap maps directly onto priority queue operations</p>
-          <table>
-            <thead>
-              <tr><th>Operation</th><th>Heap function</th><th>Time</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Enqueue</td><td>Insert + percolate up</td><td>O(log N)</td></tr>
-              <tr><td>Dequeue</td><td>Remove root + percolate down</td><td>O(log N)</td></tr>
-              <tr><td>Peek</td><td>Read <code>arr[0]</code></td><td>O(1)</td></tr>
-              <tr><td>IsEmpty</td><td>Check heap size == 0</td><td>O(1)</td></tr>
-              <tr><td>GetLength</td><td>Return heap size</td><td>O(1)</td></tr>
-            </tbody>
-          </table>
-        </section>
+<section class="frame" id="operation-costs">
+<h2>Heap Operation Costs</h2>
+<ul>
+  <li><p>Each repair follows one path through a tree of height <strong>O(log N)</strong>.</p></li>
+</ul>
+<table>
+  <thead><tr><th>Operation</th><th>Time</th><th>Reason</th></tr></thead>
+  <tbody>
+    <tr><td>Read maximum</td><td>O(1)</td><td>Read index 0</td></tr>
+    <tr><td>Insert</td><td>O(log N) amortized</td><td>Append and repair upward</td></tr>
+    <tr><td>Remove maximum</td><td>O(log N) worst case</td><td>Replace root and repair downward</td></tr>
+    <tr><td>Search for an arbitrary value</td><td>O(N) worst case</td><td>No BST ordering between subtrees</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><p>A vector insertion may also require more storage.</p>
+    <ul>
+      <li><p>Upward repair takes O(log N) in the worst case.</p></li>
+      <li><p>Reallocation adds O(N) when capacity is exhausted.</p></li>
+    </ul>
+  </li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1" id="heapify">
+  <h1>Heapify</h1>
+</section>
 
-        <section class="frame">
-          <h2>Max-Heap vs Min-Heap for Priority Queues</h2>
-          <p>The choice depends on what "highest priority" means in your application</p>
-          <ul>
-            <li><p><strong>Use a max-heap</strong>: when larger values mean higher priority</p>
-              <ul>
-                <li><p>Job scheduler where higher urgency score runs first</p></li>
-              </ul>
-            </li>
-            <li><p><strong>Use a min-heap</strong>: when smaller values mean higher priority</p>
-              <ul>
-                <li><p>Dijkstra's algorithm always expands the node with the smallest known distance</p></li>
-                <li><p>Tech support queue where lower ticket number is served first</p></li>
-              </ul>
-            </li>
-            <li><p>The data structure is identical: only the comparison direction changes</p></li>
-            <li><p>All runtimes remain O(log N) for enqueue and dequeue regardless of choice</p></li>
-          </ul>
-        </section>
+<section class="frame" id="build-trace">
+<h2>Bottom-Up Heap Construction</h2>
+<ul>
+  <li><p>Leaves are already heaps, so start at the last parent: &lfloor;N/2&rfloor; &minus; 1.</p></li>
+  <li><p>Work toward index 0, repairing each parent above child subtrees that are already heaps.</p></li>
+</ul>
+<img width="1400" src="../_static/images/cop3530/heap/heapify_trace.svg" alt="Build a max-heap from 77,55,92,67,98,24,42: process parents 2,1,0; final array 98,77,92,67,55,24,42.">
 
-      </section>
+</section>
 
-      <!-- Summary -->
-      <section>
+<section class="frame" id="build-code">
+<h2>Heap Construction Code</h2>
+<ul>
+  <li><p><strong>Bottom-up construction</strong>, also called heapify, reuses the same downward repair.</p></li>
+</ul>
+<pre data-fontsize="small"><code class="language-cpp">void buildMaxHeap(std::vector&lt;int&gt;&amp; heap) {
+    int n = static_cast&lt;int&gt;(heap.size());
+    for (int i = n / 2 - 1; i &gt;= 0; --i)
+        siftDown(heap, n, i);
+}</code></pre>
+<ul>
+  <li><p>Process parents from the last parent down to index 0.</p>
+    <ul>
+      <li><p>Leaves need no repair.</p></li>
+      <li><p>Each parent starts with child subtrees that are already heaps.</p></li>
+    </ul>
+  </li>
+  <li><p>Repeated insertion also builds a heap, but takes O(N log N) in the worst case.</p></li>
+</ul>
+</section>
 
-        <section class="title-slide slide level1">
-          <h1>Summary</h1>
-        </section>
+<section class="frame" id="build-analysis">
+<h2>Why Construction Takes O(N)</h2>
+<ul>
+  <li><p>Most nodes are near the leaves and can move only a short distance.</p></li>
+</ul>
+<table>
+  <thead><tr><th>Subtree height</th><th>Approximate node count</th><th>Levels moved per node, at most</th></tr></thead>
+  <tbody>
+    <tr><td>0 (leaves)</td><td>N/2</td><td>0</td></tr>
+    <tr><td>1</td><td>N/4</td><td>1</td></tr>
+    <tr><td>2</td><td>N/8</td><td>2</td></tr>
+    <tr><td>3</td><td>N/16</td><td>3</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><p>Total construction work is <strong>O(N)</strong>.</p>
+    <ul>
+      <li><p>Visiting all parents costs O(N).</p></li>
+      <li><p>Total downward movement is bounded by<br>N(1/4 + 2/8 + 3/16 + &hellip;) = O(N).</p></li>
+      <li><p>The series sums to 1, so the movement bound is proportional to N.</p></li>
+    </ul>
+  </li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1" id="heapsort">
+  <h1>Heapsort</h1>
+</section>
 
-        <section class="frame">
-          <h2>Key Takeaways</h2>
-          <ul>
-            <li><p><strong>Heap</strong>: complete binary tree where each node &ge; (max-heap) or &le; (min-heap) its children; root holds max or min in O(1)</p></li>
-            <li><p><strong>Insert / Remove</strong>: both O(log N); insert repairs upward from the new leaf, while remove repairs downward from the root</p></li>
-            <li><p><strong>Array storage</strong>: parent at &lfloor;(i &minus; 1)/2&rfloor;; children at 2i + 1 and 2i + 2</p></li>
-            <li><p><strong>Heapify</strong>: builds valid heap from any array in O(N), bottom-up sift-down</p></li>
-            <li><p><strong>Heapsort</strong>: heapify + N &minus; 1 root extractions = O(N log N), in-place, not stable</p></li>
-            <li><p><strong>Priority queue</strong>: enqueue = insert, dequeue = remove; use max- or min-heap based on priority convention</p></li>
-          </ul>
-        </section>
+<section class="frame" id="heapsort-concept">
+<h2>Heapsort</h2>
+<ul>
+  <li><p>Heapsort places each maximum at the end of the active range.</p>
+    <ol>
+      <li><p>Build a max-heap in the input array.</p></li>
+      <li><p>Swap the root with the last active item, then shrink the heap.</p></li>
+      <li><p>Repair the root and repeat steps 2&ndash;3 until one active item remains.</p></li>
+    </ol>
+  </li>
+  <li><p>The sorted suffix grows right to left, producing ascending order.</p></li>
+</ul>
+</section>
 
-      </section>
+<section class="frame" id="heapsort-trace">
+<h2>Heapsort Trace</h2>
+<ul>
+  <li><p>Input <code>[1,2,3,5,6,4]</code> becomes the max-heap <code>[6,5,4,1,2,3]</code>.</p></li>
+  <li><p>Swap the root with index <code>end</code>, then repair the remaining heap.</p>
+    <ul>
+      <li><p>For <code>end = 5</code>, fix index 5 and repair indices 0&ndash;4.</p></li>
+    </ul>
+  </li>
+</ul>
+<table class="compact trace-table">
+  <colgroup><col><col><col><col></colgroup>
+  <thead><tr><th scope="col" align="center">Index fixed<br>(<code>end</code>)</th><th scope="col" align="center">Remaining heap<br>indices</th><th scope="col">After root swap</th><th scope="col">After heap repair</th></tr></thead>
+  <tbody>
+    <tr><td align="center">5</td><td align="center">0&ndash;4</td><td><span class="trace-array" role="group" aria-label="Active heap: 3, 5, 4, 1, 2. Sorted suffix: 6."><span class="trace-cell trace-active">3</span><span class="trace-cell trace-active">5</span><span class="trace-cell trace-active">4</span><span class="trace-cell trace-active">1</span><span class="trace-cell trace-active">2</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">6</span></span></td><td><span class="trace-array" role="group" aria-label="Active heap: 5, 3, 4, 1, 2. Sorted suffix: 6."><span class="trace-cell trace-active">5</span><span class="trace-cell trace-active">3</span><span class="trace-cell trace-active">4</span><span class="trace-cell trace-active">1</span><span class="trace-cell trace-active">2</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">6</span></span></td></tr>
+    <tr><td align="center">4</td><td align="center">0&ndash;3</td><td><span class="trace-array" role="group" aria-label="Active heap: 2, 3, 4, 1. Sorted suffix: 5, 6."><span class="trace-cell trace-active">2</span><span class="trace-cell trace-active">3</span><span class="trace-cell trace-active">4</span><span class="trace-cell trace-active">1</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">5</span><span class="trace-cell trace-sorted">6</span></span></td><td><span class="trace-array" role="group" aria-label="Active heap: 4, 3, 2, 1. Sorted suffix: 5, 6."><span class="trace-cell trace-active">4</span><span class="trace-cell trace-active">3</span><span class="trace-cell trace-active">2</span><span class="trace-cell trace-active">1</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">5</span><span class="trace-cell trace-sorted">6</span></span></td></tr>
+    <tr><td align="center">3</td><td align="center">0&ndash;2</td><td><span class="trace-array" role="group" aria-label="Active heap: 1, 3, 2. Sorted suffix: 4, 5, 6."><span class="trace-cell trace-active">1</span><span class="trace-cell trace-active">3</span><span class="trace-cell trace-active">2</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">4</span><span class="trace-cell trace-sorted">5</span><span class="trace-cell trace-sorted">6</span></span></td><td><span class="trace-array" role="group" aria-label="Active heap: 3, 1, 2. Sorted suffix: 4, 5, 6."><span class="trace-cell trace-active">3</span><span class="trace-cell trace-active">1</span><span class="trace-cell trace-active">2</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">4</span><span class="trace-cell trace-sorted">5</span><span class="trace-cell trace-sorted">6</span></span></td></tr>
+    <tr><td align="center">2</td><td align="center">0&ndash;1</td><td><span class="trace-array" role="group" aria-label="Active heap: 2, 1. Sorted suffix: 3, 4, 5, 6."><span class="trace-cell trace-active">2</span><span class="trace-cell trace-active">1</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">3</span><span class="trace-cell trace-sorted">4</span><span class="trace-cell trace-sorted">5</span><span class="trace-cell trace-sorted">6</span></span></td><td><span class="trace-array" role="group" aria-label="Active heap: 2, 1. Sorted suffix: 3, 4, 5, 6."><span class="trace-cell trace-active">2</span><span class="trace-cell trace-active">1</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">3</span><span class="trace-cell trace-sorted">4</span><span class="trace-cell trace-sorted">5</span><span class="trace-cell trace-sorted">6</span></span></td></tr>
+    <tr><td align="center">1</td><td align="center">0</td><td><span class="trace-array" role="group" aria-label="Active heap: 1. Sorted suffix: 2, 3, 4, 5, 6."><span class="trace-cell trace-active">1</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">2</span><span class="trace-cell trace-sorted">3</span><span class="trace-cell trace-sorted">4</span><span class="trace-cell trace-sorted">5</span><span class="trace-cell trace-sorted">6</span></span></td><td><span class="trace-array" role="group" aria-label="Active heap: 1. Sorted suffix: 2, 3, 4, 5, 6."><span class="trace-cell trace-active">1</span><span class="trace-boundary" aria-hidden="true">|</span><span class="trace-cell trace-sorted">2</span><span class="trace-cell trace-sorted">3</span><span class="trace-cell trace-sorted">4</span><span class="trace-cell trace-sorted">5</span><span class="trace-cell trace-sorted">6</span></span></td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><p>White cells form the active heap. Gray cells form the fixed sorted suffix after <code>|</code>.</p></li>
+  <li><p>After the last row, the final active value is also in its sorted position.</p></li>
+</ul>
+</section>
 
+<section class="frame" id="heapsort-code">
+<h2>Heapsort Code</h2>
+<ul>
+  <li><p>After the swap, end is the active heap size.</p>
+    <ul>
+      <li><p><code>siftDown(heap, end, 0)</code> repairs only indices 0 through end &minus; 1.</p></li>
+      <li><p>Index end holds its final sorted value and stays untouched.</p></li>
+    </ul>
+  </li>
+</ul>
+<pre data-fontsize="small"><code class="language-cpp">void heapSort(std::vector&lt;int&gt;&amp; heap) {
+    buildMaxHeap(heap);
+    int n = static_cast&lt;int&gt;(heap.size());
+    for (int end = n - 1; end &gt; 0; --end) {
+        std::swap(heap[0], heap[end]);
+        siftDown(heap, end, 0);
+    }
+}</code></pre>
+</section>
+
+<section class="frame" id="heapsort-analysis">
+<h2>Heapsort Analysis</h2>
+<table>
+  <thead><tr><th>Phase</th><th>Cost</th></tr></thead>
+  <tbody>
+    <tr><td>Build the heap once</td><td>O(N)</td></tr>
+    <tr><td>N &minus; 1 extractions, each at most O(log N)</td><td>O(N log N)</td></tr>
+    <tr><td>Worst-case total</td><td>O(N log N)</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><p>Heapsort works in place.</p>
+    <ul>
+      <li><p>Iterative <code>siftDown</code> needs O(1) extra space.</p></li>
+    </ul>
+  </li>
+  <li><p>Heapsort is <strong>not stable</strong>.</p>
+    <ul>
+      <li><p>Swaps can reorder records with equal keys.</p></li>
+      <li><p>A root/end swap changes (2,A), (2,B) into (2,B), (2,A).</p></li>
+    </ul>
+  </li>
+</ul>
+</section>
+</section>
+<section>
+<section class="title-slide slide level1" id="priority-queue">
+  <h1>Priority Queue</h1>
+</section>
+
+<section class="frame" id="priority-implementation">
+<h2>A Heap Implements a Priority Queue</h2>
+<table>
+  <thead><tr><th>Priority-queue operation</th><th>Heap operation</th><th>Time</th></tr></thead>
+  <tbody>
+    <tr><td>Enqueue</td><td>Insert and repair upward</td><td>O(log N) amortized</td></tr>
+    <tr><td>Dequeue</td><td>Remove root and repair downward</td><td>O(log N) worst case</td></tr>
+    <tr><td>Peek</td><td>Read the root</td><td>O(1)</td></tr>
+    <tr><td>IsEmpty / GetLength</td><td>Read the stored size</td><td>O(1)</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><p>Use a max-heap when larger values have higher priority.</p></li>
+  <li><p>Use a min-heap when smaller values have higher priority.</p>
+    <ul>
+      <li><p>Reverse the comparisons used in max-heap operations.</p></li>
+      <li><p>For example, serve the task with the earliest deadline first.</p></li>
+    </ul>
+  </li>
+  <li><p>Equal-priority items need an extra tie rule if arrival order must be preserved.</p></li>
+</ul>
+</section>
+
+
+</section>
+<section>
+<section class="frame" id="summary">
+<h2>Summary</h2>
+<ul>
+  <li><p>A heap combines a complete shape with parent-child ordering to keep an extreme value at the root.</p></li>
+  <li><p>Insertion repairs upward and root removal repairs downward, each along one path of logarithmic height.</p></li>
+  <li><p>Bottom-up construction takes O(N) because most nodes need little repair.</p></li>
+  <li><p>Heapsort reuses construction and downward repair for O(N log N) worst-case time and O(1) extra space.</p></li>
+</ul>
+
+</section>
+</section>
     </div>
   </div>
 

@@ -653,14 +653,22 @@ second.start();</code></pre>
 
 
   <section class="frame" id="volatile-flag">
-    <h2>Visibility for a Stop Flag</h2>
+    <h2>The <code class="inline-java">volatile</code> Keyword</h2>
 
     <ul>
-      <li><p>Use <code class="inline-java">volatile</code> for a shared stop flag.</p></li>
-      <li><p><code class="inline-java">volatile</code> makes flag updates visible across threads.</p></li>
-      <li><p>It does not make <code>value++</code> atomic.</p></li>
-      <li><p>A flag change does not wake a sleeping thread.</p></li>
-      <li><p>Interruption can wake an interruptible wait.</p></li>
+      <li>
+        <p><code class="inline-java">volatile</code> is a field modifier that makes updates visible across threads.</p>
+        <ul>
+          <li><p>A write <strong>happens-before</strong> subsequent reads of the same field.</p></li>
+        </ul>
+      </li>
+      <li>
+        <p>It provides no mutual exclusion.</p>
+        <ul>
+          <li><p>Compound operations such as <code>value++</code> still need a lock or an atomic operation.</p></li>
+        </ul>
+      </li>
+      <li><p>Example: one thread sets a stop flag while another repeatedly checks it.</p></li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">class StopFlag {
@@ -676,6 +684,12 @@ second.start();</code></pre>
     <ul>
       <li><p>Example: <code>shared/VolatileStopDemo.java</code></p></li>
     </ul>
+
+    <aside class="notes">
+      <p>Without volatile or another synchronization mechanism, the worker is not guaranteed to observe the flag change.</p>
+      <p>Sources: <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.3.1.4">JLS 8.3.1.4: volatile Fields</a>;
+      <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html#jls-17.4.5">JLS 17.4.5: Happens-before Order</a>.</p>
+    </aside>
   </section>
 
 
@@ -701,23 +715,37 @@ System.out.println(count.get());</code></pre>
 
 
   <section class="frame" id="concurrent-map">
-    <h2>Shared Counts by Job Type</h2>
+    <h2>ConcurrentHashMap: Atomic Updates</h2>
+
+    <p><strong>Goal:</strong> keep accurate job counts by type while several workers update one map.</p>
 
     <ul>
-      <li><p>A map can track a separate count for each job type.</p></li>
-      <li><p>Separate <code class="inline-java">get()</code> and <code class="inline-java">put()</code> calls can lose updates.</p></li>
-      <li><p><code class="inline-java">ConcurrentHashMap</code> supports concurrent access.</p></li>
-      <li><p><code class="inline-java">merge()</code> performs one atomic update for a key.</p></li>
+      <li><p><code class="inline-java">ConcurrentHashMap</code> makes individual map operations safe.</p></li>
+      <li><p><code class="inline-java">get()</code> followed by <code class="inline-java">put()</code> is still two separate steps.</p>
+        <ul>
+          <li><p>Two workers both read <code>5</code> and write <code>6</code>. The total should be <code>7</code>.</p></li>
+        </ul>
+      </li>
+      <li><p>Use <code class="inline-java">merge()</code> to make the whole update atomic for one key.</p></li>
     </ul>
 
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ConcurrentHashMap&lt;String, Integer&gt; counts = new ConcurrentHashMap&lt;&gt;();
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">ConcurrentHashMap&lt;String, Integer&gt; counts =
+        new ConcurrentHashMap&lt;&gt;();
 
-counts.merge("reports", 1, Integer::sum);
-counts.merge("emails", 1, Integer::sum);</code></pre>
+counts.merge("reports", 1, Integer::sum);</code></pre>
+
+    <p>Insert <code>1</code> if the key is absent; otherwise add <code>1</code> to its count.</p>
 
     <ul>
       <li><p>Example: <code>shared/ConcurrentMapDemo.java</code></p></li>
     </ul>
+
+    <aside class="notes">
+      <p>Learning goal: distinguish a collection that supports safe concurrent access from an atomic sequence of operations. The preceding AtomicInteger slide handled one counter; a map lets us keep one count per job type. Each worker records a completion under the matching key, and no completion should be lost.</p>
+      <p>For a reports count initially equal to 5, worker A can read 5, worker B can read 5, A can put 6, and B can put 6. This lost update is possible even with ConcurrentHashMap because two separate calls do not form one atomic action. An ordinary HashMap is also unsafe for unsynchronized concurrent writes. On ConcurrentHashMap, merge combines the lookup and update atomically for that key. If both workers use merge to add 1, the final count is 7. This does not make updates spanning several keys into a single transaction.</p>
+      <p>The map is created once and shared. Each worker calls merge after completing a job; Integer::sum adds the existing count and the supplied 1. Example: shared/ConcurrentMapDemo.java uses the same pattern with a single completed key.</p>
+      <p>Source: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html#merge(K,V,java.util.function.BiFunction)">ConcurrentHashMap.merge API</a>.</p>
+    </aside>
   </section>
 
 
@@ -774,41 +802,47 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
 
 
   <section class="frame" id="lock-vs-condition">
-    <h2>Lock Availability and Account Balance</h2>
+    <h2>Lock Acquisition and Condition Waiting</h2>
 
     <ul>
-      <li><p>A withdrawal can wait until enough funds are available.</p></li>
-      <li><p>Two different conditions can make the thread wait.</p>
+      <li><p><strong>Lock acquisition:</strong> wait for exclusive access to shared state.</p>
         <ul>
-          <li><p><strong>Lock unavailable:</strong> another thread owns the account's monitor.</p></li>
-          <li><p><strong>State unavailable:</strong> the balance is too low.</p></li>
+          <li><p>Another thread may currently own the lock.</p></li>
         </ul>
       </li>
-      <li><p>Release the monitor while waiting for state.</p>
+      <li><p><strong>Condition waiting:</strong> wait until shared state allows an operation.</p>
         <ul>
-          <li><p>This allows another thread to deposit.</p></li>
-          <li><p><code class="inline-java">Thread.sleep(100)</code> would keep the monitor.</p></li>
+          <li><p>Owning the lock does not make the condition true.</p></li>
         </ul>
       </li>
+      <li><p>Release the lock while waiting so another thread can change the state.</p></li>
     </ul>
+
+    <p><strong>Example:</strong> a withdrawal owns the account's monitor, but the balance is only <code>20</code>.
+    Withdrawing <code>50</code> must wait for a deposit.</p>
+
+    <aside class="notes">
+      <p>Holding the monitor protects the balance; it does not guarantee enough funds. Sleeping while holding the monitor keeps it locked, preventing the deposit that could make progress possible.</p>
+      <p>Source: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait()">Object.wait()</a>.</p>
+    </aside>
   </section>
 
 
   <section class="frame" id="monitor-wait">
-    <h2>Waiting for Sufficient Funds</h2>
+    <h2>Condition Waiting with <code class="inline-java">wait()</code></h2>
 
     <ul>
-      <li><p>A <code class="inline-java">synchronized</code> method owns the account's monitor.</p></li>
-      <li><p><code class="inline-java">wait()</code> changes monitor ownership.</p>
+      <li><p>A thread must own an object's monitor before calling its <code class="inline-java">wait()</code>.</p></li>
+      <li><p><code class="inline-java">wait()</code> suspends the caller and releases that monitor.</p>
         <ul>
-          <li><p>It releases the monitor while waiting.</p></li>
-          <li><p>It reacquires the monitor before returning.</p></li>
+          <li><p>The thread reacquires the monitor before returning.</p></li>
+          <li><p><code class="inline-java">Thread.sleep()</code> keeps any monitors the thread holds.</p></li>
         </ul>
       </li>
-      <li><p>Recheck the balance in <code class="inline-java">while</code> after every wakeup.</p>
+      <li><p>Always recheck the condition in a <code class="inline-java">while</code> loop.</p>
         <ul>
-          <li><p>Another withdrawal may use the funds first.</p></li>
-          <li><p>A spurious wakeup may occur without notification.</p></li>
+          <li><p>Another thread may change the state before this thread resumes.</p></li>
+          <li><p>A spurious wakeup can occur without notification.</p></li>
         </ul>
       </li>
     </ul>
@@ -827,19 +861,19 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
 
 
   <section class="frame" id="monitor-deposit">
-    <h2>Deposits and Monitor Notification</h2>
+    <h2>Monitor Notification with <code class="inline-java">notifyAll()</code></h2>
 
     <ul>
-      <li><p>Notification wakes threads waiting on that account.</p>
+      <li><p>After changing shared state, notify threads that may now proceed.</p>
         <ul>
-          <li><p><code class="inline-java">notifyAll()</code> wakes all waiters.</p></li>
-          <li><p><code class="inline-java">notify()</code> wakes one waiter instead.</p></li>
+          <li><p>Own the same object's monitor when updating and notifying.</p></li>
+          <li><p><code class="inline-java">notifyAll()</code> wakes all its waiters. <code class="inline-java">notify()</code> selects one.</p></li>
         </ul>
       </li>
-      <li><p>Notification does not transfer monitor ownership.</p>
+      <li><p>A notification means the condition <em>may</em> have changed.</p>
         <ul>
-          <li><p>The notifying thread keeps the monitor until it exits.</p></li>
-          <li><p>Awakened threads reacquire it and recheck the balance.</p></li>
+          <li><p>The caller keeps the monitor until it releases it.</p></li>
+          <li><p>Awakened threads must reacquire the monitor and recheck their condition.</p></li>
         </ul>
       </li>
     </ul>
@@ -849,11 +883,15 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
     notifyAll();
 }</code></pre>
 
-    <p>The deposit raises the balance to <code>60</code>. Thread A can then withdraw <code>50</code>.</p>
 
     <ul>
       <li><p>Example: <code>coordination/MonitorBankAccountDemo.java</code></p></li>
     </ul>
+
+    <aside class="notes">
+      <p>A notification is not saved for a future waiter. Checking the condition and calling wait while owning the same monitor prevents an update from slipping between the check and the wait.</p>
+      <p>Source: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notifyAll()">Object.notifyAll()</a>.</p>
+    </aside>
   </section>
 
 
@@ -915,22 +953,21 @@ counts.merge("emails", 1, Integer::sum);</code></pre>
 
 
   <section class="frame" id="condition-wait">
-    <h2>Waiting for State to Change with Condition</h2>
+    <h2>Condition Waiting with <code class="inline-java">await()</code></h2>
 
     <ul>
-      <li><p>A <code class="inline-java">Condition</code> belongs to a specific lock.</p>
+      <li><p>A <code class="inline-java">Condition</code> provides a wait set associated with a lock.</p>
         <ul>
-          <li><p>It groups threads waiting for the same state change.</p></li>
-          <li><p>Here, they wait for sufficient funds.</p></li>
+          <li><p>Separate conditions can group waiters for different state changes.</p></li>
+          <li><p>The program still checks a Boolean condition, such as sufficient funds.</p></li>
         </ul>
       </li>
-      <li><p><code class="inline-java">await()</code> changes lock ownership.</p>
+      <li><p>Call <code class="inline-java">await()</code> while owning the associated lock.</p>
         <ul>
-          <li><p>It releases the lock while waiting.</p></li>
-          <li><p>It reacquires the lock before returning.</p></li>
+          <li><p>It releases that lock while waiting and reacquires it before returning.</p></li>
         </ul>
       </li>
-      <li><p>Recheck <code>balance &gt;= amount</code> in a <code class="inline-java">while</code> loop.</p></li>
+      <li><p>Use a <code class="inline-java">while</code> loop to recheck the condition after every wakeup.</p></li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final ReentrantLock lock = new ReentrantLock();
@@ -951,21 +988,21 @@ public void withdraw(int amount) throws InterruptedException {
 
 
   <section class="frame" id="condition-deposit">
-    <h2>Deposits and Condition Signalling</h2>
+    <h2>Condition Signaling with <code class="inline-java">signalAll()</code></h2>
 
     <ul>
-      <li><p>Update the balance and signal under the same lock.</p></li>
-      <li><p>Signalling wakes waiters on <code>funds</code>.</p>
+      <li><p>After changing shared state, signal the relevant <code class="inline-java">Condition</code>.</p>
         <ul>
-          <li><p><code class="inline-java">signalAll()</code> wakes all, while <code class="inline-java">signal()</code> wakes one.</p></li>
+          <li><p>With <code class="inline-java">ReentrantLock</code>, hold the associated lock while updating and signaling.</p></li>
+          <li><p><code class="inline-java">signalAll()</code> wakes all its waiters. <code class="inline-java">signal()</code> selects one.</p></li>
         </ul>
       </li>
-      <li><p>Signalling does not transfer lock ownership.</p>
+      <li><p>Signaling lets waiters recheck. It does not guarantee they can proceed.</p>
         <ul>
-          <li><p>The caller keeps the lock, and waiters reacquire it before rechecking.</p></li>
+          <li><p>The caller keeps the lock until it unlocks.</p></li>
+          <li><p>Each awakened thread reacquires the lock before testing its condition.</p></li>
         </ul>
       </li>
-      <li><p>Every method that adds funds must signal.</p></li>
     </ul>
 
     <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">public void deposit(int amount) {
@@ -981,6 +1018,11 @@ public void withdraw(int amount) throws InterruptedException {
     <ul>
       <li><p>Example: <code>coordination/LockingBankAccountDemo.java</code></p></li>
     </ul>
+
+    <aside class="notes">
+      <p>Here, funds identifies the wait set, while balance &gt;= amount is the Boolean condition. Each operation that can enable a waiting withdrawal must arrange an appropriate signal. With different withdrawal amounts, signalAll lets every waiter recheck.</p>
+      <p>Source: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/Condition.html">Condition API</a>.</p>
+    </aside>
   </section>
 
 
@@ -1044,55 +1086,30 @@ public void withdraw(int amount) throws InterruptedException {
 
 
   <section class="frame" id="blocking-queue">
-    <h2>Producer–Consumer Handoff</h2>
+    <h2> BlockingQueue</h2>
+
+    <p><strong>Problem:</strong> a file scanner finds files faster than a worker processes them.</p>
 
     <ul>
-      <li><p><strong>Producer–consumer handoff</strong> separates job creation from processing.</p>
-        <ul>
-          <li><p>The producer creates file-processing jobs.</p></li>
-          <li><p>The consumer takes and processes them.</p></li>
-        </ul>
-      </li>
-      <li><p><code class="inline-java">BlockingQueue</code> coordinates capacity and availability.</p>
-        <ul>
-          <li><p><code class="inline-java">put()</code> blocks while the queue is full.</p></li>
-          <li><p><code class="inline-java">take()</code> blocks while the queue is empty.</p></li>
-          <li><p>The queue handles the required locking and signalling.</p></li>
-        </ul>
-      </li>
+      <li><p>The queue holds pending work and handles safe access and waiting.</p></li>
+      <li><p><strong>Producer:</strong> <code class="inline-java">put()</code> adds a filename, waiting if the queue is full.</p></li>
+      <li><p><strong>Consumer:</strong> <code class="inline-java">take()</code> removes one, waiting if the queue is empty.</p></li>
     </ul>
 
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void produce(BlockingQueue&lt;String&gt; jobs) {
-    try {
-        jobs.put("report.csv");
-    } catch (InterruptedException exception) {
-        Thread.currentThread().interrupt();
-    }
-}</code></pre>
-  </section>
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">BlockingQueue&lt;String&gt; jobs = new ArrayBlockingQueue&lt;&gt;(2);
 
-
-  <section class="frame" id="blocking-queue-run">
-    <h2>Running the Producer and Consumer</h2>
-
-    <ul>
-      <li><p>The producer and consumer share one queue.</p></li>
-      <li><p><code class="inline-java">take()</code> waits until a job is available.</p></li>
-      <li><p>Both <code class="inline-java">take()</code> and <code class="inline-java">join()</code> can be interrupted.</p></li>
-    </ul>
-
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void handoff() throws InterruptedException {
-    BlockingQueue&lt;String&gt; jobs = new ArrayBlockingQueue&lt;&gt;(10);
-    Thread producer = new Thread(() -> produce(jobs), "Thread A");
-    producer.start();
-    String job = jobs.take();
-    System.out.println("Processing " + job);
-    producer.join();
-}</code></pre>
+jobs.put("report.csv");    // Scanner thread
+String job = jobs.take();   // Worker thread</code></pre>
 
     <ul>
       <li><p>Example: <code>coordination/BlockingQueueDemo.java</code></p></li>
     </ul>
+
+    <aside class="notes">
+      <p>Use one motive: hand work between threads that run at different speeds. The scanner can enqueue another filename while the worker processes an earlier file. The queue stores pending work; it does not make the worker faster. This ArrayBlockingQueue is bounded: the scanner eventually waits if the worker cannot keep up. Connect this to the preceding slides: BlockingQueue provides the locking, condition checks, waiting, and wakeups for this handoff.</p>
+      <p>The code shows separate excerpts, not one sequential task. Both threads receive the same queue. put and take can throw InterruptedException; thread setup, interruption handling, and joining are in coordination/BlockingQueueDemo.java. Callers do not write their own wait/notifyAll loop for these operations. Each successful take removes one queue entry atomically; processing the file afterward is the consumer's responsibility. Capacity 2 limits pending filenames, not files already being processed. A longer-running pipeline also needs a completion policy.</p>
+      <p>Source: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/BlockingQueue.html">BlockingQueue API</a>.</p>
+    </aside>
   </section>
 
 
@@ -1100,287 +1117,228 @@ public void withdraw(int amount) throws InterruptedException {
 
 
 <!-- =========================================================
-     TASK EXECUTION AND ASYNCHRONOUS RESULTS
+     ORGANIZING CONCURRENT WORK AND RESULTS
      ========================================================= -->
 
 <section id="executors">
 
   <section class="title-slide slide level1">
-    <h1>Task Execution and Asynchronous Results</h1>
+    <h1>Organizing Concurrent Work and Results</h1>
+  </section>
+
+
+  <section class="frame" id="report-tasks">
+    <h2>A Report Is Several Tasks</h2>
+
+    <p>A user clicks <strong>Generate Report</strong>. The interface must stay responsive while data loads.</p>
+
+    <ul>
+      <li><p>A <strong>task</strong> describes a piece of work. A <strong>thread</strong> executes it.</p></li>
+      <li><p>Dependencies determine which tasks can run together.</p></li>
+    </ul>
+
+    <table class="compact">
+      <thead><tr><th>Report task</th><th>When it can run</th></tr></thead>
+      <tbody>
+        <tr><td>Load the sales total</td><td>Can start independently</td></tr>
+        <tr><td>Load the expense total</td><td>Can start independently</td></tr>
+        <tr><td>Calculate and format the summary</td><td>After both totals are ready</td></tr>
+        <tr><td>Display the report</td><td>After the summary is ready</td></tr>
+      </tbody>
+    </table>
+
+    <aside class="notes">
+      <p>The report is the running example for this section. Its two data sources can be loaded independently. The summary needs both results, and the interface can display it only afterward. Loading may involve file, database, or network I/O. The user should still be able to move the window or interact with other controls while those loads run.</p>
+      <p>A task is a unit of work, not a promise of a dedicated thread. Later stages may reuse a thread that ran earlier work. Ask students to identify the independent tasks before choosing any Java API. The code excerpts use loadSalesTotal() and loadExpenseTotal() as application helpers returning long totals in the same units. The helpers stand for the data-loading work.</p>
+    </aside>
   </section>
 
 
   <section class="frame" id="executor-concept">
-    <h2>ExecutorService and Worker Threads</h2>
+    <h2>Assign Work to Available Workers</h2>
 
     <img src="../_static/images/cop4027/concurrency/05_executor_thread_pool.png"
          alt="Tasks are submitted to a queue. Tasks C, D, and E wait while Thread A runs task A and Thread B runs task B."
          style="display:block; width:96%; max-height:235px; margin:10px auto; object-fit:contain;" />
 
     <ul>
-      <li><p><code class="inline-java">ExecutorService</code> separates task submission from thread management.</p>
+      <li><p>A <strong>thread pool</strong> reuses workers across report requests.</p>
         <ul>
-          <li><p>It assigns submitted tasks to available workers.</p></li>
+          <li><p><code class="inline-java">ExecutorService</code> manages execution of the tasks we submit.</p></li>
         </ul>
       </li>
-      <li><p>A <strong>thread pool</strong> manages reusable worker threads.</p>
+      <li><p>Limit active workers and pending work separately.</p>
         <ul>
-          <li><p>A fixed pool limits active workers.</p></li>
-          <li><p>Additional tasks wait in the executor's queue.</p></li>
+          <li><p><code class="inline-java">newFixedThreadPool(2)</code> limits workers but uses an unbounded queue.</p></li>
+          <li><p>A bounded queue also needs a policy for handling a full queue.</p></li>
         </ul>
       </li>
     </ul>
+
+    <aside class="notes">
+      <p>As report requests accumulate, creating a new platform thread for every piece of work can consume too many resources. A pool separates how much work is requested from how many worker threads execute it at once. In the diagram, imagine A and B are the two loads for one report and C through E are work from later requests. An available worker takes queued work.</p>
+      <p>The fixed pool used in the short examples is a simple execution mechanism, not a complete overload policy. Its worker limit does not bound queued tasks or memory use. For sustained request traffic, a bounded executor queue and a rejection or backpressure policy are separate design decisions. Blocking the UI thread to apply backpressure would make it unresponsive, so the application might disable repeated submissions or report that it is busy.</p>
+      <p>Sources: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ExecutorService.html">ExecutorService</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Executors.html#newFixedThreadPool(int)">Executors.newFixedThreadPool</a>.</p>
+    </aside>
   </section>
-
-
-
-
-  <section class="frame" id="runnable-callable">
-  <h2>Task Results: Runnable and Callable</h2>
-
-  <ul>
-    <li><p><code class="inline-java">Runnable.run()</code> performs work but returns no result.</p></li>
-
-    <li>
-      <p><code class="inline-java">Callable&lt;T&gt;.call()</code> performs work and returns a value of type <code class="inline-java">T</code>.</p>
-      <ul>
-        <li><p><code class="inline-java">call()</code> may declare checked exceptions. <code class="inline-java">run()</code> cannot.</p></li>
-      </ul>
-    </li>
-  </ul>
-
-  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Runnable message = () -> System.out.println("Done");
-Callable&lt;Integer&gt; calculation = () -> 6 * 7;</code></pre>
-</section>
 
 
   <section class="frame" id="executor-results">
-  <h2>Future: A Result That May Arrive Later</h2>
-
-  <ul>
-    <li><p><code class="inline-java">Future&lt;T&gt;</code> represents a result that may arrive later.</p>
-      <ul>
-        <li><p><code class="inline-java">submit()</code> returns the <code class="inline-java">Future</code>.</p></li>
-        <li><p><code class="inline-java">get()</code> blocks if the result is not ready.</p></li>
-      </ul>
-    </li>
-    <li><p>Submit independent tasks before waiting for either value.</p></li>
-    <li><p>Try-with-resources closes the executor, waiting for its tasks to finish.</p></li>
-  </ul>
-
-  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void totalResults()
-        throws InterruptedException, ExecutionException {
-    try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
-        Future&lt;Integer&gt; first = pool.submit(() -> 6 * 7);
-        Future&lt;Integer&gt; second = pool.submit(() -> 5 * 5);
-        int total = first.get() + second.get();
-        System.out.println(total); // 67
-    }
-}</code></pre>
-
-  <ul>
-    <li><p>Example: <code>executors/ExecutorFutureDemo.java</code></p></li>
-  </ul>
-</section>
-
-
-  <section class="frame" id="executor-limits">
-    <h2>Executor Resource Limits</h2>
+    <h2>Work Starts Before Results Exist</h2>
 
     <ul>
-      <li><p>A fixed thread pool limits active workers.</p>
+      <li><p><strong>Submission</strong> schedules work. <strong>Completion</strong> produces an outcome.</p></li>
+      <li><p>A <code class="inline-java">Future&lt;T&gt;</code> lets the caller track that outcome while continuing other work.</p></li>
+      <li><p>A <code class="inline-java">Callable&lt;T&gt;</code> describes a task that returns a value.</p>
         <ul>
-          <li><p><code class="inline-java">newFixedThreadPool()</code> uses an unbounded task queue.</p></li>
-          <li><p>Pending work can exhaust memory when submissions arrive too quickly.</p></li>
-        </ul>
-      </li>
-      <li><p>A bounded queue limits pending work.</p>
-        <ul>
-          <li><p>A full queue needs a rejection or backpressure policy.</p></li>
-        </ul>
-      </li>
-      <li><p>The executor's owner must close it.</p>
-        <ul>
-          <li><p><code class="inline-java">close()</code> rejects new submissions.</p></li>
-          <li><p>It waits for submitted tasks to finish.</p></li>
+          <li><p>Use <code class="inline-java">Runnable</code> for a task with no returned value.</p></li>
         </ul>
       </li>
     </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Create one pool owned by the application
+ExecutorService pool = Executors.newFixedThreadPool(2);
+
+Callable&lt;Long&gt; loadSales = () -> loadSalesTotal();
+Future&lt;Long&gt; sales = pool.submit(loadSales);</code></pre>
+
+    <aside class="notes">
+      <p>Submission does not wait for the data-loading result. The worker might start promptly, or the task might queue until a worker is available. A future is the caller's handle to the eventual outcome, which could be a value, a failure, or cancellation. The task may even finish before the caller next examines the future.</p>
+      <p>The declaration of loadSales describes work without running the helper yet. submit hands that work to the pool. Callable.call can declare checked exceptions, while Runnable.run cannot. Keep that signature detail secondary to whether the task returns a value. The pool is shared across requests, and its owner is responsible for shutdown.</p>
+      <p>Sources: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ExecutorService.html">ExecutorService</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Future.html">Future</a>.</p>
+    </aside>
   </section>
 
 
-  <section class="frame" id="future-outcomes">
-    <h2>What Can Happen to a Future?</h2>
+  <section class="frame" id="future-waiting">
+    <h2>Wait Only When You Need the Result</h2>
+
+    <p>Sales and expenses are independent. Submit both loads before waiting.</p>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">Future&lt;Long&gt; sales = pool.submit(() -> loadSalesTotal());
+Future&lt;Long&gt; expenses = pool.submit(() -> loadExpenseTotal());
+
+// Later, on a background coordinator thread
+long profit = sales.get() - expenses.get();</code></pre>
 
     <ul>
-      <li><p><strong>Success:</strong> <code class="inline-java">get()</code> returns the result.</p></li>
-      <li><p><strong>Task failure:</strong> <code class="inline-java">ExecutionException</code> wraps the task's exception.</p>
-        <ul>
-          <li><p><code class="inline-java">getCause()</code> retrieves the original exception.</p></li>
-        </ul>
-      </li>
-      <li><p><strong>Interrupted caller:</strong> <code class="inline-java">InterruptedException</code> concerns the waiting thread.</p></li>
+      <li><p><code class="inline-java">get()</code> blocks the calling thread if the result is not ready.</p></li>
+      <li><p>Waiting before submitting the expense task would prevent the loads from overlapping.</p></li>
+      <li><p>A waiting UI thread cannot handle input or repaint the interface.</p></li>
     </ul>
-
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void printResult(Future&lt;Integer&gt; future)
-        throws InterruptedException {
-    try {
-        System.out.println(future.get());
-    } catch (ExecutionException exception) {
-        System.out.println("Task failed: " + exception.getCause());
-    }
-}</code></pre>
-  </section>
-
-
-  <section class="frame" id="future-timeout">
-    <h2>Future Timeouts and Cancellation</h2>
 
     <ul>
-      <li><p>A <strong>timeout</strong> limits how long the caller waits.</p>
-        <ul>
-          <li><p>Timed <code class="inline-java">get()</code> can throw <code class="inline-java">TimeoutException</code> while the task keeps running.</p></li>
-        </ul>
-      </li>
-      <li><p><code class="inline-java">cancel(true)</code> requests cancellation.</p>
-        <ul>
-          <li><p>It may interrupt the worker, but the task must cooperate.</p></li>
-          <li><p>After cancellation, <code class="inline-java">get()</code> throws <code class="inline-java">CancellationException</code>.</p></li>
-        </ul>
-      </li>
+      <li><p>Example: <code>executors/ExecutorFutureDemo.java</code></p></li>
     </ul>
 
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void printWithinDeadline(Future&lt;Integer&gt; future)
-        throws InterruptedException, ExecutionException {
-    try {
-        System.out.println(future.get(100, TimeUnit.MILLISECONDS));
-    } catch (TimeoutException exception) {
-        future.cancel(true);
-        System.out.println("Task took too long");
-    }
-}</code></pre>
-
-    <ul>
-      <li><p>Example: <code>executors/FutureTimeoutDemo.java</code></p></li>
-    </ul>
+    <aside class="notes">
+      <p>Open executors/ExecutorFutureDemo.java and run main here. Point out that both loads are submitted before either get call. The main thread is the console coordinator, and the final result is Profit: 400. Open executors/ReportDataSource.java only if students need to see how the sample data and loading delay are supplied.</p>
+      <p>This is a background coordination option, not code to run inside a UI event handler. The coordinator must not occupy a worker needed by the tasks it waits for. Here it runs outside the two-worker loading pool. The alternative on the next slide registers dependencies without a coordinator blocking on get.</p>
+      <p>Both tasks are submitted before either result is retrieved. Waiting for sales first does not prevent the already-submitted expense load from running. If the caller instead submitted sales, immediately waited for it, and only then submitted expenses, it would serialize the two loads. Overlap is possible, not a guarantee that their start times are identical.</p>
+      <p>These excerpts omit surrounding exception handling. get may report a failed task with ExecutionException, cancellation with CancellationException, or interruption of the waiting caller with InterruptedException. The latter does not by itself cancel the worker task.</p>
+      <p>Source: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Future.html">Future</a>.</p>
+    </aside>
   </section>
 
 
   <section class="frame" id="completable-future">
-    <h2>Results and Stages with CompletableFuture</h2>
+    <h2>Dependencies Determine What Runs Next</h2>
 
     <ul>
-      <li><p><code class="inline-java">Future.get()</code> retrieves a result.</p></li>
-      <li><p><code class="inline-java">CompletableFuture</code> connects a result to later computations.</p>
-        <ul>
-          <li><p>A <strong>stage</strong> is one step in the computation.</p></li>
-          <li><p><code class="inline-java">supplyAsync()</code> starts a value-producing stage.</p></li>
-        </ul>
-      </li>
-      <li><p><code class="inline-java">join()</code> returns a stage's result.</p>
-        <ul>
-          <li><p>It blocks while the result is unavailable.</p></li>
-        </ul>
-      </li>
+      <li><p>A <strong>stage</strong> is one step in a computation.</p></li>
+      <li><p><code class="inline-java">CompletableFuture</code> connects stages that run after their inputs succeed.</p></li>
     </ul>
 
-    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
-    CompletableFuture&lt;String&gt; message = CompletableFuture
-            .supplyAsync(() -> "Report ready", pool);
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">var sales = CompletableFuture.supplyAsync(
+        () -> loadSalesTotal(), pool);
+var expenses = CompletableFuture.supplyAsync(
+        () -> loadExpenseTotal(), pool);
 
-    System.out.println(message.join());
-}</code></pre>
+CompletableFuture&lt;String&gt; report = sales
+        .thenCombine(expenses, (s, e) -> s - e)
+        .thenApply(profit -> "Profit: " + profit);</code></pre>
+
+    <p>Combine both totals, then format the report. The caller does not wait for the loads.</p>
+
+    <ul>
+      <li><p>Example: <code>executors/CompletableFutureDemo.java</code></p></li>
+    </ul>
+
+    <aside class="notes">
+      <p>Open executors/CompletableFutureDemo.java, trace generateReport, and run main here. It first prints Profit: 400, then reports a failed sales load. Use that second outcome to lead into the next slide. The console main may join, while generateReport returns the future without waiting for its inputs.</p>
+      <p>This is an alternative implementation of the same report workflow. Each supplyAsync schedules an independent load on the application-owned pool. A stage is one computation in the dependency chain. thenCombine calculates profit after both loads succeed. thenApply formats that profit after the calculation succeeds. Registering the chain does not wait for an unfinished input.</p>
+      <p>Dependencies determine when a stage is eligible to run, not which thread must run it. Non-Async continuations can run on a thread completing an input or inline when attached to an already-completed stage. Keep these calculation and formatting steps brief. No new thread is promised for each stage, and no UI control is changed here. Calling join or get afterward would introduce a blocking wait, which is why the UI handoff uses a completion action later.</p>
+      <p>Sources: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletableFuture.html">CompletableFuture</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletionStage.html">CompletionStage</a>.</p>
+    </aside>
   </section>
 
 
-<section class="frame" id="future-pipeline">
-  <h2>Dependent Work: One Result Feeds the Next</h2>
+  <section class="frame" id="future-outcomes">
+    <h2>Plan for Missing Results</h2>
 
-  <ul>
-    <li><p><strong>Dependent work</strong> waits for an earlier result.</p>
-      <ul>
-        <li><p><code class="inline-java">thenApply()</code> transforms a successful result.</p></li>
-        <li><p>The transformation runs after its input becomes ready.</p></li>
-      </ul>
-    </li>
-  </ul>
+    <p>A data load may fail, take too long, or become unnecessary.</p>
 
-  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
-    CompletableFuture&lt;Integer&gt; length = CompletableFuture
-            .supplyAsync(() -> "Concurrency", pool)
-            .thenApply(String::length);
+    <table class="compact">
+      <thead><tr><th>Situation</th><th>Meaning for the report</th><th>Application decision</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Failure</strong></td><td>A required load failed</td><td>Show an error or offer a retry</td></tr>
+        <tr><td><strong>Timeout</strong></td><td>The caller's wait limit expired</td><td>Stop waiting and decide whether to cancel</td></tr>
+        <tr><td><strong>Cancellation</strong></td><td>The result is no longer wanted</td><td>Request a stop and handle unfinished work</td></tr>
+      </tbody>
+    </table>
 
-    System.out.println(length.join()); // 11
-}</code></pre>
-</section>
+    <ul>
+      <li><p>A timeout does not automatically stop the task.</p></li>
+      <li><p>Stopping running work requires cooperation.</p>
+        <ul>
+          <li><p>Cancelling a <code class="inline-java">CompletableFuture</code> does not interrupt its computation.</p></li>
+        </ul>
+      </li>
+    </ul>
 
+    <ul>
+      <li><p>Example: <code>executors/FutureTimeoutDemo.java</code></p></li>
+    </ul>
 
-<section class="frame" id="future-combine">
-  <h2>Independent Work: Start Both, Combine Later</h2>
-
-  <ul>
-    <li><p><strong>Independent work</strong> can start at the same time.</p>
-      <ul>
-        <li><p>Submit both tasks before waiting for either result.</p></li>
-      </ul>
-    </li>
-    <li><p><code class="inline-java">thenCombine()</code> joins two successful results.</p>
-      <ul>
-        <li><p>It waits until both results are ready.</p></li>
-        <li><p>The combining function receives both values.</p></li>
-      </ul>
-    </li>
-  </ul>
-
-  <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ExecutorService pool = Executors.newFixedThreadPool(2)) {
-    CompletableFuture&lt;String&gt; user = CompletableFuture
-            .supplyAsync(() -> "Alice", pool);
-    CompletableFuture&lt;Integer&gt; orders = CompletableFuture
-            .supplyAsync(() -> 3, pool);
-
-    CompletableFuture&lt;String&gt; summary = user.thenCombine(orders,
-            (name, count) -> name + " has " + count + " orders");
-    System.out.println(summary.join()); // Alice has 3 orders
-}</code></pre>
-
-  <ul>
-    <li><p>Example: <code>executors/CompletableFutureDemo.java</code></p></li>
-  </ul>
-</section>
-
-
-<section class="frame" id="pipeline-failure">
-  <h2>Stage Failure and Cancellation</h2>
-
-  <ul>
-    <li><p><strong>Exceptional completion</strong> skips normal transformation stages.</p>
-      <ul>
-        <li><p><code class="inline-java">join()</code> reports <code class="inline-java">CompletionException</code>.</p></li>
-        <li><p><code class="inline-java">get()</code> reports <code class="inline-java">ExecutionException</code>.</p></li>
-      </ul>
-    </li>
-    <li><p><code class="inline-java">CompletableFuture.cancel(true)</code> marks the result as cancelled.</p>
-      <ul>
-        <li><p>It does not interrupt the underlying computation.</p></li>
-      </ul>
-    </li>
-  </ul>
-</section>
+    <aside class="notes">
+      <p>After discussing the failed load from CompletableFutureDemo, open executors/FutureTimeoutDemo.java and run main. Identify the expired wait, the separate cancellation request, and the final executor-termination message. The loader cooperates with interruption, so accepting cancellation and actually finishing the worker remain distinct events.</p>
+      <p>For this report, a failed required load means there is no valid summary to display. Success-only dependent functions such as thenCombine and thenApply are skipped on the failed path. Handle the failure at an appropriate boundary, such as the final UI delivery, rather than silently replacing missing data with zero.</p>
+      <p>Timed Future.get bounds one wait and can throw TimeoutException while work continues. A failed task is reported through ExecutionException by get or CompletionException by CompletableFuture.join, with the original failure available as a cause. An interrupted caller is a separate event from task failure.</p>
+      <p>For a task submitted to an executor, Future.cancel(true) attempts cancellation and may request interruption of its worker. Code must cooperate with interruption. A successful cancellation causes subsequent get calls to report CancellationException, but it does not prove the running code has already stopped. CompletableFuture.cancel marks the future cancelled without interrupting the computation. Cancelling a dependent report stage does not automatically stop the sales and expense loads. Actual work cancellation needs its own design.</p>
+      <p>Sources: <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Future.html">Future</a> and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletableFuture.html#cancel(boolean)">CompletableFuture.cancel</a>.</p>
+    </aside>
+  </section>
 
 
   <section class="frame" id="javafx-connection">
-    <h2>JavaFX: Keep Slow Work Off the UI Thread</h2>
+    <h2>Complete the Request Responsibly</h2>
 
     <ul>
-      <li><p>Keep the <strong>JavaFX Application Thread</strong> responsive.</p>
+      <li><p>Deliver the finished report or an error to the UI.</p>
         <ul>
-          <li><p>Submit slow work to an executor.</p></li>
-          <li><p>Do not call blocking <code class="inline-java">get()</code> or <code class="inline-java">join()</code> on the UI thread.</p></li>
-          <li><p>Use <code class="inline-java">Platform.runLater()</code> for the UI update.</p></li>
+          <li><p>JavaFX control updates belong on the JavaFX Application Thread.</p></li>
         </ul>
       </li>
-      <li><p>Background loading lets the interface remain responsive.</p></li>
+      <li><p>The application owns the pool across report requests.</p>
+        <ul>
+          <li><p>At shutdown, stop accepting work and finish or cancel pending tasks.</p></li>
+        </ul>
+      </li>
     </ul>
+
+    <pre data-fontsize="small" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">report.whenComplete((text, failure) ->
+    Platform.runLater(() -> {
+        if (failure == null) showReport(text);
+        else showError("Report could not be loaded");
+    }));</code></pre>
+
+    <p>Keep task waits and blocking shutdown waits off the UI thread.</p>
+
+    <aside class="notes">
+      <p>whenComplete observes either success or failure. The callback can run outside the UI thread, so runLater posts a short interface update to the JavaFX Application Thread. showReport and showError stand for application methods that update controls. Loading and report calculation have already happened before this UI action. runLater posts work and returns without waiting for the UI action to execute.</p>
+      <p>The pool should have an explicit owner and lifetime. For this application it is created once and reused across report requests. shutdown rejects new tasks while allowing submitted work to finish, and it does not wait for termination. Java 21 close initiates shutdown and waits for termination. A try-with-resources block invokes close when leaving its scope, so a pool scoped to a UI event handler could block that handler while work finishes. Any termination wait belongs off the UI thread. Cancellation is cooperative, and outstanding work must be accounted for during application shutdown.</p>
+      <p>Sources: <a href="https://openjfx.io/javadoc/21/javafx.graphics/javafx/application/Platform.html#runLater(java.lang.Runnable)">Platform.runLater</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletableFuture.html#whenComplete(java.util.function.BiConsumer)">CompletableFuture.whenComplete</a>, and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ExecutorService.html#close()">ExecutorService.close</a>.</p>
+    </aside>
   </section>
 </section>
 

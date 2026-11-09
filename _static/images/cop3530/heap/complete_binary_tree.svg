@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="540" viewBox="0 0 1200 540" role="img" aria-labelledby="shape-title shape-desc"><title id="shape-title">Complete and incomplete binary-tree shapes</title><desc id="shape-desc">The left tree has six nodes A through F. Its last level fills from left to right. The right tree moves F to the right child of C, leaving its left-child position empty. This gap makes the right tree incomplete, even though its height is unchanged.</desc><rect width="1200" height="540" fill="white" /><text x="302" y="40" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#111827">Complete</text><g transform="translate(80,65) scale(1.1)"><line x1="202.0" y1="100.0" x2="118.0" y2="154.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<line x1="202.0" y1="100.0" x2="286.0" y2="154.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<line x1="118.0" y1="210.0" x2="76.0" y2="264.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<line x1="118.0" y1="210.0" x2="160.0" y2="264.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<line x1="286.0" y1="210.0" x2="244.0" y2="264.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<circle cx="202.0" cy="72.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="202.0" y="72.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">A</text>
+<circle cx="118.0" cy="182.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="118.0" y="182.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">B</text>
+<circle cx="286.0" cy="182.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="286.0" y="182.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">C</text>
+<circle cx="76.0" cy="292.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="76.0" y="292.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">D</text>
+<circle cx="160.0" cy="292.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="160.0" y="292.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">E</text>
+<circle cx="244.0" cy="292.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="244.0" y="292.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">F</text>
+</g><text x="902" y="40" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#111827">Not complete</text><g transform="translate(680,65) scale(1.1)"><line x1="202.0" y1="100.0" x2="118.0" y2="154.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<line x1="202.0" y1="100.0" x2="286.0" y2="154.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<line x1="118.0" y1="210.0" x2="76.0" y2="264.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<line x1="118.0" y1="210.0" x2="160.0" y2="264.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<line x1="286.0" y1="210.0" x2="328.0" y2="264.0" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+<circle cx="202.0" cy="72.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="202.0" y="72.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">A</text>
+<circle cx="118.0" cy="182.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="118.0" y="182.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">B</text>
+<circle cx="286.0" cy="182.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="286.0" y="182.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">C</text>
+<circle cx="76.0" cy="292.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="76.0" y="292.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">D</text>
+<circle cx="160.0" cy="292.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="160.0" y="292.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">E</text>
+<circle cx="328.0" cy="292.0" r="30" fill="#ffffff" stroke="#334155" stroke-width="3" />
+<text x="328.0" y="292.0" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" fill="#111827">F</text>
+<circle cx="244" cy="292" r="30" fill="white" stroke="#d0662e" stroke-width="3" stroke-dasharray="7 5" /><text x="244" y="298" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#a14d22">gap</text></g><text x="302" y="485" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#111827">The last level fills left to right</text><text x="902" y="485" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#111827">A node appears after an empty position</text></svg>
