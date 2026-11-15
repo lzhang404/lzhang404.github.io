@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="700" viewBox="0 0 1500 700" role="img" aria-labelledby="title desc">
+<title id="title">Permutation decision tree with choosing and undoing</title>
+<desc id="desc">The root is an empty prefix. Blue downward arrows choose a letter. Orange upward arrows undo that choice. Children must all be explored before returning to their parent. The complete leaves, left to right, are ABC, ACB, BAC, BCA, CBA, CAB.</desc>
+<rect width="1500" height="700" fill="white"/>
+<defs><marker id="choose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2f4a64"/></marker>
+<marker id="undo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d0662e"/></marker></defs>
+<path d="M 715.0 97 L 243 203" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 257 203 L 729.0 97" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 743.0 97 L 743 203" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 757 203 L 757.0 97" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 771.0 97 L 1243 203" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 1257 203 L 785.0 97" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 223.0 257 L 113 368" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 127 368 L 237.0 257" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 263.0 257 L 373 368" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 387 368 L 277.0 257" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 723.0 257 L 613 368" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 627 368 L 737.0 257" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 763.0 257 L 873 368" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 887 368 L 777.0 257" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 1223.0 257 L 1113 368" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 1127 368 L 1237.0 257" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 1263.0 257 L 1373 368" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 1387 368 L 1277.0 257" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 113.0 422 L 113 518" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 127 518 L 127.0 422" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 373.0 422 L 373 518" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 387 518 L 387.0 422" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 613.0 422 L 613 518" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 627 518 L 627.0 422" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 873.0 422 L 873 518" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 887 518 L 887.0 422" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 1113.0 422 L 1113 518" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 1127 518 L 1127.0 422" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<path d="M 1373.0 422 L 1373 518" fill="none" stroke="#2f4a64" stroke-width="2.5" marker-end="url(#choose)"/>
+<path d="M 1387 518 L 1387.0 422" fill="none" stroke="#d0662e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<rect x="695.0" y="43" width="110" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="750" y="81" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">[ ]</text>
+<rect x="205.0" y="203" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="250" y="241" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">A</text>
+<rect x="705.0" y="203" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="750" y="241" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">B</text>
+<rect x="1205.0" y="203" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="1250" y="241" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">C</text>
+<rect x="75.0" y="368" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="120" y="406" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">AB</text>
+<rect x="335.0" y="368" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="380" y="406" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">AC</text>
+<rect x="575.0" y="368" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="620" y="406" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">BA</text>
+<rect x="835.0" y="368" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="880" y="406" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">BC</text>
+<rect x="1075.0" y="368" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="1120" y="406" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">CB</text>
+<rect x="1335.0" y="368" width="90" height="54" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="1380" y="406" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">CA</text>
+<rect x="75.0" y="518" width="90" height="54" rx="5" fill="#eaf0f4" stroke="#94a3b8" stroke-width="2"/>
+<text x="120" y="556" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">ABC</text>
+<rect x="335.0" y="518" width="90" height="54" rx="5" fill="#eaf0f4" stroke="#94a3b8" stroke-width="2"/>
+<text x="380" y="556" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">ACB</text>
+<rect x="575.0" y="518" width="90" height="54" rx="5" fill="#eaf0f4" stroke="#94a3b8" stroke-width="2"/>
+<text x="620" y="556" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">BAC</text>
+<rect x="835.0" y="518" width="90" height="54" rx="5" fill="#eaf0f4" stroke="#94a3b8" stroke-width="2"/>
+<text x="880" y="556" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">BCA</text>
+<rect x="1075.0" y="518" width="90" height="54" rx="5" fill="#eaf0f4" stroke="#94a3b8" stroke-width="2"/>
+<text x="1120" y="556" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">CBA</text>
+<rect x="1335.0" y="518" width="90" height="54" rx="5" fill="#eaf0f4" stroke="#94a3b8" stroke-width="2"/>
+<text x="1380" y="556" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" fill="#111827" text-anchor="middle">CAB</text>
+<text x="25" y="29" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#626b73" text-anchor="start">Chosen prefix</text>
+<path d="M 75 605 V 645" fill="none" stroke="#2f4a64" stroke-width="3" marker-end="url(#choose)"/>
+<text x="105" y="635" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="400" fill="#2f4a64" text-anchor="start">Choose a letter</text>
+<path d="M 530 645 V 605" fill="none" stroke="#d0662e" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#undo)"/>
+<text x="560" y="635" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="400" fill="#d0662e" text-anchor="start">Undo the choice</text>
+<text x="1030" y="635" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" fill="#111827" text-anchor="start">Leaf: print one permutation</text>
+<text x="750" y="687" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" fill="#111827" text-anchor="middle">Explore every child before returning to its parent.</text>
+</svg>

@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="../_static/custom.css?v=20260918d" type="text/css" />
   <link rel="stylesheet" type="text/css" href="../_static/idea.css?v=e717f371" />
   <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-  <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
   <script src="../_static/design-tabs.js?v=20260918"></script>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,606 +18,737 @@
 </head>
 
 <body>
-  <div class="reveal">
-    <div class="slides" role="main">
+<div class="reveal">
+<div class="slides" role="main">
+<section>
+<section id="title" data-background-color="white"
+ data-background-image="../_static/logo.png" data-background-size="50%"
+ data-background-position="top center" data-background-repeat="no-repeat">
+ <h1>Brute Force and Backtracking</h1>
+ <div class="subtitle docutils container"><p>Liting Zhang</p><p>University of West Florida</p></div>
+</section>
+</section>
 
-      <!-- =========================================================
-           Title
-           ========================================================= -->
-      <section>
-        <section data-background-color="white"
-                 data-background-image="../_static/logo.png"
-                 data-background-size="50%"
-                 data-background-position="top center"
-                 data-background-repeat="no-repeat">
-          <h1>Brute Force and Backtracking</h1>
-          <div class="subtitle docutils container">
-            <p>Liting Zhang</p>
-            <p>University of West Florida</p>
-          </div>
-        </section>
-      </section>
+<section>
+<section class="frame" id="learning-goals">
+<h2>Learning goals</h2>
+<ul>
+<li><p>Model a search as a tree of choices.</p></li>
+<li><p>Generate candidates.</p>
+<ul>
+<li><p>Permutations</p></li>
+<li><p>Subsets</p></li>
+<li><p>Fixed-size combinations</p></li>
+</ul>
+</li>
+<li><p>Explain how backtracking restores partial solutions.</p></li>
+<li><p>Identify safe pruning rules.</p></li>
+<li><p>Analyze search costs.</p>
+<ul>
+<li><p>Running time</p></li>
+<li><p>Working space</p></li>
+</ul>
+</li>
+</ul>
 
-      <!-- =========================================================
-           Overview
-           ========================================================= -->
-      <section>
-        <section class="frame">
-          <h2>Outline</h2>
-          <ul>
-            <li><p><strong>Brute force</strong>: definition, characteristics, and tradeoffs</p></li>
-            <li><p><strong>Recursion as a tree of choices</strong>: the core mental model</p></li>
-            <li><p><strong>Permutations</strong>: definition, formula, and recursive algorithm</p></li>
-            <li><p><strong>Combinations and subsets</strong>: definition, formula, and algorithm</p></li>
-            <li><p><strong>Backtracking</strong>: pruning the search tree for efficiency</p></li>
-            <li><p><strong>Complexity</strong>: time and space costs of brute force</p></li>
-            <li><p><strong>Classic problems</strong>: string permutations, subsets, N-Queens</p></li>
-          </ul>
-        </section>
+</section>
 
-        <section class="frame">
-          <h2>Learning goals</h2>
-          <p>After this lecture, you should be able to</p>
-          <ul>
-            <li><p>Explain the brute force strategy and identify when it is appropriate</p></li>
-            <li><p>Model a problem as a recursive tree of choices</p></li>
-            <li><p>Distinguish permutations from combinations and state their formulas</p></li>
-            <li><p>Trace a recursive permutation or subset algorithm step by step</p></li>
-            <li><p>Explain how backtracking prunes the search tree</p></li>
-            <li><p>Analyze the time and space complexity of brute force solutions</p></li>
-          </ul>
-        </section>
+</section>
 
-        <section class="frame">
-          <h2>Big idea</h2>
-          <ul>
-            <li><p><strong>Brute force</strong> means systematically trying every possible candidate until a solution is found.</p></li>
-            <li><p>Recursion is the natural tool because each call handles one decision and delegates the rest.</p></li>
-            <li><p><strong>Backtracking</strong> extends brute force by abandoning partial candidates early when they cannot lead to a valid solution.</p></li>
-          </ul>
-        </section>
-      </section>
+<section>
+<section class="title-slide slide level1" id="brute-force"><h1>Brute Force</h1></section>
 
-      <!-- =========================================================
-           Brute Force
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Brute Force</h1>
-        </section>
+<section class="frame" id="shopping-bag-intro">
+<h2>Shopping bag selection</h2>
+<p>Choose exactly 3 of 5 items for a shopping bag. The total weight must be at most 10 kg. The item weights are {7,5,4,3,2} kg.</p>
+<ul>
+<li><p>A direct method</p>
+<ul>
+<li><p>List every group of three items.</p></li>
+<li><p>Add the weights in each group.</p></li>
+<li><p>Keep the groups that fit.</p></li>
+</ul>
+</li>
+<li><p>How many groups must the method check?</p></li>
+<li><p>Can some groups be rejected before they are complete?</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>What is brute force?</h2>
-          <ul>
-            <li><p>A problem-solving strategy that generates and tests every possible candidate.</p></li>
-            <li><p>No clever shortcuts or pruning in its purest form.</p></li>
-            <li><p>The algorithm succeeds by exhaustive enumeration.</p></li>
-            <li><p>Common examples:</p>
-              <ul>
-                <li><p>Try every permutation of a string.</p></li>
-                <li><p>Try every combination of items in a bag.</p></li>
-                <li><p>Try every possible order to visit a set of cities.</p></li>
-                <li><p>Try every possible PIN to unlock a phone.</p></li>
-              </ul>
-            </li>
-          </ul>
-        </section>
+<section class="frame" id="brute-force-definition">
+<h2>What is brute force?</h2>
+<ul>
+<li><p><strong>Brute force</strong> solves a problem through straightforward checking.</p></li>
+<li><p><strong>Exhaustive search</strong> covers the complete candidate space.</p>
+<ul>
+<li><p>Generate each candidate.</p></li>
+<li><p>Test each candidate.</p></li>
+</ul>
+</li>
+<li><p>Complete enumeration finds every valid answer in a finite search space.</p></li>
+<li><p>The cost depends on the task.</p>
+<ul>
+<li><p>Scanning an array takes O(n).</p></li>
+<li><p>Checking every pair takes O(n²).</p></li>
+</ul>
+</li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>Advantages and disadvantages</h2>
-          <ul>
-            <li><p><strong>Advantages:</strong></p>
-              <ul>
-                <li><p>Simple to understand and implement.</p></li>
-                <li><p>Guaranteed to find a solution if one exists.</p></li>
-                <li><p>Useful as a correctness baseline to verify faster algorithms.</p></li>
-              </ul>
-            </li>
-            <li><p><strong>Disadvantages:</strong></p>
-              <ul>
-                <li><p>Exponential or factorial time complexity in most cases.</p></li>
-                <li><p>Quickly becomes impractical as input size grows.</p></li>
-                <li><p>Does not exploit problem structure to skip bad candidates.</p></li>
-              </ul>
-            </li>
-          </ul>
-        </section>
+<section class="frame" id="tradeoffs">
+<h2>Advantages and limits</h2>
+<ul>
+<li><p>Advantages</p>
+<ul>
+<li><p>A direct algorithm is often easy to implement.</p></li>
+<li><p>A small exhaustive solver can verify a faster algorithm’s answers.</p></li>
+</ul>
+</li>
+<li><p>Limits</p>
+<ul>
+<li><p>The method works best with a small candidate space.</p></li>
+<li><p>Enumerating a large candidate space can be impractical.</p></li>
+</ul>
+</li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>When is brute force acceptable?</h2>
-          <ul>
-            <li><p>Input size is small and guaranteed to stay small.</p></li>
-            <li><p>A correct solution is needed before optimization begins.</p></li>
-            <li><p>No known efficient algorithm exists for the problem.</p></li>
-            <li><p>The problem is NP-hard (e.g., Traveling Salesman) and exact solutions require enumeration.</p></li>
-            <li><p>Rule of thumb: inputs up to about 10 to 15 elements are usually fine for factorial algorithms; inputs up to about 20 to 30 for exponential algorithms.</p></li>
-          </ul>
-        </section>
-      </section>
+<section class="frame" id="search-goals">
+<h2>Candidates and search goals</h2>
+<ul>
+<li><p>A <strong>candidate</strong> is a possible answer.</p>
+<ul>
+<li><p>In the shopping bag problem, a candidate is a group of three items.</p></li>
+</ul>
+</li>
+<li><p>Find one valid answer.</p>
+<ul>
+<li><p>Stop after the first valid candidate.</p></li>
+<li><p>Report failure if every candidate fails.</p></li>
+</ul>
+</li>
+<li><p>Find all valid answers: record every valid candidate.</p></li>
+<li><p>Find the best answer.</p>
+<ul>
+<li><p>Keep the best value seen during the search.</p></li>
+<li><p>A valid answer may still be suboptimal.</p></li>
+</ul>
+</li>
+</ul>
 
-      <!-- =========================================================
-           Recursion as a Tree of Choices
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Recursion as a Tree of Choices</h1>
-        </section>
+</section>
+</section>
 
-        <section class="frame">
-          <h2>The tree-of-choices model</h2>
-          <ul>
-            <li><p>Many brute force problems share the same structure:</p>
-              <ul>
-                <li><p>At each step, choose one option from a set of remaining options.</p></li>
-                <li><p>Move to the next step with fewer remaining options.</p></li>
-                <li><p>When no options remain, record or evaluate the complete solution.</p></li>
-              </ul>
-            </li>
-            <li><p>This structure forms a <strong>decision tree</strong>:</p>
-              <ul>
-                <li><p>Each level of the tree represents one decision.</p></li>
-                <li><p>Each branch represents one possible choice.</p></li>
-                <li><p>Each path from root to leaf is one complete candidate.</p></li>
-              </ul>
-            </li>
-          </ul>
-        </section>
+<section>
+<section class="title-slide slide level1" id="permutations"><h1>Permutations and the Search Tree</h1></section>
 
-        <section class="frame">
-          <h2>Recursive structure</h2>
-          <ul>
-            <li><p>A recursive function naturally walks the decision tree:</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="2"><code class="language-text">explore(choices, current):
-    if choices is empty:
-        process(current)      // base case: leaf node
+<section class="frame" id="permutation-definition">
+<h2>What is a permutation?</h2>
+<ul>
+<li><p>A <strong>permutation</strong> is an ordered arrangement of distinct elements.</p></li>
+<li><p>A full permutation uses every element exactly once.</p></li>
+<li><p>Each position has one fewer unused element available.</p></li>
+<li><p>The number of full permutations is n!.</p>
+<ul>
+<li><p>n! = n × (n − 1) × ⋯ × 1</p></li>
+<li><p>0! = 1</p></li>
+<li><p>For A, B, and C, 3! = 3 × 2 × 1 = 6.</p></li>
+</ul>
+</li>
+</ul>
+
+</section>
+
+<section class="frame" id="permutation-tree">
+<h2>A permutation decision tree</h2>
+<img width="1400" src="../_static/images/cop3530/brute_force/permutation_decision_tree.svg" alt="Permutation decision tree for ABC. Blue arrows choose letters on the way down. Orange arrows undo choices on the way up. Explore all children before returning to the parent. Leaves print ABC, ACB, BAC, BCA, CBA, CAB.">
+</section>
+
+<section class="frame" id="recursive-pattern">
+<h2>Choose, explore, undo</h2>
+<pre data-fontsize="small"><code class="language-text">search(state):
+    if state is complete:
+        process(state)
         return
-    for each option in choices:
-        choose option
-        explore(remaining choices, current + option)
-        unchoose option       // backtracking step</code></pre>
-          <ul>
-            <li><p>The "unchoose" step restores state so the next branch starts clean.</p></li>
-          </ul>
-        </section>
+    for each available choice:
+        apply(choice)
+        search(updated state)
+        undo(choice)</code></pre><ul>
+<li><p>A search path represents a sequence of decisions.</p></li>
+<li><p>Depth-first search explores one active path at a time.</p></li>
+<li><p><strong>Backtracking</strong> restores the partial solution between branches.</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>Decision tree example: {A, B, C}</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="2"><code class="language-text">                 [ ]
-          /       |       \
-        [A]      [B]      [C]
-       /   \    /   \    /   \
-    [AB] [AC] [BA] [BC] [CA] [CB]
-      |    |    |    |    |    |
-    ABC  ACB  BAC  BCA  CAB  CBA</code></pre>
-          <ul>
-            <li><p>3 levels deep (one per character).</p></li>
-            <li><p>6 leaves (3! = 6 permutations).</p></li>
-            <li><p>Each leaf is one complete permutation.</p></li>
-          </ul>
-        </section>
-      </section>
-
-      <!-- =========================================================
-           Permutations
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Permutations</h1>
-        </section>
-
-        <section class="frame">
-          <h2>What is a permutation?</h2>
-          <ul>
-            <li><p>An arrangement of all elements of a set where <strong>order matters</strong>.</p></li>
-            <li><p>Every element appears exactly once in each arrangement.</p></li>
-            <li><p>Example with {a, b, c}:</p>
-              <ul>
-                <li><p>All permutations: abc, acb, bac, bca, cab, cba</p></li>
-                <li><p>Total count: 3! = 6</p></li>
-              </ul>
-            </li>
-            <li><p>General formula: n! permutations of n distinct elements.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Permutation formula</h2>
-          <ul>
-            <li><p>All n elements: <strong>n!</strong> arrangements</p>
-              <ul>
-                <li><p>n=3: 6, n=4: 24, n=5: 120, n=10: 3,628,800</p></li>
-              </ul>
-            </li>
-            <li><p>Choose k elements from n (order matters): <strong>P(n, k) = n! / (n-k)!</strong></p>
-              <ul>
-                <li><p>Example: P(5, 2) = 5! / 3! = 20</p></li>
-              </ul>
-            </li>
-            <li><p>Key observation: n! grows faster than any polynomial. Even n=20 gives 2.4 trillion permutations.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Recursive permutation algorithm</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">void permute(string& s, int start) {
-    if (start == s.size()) {
-        cout &lt;&lt; s &lt;&lt; "\n";   // base case: one complete permutation
-        return;
+<section class="frame" id="permutation-code">
+<h2>Recursive permutation algorithm</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="permutation">void permute(string&amp; s, size_t start) {
+    if (start == s.size()) { cout &lt;&lt; s &lt;&lt; &#x27;\n&#x27;; return; }
+    for (size_t i = start; i &lt; s.size(); ++i) {
+        swap(s[start], s[i]);   // choose
+        permute(s, start + 1);  // explore
+        swap(s[start], s[i]);   // undo
     }
-    for (int i = start; i &lt; s.size(); i++) {
-        swap(s[start], s[i]);       // choose: put s[i] at position start
-        permute(s, start + 1);      // explore remaining positions
-        swap(s[start], s[i]);       // unchoose: restore original order
-    }
-}</code></pre>
-          <ul>
-            <li><p>At each position <code class="inline">start</code>, try every unused character.</p></li>
-            <li><p>Swap in, recurse, then swap back to restore state.</p></li>
-            <li><p>Time complexity: O(n * n!) since there are n! permutations and each takes O(n) to print.</p></li>
-          </ul>
-        </section>
+}</code></pre><ul>
+<li><p>Each recursion level fixes one position.</p></li>
+<li><p>Each branch must restore its starting arrangement.</p></li>
+<li><p><code class="inline">swap</code> exchanges two characters.</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>Trace: permute("AB", 0)</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="2"><code class="language-text">permute("AB", 0)
-  i=0: swap(0,0) -> "AB"
-    permute("AB", 1)
-      i=1: swap(1,1) -> "AB"
-        permute("AB", 2)  -> print "AB"
-      swap(1,1) -> restore "AB"
-  swap(0,0) -> restore "AB"
-  i=1: swap(0,1) -> "BA"
-    permute("BA", 1)
-      i=1: swap(1,1) -> "BA"
-        permute("BA", 2)  -> print "BA"
-      swap(1,1) -> restore "BA"
-  swap(0,1) -> restore "AB"</code></pre>
-          <ul>
-            <li><p>Output: AB, BA</p></li>
-          </ul>
-        </section>
-      </section>
+</section>
 
-      <!-- =========================================================
-           Combinations and Subsets
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Combinations and Subsets</h1>
-        </section>
+<section>
+<section class="title-slide slide level1" id="combinations-subsets"><h1>Subsets and Combinations</h1></section>
 
-        <section class="frame">
-          <h2>What is a combination?</h2>
-          <ul>
-            <li><p>A selection of elements from a set where <strong>order does not matter</strong>.</p></li>
-            <li><p>Only the chosen elements matter, not their arrangement.</p></li>
-            <li><p>Example: choose 2 from {a, b, c}:</p>
-              <ul>
-                <li><p>Combinations: {a,b}, {a,c}, {b,c}</p></li>
-                <li><p>Note: {a,b} and {b,a} are the same combination.</p></li>
-              </ul>
-            </li>
-          </ul>
-        </section>
+<section class="frame" id="subsets-definition">
+<h2>Subsets of every size</h2>
+<ul>
+<li><p>A <strong>subset</strong> can contain any number of elements from 0 through n.</p></li>
+<li><p>Order does not matter: {1,2} and {2,1} are the same subset.</p></li>
+<li><p>Each element has two possible membership states.</p>
+<ul>
+<li><p>Present in the subset.</p></li>
+<li><p>Absent from the subset.</p></li>
+</ul>
+</li>
+<li><p>There are 2<sup>n</sup> subsets.</p>
+<ul>
+<li><p>For {1,2,3}: {}, {1}, {2}, {3}, {1,2}, {1,3}, {2,3}, {1,2,3}.</p></li>
+</ul>
+</li>
+<li><p>The empty set is a subset.</p></li>
+<li><p>Every partial selection is already a valid subset.</p></li>
+</ul>
 
-        <section class="frame">
-          <h2>Permutation vs. combination</h2>
-          <table>
-            <thead>
-              <tr><th>Property</th><th>Permutation</th><th>Combination</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Order matters?</td><td>Yes</td><td>No</td></tr>
-              <tr><td>abc vs acb?</td><td>Different</td><td>Same</td></tr>
-              <tr><td>Formula (choose k from n)</td><td>n! / (n-k)!</td><td>n! / (k! * (n-k)!)</td></tr>
-              <tr><td>Count for n=3, k=2</td><td>6</td><td>3</td></tr>
-            </tbody>
-          </table>
-        </section>
+</section>
 
-        <section class="frame">
-          <h2>Subsets</h2>
-          <ul>
-            <li><p>A <strong>subset</strong> is a combination of any size (0 to n elements).</p></li>
-            <li><p>Total number of subsets of n elements: <strong>2<sup>n</sup></strong></p>
-              <ul>
-                <li><p>Each element is either included or excluded (2 choices per element).</p></li>
-                <li><p>n=3: 8 subsets, n=20: over 1 million subsets.</p></li>
-              </ul>
-            </li>
-            <li><p>Example: all subsets of {a, b, c}:</p>
-              <ul>
-                <li><p>{}, {a}, {b}, {c}, {a,b}, {a,c}, {b,c}, {a,b,c}</p></li>
-              </ul>
-            </li>
-          </ul>
-        </section>
+<section class="frame" id="subset-tree">
+<h2>Generating subsets: add and undo</h2>
+<img width="1400" src="../_static/images/cop3530/brute_force/subset_decision_tree.svg" alt="Subset tree for 1, 2, 3. Blue downward arrows add a later element. Orange upward arrows remove the last addition and restore the parent subset. Every node, including the empty set, is recorded on first arrival.">
+</section>
 
-        <section class="frame">
-          <h2>Recursive subset algorithm</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">void subsets(vector&lt;int&gt;& items, vector&lt;int&gt;& current, int index) {
-    // print current subset at every call, not just leaves
+<section class="frame" id="subset-state">
+<h2>Generating subsets without duplicates</h2>
+<table class="compact"><thead><tr><th scope="col">Selected elements</th><th scope="col">Elements still eligible</th></tr></thead><tbody>
+<tr><td>{}</td><td>1, 2, 3</td></tr>
+<tr><td>{1}</td><td>2, 3</td></tr>
+<tr><td>{1,2}</td><td>3</td></tr>
+<tr><td>{1,3}</td><td>None</td></tr>
+</tbody></table><ul>
+<li><p>Each new element comes later in the input order.</p></li>
+<li><p>Every subset has one increasing-order representation.</p></li>
+<li><p>A branch ends when no later element remains.</p></li>
+</ul>
+</section>
+
+<section class="frame" id="subset-code">
+<h2>Recursive subset algorithm</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="subsets">void subsets(const vector&lt;int&gt;&amp; items,
+             vector&lt;int&gt;&amp; current, size_t index) {
     print(current);
-
-    for (int i = index; i &lt; items.size(); i++) {
-        current.push_back(items[i]);     // include items[i]
-        subsets(items, current, i + 1); // explore further
-        current.pop_back();              // exclude items[i]
+    for (size_t i = index; i &lt; items.size(); ++i) {
+        current.push_back(items[i]);
+        subsets(items, current, i + 1);
+        current.pop_back();
     }
-}</code></pre>
-          <ul>
-            <li><p>Each element is either included or skipped.</p></li>
-            <li><p>Starting from <code class="inline">index</code> avoids revisiting earlier elements and prevents duplicates.</p></li>
-            <li><p>Time complexity: O(n * 2<sup>n</sup>).</p></li>
-          </ul>
-        </section>
+}</code></pre><ul>
+<li><p><code class="inline">print(current)</code> runs at every call because every node is a valid subset.</p>
+<ul>
+<li><p><code class="inline">print</code> is a helper that displays one candidate.</p></li>
+</ul>
+</li>
+<li><p>Increasing input order prevents reordered copies.</p></li>
+<li><p>Candidate operations</p>
+<ul>
+<li><p><code class="inline">push_back</code> appends an element.</p></li>
+<li><p><code class="inline">pop_back</code> removes the last element.</p></li>
+</ul>
+</li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>Application: the shopping bag problem</h2>
-          <ul>
-            <li><p>Scenario: given a list of items with weights, choose exactly k items.</p></li>
-            <li><p>Brute force approach: generate all combinations of size k and evaluate each.</p></li>
-            <li><p>Example: 5 items, choose 3:</p>
-              <ul>
-                <li><p>C(5, 3) = 10 combinations to evaluate.</p></li>
-              </ul>
-            </li>
-            <li><p>This is feasible for small n but becomes expensive quickly:</p>
-              <ul>
-                <li><p>C(20, 10) = 184,756 combinations.</p></li>
-                <li><p>C(100, 50) is astronomically large.</p></li>
-              </ul>
-            </li>
-          </ul>
-        </section>
-      </section>
+<section class="frame" id="combination-definition">
+<h2>What is a combination?</h2>
+<p>A <strong>combination</strong> of size k is a subset with exactly k elements.</p>
+<p>From {1,2,3}, choose exactly 2 elements.</p>
+<table class="compact">
+<thead><tr><th scope="col">Selection size</th><th scope="col">Subsets of {1,2,3}</th><th scope="col">Keep when k = 2?</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>{}</td><td>No</td></tr>
+<tr><td>1</td><td>{1}, {2}, {3}</td><td>No</td></tr>
+<tr><td>2</td><td>{1,2}, {1,3}, {2,3}</td><td>Yes</td></tr>
+<tr><td>3</td><td>{1,2,3}</td><td>No</td></tr>
+</tbody>
+</table>
+<ul>
+<li><p>All subsets include all sizes: 2³ = 8 selections.</p></li>
+<li><p>Size-2 combinations include only the three pairs: C(3,2) = 3.</p></li>
+<li><p>Order does not matter in either task.</p></li>
+<li><p>The general count is C(n,k) = n! / (k! × (n − k)!).</p>
+<ul><li><p>The selection size satisfies 0 ≤ k ≤ n.</p></li></ul>
+</li>
+</ul>
+</section>
 
-      <!-- =========================================================
-           Backtracking
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Backtracking</h1>
-        </section>
+<section class="frame" id="combination-state">
+<h2>Generating combinations of exactly k elements</h2>
+<ul>
+<li><p>A partial candidate can contain fewer than k elements.</p>
+<ul><li><p>For k = 2, {1} is still being built.</p></li></ul>
+</li>
+<li><p>Record only selections containing exactly k elements.</p>
+<ul><li><p>For k = 2, {1,2} is an answer.</p></li></ul>
+</li>
+<li><p>Stop extending a selection when its size reaches k.</p></li>
+<li><p>Each added element comes from a later input position.</p></li>
+<li><p>A branch that cannot reach k produces no answer.</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>What is backtracking?</h2>
-          <ul>
-            <li><p>Backtracking is brute force with early termination.</p></li>
-            <li><p>It builds a solution step by step and <strong>prunes</strong> a branch the moment it cannot lead to a valid solution.</p></li>
-            <li><p>Key idea: if a partial candidate already violates a constraint, skip all completions of that candidate.</p></li>
-            <li><p>Backtracking does not visit every leaf; it avoids entire subtrees.</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Brute force vs. backtracking</h2>
-          <table>
-            <thead>
-              <tr><th>Aspect</th><th>Brute Force</th><th>Backtracking</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Visits all candidates?</td><td>Yes</td><td>No (prunes early)</td></tr>
-              <tr><td>Uses constraints?</td><td>Only at leaves</td><td>At every step</td></tr>
-              <tr><td>Can be faster?</td><td>No</td><td>Yes, often much faster</td></tr>
-              <tr><td>Worst case complexity</td><td>Same</td><td>Same (no pruning possible)</td></tr>
-            </tbody>
-          </table>
-        </section>
-
-        <section class="frame">
-          <h2>Backtracking template</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">void backtrack(state, choices) {
-    if (isGoal(state)) {
-        recordSolution(state);
-        return;
+<section class="frame" id="combination-code">
+<h2>Recursive combination algorithm</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="combinations">void combinations(const vector&lt;int&gt;&amp; items,
+                  vector&lt;int&gt;&amp; current, size_t index, size_t k) {
+    if (current.size() == k) { print(current); return; }
+    for (size_t i = index; i &lt; items.size(); ++i) {
+        current.push_back(items[i]);
+        combinations(items, current, i + 1, k);
+        current.pop_back();
     }
-    for each choice in choices:
-        if (isValid(state, choice)) {   // pruning check
-            apply(state, choice);
-            backtrack(state, remaining choices);
-            undo(state, choice);        // restore state
-        }
-}</code></pre>
-          <ul>
-            <li><p><code class="inline">isValid</code> is the constraint check that prunes invalid branches.</p></li>
-            <li><p><code class="inline">undo</code> restores state before trying the next choice.</p></li>
-          </ul>
-        </section>
+}</code></pre><ul>
+<li><p>Only selections of size k are answers.</p></li>
+<li><p>Increasing input order gives one path per combination.</p></li>
+<li><p><code class="inline">size()</code> returns the number of elements in a vector.</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>Classic example: N-Queens problem</h2>
-          <ul>
-            <li><p>Place N queens on an N x N chessboard so that no two queens attack each other.</p></li>
-            <li><p>Queens attack along rows, columns, and diagonals.</p></li>
-            <li><p>Brute force: place queens in all N<sup>N</sup> ways, then check each board.</p></li>
-            <li><p>Backtracking approach:</p>
-              <ul>
-                <li><p>Place one queen per row.</p></li>
-                <li><p>Before placing in column c of row r, check column c and both diagonals.</p></li>
-                <li><p>If any conflict exists, skip that column immediately.</p></li>
-              </ul>
-            </li>
-            <li><p>For N=8 brute force: 16 million candidates. Backtracking: ~15,720 nodes visited.</p></li>
-          </ul>
-        </section>
+<section class="frame" id="shopping-bag">
+<h2>Shopping bag combinations</h2>
+<p>Choose exactly 3 items with total weight at most 10 kg. The item weights, in input order, are {7,5,4,3,2} kg.</p><table class="compact">
+<thead><tr><th scope="col">Example candidate</th><th scope="col">Total weight</th><th scope="col">Fits?</th></tr></thead>
+<tbody>
+<tr><td>{4,3,2}</td><td>9 kg</td><td>Yes</td></tr>
+<tr><td>{5,3,2}</td><td>10 kg</td><td>Yes</td></tr>
+<tr><td>{5,4,2}</td><td>11 kg</td><td>No</td></tr>
+</tbody></table><ul>
+<li><p>The combination search with k = 3 generates C(5,3) = 10 complete candidates.</p></li>
+<li><p>Exactly two candidates satisfy the weight limit.</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>N-Queens: validity check</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="2"><code class="language-cpp">bool isSafe(vector&lt;int&gt;& queens, int row, int col) {
-    for (int r = 0; r &lt; row; r++) {
+<section class="frame" id="selection-comparison">
+<h2>Permutations, combinations, and subsets</h2>
+<table class="compact">
+<thead><tr><th scope="col">Property</th><th scope="col">Permutation</th><th scope="col">Combination</th><th scope="col">Subset</th></tr></thead>
+<tbody>
+<tr><td>Order matters?</td><td>Yes</td><td>No</td><td>No</td></tr>
+<tr><td>Number selected</td><td>k</td><td>Exactly k</td><td>Any size from 0 through n</td></tr>
+<tr><td>Count</td><td>P(n,k)</td><td>C(n,k)</td><td>2<sup>n</sup></td></tr>
+<tr><td>From {1,2,3}</td><td>6 orderings of 2 elements</td><td>3 selections of 2 elements</td><td>8 selections of all sizes</td></tr>
+</tbody>
+</table>
+<ul>
+<li><p>Choosing and arranging k distinct elements gives P(n,k) = n! / (n − k)!.</p></li>
+<li><p>Each k-element group has k! different orderings.</p></li>
+<li><p>Dividing P(n,k) by k! gives C(n,k).</p></li>
+</ul>
+</section>
+</section>
+
+<section>
+<section class="title-slide slide level1" id="backtracking"><h1>Pruning Impossible Branches</h1></section>
+
+<section class="frame" id="backtracking-definition">
+<h2>Adding a constraint check</h2>
+<ul>
+<li><p>Backtracking restores state between branches.</p></li>
+<li><p><strong>Pruning</strong> skips a branch with no valid completion.</p></li>
+<li><p>Reject an invalid choice before making a recursive call.</p></li>
+<li><p>An overweight partial bag can be pruned.</p>
+<ul>
+<li><p>All item weights are positive.</p></li>
+<li><p>Adding an item increases the total weight.</p></li>
+</ul>
+</li>
+<li><p>A pruning rule must preserve every valid answer.</p></li>
+</ul>
+</section>
+
+<section class="frame" id="pruning-comparison">
+<h2>Pruning before the third item</h2>
+<img width="1400" src="../_static/images/cop3530/brute_force/shopping_bag_pruning.svg" alt="Choose the 7 kg item, then try the 5 kg item. Their combined weight is already 12 kg, so reject the branch. A cut crosses the dashed branches toward third items 4, 3, and 2 kg, which are not explored.">
+</section>
+
+<section class="frame" id="backtracking-template">
+<h2>Backtracking with constraints</h2>
+<pre data-fontsize="small"><code class="language-text">search(state):
+    if state is complete:
+        record(state)
+        return
+    for each available choice:
+        if choice passes the constraint check:
+            apply(choice)
+            search(updated state)
+            undo(choice)</code></pre><ul>
+<li><p>Constraint checks apply to partial solutions.</p></li>
+<li><p>A partial solution can pass its current checks and still reach a dead end.</p></li>
+<li><p>A sound rejection rule preserves every valid solution.</p></li>
+</ul>
+
+</section>
+
+<section class="frame" id="shopping-bag-pruned">
+<h2>Pruning the shopping bag search</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="shopping-bag">void bags(const vector&lt;int&gt;&amp; w, vector&lt;int&gt;&amp; current,
+          size_t index, int total) {
+    if (current.size() == 3) { print(current); return; }
+    for (size_t i = index; i &lt; w.size(); ++i) {
+        if (total + w[i] &gt; 10) continue;   // prune
+        current.push_back(w[i]);
+        bags(w, current, i + 1, total + w[i]);
+        current.pop_back();
+    }
+}</code></pre><ul>
+<li><p>The weight limit applies to partial selections.</p></li>
+<li><p>A partial sum tracks the candidate’s weight.</p></li>
+<li><p>This input needs 16 calls with the check and 26 calls without it.</p></li>
+</ul>
+</section>
+
+<section class="frame" id="n-queens-problem">
+<h2>The N-Queens problem</h2>
+<ul>
+<li><p>Place N nonattacking queens on an N × N board.</p></li>
+<li><p>Queens attack along:</p>
+<ul>
+<li><p>Rows</p></li>
+<li><p>Columns</p></li>
+<li><p>Diagonals</p></li>
+</ul>
+</li>
+<li><p>Use one queen per row.</p>
+<ul>
+<li><p>Row conflicts are impossible.</p></li>
+</ul>
+</li>
+<li><p>Allowing any column in each row gives N<sup>N</sup> complete assignments.</p></li>
+<li><p>Reject attacking placements before recursing.</p></li>
+</ul>
+
+</section>
+
+<section class="frame" id="n-queens-state">
+<h2>Representing a partial board</h2>
+<table class="compact"><thead><tr><th scope="col">Row</th><th scope="col">Chosen column</th></tr></thead><tbody>
+<tr><td>0</td><td>0</td></tr>
+<tr><td>1</td><td>2</td></tr>
+<tr><td>2</td><td>Unfilled</td></tr>
+<tr><td>3</td><td>Unfilled</td></tr>
+</tbody></table><ul>
+<li><p>A column list represents the board with one entry per row.</p></li>
+<li><p>Already placed queens must remain nonattacking.</p></li>
+<li><p>A proposed square conflicts with a placed queen when:</p>
+<ul>
+<li><p>Their column numbers are equal.</p></li>
+<li><p>Their absolute row and column differences are equal.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+
+<section class="frame" id="n-queens-prune">
+<h2>4-Queens: finding the first solution</h2>
+<img width="1100" src="../_static/images/cop3530/brute_force/four_queens_trace.svg" alt="Nine 4 by 4 boards in a 3 by 3 layout. Place R0 C0 and R1 C2, find every R2 square in conflict, move the R1 queen to C3, place R2 C1 and find R3 blocked, backtrack to R0 C1, then place R1 C3, R2 C0, and R3 C2 to reach the first solution. Orange cells show new queens and crosses show rejected trial squares.">
+</section>
+
+<section class="frame" id="n-queens-safe-code">
+<h2>N-Queens: the safety check</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="queen-safety">bool isSafe(const vector&lt;int&gt;&amp; queens, int row, int col) {
+    for (int r = 0; r &lt; row; ++r) {
         int c = queens[r];
-        if (c == col)               return false; // same column
-        if (abs(r - row) == abs(c - col)) return false; // diagonal
+        if (c == col) return false;
+        if (abs(r - row) == abs(c - col)) return false;
     }
     return true;
-}
+}</code></pre><ul>
+<li><p>A proposed queen must avoid every already placed queen.</p></li>
+<li><p><code class="inline">abs</code> returns the absolute value of a number.</p></li>
+<li><p>The worst-case cost of one safety check is O(N).</p></li>
+</ul>
 
-void solve(vector&lt;int&gt;& queens, int row, int n) {
+</section>
+
+<section class="frame" id="n-queens-solve-code">
+<h2>N-Queens: recursive search</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="queen-solver">void solve(vector&lt;int&gt;&amp; queens, int row, int n) {
     if (row == n) { printBoard(queens); return; }
-    for (int col = 0; col &lt; n; col++) {
-        if (isSafe(queens, row, col)) {
-            queens[row] = col;
-            solve(queens, row + 1, n);
-            queens[row] = -1;       // undo
-        }
+    for (int col = 0; col &lt; n; ++col) {
+        if (!isSafe(queens, row, col)) continue;
+        queens[row] = col;
+        solve(queens, row + 1, n);
+        queens[row] = -1;
     }
-}</code></pre>
-        </section>
+}</code></pre><ul>
+<li><p>Only nonattacking partial boards are extended.</p></li>
+<li><p>A complete nonattacking board is a solution.</p></li>
+<li><p>Restoring a placement preserves alternative branches.</p></li>
+</ul>
 
-        <section class="frame">
-          <h2>Other classic backtracking problems</h2>
-          <ul>
-            <li><p><strong>Sudoku solver</strong>: place digits 1-9 in a 9x9 grid respecting row, column, and box constraints.</p></li>
-            <li><p><strong>Rat in a maze</strong>: find a path from start to exit in a grid, avoiding walls.</p></li>
-            <li><p><strong>Word search</strong>: find a word in a 2D grid of characters moving in 4 or 8 directions.</p></li>
-            <li><p><strong>Subset sum</strong>: find a subset that adds up to a target value.</p></li>
-            <li><p><strong>Graph coloring</strong>: assign colors to vertices so no adjacent vertices share a color.</p></li>
-          </ul>
-        </section>
-      </section>
+</section>
 
-      <!-- =========================================================
-           Complexity Analysis
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Complexity Analysis</h1>
-        </section>
+<section class="frame" id="n-queens-counts">
+<h2>What does the 8-Queens search count?</h2>
+<table class="compact">
+<thead><tr><th scope="col">Measurement</th><th scope="col">Count for N = 8</th></tr></thead>
+<tbody>
+<tr><td>Complete assignments with one queen per row</td><td>8<sup>8</sup> = 16,777,216</td></tr>
+<tr><td>Candidate placements tested</td><td>15,720</td></tr>
+<tr><td>Search states visited, including the empty board</td><td>2,057</td></tr>
+<tr><td>Complete solutions recorded</td><td>92</td></tr>
+</tbody></table><ul>
+<li><p>Full boards, attempted placements, visited states, and solutions are different units.</p></li>
+<li><p>Counting assumptions</p>
+<ul>
+<li><p>The search records every solution.</p></li>
+<li><p>The search uses no symmetry reduction.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
 
-        <section class="frame">
-          <h2>Time complexity overview</h2>
-          <table>
-            <thead>
-              <tr><th>Problem</th><th>Candidates</th><th>Time complexity</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Permutations of n items</td><td>n!</td><td>O(n * n!)</td></tr>
-              <tr><td>Subsets of n items</td><td>2<sup>n</sup></td><td>O(n * 2<sup>n</sup>)</td></tr>
-              <tr><td>Combinations C(n,k)</td><td>C(n,k)</td><td>O(k * C(n,k))</td></tr>
-              <tr><td>N-Queens (brute force)</td><td>N<sup>N</sup></td><td>O(N<sup>N</sup>)</td></tr>
-            </tbody>
-          </table>
-        </section>
+<section>
+<section class="title-slide slide level1" id="complexity"><h1>Complexity Analysis</h1></section>
 
-        <section class="frame">
-          <h2>Factorial growth in practice</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="2"><code class="language-text">n      n!                   2^n
-1      1                    2
-5      120                  32
-10     3,628,800            1,024
-12     479,001,600          4,096
-15     1,307,674,368,000    32,768
-20     2,432,902,008,176... 1,048,576</code></pre>
-          <ul>
-            <li><p>Factorial algorithms are feasible only for very small n (roughly n &lt;= 12).</p></li>
-            <li><p>Exponential algorithms allow slightly larger n (roughly n &lt;= 25 to 30).</p></li>
-          </ul>
-        </section>
+<section class="frame" id="enumeration-complexity">
+<h2>Candidate counts and output costs</h2>
+<p>Printing all arrangements of ABC writes 6 × 3 = 18 letters. In general, full permutation output has n! candidates with n letters each.</p><table class="compact">
+<thead><tr><th scope="col">Output task</th><th scope="col">Outputs</th><th scope="col">Work to print all outputs</th></tr></thead>
+<tbody>
+<tr><td>Full permutations</td><td>n!</td><td>O(n × n!)</td></tr>
+<tr><td>All subsets</td><td>2<sup>n</sup></td><td>O(n × 2<sup>n</sup>)</td></tr>
+<tr><td>Combinations of size k</td><td>C(n,k)</td><td>O(k × C(n,k))</td></tr>
+</tbody></table><ul>
+<li><p>Assumptions</p>
+<ul>
+<li><p>Printing one element takes constant time.</p></li>
+<li><p>The combination bound needs k ≥ 1. For k = 0, the one empty combination prints in constant time.</p></li>
+</ul>
+</li>
+<li><p>Total running time = generating + constraint checking + printing.</p></li>
+<li><p>Printing dominates in two of the generators.</p>
+<ul>
+<li><p><code class="inline">permute</code> runs in O(n × n!) time.</p></li>
+<li><p><code class="inline">subsets</code> runs in O(n × 2<sup>n</sup>) time.</p></li>
+</ul>
+</li>
+<li><p><code class="inline">combinations</code> can take longer than its printing cost: it visits some prefixes that never reach size k.</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>Space complexity</h2>
-          <ul>
-            <li><p>Recursive brute force uses the call stack for depth-first traversal.</p></li>
-            <li><p>Stack depth equals the depth of the decision tree:</p>
-              <ul>
-                <li><p>Permutations: O(n) stack frames.</p></li>
-                <li><p>Subsets: O(n) stack frames.</p></li>
-              </ul>
-            </li>
-            <li><p>Storage for partial solutions is also O(n) per path.</p></li>
-            <li><p>Overall space: O(n) not counting the output itself.</p></li>
-          </ul>
-        </section>
+<section class="frame" id="growth-table">
+<h2>How quickly do the counts grow?</h2>
+<table class="compact">
+<thead><tr><th scope="col">n</th><th scope="col">n!</th><th scope="col">2<sup>n</sup></th></tr></thead>
+<tbody>
+<tr><td>10</td><td>3,628,800</td><td>1,024</td></tr>
+<tr><td>15</td><td>1,307,674,368,000</td><td>32,768</td></tr>
+<tr><td>20</td><td>≈ 2.43 × 10<sup>18</sup></td><td>1,048,576</td></tr>
+<tr><td>30</td><td>≈ 2.65 × 10<sup>32</sup></td><td>1,073,741,824</td></tr>
+</tbody></table><ul>
+<li><p>At a hypothetical rate of one million checks per second, 15! checks take about 15 days.</p></li>
+<li><p>Actual running time also depends on:</p>
+<ul>
+<li><p>The work per candidate</p></li>
+<li><p>Output costs</p></li>
+</ul>
+</li>
+<li><p>Estimate the work for the actual input.</p></li>
+<li><p>Measure the actual implementation.</p></li>
+</ul>
+</section>
 
-        <section class="frame">
-          <h2>Backtracking and complexity</h2>
-          <ul>
-            <li><p>Backtracking does not change worst-case complexity.</p></li>
-            <li><p>If no constraints can prune anything, backtracking visits every node.</p></li>
-            <li><p>In practice, good constraints can cut the search space dramatically:</p>
-              <ul>
-                <li><p>N-Queens: from N<sup>N</sup> to roughly N! / exponential savings.</p></li>
-                <li><p>Sudoku: from 9<sup>81</sup> to milliseconds for most puzzles.</p></li>
-              </ul>
-            </li>
-            <li><p>Pruning quality depends on constraint strength and problem structure.</p></li>
-          </ul>
-        </section>
-      </section>
+<section class="frame" id="space-complexity">
+<h2>Working space and stored output</h2>
+<ul>
+<li><p>Depth-first search keeps one active path.</p></li>
+<li><p>Working space</p>
+<ul>
+<li><p>Permutations: O(n)</p></li>
+<li><p>Subsets: O(n)</p></li>
+<li><p>Combinations: O(k)</p></li>
+<li><p>N-Queens: O(N)</p></li>
+</ul>
+</li>
+<li><p>Additional space for storing every result</p>
+<ul>
+<li><p>Permutations: Θ(n × n!)</p></li>
+<li><p>Subsets: Θ(n × 2<sup>n</sup>)</p></li>
+</ul>
+</li>
+<li><p>Printing each result immediately avoids storing the full output.</p></li>
+</ul>
+</section>
 
-      <!-- =========================================================
-           Wrap-up
-           ========================================================= -->
-      <section>
-        <section class="title-slide slide level1">
-          <h1>Wrap-up</h1>
-        </section>
+<section class="frame" id="pruning-complexity">
+<h2>The cost of pruning</h2>
+<ul>
+<li><p>Each constraint check takes time.</p></li>
+<li><p>A rejected branch can save an entire subtree’s work.</p></li>
+<li><p>Pruning effectiveness depends on:</p>
+<ul>
+<li><p>How early a branch is rejected</p></li>
+<li><p>How many branches are rejected</p></li>
+</ul>
+</li>
+<li><p>With no rejected choices, the search may visit every candidate.</p></li>
+<li><p>Pruning can improve a worst-case bound.</p></li>
+<li><p>An exponential or factorial worst case may remain.</p></li>
+</ul>
+</section>
+</section>
 
-        <section class="frame">
-          <h2>Summary</h2>
-          <ul>
-            <li><p><strong>Brute force</strong>: generate and test every candidate; correct but slow.</p></li>
-            <li><p><strong>Decision tree</strong>: the mental model for recursive enumeration; each level is one choice.</p></li>
-            <li><p><strong>Permutations</strong>: order matters; n! arrangements; swap-based recursion.</p></li>
-            <li><p><strong>Combinations/subsets</strong>: order does not matter; C(n,k) or 2<sup>n</sup> candidates; include/exclude recursion.</p></li>
-            <li><p><strong>Backtracking</strong>: prune invalid branches early; same worst case, much better in practice.</p></li>
-            <li><p><strong>Complexity</strong>: factorial or exponential; feasible only for small input.</p></li>
-          </ul>
-        </section>
+<section>
+<section class="title-slide slide level1" id="supporting-material"><h1>Additional Examples and Analysis</h1></section>
 
-        <section class="frame">
-          <h2>Key patterns to remember</h2>
-          <ul>
-            <li><p><strong>Permutation pattern</strong>: loop from current position, swap in, recurse, swap back.</p></li>
-            <li><p><strong>Subset pattern</strong>: loop from current index, push, recurse with i+1, pop.</p></li>
-            <li><p><strong>Backtracking addition</strong>: check <code class="inline">isValid</code> before recursing; skip the branch if it fails.</p></li>
-            <li><p><strong>Undo step is essential</strong>: always restore state after recursion returns.</p></li>
-          </ul>
-        </section>
-      </section>
+<section class="frame" id="subset-setup">
+<h2>Printing subsets and combinations</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="print-subset">void print(const vector&lt;int&gt;&amp; values) {
+    cout &lt;&lt; &quot;{ &quot;;
+    for (int x : values) cout &lt;&lt; x &lt;&lt; &#x27; &#x27;;
+    cout &lt;&lt; &quot;}\n&quot;;
+}</code></pre><ul>
+<li><p><code class="inline">cout</code> writes values to the output stream.</p></li>
+<li><p>Printing candidates immediately avoids retaining the full output.</p></li>
+</ul>
+</section>
 
-    </div>
-  </div>
+<section class="frame" id="n-queens-setup">
+<h2>Printing and starting N-Queens</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="queen-print">void printBoard(const vector&lt;int&gt;&amp; queens) {
+    for (size_t r = 0; r &lt; queens.size(); ++r) {
+        for (size_t c = 0; c &lt; queens.size(); ++c)
+            cout &lt;&lt; (queens[r] == int(c) ? &quot;Q &quot; : &quot;. &quot;);
+        cout &lt;&lt; &#x27;\n&#x27;;
+    }
+    cout &lt;&lt; &#x27;\n&#x27;;
+}</code></pre><ul>
+<li><p>The vector needs one entry per board row.</p></li>
+<li><p>For a 4 × 4 board:</p>
+<ul>
+<li><p><code class="inline">vector&lt;int&gt; queens(4, -1);</code></p></li>
+<li><p><code class="inline">solve(queens, 0, 4);</code></p></li>
+</ul>
+</li>
+</ul>
 
-  <!-- Reveal -->
-  <script src="../_static/revealjs/dist/reveal.js"></script>
+</section>
 
-  <!-- Plugins -->
-  <script src="../_static/revealjs/plugin/notes/notes.js"></script>
-  <script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
-  <script src="../_static/revealjs/plugin/math/math.js"></script>
+<section class="frame" id="combination-pruning-state">
+<h2>Feasibility of a partial combination</h2>
+<ul>
+<li><p>A partial selection is useful only if it can still reach size k.</p></li>
+<li><p>If r elements have been chosen:</p>
+<ul>
+<li><p>The selection still needs t = k − r elements.</p></li>
+<li><p>A next choice at index i needs i ≤ n − t.</p></li>
+</ul>
+</li>
+<li><p>For 5 elements and k = 3:</p>
+<ul>
+<li><p>The first choice can use index 0, 1, or 2.</p></li>
+<li><p>Starting at index 3 leaves only two elements available.</p></li>
+<li><p>That branch cannot reach size 3.</p></li>
+</ul>
+</li>
+</ul>
+</section>
 
-  <script>
-    var revealjsConfig = new Object();
-    Object.assign(revealjsConfig, {
-      "disableLayout": true,
-      "controls": true,
-      "progress": true,
-      "hash": true,
-      "center": true,
-      "transition": "slide",
-      "slideNumber": true,
-      "scrollActivationWidth": 1,
-      "mouseWheel": false,
-      "width": 960,
-      "height": 540
-    });
+<section class="frame" id="combination-pruned-code">
+<h2>Combination search with pruning</h2>
+<pre data-fontsize="small"><code class="language-cpp" data-example="combinations-pruned">void combinationsPruned(const vector&lt;int&gt;&amp; items,
+    vector&lt;int&gt;&amp; current, size_t index, size_t k) {
+    if (current.size() == k) { print(current); return; }
+    size_t last = items.size() - (k - current.size());
+    for (size_t i = index; i &lt;= last; ++i) {
+        current.push_back(items[i]);
+        combinationsPruned(items, current, i + 1, k);
+        current.pop_back();
+    }
+}</code></pre><ul>
+<li><p>Every explored prefix can reach size k.</p></li>
+<li><p>For k ≥ 1, total time including output is O(k × C(n,k)).</p></li>
+</ul>
+</section>
 
-    revealjsConfig.plugins = [
-      RevealNotes, RevealHighlight, RevealMath,
-    ];
+<section class="frame" id="n-queens-complexity">
+<h2>N-Queens counts and running time</h2>
+<ul>
+<li><p>One queen per row gives N<sup>N</sup> complete assignments.</p></li>
+<li><p>Checking all queen pairs on each of those boards takes O(N² × N<sup>N</sup>) total time.</p></li>
+<li><p>Column checks require distinct chosen columns.</p>
+<ul>
+<li><p>At most N! complete arrangements satisfy that requirement.</p></li>
+</ul>
+</li>
+<li><p>The solve function checks partial boards during the search.</p></li>
+<li><p>An upper bound for solve, including board printing, is O(N² × N!).</p></li>
+<li><p>Pruning may reduce the actual work.</p></li>
+</ul>
+</section>
 
-    Reveal.initialize(revealjsConfig);
-  </script>
+<section class="frame" id="other-applications">
+<h2>Other backtracking applications</h2>
+<ul>
+<li><p>Sudoku</p>
+<ul>
+<li><p>Try a digit in an empty cell.</p></li>
+<li><p>Reject digits that violate row, column, or box constraints.</p></li>
+</ul>
+</li>
+<li><p>Maze paths</p>
+<ul>
+<li><p>Try a neighboring cell.</p></li>
+<li><p>Reject walls.</p></li>
+<li><p>Reject cells already on the current path.</p></li>
+</ul>
+</li>
+<li><p>Word search</p>
+<ul>
+<li><p>Extend the path only when the next character matches.</p></li>
+</ul>
+</li>
+<li><p>Graph coloring</p>
+<ul>
+<li><p>Reject a color used by an adjacent colored vertex.</p></li>
+</ul>
+</li>
+</ul>
+
+</section>
+</section>
+</div>
+</div>
+<script src="../_static/revealjs/dist/reveal.js"></script>
+<script src="../_static/revealjs/plugin/notes/notes.js"></script>
+<script src="../_static/revealjs/plugin/highlight/highlight.js"></script>
+<script src="../_static/revealjs/plugin/math/math.js"></script>
+<script>
+Reveal.initialize({
+  disableLayout: false,
+  controls: true,
+  progress: true,
+  hash: true,
+  center: false,
+  transition: "none",
+  slideNumber: true,
+  scrollActivationWidth: 1,
+  mouseWheel: false,
+  width: 1600,
+  height: 900,
+  margin: 0.1,
+  plugins: [RevealNotes, RevealHighlight, RevealMath]
+});
+</script>
 </body>
 </html>

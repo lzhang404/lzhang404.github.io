@@ -1,0 +1,291 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780" role="img" aria-labelledby="title desc">
+<title id="title">Nine-step 4-Queens backtracking trace</title>
+<desc id="desc">Step 1: Place R0 C0. Board columns by row: [0, -1, -1, -1]. Place the first queen. Step 2: Place R1 C2. Board columns by row: [0, 2, -1, -1]. C0 and C1 conflict. C2 is safe. Step 3: No place in R2. Board columns by row: [0, 2, -1, -1]. Every square in R2 conflicts. Backtrack to R1. Step 4: Try R1 C3. Board columns by row: [0, 3, -1, -1]. Remove Q at R1 C2. Try the next column: C3. Step 5: Place R2 C1. Board columns by row: [0, 3, 1, -1]. C0 conflicts in R2. R3 has no safe square. Step 6: Backtrack to R0. Board columns by row: [1, -1, -1, -1]. From step 5: R2: C2, C3 conflict. R1: no columns left. Try R0 C1. Step 7: Place R1 C3. Board columns by row: [1, 3, -1, -1]. C0, C1, C2 conflict. C3 is safe. Step 8: Place R2 C0. Board columns by row: [1, 3, 0, -1]. C0 is safe in R2. Continue to R3. Step 9: Place R3 C2. Board columns by row: [1, 3, 0, 2]. C2 is safe in R3. First solution: [1, 3, 0, 2] Orange cells mark newly placed queens. A cross marks a rejected square. Empty cells are unfilled.</desc>
+<rect width="1200" height="780" fill="white"/>
+<rect x="8" y="8" width="1184" height="720" rx="14" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<line x1="403" y1="24" x2="403" y2="712" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 6"/>
+<line x1="798" y1="24" x2="798" y2="712" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 6"/>
+<line x1="24" y1="248" x2="1176" y2="248" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 6"/>
+<line x1="24" y1="488" x2="1176" y2="488" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 6"/>
+<text x="26" y="37" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#2f4a64" text-anchor="start">Step 1: Place R0 C0</text>
+<text x="26" y="62" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">Place the first queen.</text>
+<text x="169" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="199" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="229" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="259" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="142" y="134" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="154" y="119" width="30" height="30" fill="#fcd9a3" stroke="#d0662e" stroke-width="2.5"/>
+<text x="169" y="135" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="184" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="142" y="164" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="154" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="142" y="194" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="154" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="142" y="224" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="154" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="421" y="37" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#2f4a64" text-anchor="start">Step 2: Place R1 C2</text>
+<text x="421" y="62" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#d0662e" text-anchor="start">C0 and C1 conflict.</text>
+<text x="421" y="85" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">C2 is safe.</text>
+<text x="564" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="594" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="624" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="654" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="537" y="134" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="549" y="119" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="564" y="135" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="579" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="609" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="537" y="164" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="549" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="564" y="165" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="579" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="594" y="165" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="609" y="149" width="30" height="30" fill="#fcd9a3" stroke="#d0662e" stroke-width="2.5"/>
+<text x="624" y="165" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="639" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="537" y="194" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="549" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="579" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="609" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="537" y="224" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="549" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="579" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="609" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="816" y="37" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#d0662e" text-anchor="start">Step 3: No place in R2</text>
+<text x="816" y="62" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#d0662e" text-anchor="start">Every square in R2 conflicts.</text>
+<text x="816" y="85" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#d0662e" text-anchor="start">Backtrack to R1.</text>
+<text x="959" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="989" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="1019" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="1049" y="107" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="932" y="134" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="944" y="119" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="959" y="135" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="974" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1004" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="119" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="932" y="164" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="944" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="974" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1004" y="149" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="1019" y="165" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="1034" y="149" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="932" y="194" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="944" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="959" y="195" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="974" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="989" y="195" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="1004" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="1019" y="195" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="1034" y="179" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="1049" y="195" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<text x="932" y="224" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="944" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="974" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1004" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="209" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="26" y="277" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#d0662e" text-anchor="start">Step 4: Try R1 C3</text>
+<text x="26" y="302" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">Remove Q at R1 C2.</text>
+<text x="26" y="325" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">Try the next column: C3.</text>
+<text x="169" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="199" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="229" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="259" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="142" y="374" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="154" y="359" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="169" y="375" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="184" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="142" y="404" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="154" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="389" width="30" height="30" fill="#fcd9a3" stroke="#d0662e" stroke-width="2.5"/>
+<text x="259" y="405" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<text x="142" y="434" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="154" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="142" y="464" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="154" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="421" y="277" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#2f4a64" text-anchor="start">Step 5: Place R2 C1</text>
+<text x="421" y="302" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#d0662e" text-anchor="start">C0 conflicts in R2.</text>
+<text x="421" y="325" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#d0662e" text-anchor="start">R3 has no safe square.</text>
+<text x="564" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="594" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="624" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="654" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="537" y="374" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="549" y="359" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="564" y="375" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="579" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="609" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="537" y="404" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="549" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="579" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="609" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="389" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="654" y="405" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<text x="537" y="434" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="549" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="564" y="435" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="579" y="419" width="30" height="30" fill="#fcd9a3" stroke="#d0662e" stroke-width="2.5"/>
+<text x="594" y="435" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="609" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="537" y="464" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="549" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="564" y="465" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="579" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="594" y="465" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="609" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="624" y="465" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="639" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="654" y="465" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<text x="816" y="277" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#d0662e" text-anchor="start">Step 6: Backtrack to R0</text>
+<text x="816" y="302" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#d0662e" text-anchor="start">No valid choices remain in R2 or R1.</text>
+<text x="816" y="325" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">Move R0 to C1.</text>
+<text x="959" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="989" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="1019" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="1049" y="347" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="932" y="374" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="944" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="974" y="359" width="30" height="30" fill="#fcd9a3" stroke="#d0662e" stroke-width="2.5"/>
+<text x="989" y="375" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="1004" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="359" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="932" y="404" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="944" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="974" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1004" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="389" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="932" y="434" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="944" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="974" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1004" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="419" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="932" y="464" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="944" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="974" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1004" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="449" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="26" y="517" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#2f4a64" text-anchor="start">Step 7: Place R1 C3</text>
+<text x="26" y="542" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#d0662e" text-anchor="start">C0, C1, C2 conflict.</text>
+<text x="26" y="565" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">C3 is safe.</text>
+<text x="169" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="199" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="229" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="259" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="142" y="614" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="154" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="599" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="199" y="615" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="214" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="142" y="644" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="154" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="169" y="645" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="184" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="199" y="645" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="214" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="229" y="645" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="244" y="629" width="30" height="30" fill="#fcd9a3" stroke="#d0662e" stroke-width="2.5"/>
+<text x="259" y="645" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<text x="142" y="674" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="154" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="142" y="704" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="154" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="184" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="214" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="244" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="421" y="517" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#2f4a64" text-anchor="start">Step 8: Place R2 C0</text>
+<text x="421" y="542" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">C0 is safe in R2.</text>
+<text x="421" y="565" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">Continue to R3.</text>
+<text x="564" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="594" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="624" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="654" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="537" y="614" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="549" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="579" y="599" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="594" y="615" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="609" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="537" y="644" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="549" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="579" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="609" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="629" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="654" y="645" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<text x="537" y="674" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="549" y="659" width="30" height="30" fill="#fcd9a3" stroke="#d0662e" stroke-width="2.5"/>
+<text x="564" y="675" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="579" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="609" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="537" y="704" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="549" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="579" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="609" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="639" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="816" y="517" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#2f4a64" text-anchor="start">Step 9: Place R3 C2</text>
+<text x="816" y="542" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">First solution found.</text>
+<text x="816" y="565" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">[1, 3, 0, 2]</text>
+<text x="959" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C0</text>
+<text x="989" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C1</text>
+<text x="1019" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C2</text>
+<text x="1049" y="587" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="middle">C3</text>
+<text x="932" y="614" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R0</text>
+<rect x="944" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="974" y="599" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="989" y="615" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="1004" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="599" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="932" y="644" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R1</text>
+<rect x="944" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="974" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1004" y="629" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="629" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="1049" y="645" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<text x="932" y="674" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R2</text>
+<rect x="944" y="659" width="30" height="30" fill="#eaf0f4" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="959" y="675" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="974" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1004" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<rect x="1034" y="659" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="932" y="704" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#626b73" text-anchor="end" dominant-baseline="middle">R3</text>
+<rect x="944" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="959" y="705" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="974" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="989" y="705" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#d0662e" text-anchor="middle" dominant-baseline="middle">×</text>
+<rect x="1004" y="689" width="30" height="30" fill="#fcd9a3" stroke="#d0662e" stroke-width="2.5"/>
+<text x="1019" y="705" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="400" fill="#111827" text-anchor="middle" dominant-baseline="middle">Q</text>
+<rect x="1034" y="689" width="30" height="30" fill="white" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="24" y="762" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">Q = queen</text>
+<text x="230" y="762" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#111827" text-anchor="start">Orange cell = newly placed queen</text>
+<text x="805" y="762" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" fill="#d0662e" text-anchor="start">× = rejected trial square</text>
+</svg>

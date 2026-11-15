@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="560" viewBox="0 0 1500 560" role="img" aria-labelledby="title desc">
+<title id="title">Reject an overweight partial bag before trying a third item</title>
+<desc id="desc">Start empty and select the 7 kg item. Trying to add the 5 kg item gives a partial weight of 12 kg, exceeding the 10 kg limit. Reject that choice. The dashed branches toward third items 4, 3, and 2 kg are crossed out and are not explored. All remaining weights are positive.</desc>
+<rect width="1500" height="560" fill="white"/>
+<defs><marker id="add" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2f4a64"/></marker></defs>
+<path d="M 600 97 V 153" fill="none" stroke="#2f4a64" stroke-width="3" marker-end="url(#add)"/>
+<path d="M 600 237 V 293" fill="none" stroke="#2f4a64" stroke-width="3" marker-end="url(#add)"/>
+<text x="770" y="133" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" text-anchor="middle" fill="#2f4a64">Select 7 kg</text>
+<text x="770" y="273" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" text-anchor="middle" fill="#2f4a64">Try adding 5 kg</text>
+<rect x="475" y="13" width="250" height="84" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="600" y="52" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" text-anchor="middle" fill="#111827">{}</text>
+<text x="600" y="84" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" text-anchor="middle" fill="#2f4a64">0 kg</text>
+<rect x="475" y="153" width="250" height="84" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="600" y="192" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" text-anchor="middle" fill="#111827">{7}</text>
+<text x="600" y="224" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" text-anchor="middle" fill="#2f4a64">7 kg</text>
+<rect x="475" y="293" width="250" height="84" rx="5" fill="#fff2e2" stroke="#d0662e" stroke-width="3"/>
+<text x="600" y="332" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="34" font-weight="400" text-anchor="middle" fill="#111827">{7,5}</text>
+<text x="600" y="364" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="400" text-anchor="middle" fill="#d0662e">12 kg &gt; 10 kg</text>
+<path d="M 600 377 L 300 455" fill="none" stroke="#c3cbd3" stroke-width="2.5" stroke-dasharray="8 6"/>
+<rect x="210" y="455" width="180" height="50" rx="4" fill="#f3f5f7" stroke="#c3cbd3" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="300" y="489" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="400" text-anchor="middle" fill="#85909b">4 kg</text>
+<path d="M 600 377 L 600 455" fill="none" stroke="#c3cbd3" stroke-width="2.5" stroke-dasharray="8 6"/>
+<rect x="510" y="455" width="180" height="50" rx="4" fill="#f3f5f7" stroke="#c3cbd3" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="600" y="489" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="400" text-anchor="middle" fill="#85909b">3 kg</text>
+<path d="M 600 377 L 900 455" fill="none" stroke="#c3cbd3" stroke-width="2.5" stroke-dasharray="8 6"/>
+<rect x="810" y="455" width="180" height="50" rx="4" fill="#f3f5f7" stroke="#c3cbd3" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="900" y="489" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="400" text-anchor="middle" fill="#85909b">2 kg</text>
+<path d="M 465 410 H 735" fill="none" stroke="#d0662e" stroke-width="6"/>
+<path d="M 586 396 L 614 424 M 614 396 L 586 424" fill="none" stroke="#d0662e" stroke-width="5"/>
+<text x="820" y="421" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="400" text-anchor="middle" fill="#d0662e">Stop here</text>
+<text x="1040" y="306" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="400" text-anchor="start" fill="#111827">7 + 5 = 12 kg</text>
+<text x="1040" y="355" font-family="Arial, Helvetica, sans-serif" font-size="33" font-weight="400" text-anchor="start" fill="#111827">Limit: 10 kg</text>
+<text x="1040" y="404" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="400" text-anchor="start" fill="#d0662e">Already too heavy</text>
+<text x="600" y="548" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="400" text-anchor="middle" fill="#d0662e">No need to try a third item.</text>
+</svg>
