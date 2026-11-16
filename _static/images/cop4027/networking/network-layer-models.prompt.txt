@@ -1,0 +1,21 @@
+Create a precise educational comparison diagram for a university network-programming lecture.
+Use case: scientific-educational.
+A wide landscape canvas, about 2:1 aspect ratio, on a plain warm white background (#fcfbf7). Flat textbook diagram with large clean sans-serif labels. No decoration, icons, shadows, logos, or watermark. Dark blue text (#2f4a64) and thin gray outlines. Muted pastel fills distinguish related layers.
+Show THREE VERTICAL PROTOCOL STACKS side by side with equal overall height. Each stack represents the same seven horizontal alignment bands. All labels must be exact and readable in a classroom.
+LEFT COLUMN heading "Internet model" with subtitle "4 layers". Four rectangles from top to bottom:
+1. "Application" spans the top THREE bands.
+2. "Transport" spans the next ONE band.
+3. "Internet" spans the next ONE band.
+4. "Link" spans the bottom TWO bands.
+MIDDLE COLUMN heading "Teaching model" with subtitle "5 layers". Five rectangles from top to bottom:
+1. "Application" spans the top THREE bands.
+2. "Transport" spans the next ONE band.
+3. "Network" spans the next ONE band.
+4. "Data link" spans the next ONE band.
+5. "Physical" spans the final ONE band.
+RIGHT COLUMN heading "OSI model" with subtitle "7 layers". Seven equally tall rectangles from top to bottom, labeled exactly:
+"Application", "Presentation", "Session", "Transport", "Network", "Data link", "Physical".
+Use the same pale orange family for all application/presentation/session regions, pale blue for Transport, pale green for Internet/Network, and pale gray-violet for Link/Data link/Physical.
+Align the bottom edge of the Application group across all three columns. Align Transport across all columns. Align Internet and Network across all columns. Align the bottom two bands with the Internet-model Link group.
+Include subtle dotted horizontal guides across the gutters at these grouping boundaries. No arrows. Do not imply a packet flow.
+Use generous margins and very large labels. Do not add layer numbers, protocol examples, extra labels, captions, or a slide title. This is a common functional mapping, not a strict protocol implementation correspondence.

@@ -1,0 +1,41 @@
+Built-in image generation prompts
+
+flow-vs-congestion
+Use case: scientific-educational.
+Create a full-size, high-resolution classroom diagram, wide landscape about 2.6:1 aspect ratio. Keep generous but compact margins. Use a warm white background (#fcfbf7), dark blue text (#2f4a64), muted blue and green fills, and muted orange only to highlight a bottleneck. Flat textbook graphics. Large sans-serif labels. No decoration, drop shadows, logos, watermarks, slide title, or application-specific story.
+The diagram will be displayed at a reduced HTML width, with click-to-enlarge access to the full original. Make all labels large and clear. Do not render an image of a webpage.
+Subject: Contrast TCP flow control and congestion control using TWO horizontal lanes, one above the other.
+TOP LANE title "Flow control". Show a simple left-to-right path: "Sender" → "Network" → "Receiver". The network is not congested. At the Receiver, show a small four-cell receive buffer with three cells occupied. Highlight that buffer and label it "Receiver buffer nearly full". A separate return arrow from the Receiver toward the Sender is labeled "Advertised receive window". A short caption says "Protects receiver buffers".
+BOTTOM LANE title "Congestion control". Show "Sender" → a router queue on the "Network" path → "Receiver". Highlight a full router queue in the middle of the path. Label it "Network queue full". The Receiver buffer is mostly empty, so it is clearly not the bottleneck. Beside the Sender show the short response label "Reduce data in flight". A short caption says "Responds to network congestion".
+Keep these two locations of congestion distinct. Do not draw a receive-window advertisement from a router. Do not imply that the receiver advertises a congestion window. Use clear arrowheads and ample space between the two lanes. Render all quoted labels exactly.
+
+
+tcp-write-read-boundaries
+Use case: scientific-educational.
+Create a full-size, high-resolution classroom diagram, wide landscape about 2.6:1 aspect ratio. Keep generous but compact margins. Use a warm white background (#fcfbf7), dark blue text (#2f4a64), muted blue and green fills, and muted orange only to highlight a bottleneck. Flat textbook graphics. Large sans-serif labels. No decoration, drop shadows, logos, watermarks, slide title, or application-specific story.
+The diagram will be displayed at a reduced HTML width, with click-to-enlarge access to the full original. Make all labels large and clear. Do not render an image of a webpage.
+Subject: The same TCP byte stream can have different application write and read boundaries.
+Draw FOUR aligned horizontal rows. All four represent EXACTLY the same ordered 12 bytes:
+H E L L O [newline] A G A I N [newline].
+The literal two-character label "\n" denotes ONE newline byte. Show "\n" visibly with its backslash. Never replace it with an actual line break inside a data label.
+ROW 1 left label "Write calls". Draw two adjacent outlined groups of equal width. First group label "HELLO\n", second group label "AGAIN\n". Their byte counts are 6 and 6.
+ROW 2 left label "TCP byte stream". Draw one continuous strip of TWELVE equal byte cells labeled H, E, L, L, O, "\n", A, G, A, I, N, "\n" in that exact order.
+ROW 3 left label "Possible reads A". Draw three adjacent groups, with widths proportional to 3, 5, and 4 bytes. Their exact labels, left to right, are "HEL", "LO\nAG", and "AIN\n".
+ROW 4 left label "Possible reads B". Draw one group spanning all 12 bytes, labeled "HELLO\nAGAIN\n".
+Use subtle vertical alignment guides so the 6+6 write boundary can be compared with the 3+5+4 read boundaries. Distinguish write groups with pale blue and read groups with pale green. The central byte cells have a light neutral fill.
+Bottom legend: "\n = one newline byte". Bottom conclusion: "Byte order stays the same". No packet boundaries, no packet icons, no claim that one write becomes one packet. Render every data label exactly.
+
+
+tcp-three-way-handshake
+Use case: scientific-educational.
+Create a full-size, high-resolution classroom diagram, wide landscape about 2.6:1 aspect ratio. Keep generous but compact margins. Use a warm white background (#fcfbf7), dark blue text (#2f4a64), muted blue and green fills, and muted orange only to highlight a bottleneck. Flat textbook graphics. Large sans-serif labels. No decoration, drop shadows, logos, watermarks, slide title, or application-specific story.
+The diagram will be displayed at a reduced HTML width, with click-to-enlarge access to the full original. Make all labels large and clear. Do not render an image of a webpage.
+Subject: The TCP three-way handshake as a clear sequence diagram.
+Draw two vertical dashed lifelines. LEFT header "Client TCP". RIGHT header "Server TCP". Show a downward arrow at the far left labeled "Time".
+Exactly THREE message arrows, at successive heights from top to bottom:
+1. Upper horizontal arrow points LEFT TO RIGHT from Client TCP to Server TCP. Main label "SYN". Smaller label beneath it "Request connection".
+2. Middle horizontal arrow points RIGHT TO LEFT from Server TCP to Client TCP. Main label "SYN + ACK". Smaller label beneath it "Acknowledge request".
+3. Lower horizontal arrow points LEFT TO RIGHT from Client TCP to Server TCP. Main label "ACK". Smaller label beneath it "Acknowledge server".
+First and third arrowheads must terminate at the RIGHT lifeline. The second arrowhead must terminate at the LEFT lifeline. Keep labels off the arrows and ensure labels do not overlap the lifelines.
+Below the last exchange, put "Connection established" centered between the lifelines.
+Keep this focused on connection setup. Do not add application requests, authentication, encryption, sequence numbers, extra packets, or additional arrows. Use dark blue arrows and large labels. Render all quoted text exactly.

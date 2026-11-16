@@ -1,0 +1,13 @@
+Use case: scientific-educational.
+Create a full-size, high-resolution classroom diagram, wide landscape about 2.6:1 aspect ratio. Keep generous but compact margins. Use a warm white background (#fcfbf7), dark blue text (#2f4a64), muted blue and green fills, and muted orange only to highlight a bottleneck. Flat textbook graphics. Large sans-serif labels. No decoration, drop shadows, logos, watermarks, slide title, or application-specific story.
+The diagram will be displayed at a reduced HTML width, with click-to-enlarge access to the full original. Make all labels large and clear. Do not render an image of a webpage.
+Subject: The same TCP byte stream can have different application write and read boundaries.
+Draw FOUR aligned horizontal rows. All four represent EXACTLY the same ordered 12 bytes:
+H E L L O [newline] A G A I N [newline].
+The literal two-character label "\n" denotes ONE newline byte. Show "\n" visibly with its backslash. Never replace it with an actual line break inside a data label.
+ROW 1 left label "Write calls". Draw two adjacent outlined groups of equal width. First group label "HELLO\n", second group label "AGAIN\n". Their byte counts are 6 and 6.
+ROW 2 left label "TCP byte stream". Draw one continuous strip of TWELVE equal byte cells labeled H, E, L, L, O, "\n", A, G, A, I, N, "\n" in that exact order.
+ROW 3 left label "Possible reads A". Draw three adjacent groups, with widths proportional to 3, 5, and 4 bytes. Their exact labels, left to right, are "HEL", "LO\nAG", and "AIN\n".
+ROW 4 left label "Possible reads B". Draw one group spanning all 12 bytes, labeled "HELLO\nAGAIN\n".
+Use subtle vertical alignment guides so the 6+6 write boundary can be compared with the 3+5+4 read boundaries. Distinguish write groups with pale blue and read groups with pale green. The central byte cells have a light neutral fill.
+Bottom legend: "\n = one newline byte". Bottom conclusion: "Byte order stays the same". No packet boundaries, no packet icons, no claim that one write becomes one packet. Render every data label exactly.
