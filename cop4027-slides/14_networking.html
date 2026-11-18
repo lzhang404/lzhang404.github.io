@@ -670,8 +670,7 @@ if (&quot;PING&quot;.equals(request)) {
 </ul>
 </li>
 </ul>
-<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Socket socket = new Socket()) {
-    socket.connect(new InetSocketAddress(host, 55000), 2_000);
+<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Socket socket = new Socket(&quot;localhost&quot;, 55000)) {
     socket.setSoTimeout(3_000);
     // Read and write through this connected socket.
 }</code></pre>
