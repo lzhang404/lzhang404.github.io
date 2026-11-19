@@ -423,11 +423,7 @@
 <ul>
 <li><p>A TCP read can return part of a write.</p></li>
 <li><p>A TCP read can combine bytes from several writes.</p></li>
-<li><p>The application reconstructs complete messages.</p>
-<ul>
-<li><p>The diagram uses a newline as a message boundary.</p></li>
-</ul>
-</li>
+<li><p>The application reconstructs complete messages.</p></li>
 </ul>
 <img src="../_static/images/cop4027/networking/tcp-write-read-boundaries.png" width="850"
      alt="Two writes of six bytes form one twelve-byte TCP stream. Possible reads return three, five, and four bytes, or all twelve bytes. Byte order stays the same." />
@@ -574,13 +570,7 @@ static BufferedWriter writer(Socket socket) throws IOException {
 <section class="frame" id="request-reply-code">
 <h2>Example: Exchanging Two Lines</h2>
 <ul>
-<li><p>The client sends before waiting for a reply.</p></li>
-<li><p>Each peer creates its own stream wrappers.</p>
-<ul>
-<li><p><code class="inline-java">reader(socket)</code> supplies <code>in</code>.</p></li>
-<li><p><code class="inline-java">writer(socket)</code> supplies <code>out</code>.</p></li>
-</ul>
-</li>
+<li><p>A request/reply protocol specifies which peer sends first.</p></li>
 </ul>
 <pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Client fragment
 out.write(&quot;PING\n&quot;);
@@ -593,25 +583,6 @@ if (&quot;PING&quot;.equals(request)) {
     out.write(&quot;PONG\n&quot;);
     out.flush();
 }</code></pre>
-<ul>
-<li><p>Example: <code>tcp/PingServer.java</code>, <code>tcp/PingClient.java</code></p></li>
-</ul>
-</section>
-
-<section class="frame" id="basic-command-validation">
-<h2>Checking the Command</h2>
-<ul>
-<li><p>A complete line can contain an unsupported command.</p></li>
-<li><p>Check the command before processing it.</p></li>
-<li><p>Send the reply defined by the protocol.</p></li>
-</ul>
-<table class="compact">
-<thead><tr><th>Request</th><th>Reply</th></tr></thead>
-<tbody>
-<tr><td><p><code>PING</code></p></td><td><p><code>PONG</code></p></td></tr>
-<tr><td><p><code>UNKNOWN</code></p></td><td><p><code>ERROR unknown command</code></p></td></tr>
-</tbody>
-</table>
 <ul>
 <li><p>Example: <code>tcp/PingServer.java</code>, <code>tcp/PingClient.java</code></p></li>
 </ul>
@@ -721,7 +692,7 @@ if (&quot;PING&quot;.equals(request)) {
 <section class="frame" id="message-validation">
 <h2>Validating Incoming Messages</h2>
 <ul>
-<li><p>A framed message can still be invalid.</p>
+<li><p>Framing identifies message boundaries. Validation checks message content.</p>
 <ul>
 <li><p>Check the command.</p></li>
 <li><p>Check required fields.</p></li>
@@ -808,290 +779,186 @@ if (&quot;PING&quot;.equals(request)) {
 <section class="frame" id="many-connections">
 <h2>Serial Connection Handling</h2>
 <ul>
-<li><p>The <strong>accept loop</strong> receives connections.</p></li>
-<li><p>A <strong>handler</strong> exchanges messages with one client.</p></li>
-<li><p>A <strong>serial server</strong> calls the handler directly.</p></li>
+<li><p>The <strong>accept loop</strong> gets connections from the listening socket.</p></li>
+<li><p>A <strong>handler</strong> processes messages on one connection.</p></li>
+<li><p>A waiting handler delays the next <code class="inline-java">accept()</code>.</p></li>
 </ul>
 <pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ServerSocket server = new ServerSocket(55000)) {
     while (true) {
         Socket client = server.accept();
         handle(client);
     }
-} catch (IOException e) {
-    System.err.println(e.getMessage());
 }</code></pre>
 <ul>
-<li><p>A waiting handler delays the next acceptance.</p></li>
-<li><p>B may connect before the server accepts its connection.</p></li>
-</ul>
-<p>Example: <code>tcp/SerialPingServer.java</code></p>
-</section>
-
-<section class="frame" id="connection-handler">
-<h2>What One Handler Does</h2>
-<p>The handler manages one accepted connection.</p>
-<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">static void handle(Socket client) {
-    try (client) {
-        var in = reader(client);
-        var out = writer(client);
-        String request = in.readLine();
-        if (request == null) return;
-        String reply = &quot;PING&quot;.equals(request)
-                ? &quot;PONG&quot; : &quot;ERROR unknown command&quot;;
-        out.write(reply + &quot;\n&quot;);
-        out.flush();
-    } catch (IOException e) {
-        System.err.println(e.getMessage());
-    }
-}</code></pre>
-<p><code class="inline-java">reader(client)</code> and <code class="inline-java">writer(client)</code> are defined in <code>tcp/SerialPingServer.java</code>.</p>
-</section>
-
-<section class="frame" id="server-concurrency-models">
-<h2>Concurrent Connection Handling</h2>
-<p>To serve B while A waits, run each handler as a separate task.</p>
-<ul>
-<li><p>Each client gets its own handler task.</p>
-<ul>
-<li><p>A's task can wait for input.</p></li>
-<li><p>B's task can serve B independently.</p></li>
-</ul>
-</li>
-<li><p>The accept loop remains available for new connections.</p></li>
-<li><p>A virtual thread can run a handler using blocking socket calls.</p></li>
-<li><p>Each handler owns its client's socket.</p></li>
+<li><p>Example: <code>tcp/SerialPingServer.java</code></p></li>
 </ul>
 </section>
 
 <section class="frame" id="virtual-threads">
 <h2>One Task per Connection</h2>
-<p>Replace the direct handler call with task dispatch.</p>
+<ul>
+<li><p>The server dispatches each connection to its own <strong>handler task</strong>.</p></li>
+<li><p>The accept loop continues while handlers wait for input.</p></li>
+<li><p>Each <strong>virtual thread</strong> can use blocking socket calls.</p></li>
+</ul>
 <pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (ServerSocket server = new ServerSocket(55000);
-     var clients = Executors.newVirtualThreadPerTaskExecutor()) {
+     var handlers = Executors.newVirtualThreadPerTaskExecutor()) {
     while (true) {
         Socket client = server.accept();
-        clients.execute(() -&gt; handle(client));
+        handlers.execute(() -&gt; handle(client));
     }
-} catch (IOException e) {
-    System.err.println(e.getMessage());
 }</code></pre>
 <ul>
-<li><p><code class="inline-java">execute(...)</code> dispatches a handler task.</p></li>
-<li><p>The accept loop can then accept another connection.</p></li>
-<li><p>Each handler task runs in its own virtual thread.</p></li>
+<li><p>Example: <code>tcp/ConcurrentPingServer.java</code></p></li>
 </ul>
 </section>
 
-<section class="frame" id="multi-client-test">
-<h2>Checking That Clients Can Overlap</h2>
-<p>Use your completed echo lab to hold one client at the keyboard.</p>
-<ol>
-<li><p>Start <code>EchoServer</code>.</p></li>
-<li><p>Connect Client A and leave it at the message prompt.</p></li>
-<li><p>Connect Client B.</p></li>
-<li><p>Send a message from B.</p></li>
-<li><p>Verify that B receives its echo while A remains idle.</p></li>
-<li><p>Verify that B still works after A quits.</p></li>
-</ol>
+<section class="frame" id="persistent-connections">
+<h2>Persistent Connections</h2>
+<ul>
+<li><p>A <strong>persistent connection</strong> stays open for multiple messages.</p></li>
+<li><p>For example, a handler can read one message per line from the same socket.</p></li>
+</ul>
+<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (socket) {
+    var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+    String message;
+    while ((message = in.readLine()) != null) {
+        // Process one message.
+    }
+}</code></pre>
 </section>
 
 <section class="frame" id="shared-state">
 <h2>Session State and Shared State</h2>
-<p>Now count how many valid <code>PING</code> requests all handlers have served.</p>
 <ul>
-<li><p><strong>Session state</strong> belongs to one client's conversation.</p></li>
-<li><p><strong>Shared state</strong> is accessed by several handlers.</p></li>
+<li><p><strong>Session state</strong> belongs to one connection.</p>
+<ul>
+<li><p>Examples include the socket and its streams.</p></li>
 </ul>
-<table class="compact">
-<thead><tr><th>Property</th><th>Session state</th><th>Shared state</th></tr></thead>
-<tbody>
-<tr><td><p>Scope</p></td><td><p>One client</p></td><td><p>All handlers</p></td></tr>
-<tr><td><p>Example</p></td><td><p>Socket, streams, current request</p></td><td><p>One request counter</p></td></tr>
-<tr><td><p>Created</p></td><td><p>For each connection</p></td><td><p>Once before the accept loop</p></td></tr>
-</tbody>
-</table>
-<p>Every handler must update the same counter.</p>
+</li>
+<li><p><strong>Shared state</strong> is used by multiple handlers.</p>
+<ul>
+<li><p>A counter updated by several handlers is shared state.</p></li>
+<li><p>Coordinate changes to shared state.</p></li>
+</ul>
+</li>
+</ul>
 </section>
 
-<section class="frame" id="atomic-shared-update">
-<h2>One Shared Request Counter</h2>
+<section class="frame" id="broadcast-pattern">
+<h2>Broadcasting to Connected Clients</h2>
 <ul>
-<li><p>A plain <code class="inline-java">count++</code> can lose updates when handlers overlap.</p></li>
-<li><p><code class="inline-java">AtomicInteger</code> provides an atomic increment for one integer.</p></li>
+<li><p>A <strong>broadcast</strong> sends the same message to a group of clients.</p></li>
+<li><p>A <strong>snapshot</strong> captures the current state.</p></li>
+<li><p>An <strong>outgoing message queue</strong> holds messages waiting to be sent on one connection.</p>
+<ul>
+<li><p>For each new connection, add a new queue to <code class="inline-java">sendQueues</code>.</p></li>
 </ul>
-<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Create once in main:
-AtomicInteger requestCount = new AtomicInteger();
-
-// Dispatch each connection with that same counter:
-clients.execute(() -&gt; handle(client, requestCount));
-
-// Inside handle(Socket client, AtomicInteger requestCount),
-// after recognizing PING:
-int total = requestCount.incrementAndGet();</code></pre>
-<p>The handler now receives both its client socket and the shared counter.</p>
-<p>Example: <code>tcp/ConcurrentPingServer.java</code></p>
+</li>
+</ul>
+<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private final List&lt;BlockingQueue&lt;String&gt;&gt; sendQueues = new ArrayList&lt;&gt;();</code></pre>
+<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">private synchronized void applyCommand(String command, BlockingQueue&lt;String&gt; replyTo) {
+    switch (command) {
+        case "ADD" -&gt; value++;
+        case "RESET" -&gt; value = 0;
+        default -&gt; { /* Error reply omitted. */ return; }
+    }
+    revision++;
+    String snapshot = stateMessage();
+    for (var sendQueue : sendQueues) {
+        sendQueue.add(snapshot);
+    }
+}</code></pre>
 </section>
 
-<section class="frame" id="persistent-connections">
-<h2>Several Commands on One Connection</h2>
-<p>A <strong>persistent connection</strong> stays open for more commands.</p>
-<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">String command;
-while ((command = in.readLine()) != null) {
-    // Handle this complete command.
+<section class="frame" id="sending-queued-updates">
+<h2>Sending Queued Updates</h2>
+<ul>
+<li><p>Queue updates under the <strong>state lock</strong> to preserve their order.</p></li>
+<li><p>Each connection has one <strong>sender</strong>.</p></li>
+<li><p>The sender writes queued messages in order.</p></li>
+<li><p>Socket writes happen outside the state lock.</p></li>
+</ul>
+<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">var out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+while (true) {
+    String message = sendQueue.take();
+    out.write(message + "\n");
+    out.flush();
 }</code></pre>
 <ul>
-<li><p>Each iteration processes one command.</p></li>
-<li><p>EOF ends the loop.</p></li>
-<li><p>The handler closes the socket when it finishes.</p></li>
+<li><p>Example: <code>tcp/LiveCounterServer.java</code></p></li>
 </ul>
-<p>Example: <code>tcp/LiveCounterServer.java</code></p>
-</section>
-
-<section class="frame" id="server-updates">
-<h2>One Client Changes What Everyone Sees</h2>
-<p>A and B are watching the same counter, initially at 0.</p>
-<p>A <strong>broadcast</strong> sends the same update to every connected client.</p>
-<ol>
-<li><p>A increases the value to 1.</p></li>
-<li><p>The server broadcasts value 1 to both clients.</p></li>
-<li><p>B receives the update without sending a command.</p></li>
-</ol>
-<p>Each client must receive updates even while it has no command to send.</p>
-</section>
-
-<section class="frame" id="live-counter-protocol">
-<h2>Commands and Counter Snapshots</h2>
-<p>Clients send commands to change the shared counter.</p>
-<ul>
-<li><p><code>ADD</code> increases the value by one.</p></li>
-<li><p><code>RESET</code> sets the value to zero.</p></li>
-<li><p><code>QUIT</code> closes only that client's connection.</p></li>
-</ul>
-<p>A <strong>snapshot</strong> contains the current value and its revision.</p>
-<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-text">STATE revision value</code></pre>
-<ul>
-<li><p>The server broadcasts a snapshot after each <code>ADD</code> or <code>RESET</code>.</p></li>
-<li><p>The <strong>revision</strong> increases after every change, including a reset.</p></li>
-</ul>
-<p>Example: <code>tcp/LiveCounterServer.java</code>, <code>tcp/LiveCounterClient.java</code></p>
 </section>
 
 <section class="frame" id="persistent-live-events">
-<h2>Receiving Updates While Sending Commands</h2>
-<p>An update may arrive while the user is waiting at the keyboard.</p>
+<h2>Receiving Updates During User Input</h2>
 <ul>
-<li><p>One background receiver reads server messages continuously.</p></li>
-<li><p>The main thread sends keyboard commands.</p></li>
+<li><p>A <strong>background receiver</strong> reads server updates as they arrive.</p></li>
+<li><p>The main thread sends keyboard commands over the same connection.</p></li>
 </ul>
-<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">// Background receiver:
-String message;
-while ((message = in.readLine()) != null) {
-    System.out.println(&quot;Server: &quot; + message);
-}
-
-// Keyboard loop sends each command:
-out.write(command + &quot;\n&quot;);
-out.flush();</code></pre>
-<p>The receiver can display an update while the user is typing.</p>
-<p>Example: <code>tcp/LiveCounterClient.java</code></p>
-</section>
-
-<section class="frame" id="server-read-write-paths">
-<h2>Sending Updates While a Handler Waits</h2>
-<p>B's handler may be waiting for a command when A changes the counter.</p>
-<ul>
-<li><p>The shared <code class="inline-java">CounterRoom</code> owns the counter state.</p></li>
-<li><p>The room tracks connected clients.</p></li>
-<li><p>An <strong>outbox</strong> holds pending messages for one connection.</p></li>
-<li><p>A handler processes incoming commands.</p></li>
-<li><p>Each connection has one dedicated sender.</p></li>
-</ul>
-<p><code>handlers</code> &rarr; <code>client's outbox</code> &rarr; <code>sender</code> &rarr; <code>socket</code></p>
-<p>A sender can write while its handler waits for input.</p>
-</section>
-
-<section class="frame" id="ordered-state-broadcasts">
-<h2>Changing and Broadcasting One State</h2>
-<ul>
-<li><p>One room lock protects the complete state change.</p></li>
-<li><p>The lock preserves the update order in every outbox.</p></li>
-</ul>
-<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">synchronized void addOne() {
-    value++;
-    revision++;
-    String snapshot = state();
-    for (Client client : clients) {
-        client.outbox.add(snapshot);
+<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">try (Socket socket = new Socket(host, port);
+     Scanner commands = new Scanner(System.in)) {
+    var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    var out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+    new Thread(() -&gt; receiveUpdates(socket, in)).start();
+    while (commands.hasNextLine() &amp;&amp; !socket.isClosed()) {
+        out.write(commands.nextLine() + "\n");
+        out.flush();
     }
 }</code></pre>
 <ul>
-<li><p><code class="inline-java">state()</code> builds the <code>STATE</code> line from the current revision and value.</p></li>
-<li><p>Each sender writes queued messages outside the room lock.</p></li>
-</ul>
-<p>Example: <code>tcp/LiveCounterServer.java</code></p>
-</section>
-
-<section class="frame" id="broadcast-trace">
-<h2>A Change Reaches Both Clients</h2>
-<p>A and B have both received <code>STATE 0 0</code>. A now sends <code>ADD</code>.</p>
-<ol>
-<li><p>A's handler reads <code>ADD</code>.</p></li>
-<li><p>The handler calls the room's <code class="inline-java">addOne()</code>.</p></li>
-<li><p>Under the room lock, <code>STATE 1 1</code> enters both outboxes.</p></li>
-<li><p>Each sender writes the queued line to its client.</p></li>
-<li><p>Both clients' background receivers display the new state.</p></li>
-</ol>
-<p>B receives the change while its handler is still waiting for B's next command.</p>
-</section>
-
-<section class="frame" id="late-join-snapshot">
-<h2>A Late Client Receives the Current State</h2>
-<p>C joins after A and B have received <code>STATE 1 1</code>.</p>
-<ol>
-<li><p>C connects.</p></li>
-<li><p>C immediately receives <code>STATE 1 1</code>.</p></li>
-<li><p>B's next <code>ADD</code> produces <code>STATE 2 2</code> for all three clients.</p></li>
-</ol>
-<ul>
-<li><p>Hold the room lock while C joins.</p>
-<ul>
-<li><p>Register C.</p></li>
-<li><p>Queue C's initial snapshot before releasing the lock.</p></li>
-</ul>
-</li>
-<li><p>C's sender delivers that snapshot before later updates.</p></li>
+<li><p>Example: <code>tcp/LiveCounterClient.java</code></p></li>
 </ul>
 </section>
 
 <section class="frame" id="network-limits">
-<h2>Resource Limits</h2>
-<p>More clients and slower receivers introduce limits on this design.</p>
+<h2>Connection Lifecycle and Limits</h2>
 <ul>
-<li><p>Limit the number of active connections.</p></li>
-<li><p>Bound incoming message size.</p></li>
-<li><p>Define a timeout for inactive clients.</p></li>
-<li><p>Bound each outgoing queue.</p></li>
-<li><p>Choose an overflow policy for a full outbox.</p></li>
+<li><p><strong>Joining</strong></p>
+<ul>
+<li><p>Register the new queue under the <strong>state lock</strong>.</p></li>
+<li><p>Queue the current snapshot first, under the same lock.</p></li>
 </ul>
-<p>The live-counter example uses unbounded outboxes for short classroom exchanges.</p>
-<p>Shutdown releases the server's resources:</p>
-<ol>
-<li><p>Close the listener to stop accepting new clients.</p></li>
-<li><p>Let active handlers finish or close their connected sockets.</p></li>
-</ol>
+</li>
+<li><p><strong>Disconnecting</strong></p>
+<ul>
+<li><p>Remove the connection's queue from <code class="inline-java">sendQueues</code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Limits</strong></p>
+<ul>
+<li><p>Cap active connections.</p></li>
+<li><p>Set an idle timeout.</p></li>
+<li><p>Limit incoming message size.</p></li>
+<li><p>Bound each outgoing queue.</p></li>
+<li><p>Choose what happens when a queue fills.</p></li>
+</ul>
+</li>
+<li><p><strong>Shutdown</strong></p>
+<ul>
+<li><p>Close the listener to stop accepting connections.</p></li>
+<li><p>Let active sessions finish or close their sockets.</p></li>
+</ul>
+</li>
+</ul>
 </section>
 
 </section>
 
 <section id="network-reliability">
-<section class="title-slide slide level1"><h1>TCP Performance and Security</h1></section>
+<section class="title-slide slide level1"><h1>TCP Performance</h1></section>
 
 <section class="frame" id="flow-congestion">
 <h2>Flow Control and Congestion Control</h2>
 <ul>
-<li><p><strong>Flow control</strong> protects the receiver from excess data.</p></li>
-<li><p><strong>Congestion control</strong> adjusts sending to network conditions.</p></li>
-<li><p>A slow receiver can eventually block a sender.</p></li>
+<li><p><strong>Flow control</strong> limits sending based on the buffer space the receiver advertises.</p></li>
+<li><p><strong>Congestion control</strong> adjusts sending when the network path is congested.</p></li>
+<li><p>If a client stops reading, the server’s TCP send buffer can fill.</p>
+<ul>
+<li><p>A blocking write may then wait for buffer space.</p></li>
+</ul>
+</li>
 </ul>
 <img src="../_static/images/cop4027/networking/flow-vs-congestion.png" width="900"
      alt="Flow control uses the receiver’s advertised buffer space. Congestion control responds to network capacity. A nearly full receiver buffer contrasts with a full network queue." />
@@ -1100,35 +967,15 @@ out.flush();</code></pre>
 <section class="frame" id="latency-throughput">
 <h2>Latency, Throughput, and Round Trips</h2>
 <ul>
-<li><p><strong>Latency</strong> measures communication delay.</p></li>
+<li><p><strong>Latency</strong> is the one-way delay from sender to receiver.</p></li>
 <li><p><strong>Throughput</strong> measures data transferred per unit of time.</p></li>
-<li><p><strong>Round-trip time</strong> measures the delay to a peer and back.</p></li>
+<li><p><strong>Round-trip time</strong> (RTT) measures the delay to a peer and back.</p></li>
 <li><p>With sequential requests, the client waits for each reply.</p>
 <ul>
-<li><p>Batching can reduce the number of exchanges.</p></li>
+<li><p>20 exchanges × 40 ms RTT ≈ 800 ms of network delay.</p></li>
 </ul>
 </li>
-</ul>
-<table class="compact">
-<thead><tr><th>Example assumption</th><th>Network waiting</th></tr></thead>
-<tbody>
-<tr><td><p>One round trip takes 40 ms.</p></td><td><p>One exchange waits about 40 ms.</p></td></tr>
-<tr><td><p>20 exchanges run sequentially.</p></td><td><p>They wait about 800 ms in total.</p></td></tr>
-</tbody>
-</table>
-</section>
-
-<section class="frame" id="secure-communication">
-<h2>Secure Communication</h2>
-<ul>
-<li><p><strong>TLS</strong> (Transport Layer Security) protects data in transit.</p></li>
-<li><p><strong>Certificate validation</strong> helps establish peer identity.</p>
-<ul>
-<li><p>Check that the certificate matches the intended server.</p></li>
-</ul>
-</li>
-<li><p><strong>Authentication</strong> establishes who a caller is.</p></li>
-<li><p><strong>Authorization</strong> determines what the caller may do.</p></li>
+<li><p><strong>Batching</strong> can save round trips when the protocol supports it.</p></li>
 </ul>
 </section>
 
@@ -1178,7 +1025,7 @@ out.flush();</code></pre>
 <li><p>Encode one message into a byte array.</p></li>
 <li><p>Supply the destination address and port.</p></li>
 </ul>
-<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">byte[] data = &quot;sample&quot;.getBytes(UTF_8);
+<pre class="smaller" data-frame="leftline" data-xleftmargin="3pt"><code class="language-java">byte[] data = &quot;sample&quot;.getBytes();
 InetAddress destination = InetAddress.getLoopbackAddress();
 
 try (DatagramSocket socket = new DatagramSocket()) {
@@ -1202,7 +1049,7 @@ try (DatagramSocket socket = new DatagramSocket()) {
     var packet = new DatagramPacket(buffer, buffer.length);
     socket.receive(packet);
     String message = new String(packet.getData(), packet.getOffset(),
-            packet.getLength(), UTF_8);
+            packet.getLength());
     System.out.println(message);
 }</code></pre>
 <ul>
@@ -1268,6 +1115,26 @@ try (DatagramSocket socket = new DatagramSocket()) {
 <tr><td><p>A successful action must be confirmed.</p></td><td><p>Either transport needs an application reply.</p></td></tr>
 </tbody>
 </table>
+</section>
+
+<section class="frame" id="secure-communication">
+<h2>Secure Communication</h2>
+<ul>
+<li><p><strong>TLS</strong> (Transport Layer Security) protects traffic on a TCP connection.</p>
+<ul>
+<li><p>Encryption keeps the contents private.</p></li>
+<li><p>Integrity checks detect changes in transit.</p></li>
+</ul>
+</li>
+<li><p><strong>Certificate validation</strong> helps the client verify the server’s identity.</p>
+<ul>
+<li><p>Check that the certificate is trusted.</p></li>
+<li><p>Check that it matches the intended server name.</p></li>
+</ul>
+</li>
+<li><p>Application <strong>authentication</strong> identifies the caller.</p></li>
+<li><p><strong>Authorization</strong> determines what the caller may do.</p></li>
+</ul>
 </section>
 
 <section class="frame" id="design-check">

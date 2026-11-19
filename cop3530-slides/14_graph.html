@@ -16,23 +16,6 @@
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <style>
-    table { border-collapse: collapse; width: 100%; font-size: 0.82em; margin: 0.4em 0; }
-    table th, table td { border: 1px solid #ccc; padding: 5px 10px; text-align: left; }
-    table th { background: #e8eaf6; font-weight: 600; }
-    table tr:nth-child(even) td { background: #f5f5f5; }
-    .two-col { display:flex; gap:0.6em; align-items:flex-start; margin-top:0.4em; }
-    .text-col { flex:1; min-width:0; }
-    .media-col { flex:0 0 44%; min-width:0; }
-    .media-col.tight { flex-basis:38%; }
-    .media-col img {
-      display:block;
-      margin:0.5em auto;
-      max-width:100%;
-      max-height:100%;
-      height:auto;
-    }
-  </style>
 </head>
 
 <body>
@@ -56,263 +39,252 @@
         </section>
       </section>
 
-      <!-- =========================================================
-           Overview
-           ========================================================= -->
-
       <section>
         <section class="frame">
           <h2>Outline</h2>
           <ul>
-            <li><p><strong>Graph basics</strong>: vertices, edges, paths, and degree</p></li>
-            <li><p><strong>Graph properties and types</strong>: directed, weighted, cyclic, connected, dense</p></li>
-            <li><p><strong>Graph representation</strong>: adjacency list and adjacency matrix</p></li>
-            <li><p><strong>Breadth-first search (BFS)</strong>: level-by-level traversal using a queue</p></li>
-            <li><p><strong>Depth-first search (DFS)</strong>: deep-path traversal using a stack</p></li>
-            <li><p><strong>Dijkstra's algorithm</strong>: shortest path in weighted graphs</p></li>
+            <li><p><strong>Graph basics</strong> and terminology</p></li>
+            <li><p><strong>Graph properties</strong> and types</p></li>
+            <li><p><strong>Graph representation</strong> with lists and matrices</p></li>
+            <li><p><strong>Breadth-first search (BFS)</strong> with a queue</p></li>
+            <li><p><strong>Depth-first search (DFS)</strong> with a stack</p></li>
+            <li><p><strong>Dijkstra’s algorithm</strong> for weighted shortest paths</p></li>
           </ul>
         </section>
 
         <section class="frame">
           <h2>Learning goals</h2>
-          <p>After this lecture, you should be able to</p>
           <ul>
-            <li><p>Define a graph and identify vertices, edges, and graph properties</p></li>
-            <li><p>Compare adjacency list and adjacency matrix representations</p></li>
-            <li><p>Trace BFS on a graph and list vertices in visit order</p></li>
-            <li><p>Trace DFS on a graph and list vertices in visit order</p></li>
-            <li><p>Explain why BFS uses a queue and DFS uses a stack</p></li>
-            <li><p>Trace Dijkstra's algorithm step by step on a weighted graph</p></li>
-            <li><p>Identify when Dijkstra's algorithm cannot be applied</p></li>
+            <li><p>Identify vertices, edges, and graph properties.</p></li>
+            <li><p>Represent a graph with an adjacency list and a matrix.</p></li>
+            <li><p>Trace graph traversals.</p>
+              <ul>
+                <li><p>Use a queue for BFS.</p></li>
+                <li><p>Use a stack for DFS.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Find minimum-cost paths with Dijkstra’s algorithm.</p>
+              <ul>
+                <li><p>Trace the priority queue.</p></li>
+                <li><p>Reconstruct a path from its predecessors.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Choose between BFS and Dijkstra for shortest paths.</p></li>
           </ul>
         </section>
-
       </section>
 
-      <!-- =========================================================
-           Graph Basics
-           ========================================================= -->
       <section>
-        <section class="title-slide slide level1">
-          <h1>Graph Basics</h1>
-        </section>
+        <section class="title-slide slide level1"><h1>Graph Basics</h1></section>
 
         <section class="frame">
           <h2>What is a graph?</h2>
-          <div class="two-col">
-            <div class="text-col">
+          <p>A graph <strong>G = (V, E)</strong> consists of two sets.</p>
+          <ul>
+            <li><p><strong>Vertices (V)</strong> represent entities.</p>
               <ul>
-                <li><p>A <strong>graph</strong> is a data structure with two components:</p>
-                  <ul>
-                    <li><p><strong>Vertices (nodes)</strong>: represent entities such as people, cities, or computers</p></li>
-                    <li><p><strong>Edges</strong>: represent relationships or connections between vertices</p></li>
-                  </ul>
-                </li>
-                <li><p>Written formally as <strong>G = (V, E)</strong></p></li>
-                <li><p>Examples of graphs in practice:</p>
-                  <ul>
-                    <li><p>Social networks: people are vertices, friendships are edges</p></li>
-                    <li><p>Computer networks: devices are vertices, connections are edges</p></li>
-                    <li><p>Maps: cities are vertices, roads are edges</p></li>
-                  </ul>
-                </li>
+                <li><p>The Library and Cafe are vertices.</p></li>
               </ul>
-            </div>
-            <div class="media-col">
-              <img
-                src="../_static/images/graph/campus_graph.png"
-                alt="Examples of a computer network graph and a social network graph"
-              />
-            </div>
-          </div>
+            </li>
+            <li><p><strong>Edges (E)</strong> represent relationships between vertices.</p>
+              <ul>
+                <li><p>The walkway between the Library and Cafe is an edge.</p></li>
+              </ul>
+            </li>
+          </ul>
+          <p>Graphs can model friendships or computer links.</p>
+          <img src="../_static/images/cop3530/graph/campus_graph.png" alt="Campus graph showing walkways between the Library, Cafe, Gym, Dorm, Union, and Bldg 4." width="510">
         </section>
 
         <section class="frame">
-          <h2>Vertices and edges</h2>
+          <h2>Vertices, edges, and paths</h2>
           <ul>
-            <li><p><strong>Vertex (node)</strong>: a single point or entity in the graph</p></li>
-            <li><p><strong>Edge</strong>: a link between two vertices</p>
+            <li><p><strong>Adjacent vertices</strong> share an edge.</p>
               <ul>
-                <li><p>Can be <strong>directed</strong> (one-way arrow) or <strong>undirected</strong> (two-way)</p></li>
-                <li><p>Can carry a <strong>weight</strong> such as cost, distance, or time</p></li>
+                <li><p>The Library and Cafe are adjacent.</p></li>
               </ul>
             </li>
-            <li><p><strong>Adjacent vertices</strong>: two vertices directly connected by an edge</p></li>
-            <li><p><strong>Path</strong>: a sequence of vertices connected by edges</p>
+            <li><p>A <strong>path</strong> follows edges in sequence.</p>
               <ul>
-                <li><p>In unweighted graphs: path length = number of edges</p></li>
-                <li><p>In weighted graphs: path length = sum of edge weights</p></li>
+                <li><p>In an unweighted graph, path length counts edges.</p></li>
+                <li><p>Library → Cafe → Union has length 2.</p></li>
               </ul>
             </li>
-            <li><p><strong>Cycle</strong>: a path that starts and ends at the same vertex</p></li>
+            <li><p>A <strong>cycle</strong> returns to its starting vertex.</p>
+              <ul>
+                <li><p>Only the starting vertex repeats.</p></li>
+                <li><p>No edge repeats.</p></li>
+                <li><p>Library → Cafe → Gym → Library is a cycle.</p></li>
+              </ul>
+            </li>
           </ul>
+          <img src="../_static/images/cop3530/graph/campus_graph.png" alt="Campus graph showing walkways between the Library, Cafe, Gym, Dorm, Union, and Bldg 4." width="510">
+        </section>
+
+        <section class="frame">
+          <h2>Directed and undirected edges</h2>
+          <ul>
+            <li><p>An <strong>undirected edge</strong> can be followed in either direction.</p>
+              <ul>
+                <li><p>On the first map, Library–Cafe goes both ways.</p></li>
+              </ul>
+            </li>
+            <li><p>Follow a <strong>directed edge</strong> in the arrow’s direction.</p>
+              <ul>
+                <li><p>On this map, Library → Cafe is one-way.</p></li>
+                <li><p>To return, follow Cafe → Gym → Library.</p></li>
+              </ul>
+            </li>
+            <li><p>Web links and course prerequisites are directed edges.</p></li>
+          </ul>
+          <img src="../_static/images/cop3530/graph/directed_graph.png" alt="Arrows show one-way campus paths, including Library to Cafe and Cafe to Gym." width="510">
         </section>
 
         <section class="frame">
           <h2>Degree of a vertex</h2>
-          <div class="two-col">
-            <div class="text-col">
           <ul>
-            <li><p><strong>Degree of a vertex</strong>: the number of edges connected to it</p></li>
-            <li><p>In an <strong>undirected graph</strong>: degree = total edge count at that vertex</p></li>
-            <li><p>In a <strong>directed graph</strong>, degree splits into two:</p>
+            <li><p>In an undirected graph, <strong>degree</strong> counts the edges at a vertex.</p>
               <ul>
-                <li><p><strong>In-degree</strong>: number of edges arriving at the vertex</p></li>
-                <li><p><strong>Out-degree</strong>: number of edges leaving the vertex</p></li>
+                <li><p>Four orange edges meet at the Cafe.</p></li>
+                <li><p>The Cafe has degree 4.</p></li>
               </ul>
             </li>
-            <li><p><strong>Degree of a graph</strong>: the highest vertex degree among all vertices in the graph</p></li>
+            <li><p>In a <strong>directed graph</strong>, count incoming and outgoing edges separately.</p>
+              <ul>
+                <li><p><strong>In-degree</strong> counts arriving edges.</p></li>
+                <li><p><strong>Out-degree</strong> counts departing edges.</p></li>
+                <li><p><strong>Total degree</strong> is in-degree plus out-degree.</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Maximum degree</strong> is the largest vertex degree.</p></li>
           </ul>
-          </div>
-          <div class="media-col">
-              <img
-                src="../_static/images/graph/graph_degree.png"
-                alt="The degree of this graph is 4"
-              />
-              </div>
+          <img src="../_static/images/cop3530/graph/graph_degree.png" alt="Four edges meet at the Cafe, highlighted in orange." width="510">
         </section>
       </section>
 
-      <!-- =========================================================
-           Graph Properties and Types
-           ========================================================= -->
       <section>
-        <section class="title-slide slide level1">
-          <h1>Graph Properties and Types</h1>
-        </section>
-
-        <section class="frame">
-          <h2>Graph-level properties</h2>
-          <ul>
-            <li><p><strong>Directed / Undirected</strong>: edges go one way or both ways</p></li>
-            <li><p><strong>Weighted / Unweighted</strong>: edges carry a numerical value or they do not</p></li>
-            <li><p><strong>Cyclic / Acyclic</strong>: whether any cycle exists in the graph</p>
-              <ul>
-                <li><p>Cyclic: at least one cycle exists</p></li>
-                <li><p>Acyclic: no cycles at all</p></li>
-              </ul>
-            </li>
-            <li><p><strong>Connected / Disconnected</strong>: whether every vertex can be reached from any other</p>
-              <ul>
-                <li><p><strong>Strongly connected</strong>: every vertex is reachable from every other following directed edges</p></li>
-                <li><p><strong>Weakly connected</strong>: connected only if edge directions are ignored</p></li>
-              </ul>
-            </li>
-            <li><p><strong>Dense / Sparse</strong>: ratio of actual edges to the maximum possible edges</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>Directed graphs (digraphs)</h2>
-          <div class="two-col">
-            <div class="text-col">
-          <ul>
-            <li><p>Each edge has a direction: from a <strong>start vertex</strong> to a <strong>terminating vertex</strong></p></li>
-            <li><p>An edge A &rarr; B does <em>not</em> imply B &rarr; A</p></li>
-            <li><p>Key terms:</p>
-              <ul>
-                <li><p><strong>Outgoing edges</strong>: edges leaving a vertex, counted in out-degree</p></li>
-                <li><p><strong>Incoming edges</strong>: edges arriving at a vertex, counted in in-degree</p></li>
-              </ul>
-            </li>
-            <li><p>Examples: web hyperlinks, airline routes, task dependencies, course prerequisites</p></li>
-          </ul>
-          </div>
-           <div class="media-col">
-              <img
-                src="../_static/images/graph/directed_graph.png"
-                alt="The degree of this graph is 4"
-              />
-              </div>
-        </section>
+        <section class="title-slide slide level1"><h1>Graph Properties and Types</h1></section>
 
         <section class="frame">
           <h2>Weighted graphs</h2>
-          <div class="two-col">
-            <div class="text-col">
           <ul>
-            <li><p>Each edge carries a <strong>weight</strong> representing cost, distance, or time</p></li>
-            <li><p><strong>Path cost</strong>: sum of all edge weights along the path</p></li>
-            <li><p>Two paths may use the same number of edges but have very different costs</p></li>
-            <li><p>Examples:</p>
+            <li><p>A <strong>weight</strong> is a value on an edge.</p>
               <ul>
-                <li><p>Road maps: weights are distances in miles</p></li>
-                <li><p>Flight networks: weights are ticket price or travel time</p></li>
-                <li><p>Network routing: weights are latency or bandwidth cost</p></li>
+                <li><p>A weight can represent distance, travel time, or cost.</p></li>
               </ul>
             </li>
-            <li><p>Finding the minimum-cost path requires a weighted-graph algorithm such as Dijkstra's</p></li>
+            <li><p>A path’s <strong>total cost</strong> is the sum of its edge weights.</p>
+              <ul>
+                <li><p>Union → Cafe → Gym costs 7 + 5 = <strong>12</strong>.</p></li>
+                <li><p>Union → Dorm → Gym costs 2 + 2 = <strong>4</strong>.</p></li>
+                <li><p>Both routes use two edges.</p></li>
+              </ul>
+            </li>
+            <li><p>Direction and weight are independent.</p>
+              <ul>
+                <li><p>This graph is both directed and weighted.</p></li>
+              </ul>
+            </li>
           </ul>
-          </div>
-          <div class="media-col">
-              <img
-                src="../_static/images/graph/directed_weighted.png"
-                alt="An example of directed and weighted graph"
-              />
-              </div>
+          <img src="../_static/images/cop3530/graph/directed_weighted.png" alt="Directed campus graph with a number on each edge." width="565">
         </section>
 
         <section class="frame">
-          <h2>Cyclic vs. acyclic: example</h2>
-
+          <h2>Cyclic and acyclic graphs</h2>
+          <ul>
+            <li><p>A <strong>cyclic</strong> graph contains at least one cycle.</p>
               <ul>
-                <li><p>Left graph (acyclic): no way to follow directed edges from a vertex and return to it</p></li>
-                <li><p>Right graph (cyclic): distinct cycles exist</p>
-                </li>
+                <li><p>Orange arrows trace Library → Cafe → Gym → Library.</p></li>
+                <li><p>Purple arrows trace Cafe → Bldg 4 → Union → Cafe.</p></li>
               </ul>
-
-              <img
-                src="../_static/images/graph/acyclic_vs_cyclic.png"
-                alt="Acyclic directed graph on the left; cyclic directed graph with two highlighted cycles on the right"
-              />
-           
-          
+            </li>
+            <li><p>An <strong>acyclic</strong> graph contains no cycles.</p>
+              <ul>
+                <li><p>On the left, following arrows leads to Bldg 1.</p></li>
+              </ul>
+            </li>
+          </ul>
+          <img src="../_static/images/cop3530/graph/acyclic_vs_cyclic.png" alt="Acyclic directed graph on the left and cyclic directed graph with two highlighted cycles on the right." width="1010">
         </section>
 
         <section class="frame">
-          <h2>Reading graph properties</h2>
-         
-            <div class="two-col">
-            <div class="text-col">
+          <h2>Connectivity and edge density</h2>
+          <ul>
+            <li><p><strong>Connected</strong> (undirected)</p>
               <ul>
-                <li>Directed/Undirected?</li>
-                <li>Weighted/Unweighted?</li>
-                <li>Degree of vertex D is: </li>
-                <li>Maximum degree in the graph: </li>
-                <li>Connected? </li>
-                <li>Cyclic/acyclic?</li>
+                <li><p>Every pair of vertices has a path.</p></li>
               </ul>
-            </div>
-            <div class="media-col">
-              <img
-                src="../_static/images/graph/practice.png"
-                alt="An example of directed unweighted graph"
-              />
-              </div>
+            </li>
+            <li><p><strong>Strongly connected</strong> (directed)</p>
+              <ul>
+                <li><p>Every vertex can reach every other.</p></li>
+                <li><p>Follow the arrows.</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Weakly connected</strong> (directed)</p>
+              <ul>
+                <li><p>Every pair has a path with arrows ignored.</p></li>
+                <li><p>Strong connectivity implies weak connectivity.</p></li>
+              </ul>
+            </li>
+            <li><p><strong>Edge density</strong></p>
+              <ul>
+                <li><p>Fraction of possible edges present.</p></li>
+                <li><p><strong>Sparse</strong> graphs have few edges.</p></li>
+                <li><p><strong>Dense</strong> graphs have nearly all possible edges.</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Practice reading graph properties</h2>
+          <img src="../_static/images/cop3530/graph/practice.png" alt="Directed graph with edges A to B, A to C, B to D, C to D, D to E, and D to F." width="520">
+          <ul>
+            <li><p>Is the graph directed?
+              <span class="fragment" data-fragment-index="0"><strong>Yes.</strong></span>
+            </p></li>
+            <li class="fragment" data-fragment-index="1"><p>Is the graph weighted?
+              <span class="fragment" data-fragment-index="2"><strong>No.</strong></span>
+            </p></li>
+            <li class="fragment" data-fragment-index="3"><p>What is D’s in-degree?
+              <span class="fragment" data-fragment-index="4"><strong>2.</strong></span>
+            </p></li>
+            <li class="fragment" data-fragment-index="5"><p>What is D’s out-degree?
+              <span class="fragment" data-fragment-index="6"><strong>2.</strong></span>
+            </p></li>
+            <li class="fragment" data-fragment-index="7"><p>What is the maximum total degree?
+              <span class="fragment" data-fragment-index="8"><strong>4, at D.</strong></span>
+            </p></li>
+            <li class="fragment" data-fragment-index="9"><p>Is the graph strongly connected?
+              <span class="fragment" data-fragment-index="10"><strong>No. E and F have no outgoing edges.</strong></span>
+            </p></li>
+            <li class="fragment" data-fragment-index="11"><p>Is the graph weakly connected?
+              <span class="fragment" data-fragment-index="12"><strong>Yes. A can reach every vertex.</strong></span>
+            </p></li>
+            <li class="fragment" data-fragment-index="13"><p>Does the graph contain a cycle?
+              <span class="fragment" data-fragment-index="14"><strong>No.</strong></span>
+            </p></li>
+          </ul>
         </section>
       </section>
-      <!-- =========================================================
-           Graph Representation
-           ========================================================= -->
+
       <section>
-        <section class="title-slide slide level1">
-          <h1>Graph Representation</h1>
-        </section>
+        <section class="title-slide slide level1"><h1>Graph Representation</h1></section>
 
         <section class="frame">
           <h2>Storing a graph in memory</h2>
           <ul>
-            <li><p>Two standard representations are used in code:</p>
+            <li><p>An <strong>adjacency list</strong> stores each vertex’s neighbors.</p></li>
+            <li><p>An <strong>adjacency matrix</strong> uses a grid indexed by vertices.</p></li>
+            <li><p>Both examples use the same undirected graph.</p>
               <ul>
-                <li><p><strong>Adjacency list</strong>: each vertex stores a list of its neighbors</p></li>
-                <li><p><strong>Adjacency matrix</strong>: a V×V grid; <code class="inline">matrix[i][j] = 1</code> means an edge from i to j</p></li>
+                <li><p>Edges are A–B, A–C, B–C, and C–D.</p></li>
+                <li><p>Find A’s neighbors, B and C, in both representations.</p></li>
               </ul>
-            </li>
-            <li><p>The best choice depends on the graph's edge density:</p>
-              <ul>
-                <li><p><strong>Sparse graph</strong> (few edges): adjacency list saves space</p></li>
-                <li><p><strong>Dense graph</strong> (many edges, close to V²): matrix is more practical</p></li>
-              </ul>
+
             </li>
           </ul>
         </section>
@@ -320,458 +292,904 @@
         <section class="frame">
           <h2>Adjacency list</h2>
           <ul>
-            <li><p>Each vertex holds a list of its directly connected neighbors</p></li>
-            <li><p>Example for an undirected 4-vertex graph:</p></li>
+            <li><p>Store each undirected edge in both endpoint lists.</p>
+              <ul>
+                <li><p>C lists D, and D lists C.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Space is <strong>O(V + E)</strong>.</p></li>
+            <li><p>Scanning the list for u takes <strong>O(degree(u))</strong>.</p>
+              <ul>
+                <li><p>An edge check may scan the entire unsorted list.</p></li>
+              </ul>
+
+            </li>
           </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-text">A: [B, C]
+          <pre><code class="language-text">A: [B, C]
 B: [A, C]
 C: [A, B, D]
-D: [A, C]</code></pre>
-          <ul>
-            <li><p><strong>Space complexity</strong>: O(V + E), efficient for sparse graphs</p></li>
-            <li><p><strong>Check if edge (u, v) exists</strong>: O(degree(u)), must scan u's neighbor list</p></li>
-            <li><p><strong>List all neighbors of u</strong>: O(degree(u))</p></li>
-          </ul>
+D: [C]</code></pre>
         </section>
 
         <section class="frame">
           <h2>Adjacency matrix</h2>
           <ul>
-            <li><p>A V×V matrix; entry [i][j] = 1 if an edge from vertex i to j exists, else 0</p></li>
-            <li><p>Same four-vertex graph:</p></li>
+            <li><p>Read row <em>u</em>, column <em>v</em>.</p>
+              <ul>
+                <li><p>1 means there is an edge.</p></li>
+                <li><p>0 means there is no edge.</p></li>
+              </ul>
+
+            </li>
+            <li><p>An undirected edge appears in two cells.</p>
+              <ul>
+                <li><p>The matrix is symmetric.</p></li>
+              </ul>
+
+            </li>
           </ul>
-          <table>
-            <thead>
-              <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
-            </thead>
+          <table class="compact">
+            <thead><tr><th scope="col"></th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th></tr></thead>
             <tbody>
-              <tr><td><strong>A</strong></td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
-              <tr><td><strong>B</strong></td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
-              <tr><td><strong>C</strong></td><td>1</td><td>1</td><td>0</td><td>1</td></tr>
-              <tr><td><strong>D</strong></td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+              <tr><th scope="row">A</th><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+              <tr><th scope="row">B</th><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+              <tr><th scope="row">C</th><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+              <tr><th scope="row">D</th><td>0</td><td>0</td><td>1</td><td>0</td></tr>
             </tbody>
           </table>
           <ul>
-            <li><p><strong>Space complexity</strong>: O(V²), costly for large sparse graphs</p></li>
-            <li><p><strong>Check if edge (u, v) exists</strong>: O(1), a single array lookup</p></li>
+            <li><p>Space is <strong>O(V²)</strong>.</p></li>
+            <li><p>An edge check takes <strong>O(1)</strong>.</p></li>
+            <li><p>A weighted matrix stores edge weights.</p>
+              <ul>
+                <li><p>Use a separate marker for missing edges if 0 is a valid weight.</p></li>
+              </ul>
+            </li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>Comparison: adjacency list vs. matrix</h2>
-          <table>
-            <thead>
-              <tr><th>Property</th><th>Adjacency List</th><th>Adjacency Matrix</th></tr>
-            </thead>
+          <h2>Comparing adjacency lists and matrices</h2>
+          <table class="compact">
+            <thead><tr><th scope="col">Property</th><th scope="col">Adjacency list</th><th scope="col">Adjacency matrix</th></tr></thead>
             <tbody>
-              <tr><td>Space</td><td>O(V + E)</td><td>O(V²)</td></tr>
-              <tr><td>Edge existence check</td><td>O(degree)</td><td>O(1)</td></tr>
-              <tr><td>List all neighbors</td><td>O(degree)</td><td>O(V)</td></tr>
-              <tr><td>Add an edge</td><td>O(1)</td><td>O(1)</td></tr>
-              <tr><td>Best for</td><td>Sparse graphs</td><td>Dense graphs</td></tr>
+              <tr><th scope="row">Space</th><td>O(V + E)</td><td>O(V²)</td></tr>
+              <tr><th scope="row">Check an edge (u, v)</th><td>O(degree(u))</td><td>O(1)</td></tr>
+              <tr><th scope="row">List the neighbors of u</th><td>O(degree(u))</td><td>O(V)</td></tr>
+              <tr><th scope="row">Insert an edge</th><td>Amortized O(1)</td><td>O(1)</td></tr>
+              <tr><th scope="row">Good fit</th><td>Sparse graphs</td><td>Dense graphs or frequent edge checks</td></tr>
             </tbody>
           </table>
+          <ul>
+            <li><p>Assumptions for insertion</p>
+              <ul>
+                <li><p>Both endpoints already exist.</p></li>
+                <li><p>Insertion skips duplicate checks.</p></li>
+              </ul>
+            </li>
+          </ul>
         </section>
 
         <section class="frame">
-          <h2>Practice</h2>
-          <p>How many edges are in the undirected graph G represented by the following adjacency matrix?</p>
-          <table>
-            <thead>
-              <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
-            </thead>
+          <h2>Practice counting edges</h2>
+          <ul>
+            <li><p>How many edges does this undirected graph have?</p></li>
+          </ul>
+          <table class="compact">
+            <thead><tr><th scope="col"></th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th></tr></thead>
             <tbody>
-              <tr><td><strong>A</strong></td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
-              <tr><td><strong>B</strong></td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
-              <tr><td><strong>C</strong></td><td>1</td><td>1</td><td>0</td><td>1</td></tr>
-              <tr><td><strong>D</strong></td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+              <tr><th scope="row">A</th><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+              <tr><th scope="row">B</th><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+              <tr><th scope="row">C</th><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+              <tr><th scope="row">D</th><td>0</td><td>0</td><td>1</td><td>0</td></tr>
             </tbody>
           </table>
+          <div class="fragment">
+            <ul>
+              <li><p><strong>4 edges.</strong></p>
+                <ul>
+                  <li><p>The eight 1s form four mirrored pairs.</p></li>
+                  <li><p>Count the 1s above the diagonal.</p></li>
+                </ul>
+
+              </li>
+            </ul>
+          </div>
         </section>
 
+        <section class="frame">
+          <h2>Neighbors in an adjacency list</h2>
+          <ul>
+            <li><p><code class="inline">g.adj[u]</code> stores the neighbors of vertex <code class="inline">u</code>.</p>
+              <ul>
+                <li><p>Use IDs A = 0, B = 1, C = 2, and D = 3.</p></li>
+                <li><p>A’s neighbors are B and C.</p></li>
+                <li><p><code class="inline">g.adj[0]</code> contains <code class="inline">[1, 2]</code>.</p></li>
+              </ul>
+            </li>
+            <li><p>BFS and DFS loop over A’s list.</p>
+              <ul>
+                <li><p><code class="inline">for (int v : g.adj[0])</code></p></li>
+              </ul>
+            </li>
+            <li><p>In a directed graph, the list gives outgoing neighbors.</p></li>
+            <li><p>A weighted list stores <code class="inline">(neighbor ID, weight)</code> pairs.</p>
+              <ul>
+                <li><p>A → B has weight 4.</p></li>
+                <li><p>A → C has weight 2.</p></li>
+                <li><p>A’s complete weighted list is <code class="inline">[(1, 4), (2, 2)]</code>.</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Neighbors in an adjacency matrix</h2>
+          <ul>
+            <li><p>Scan all columns of the source vertex’s row.</p>
+              <ul>
+                <li><p>For A, scan row 0.</p></li>
+                <li><p>In the unweighted matrix, <code class="inline">matrix[0][v] == 1</code> identifies a neighbor.</p></li>
+              </ul>
+            </li>
+          </ul>
+          <table class="compact">
+            <thead>
+              <tr><th scope="col">Row for A</th><th scope="col">A (0)</th><th scope="col">B (1)</th><th scope="col">C (2)</th><th scope="col">D (3)</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Unweighted</th><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+              <tr><th scope="row">Weighted</th><td>—</td><td>4</td><td>2</td><td>—</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p>Columns 1 and 2 give the neighbors B and C.</p></li>
+            <li><p>The weighted row gives their edge weights.</p></li>
+            <li><p>A dash marks a missing edge in the weighted row.</p></li>
+          </ul>
+        </section>
       </section>
 
-      <!-- =========================================================
-           Graph Traversals
-           ========================================================= -->
       <section>
-        <section class="title-slide slide level1">
-          <h1>Graph Traversals</h1>
-        </section>
+        <section class="title-slide slide level1"><h1>Graph Traversals</h1></section>
 
         <section class="frame">
           <h2>Why traverse a graph?</h2>
           <ul>
-            <li><p>Traversal means visiting every reachable vertex from a starting point</p></li>
-            <li><p>Common questions that require traversal:</p>
+            <li><p>Visit every vertex reachable from the start.</p>
               <ul>
-                <li><p>Is vertex B reachable from vertex A?</p></li>
-                <li><p>What is the shortest path from A to B?</p></li>
-                <li><p>Does a cycle exist in this graph?</p></li>
+                <li><p>Can A reach B?</p></li>
+                <li><p>How many edges are in the shortest unweighted route?</p></li>
               </ul>
+
             </li>
-            <li><p>Two standard strategies:</p>
+            <li><p>Track visited vertices.</p>
               <ul>
-                <li><p><strong>BFS</strong>: explore all immediate neighbors before going deeper</p></li>
-                <li><p><strong>DFS</strong>: go as deep as possible along one path before backtracking</p></li>
+                <li><p>Process each vertex once.</p></li>
+                <li><p>Cycles can lead back to a vertex you already visited.</p></li>
+                <li><p>Several routes can reach the same vertex.</p></li>
               </ul>
+
             </li>
-            <li><p>Both run in <strong>O(V + E)</strong> time</p></li>
+            <li><p>Restart at an unvisited vertex to continue the traversal.</p></li>
           </ul>
         </section>
 
-        <!-- ---- BFS ---- -->
         <section class="frame">
-          <h2>Breadth-first search: idea</h2>
+          <h2>Breadth-first search</h2>
           <ul>
-            <li><p>Visit the start vertex, then all its neighbors, then their unvisited neighbors, and so on</p></li>
-            <li><p>Uses a <strong>queue</strong> (FIFO) to decide which vertex to visit next</p>
+            <li><p>BFS explores in <strong>layers</strong>.</p>
               <ul>
-                <li><p>A queue ensures we always process closer vertices before farther ones</p></li>
+                <li><p>Start at distance 0.</p></li>
+                <li><p>Visit vertices one edge away next.</p></li>
+                <li><p>Continue to distance 2 and beyond.</p></li>
               </ul>
+
             </li>
-            <li><p>Vertices are marked <strong>visited</strong> when first discovered, not when processed</p></li>
-            <li><p>Applications: shortest path in unweighted graphs, social connection recommendations</p></li>
+            <li><p>A <strong>FIFO queue</strong> processes earlier discoveries first.</p></li>
+            <li><p>The first discovery gives the minimum edge count.</p>
+              <ul>
+                <li><p>Record the predecessor to recover a shortest path.</p></li>
+              </ul>
+
+            </li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>BFS: algorithm steps</h2>
-          <ul>
-            <li><p>Step 1: Mark start vertex visited; push it</p></li>
-            <li><p>Step 2: pop vertex u</p></li>
-            <li><p>Step 3: For each neighbor v of u:</p>
+          <h2>BFS steps</h2>
+          <ol>
+            <li><p>Enqueue the start vertex.</p>
               <ul>
-                <li><p>If v has not been visited, mark it visited and push it</p></li>
+                <li><p>Mark it discovered as it enters the queue.</p></li>
               </ul>
+
             </li>
-            <li><p>Step 4: Repeat from Step 2 until the queue is empty</p></li>
-            <li><p>Key invariant: when a vertex is poped, all vertices at a smaller distance from the start have already been visited</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>BFS: implementation</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void bfs(const Graph& g, int start) {
-    queue&lt;int&gt; q;
-    vector&lt;bool&gt; visited(g.size(), false);
-
-    visited[start] = true;  // mark before push to avoid duplicates
-    q.push(start);
-
-    while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-        // process u here
-
-        for (int v : g.adj[u]) {
-            if (!visited[v]) {
-                visited[v] = true;
-                q.push(v);
-            }
-        }
-    }
-}</code></pre>
-        </section>
-
-        <section class="frame">
-          <h2>BFS Example</h2>
-          <div class="two-col">
-            <div class="text-col">
+            <li><p>Dequeue the front vertex.</p>
               <ul>
-                <li><p>Start at <strong>A</strong>. BFS explores the graph level by level.</p></li>
-                <li><p>When more than one unvisited neighbor is available, visit them in <strong>alphabetical order</strong>.</p></li>
+                <li><p>Process that vertex.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Enqueue each undiscovered neighbor.</p>
+              <ul>
+                <li><p>Mark each one as it enters the queue.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Repeat until the queue is empty.</p></li>
+          </ol>
+          <p>Marking on enqueue prevents duplicates.</p>
+        </section>
+
+        <section class="frame">
+          <h2>BFS from A</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Start at <strong>A</strong>.</p></li>
+                <li><p>Enqueue unseen neighbors in A–Z order.</p></li>
               </ul>
             </div>
-            <div class="media-col">
-              <img
-                src="../_static/images/graph/BFS.png"
-                alt="Undirected graph with 8 vertices A through H used for BFS traversal example"
-              />
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/BFS.png" alt="Undirected graph with edges A–B, A–C, B–D, C–D, D–E, and D–F." width="500">
             </div>
           </div>
-<table>
-  <thead>
-    <tr>
-      <th></th>
-      <th>Action</th>
-      <th>Queue</th>
-      <th>Visited Order</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td>0</td><td>Mark A visited. push A</td><td>[A]</td><td>A</td></tr>
-    <tr><td>1</td><td>pop A. Visit B, push B. Visit C, push C.</td><td>[B, C]</td><td>A, B, C</td></tr>
-    <tr><td>2</td><td>pop B. Visit D, push D</td><td>[C, D]</td><td>A, B, C, D</td></tr>
-    <tr><td>3</td><td>pop C. No unvisited neighbors</td><td>[D]</td><td>A, B, C, D</td></tr>
-    <tr><td>4</td><td>pop D. Visit E, push E. Visit F, push F.</td><td>[E, F]</td><td>A, B, C, D, E, F</td></tr>
-    <tr><td>5</td><td>pop E. No unvisited neighbors</td><td>[F]</td><td>A, B, C, D, E, F</td></tr>
-    <tr><td>6</td><td>pop F. No unvisited neighbors</td><td>[]</td><td>A, B, C, D, E, F</td></tr>
-  </tbody>
-</table>
-          </section>
-
-        <section class="frame">
-          <h2>BFS: practice</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li><p>Start from vertex <strong>A</strong></p></li>
-                <li><p>Track the queue contents at each step</p></li>
-                <li><p>When more than one unvisited neighbor is available, visit them in <strong>alphabetical order</strong></p></li>
-                <li><p>List the order in which vertices are visited</p></li>
-              </ul>
-            </div>
-            <div class="media-col">
-              <img
-                src="../_static/images/graph/bfs_practice.png"
-                alt="Undirected graph for BFS and DFS practice; start from vertex B"
-              />
-            </div>
-          </div>
-        </section>
-
-        <!-- ---- DFS ---- -->
-        <section class="frame">
-          <h2>Depth-first search: idea</h2>
           <ul>
-            <li><p>Explore as far as possible along one branch before <strong>backtracking</strong></p></li>
-            <li><p>Uses a <strong>stack</strong> (LIFO) to decide which vertex to visit next</p>
-              <ul>
-                <li><p>A stack causes us to dive into the most recently discovered neighbor first</p></li>
-              </ul>
-            </li>
-            <li><p>Can also be implemented <strong>recursively</strong>, using the call stack implicitly</p></li>
-            <li><p>Vertices are marked visited when processed to avoid revisiting</p></li>
-            <li><p>Applications: cycle detection, maze solving, topological sorting</p></li>
+            <li><p>The front of the queue is on the left.</p></li>
           </ul>
-        </section>
-
-        <section class="frame">
-          <h2>DFS: algorithm steps (iterative)</h2>
-          <ul>
-            <li><p>Step 1: Push the start vertex onto the stack</p></li>
-            <li><p>Step 2: Pop vertex u from the stack</p></li>
-            <li><p>Step 3: If u has already been visited, skip it and go to Step 2</p></li>
-            <li><p>Step 4: Mark u visited; push all unvisited neighbors of u</p></li>
-            <li><p>Step 5: Repeat from Step 2 until the stack is empty</p></li>
-            <li><p>Note: the order neighbors are pushed affects which branch is explored first</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>DFS: iterative implementation </h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void dfs(const Graph& g, int start) {
-    stack&lt;int&gt; st;
-    vector&lt;bool&gt; visited(g.size(), false);
-    st.push(start);
-
-    while (!st.empty()) {
-        int u = st.top();
-        st.pop();
-        if (visited[u]) continue; // already processed, skip
-
-        visited[u] = true;
-        // process u here
-
-        for (int v : g.adj[u]) {
-            if (!visited[v]) {
-                st.push(v);
-            }
-        }
-    }
-}</code></pre>
-        </section>
-
-         <section class="frame">
-          <h2>DFS: recursive implementation</h2>
-          <ul>
-            <li><p>The call stack replaces the explicit stack: each recursive call goes one level deeper</p></li>
-            <li><p>Backtracking happens automatically when a call returns</p></li>
-            <li><p>The helper function <code class="inline">dfsHelper</code> is called once per unvisited vertex</p></li>
-          </ul>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">void dfsHelper(const Graph& g, int u, vector&lt;bool&gt;& visited) {
-    visited[u] = true;
-    // process u here
-    for (int v : g.adj[u]) {
-        if (!visited[v]) {
-            dfsHelper(g, v, visited);  // recurse into unvisited neighbor
-        }
-    }
-}
-void dfs(const Graph& g, int start) {
-    vector&lt;bool&gt; visited(g.size(), false);
-    dfsHelper(g, start, visited);
-}</code></pre>
-          <ul>
-            <li><p><strong>Iterative vs. recursive</strong>: both produce a valid DFS order; visit order may differ because the iterative version pushes all neighbors at once while the recursive version processes them one at a time</p></li>
-          </ul>
-        </section>
-
-        <section class="frame">
-          <h2>DFS example</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-               <li><p>Start at A; DFS dives deep before backtracking</p></li>
-              <li><p>When more than one unvisited neighbor is available, push them in <strong>alphabetical order</strong></p></li>
-
-              </ul>
-              
-            </div>
-            <div class="media-col">
-              <img
-                src="../_static/images/graph/BFS.png"
-                alt="Undirected graph with 8 vertices A through H used for DFS traversal example"
-              />
-            </div>
-          </div>
-<table>
-  <thead>
-    <tr>
-      <th>Step</th>
-      <th>Action</th>
-      <th>Stack</th>
-      <th>Visited Order</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td>0</td><td>Push A</td><td>[A]</td><td></td></tr>
-    <tr><td>1</td><td>Pop A, mark visited. Push B, C</td><td>[B, C]</td><td>A</td></tr>
-    <tr><td>2</td><td>Pop C, mark visited. Push D</td><td>[B, D]</td><td>A, C</td></tr>
-    <tr><td>3</td><td>Pop D, mark visited. Push B, E, F</td><td>[B, B, E, F]</td><td>A, C, D</td></tr>
-    <tr><td>4</td><td>Pop F, mark visited. No unvisited neighbors</td><td>[B, B, E]</td><td>A, C, D, F</td></tr>
-    <tr><td>5</td><td>Pop E, mark visited. No unvisited neighbors</td><td>[B, B]</td><td>A, C, D, F, E</td></tr>
-    <tr><td>6</td><td>Pop B, mark visited. No unvisited neighbors</td><td>[B]</td><td>A, C, D, F, E, B</td></tr>
-    <tr><td>7</td><td>Pop B, already visited, skip</td><td>[]</td><td>A, C, D, F, E, B</td></tr>
-  </tbody>
-</table>
-        </section>
-
-        <section class="frame">
-          <h2>DFS: practice</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li><p>Start from vertex <strong>A</strong></p></li>
-                <li><p>When more than one unvisited neighbor is available, push them in <strong>alphabetical order</strong></p></li>
-                <li><p>Track the stack contents at each step</p></li>
-                <li><p>List the order in which vertices are visited</p></li>
-              </ul>
-            </div>
-            <div class="media-col">
-              <img
-                src="../_static/images/graph/bfs_practice.png"
-                alt="Undirected graph for BFS and DFS practice; start from vertex B"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>BFS vs. DFS: comparison</h2>
-          <table>
-            <thead>
-              <tr><th>Property</th><th>BFS</th><th>DFS</th></tr>
-            </thead>
+          <table class="compact">
+            <thead><tr><th scope="col">Action</th><th scope="col">Queue</th><th scope="col">Discovery order</th></tr></thead>
             <tbody>
-              <tr><td>Data structure</td><td>Queue (FIFO)</td><td>Stack (LIFO)</td></tr>
-              <tr><td>Exploration order</td><td>Level by level</td><td>Deep path first</td></tr>
-              <tr><td>Shortest path?</td><td>Yes (unweighted)</td><td>Not guaranteed</td></tr>
-              <tr><td>Cycle detection</td><td>Possible</td><td>Common use</td></tr>
-              <tr><td>Typical use cases</td><td>Shortest paths, recommendations</td><td>Cycles, mazes, topological sort</td></tr>
-              <tr><td>Time complexity</td><td>O(V + E)</td><td>O(V + E)</td></tr>
+              <tr><td>Enqueue A</td><td>[A]</td><td>A</td></tr>
+              <tr><td>Dequeue A. Enqueue B, C.</td><td>[B, C]</td><td>A, B, C</td></tr>
+              <tr><td>Dequeue B. Enqueue D.</td><td>[C, D]</td><td>A, B, C, D</td></tr>
+              <tr><td>Dequeue C. D is already discovered.</td><td>[D]</td><td>A, B, C, D</td></tr>
+              <tr><td>Dequeue D. Enqueue E, F.</td><td>[E, F]</td><td>A, B, C, D, E, F</td></tr>
+              <tr><td>Dequeue E. No new neighbors.</td><td>[F]</td><td>A, B, C, D, E, F</td></tr>
+              <tr><td>Dequeue F. No new neighbors.</td><td>[]</td><td>A, B, C, D, E, F</td></tr>
             </tbody>
           </table>
         </section>
 
+        <section class="frame">
+          <h2>Practice tracing BFS</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Start at A.</p></li>
+                <li><p>Enqueue unseen neighbors in A–Z order.</p></li>
+                <li><p>Log the queue after each BFS step.</p></li>
+                <li><p>Record the discovery order.</p></li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/bfs_practice.png" alt="Undirected graph with edges A–B, A–C, A–G, B–D, C–D, D–F, and E–G." width="440">
+            </div>
+          </div>
+          <ul class="fragment" data-fragment-index="0">
+            <li><p><strong>Discovery order</strong> A, B, C, G, D, E, F</p></li>
+          </ul>
+          <table class="compact fragment" data-fragment-index="0">
+            <thead>
+              <tr><th scope="col">Removed from front</th><th scope="col">Added to back</th><th scope="col">Queue now (front first)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>—</td><td>A (start)</td><td>[A]</td></tr>
+              <tr><td>A</td><td>B, C, G</td><td>[B, C, G]</td></tr>
+              <tr><td>B</td><td>D</td><td>[C, G, D]</td></tr>
+              <tr><td>C</td><td>—</td><td>[G, D]</td></tr>
+              <tr><td>G</td><td>E</td><td>[D, E]</td></tr>
+              <tr><td>D</td><td>F</td><td>[E, F]</td></tr>
+              <tr><td>E</td><td>—</td><td>[F]</td></tr>
+              <tr><td>F</td><td>—</td><td>[]</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>BFS implementation</h2>
+          <p>Mark each neighbor when it enters the queue.</p>
+          <pre><code class="language-cpp">void bfs(const Graph&amp; g, int start) {
+    queue&lt;int&gt; q;
+    vector&lt;bool&gt; seen(g.size(), false);
+    seen[start] = true;
+    q.push(start);
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();  // Process u here.
+        for (int v : g.adj[u]) {
+            if (seen[v]) continue;
+            seen[v] = true;
+            q.push(v);
+        }
+    }
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Depth-first search</h2>
+          <ul>
+            <li><p>DFS follows a branch as far as possible.</p>
+              <ul>
+                <li><p><strong>Backtrack</strong> when there is no unvisited neighbor.</p></li>
+              </ul>
+
+            </li>
+            <li><p>A <strong>LIFO stack</strong> takes the most recent entry first.</p>
+              <ul>
+                <li><p>If you push B then C, C comes off first.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Recursive DFS backtracks by returning to the previous call.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Iterative DFS steps</h2>
+          <ol>
+            <li><p>Push the start vertex.</p></li>
+            <li><p>Pop the top entry.</p>
+              <ul>
+                <li><p>Skip the entry if its vertex was already visited.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Mark the vertex visited.</p>
+              <ul>
+                <li><p>Process that vertex.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Push each unvisited neighbor.</p></li>
+            <li><p>Repeat until the stack is empty.</p></li>
+          </ol>
+          <p>A vertex can be pending more than once.</p>
+        </section>
+
+        <section class="frame">
+          <h2>Iterative DFS from A</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Start at <strong>A</strong>.</p></li>
+                <li><p>Push unvisited neighbors alphabetically.</p>
+                  <ul>
+                    <li><p>The last neighbor pushed is on top.</p></li>
+                  </ul>
+
+                </li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/BFS.png" alt="Undirected graph with edges A–B, A–C, B–D, C–D, D–E, and D–F." width="500">
+            </div>
+          </div>
+          <ul>
+            <li><p>The top of the stack is on the right.</p></li>
+          </ul>
+          <table class="compact">
+            <thead><tr><th scope="col">Action</th><th scope="col">Stack</th><th scope="col">Visit order</th></tr></thead>
+            <tbody>
+              <tr><td>Push A</td><td>[A]</td><td>—</td></tr>
+              <tr><td>Pop A. Push B, C.</td><td>[B, C]</td><td>A</td></tr>
+              <tr><td>Pop C. Push D.</td><td>[B, D]</td><td>A, C</td></tr>
+              <tr><td>Pop D. Push B, E, F.</td><td>[B, B, E, F]</td><td>A, C, D</td></tr>
+              <tr><td>Pop F. No new neighbors.</td><td>[B, B, E]</td><td>A, C, D, F</td></tr>
+              <tr><td>Pop E. No new neighbors.</td><td>[B, B]</td><td>A, C, D, F, E</td></tr>
+              <tr><td>Pop B. No new neighbors.</td><td>[B]</td><td>A, C, D, F, E, B</td></tr>
+              <tr><td>Pop B again. Skip it.</td><td>[]</td><td>A, C, D, F, E, B</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Practice tracing iterative DFS</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Start at A.</p></li>
+                <li><p>Push unvisited neighbors alphabetically.</p></li>
+                <li><p>Mark visited on pop.</p></li>
+                <li><p>Log the stack after each full step.</p></li>
+                <li><p>Record the visit order.</p></li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/bfs_practice.png" alt="Undirected graph with edges A–B, A–C, A–G, B–D, C–D, D–F, and E–G." width="440">
+            </div>
+          </div>
+          <ul class="fragment" data-fragment-index="0">
+            <li><p><strong>Visit order</strong> A, G, E, C, D, F, B</p></li>
+          </ul>
+          <table class="compact fragment" data-fragment-index="0">
+            <thead><tr><th scope="col">Popped from top</th><th scope="col">Pushed onto stack</th><th scope="col">Stack now (top at right)</th></tr></thead>
+            <tbody>
+              <tr><td>—</td><td>A (start)</td><td>[A]</td></tr>
+              <tr><td>A</td><td>B, C, G</td><td>[B, C, G]</td></tr>
+              <tr><td>G</td><td>E</td><td>[B, C, E]</td></tr>
+              <tr><td>E</td><td>—</td><td>[B, C]</td></tr>
+              <tr><td>C</td><td>D</td><td>[B, D]</td></tr>
+              <tr><td>D</td><td>B, F</td><td>[B, B, F]</td></tr>
+              <tr><td>F</td><td>—</td><td>[B, B]</td></tr>
+              <tr><td>B</td><td>—</td><td>[B]</td></tr>
+              <tr><td>B (already visited)</td><td>—</td><td>[]</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Iterative DFS implementation</h2>
+          <p>Check for repeat visits when popping an entry.</p>
+          <pre><code class="language-cpp">void dfs(const Graph&amp; g, int start) {
+    stack&lt;int&gt; pending;
+    vector&lt;bool&gt; visited(g.size(), false);
+    pending.push(start);
+    while (!pending.empty()) {
+        int u = pending.top();
+        pending.pop();
+        if (visited[u]) continue;
+        visited[u] = true;
+        // Process u.
+        for (int v : g.adj[u]) {
+            if (!visited[v]) pending.push(v);
+        }
+    }
+}</code></pre>
+        </section>
+
+        <section class="frame">
+          <h2>Recursive DFS implementation</h2>
+          <p>Each call explores one unvisited neighbor at a time.</p>
+          <pre><code class="language-cpp">void dfsHelper(const Graph&amp; g, int u,
+               vector&lt;bool&gt;&amp; visited) {
+    visited[u] = true;
+    // Process u.
+    for (int v : g.adj[u]) {
+        if (!visited[v]) dfsHelper(g, v, visited);
+    }
+}
+
+void dfs(const Graph&amp; g, int start) {
+    vector&lt;bool&gt; visited(g.size(), false);
+    dfsHelper(g, start, visited);
+}</code></pre>
+          <ul>
+            <li><p>Returning from a call backtracks.</p></li>
+            <li><p>With alphabetical neighbors, recursion visits B before C.</p></li>
+            <li><p>The stack example visits C before B.</p></li>
+          </ul>
+        </section>
+
+        <section class="frame">
+          <h2>Comparing BFS and DFS</h2>
+          <table class="compact">
+            <thead>
+              <tr><th scope="col">Property</th><th scope="col">BFS</th><th scope="col">DFS</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Exploration order</th><td>Layer by layer</td><td>Follow a branch, then backtrack</td></tr>
+              <tr><th scope="row">Data structure</th><td>FIFO queue</td><td>LIFO stack or recursion</td></tr>
+              <tr><th scope="row">Shortest path</th><td>Fewest edges</td><td>May find a longer route first</td></tr>
+              <tr><th scope="row">Common uses</th><td>Degrees of separation</td><td>Mazes, cycle detection, topological sorting</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li><p><strong>Time for either traversal</strong></p>
+              <ul>
+                <li><p><strong>O(V + E)</strong> with adjacency lists.</p></li>
+                <li><p><strong>O(V²)</strong> in the worst case with an adjacency matrix.</p></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
       </section>
 
-      <!-- =========================================================
-           Dijkstra's Algorithm
-           ========================================================= -->
       <section>
-        <section class="title-slide slide level1">
-          <h1>Dijkstra's Shortest Path Algorithm</h1>
+        <section class="title-slide slide level1"><h1>Dijkstra’s Shortest Path Algorithm</h1></section>
+
+        <section class="frame">
+          <h2>Fewest edges and lowest cost</h2>
+          <ul>
+            <li><p>Compare two routes from A to D.</p>
+              <ul>
+                <li><p><strong>A → B → D</strong> uses 2 edges.</p>
+                  <ul>
+                    <li><p>Total cost is 4 + 10 = <strong>14</strong>.</p></li>
+                  </ul>
+
+                </li>
+                <li><p><strong>A → C → E → D</strong> uses 3 edges.</p>
+                  <ul>
+                    <li><p>Total cost is 2 + 3 + 4 = <strong>9</strong>.</p></li>
+                  </ul>
+
+                </li>
+              </ul>
+
+            </li>
+            <li><p><strong>BFS</strong> minimizes the number of edges.</p></li>
+            <li><p><strong>Dijkstra’s algorithm</strong> minimizes total cost.</p>
+              <ul>
+                <li><p>Start from one source.</p></li>
+                <li><p>Use non-negative edge weights.</p></li>
+              </ul>
+
+            </li>
+          </ul>
+          <img src="../_static/images/cop3530/graph/dijkstra.png" alt="Directed edges and weights: A to B 4, A to C 2, B to C 5, B to D 10, C to E 3, E to D 4, E to F 2, D to F 11." width="570">
         </section>
 
         <section class="frame">
-          <h2>Problem: shortest path in a weighted graph</h2>
+          <h2>Tentative distances and relaxation</h2>
           <ul>
-            <li><p>BFS finds the shortest path by edge count but ignores edge weights</p></li>
-            <li><p>When edges have different costs, the path with the fewest edges is not always the cheapest</p></li>
-            <li><p><strong>Dijkstra's algorithm</strong> finds the minimum-cost path from one source to all other vertices</p></li>
-            <li><p>Core idea: always expand the closest unfinished vertex next</p>
+            <li><p>A <strong>tentative distance</strong> is the best cost found so far.</p></li>
+            <li><p><strong>Relax</strong> u → v to test a route to v through u.</p>
               <ul>
-                <li><p>Use a <strong>min-heap priority queue</strong> keyed by current known distance</p></li>
-                <li><p>Once a vertex is popped, its shortest distance is finalized</p></li>
+                <li><p>Compute distance to u plus the edge weight.</p></li>
+                <li><p>Use the smaller distance if the route improves.</p></li>
+                <li><p>Record u as v’s predecessor when the distance improves.</p></li>
               </ul>
+
             </li>
-            <li><p>Requirement: all edge weights must be <strong>non-negative</strong></p></li>
+            <li><p>A <strong>min-priority queue</strong> selects the smallest tentative distance.</p>
+              <ul>
+                <li><p>Popping the smallest current entry finalizes its distance.</p></li>
+                <li><p>A competing route must first reach an unfinished vertex.</p></li>
+                <li><p>We already checked exits from finalized vertices.</p></li>
+                <li><p>Non-negative edges cannot lower a route’s cost.</p></li>
+              </ul>
+
+            </li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>Dijkstra's algorithm: steps</h2>
-          <ul>
-            <li><p>Step 1: Set <code class="inline">dist[start] = 0</code>; all other distances to infinity</p></li>
-            <li><p>Step 2: Push <code class="inline">(0, start)</code> into the min-heap</p></li>
-            <li><p>Step 3: Pop the entry <code class="inline">(d, u)</code> with the smallest distance</p>
+          <h2>Dijkstra’s algorithm steps</h2>
+          <ol>
+            <li><p>Initialize the distances.</p>
               <ul>
-                <li><p>If <code class="inline">d != dist[u]</code>, this is a stale entry, skip it</p></li>
+                <li><p>Set the source to 0.</p></li>
+                <li><p>Set all other distances to ∞.</p></li>
+                <li><p>Push (0, source).</p></li>
               </ul>
+
             </li>
-            <li><p>Step 4: For each neighbor v of u with edge weight w:</p>
+            <li><p>Pop the smallest entry (d, u).</p>
               <ul>
-                <li><p>Compute candidate: <code class="inline">dist[u] + w</code></p></li>
-                <li><p>If smaller than <code class="inline">dist[v]</code>, update <code class="inline">dist[v]</code> and push <code class="inline">(dist[v], v)</code></p></li>
+                <li><p>Skip a <strong>stale</strong> entry if d differs from the current distance to u.</p></li>
               </ul>
+
             </li>
-            <li><p>Step 5: Repeat from Step 3 until the queue is empty</p></li>
-          </ul>
+            <li><p>Finalize u.</p>
+              <ul>
+                <li><p>Relax each outgoing edge.</p></li>
+                <li><p>Save each better distance.</p></li>
+                <li><p>Update its predecessor.</p></li>
+                <li><p>Push the new entry.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Repeat until the queue is empty.</p>
+              <ul>
+                <li><p>Unreachable vertices keep distance ∞.</p></li>
+              </ul>
+
+            </li>
+          </ol>
         </section>
 
         <section class="frame">
-          <h2>Dijkstra's: complexity</h2>
-          <ul>
-            <li><p>Each vertex is finalized at most once when popped from the heap</p></li>
-            <li><p>Each edge triggers at most one push to the priority queue</p></li>
-            <li><p>Complexity depends on the priority queue implementation:</p>
+          <h2>Dijkstra trace setup</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
               <ul>
-                <li><p><strong>Binary min-heap</strong>: O((V + E) log V), preferred for sparse graphs</p></li>
-                <li><p><strong>Simple array</strong>: O(V²), simpler to implement, acceptable for small or dense graphs</p></li>
+                <li><p>Start at A with distance 0.</p></li>
+                <li><p>Set every other distance to ∞.</p></li>
+                <li><p>No vertex has a predecessor yet.</p></li>
+                <li><p><strong>✓</strong> marks a finalized distance.</p></li>
+                <li><p><strong>Bold</strong> marks a distance update.</p></li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/dijkstra.png" alt="Directed edges and weights: A to B 4, A to C 2, B to C 5, B to D 10, C to E 3, E to D 4, E to F 2, D to F 11." width="640">
+            </div>
+          </div>
+          <ul>
+            <li><p><strong>Priority queue in pop order</strong></p>
+              <ul>
+                <li><p>[(0,A)]</p></li>
               </ul>
             </li>
           </ul>
+          <table class="compact">
+            <thead><tr><th scope="col">Vertex</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th><th scope="col">E</th><th scope="col">F</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Distance</th><td>0</td><td>∞</td><td>∞</td><td>∞</td><td>∞</td><td>∞</td></tr>
+              <tr><th scope="row">Predecessor</th><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table>
         </section>
 
         <section class="frame">
-          <h2>Dijkstra's: implementation</h2>
-          <pre data-xleftmargin="3pt" data-numbersep="0.5em" data-frame="leftline"
-               data-fontsize="\small" data-tabsize="1"><code class="language-cpp">vector&lt;int&gt; dijkstra(const Graph& g, int start) {
-    const int INF = 1e9;
-    vector&lt;int&gt; dist(g.size(), INF);
-    vector&lt;int&gt; prev(g.size(), -1);
-    using State = pair&lt;int,int&gt;;                              // (dist, vertex)
-    priority_queue&lt;State, vector&lt;State&gt;, greater&lt;State&gt;&gt; pq; // min-heap
+          <h2>Dijkstra trace expands A</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Pop (0,A) to finalize A.</p></li>
+                <li><p>Relax A’s outgoing edges.</p>
+                  <ul>
+                    <li><p>A → B gives 0 + 4 = 4.</p></li>
+                    <li><p>A → C gives 0 + 2 = 2.</p></li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/dijkstra.png" alt="Directed edges and weights: A to B 4, A to C 2, B to C 5, B to D 10, C to E 3, E to D 4, E to F 2, D to F 11." width="640">
+            </div>
+          </div>
+          <ul>
+            <li><p><strong>Priority queue in pop order</strong></p>
+              <ul>
+                <li><p>[(2,C), (4,B)]</p></li>
+              </ul>
+            </li>
+          </ul>
+          <table class="compact">
+            <thead><tr><th scope="col">Vertex</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th><th scope="col">E</th><th scope="col">F</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Distance</th><td>0 ✓</td><td><strong>4</strong></td><td><strong>2</strong></td><td>∞</td><td>∞</td><td>∞</td></tr>
+              <tr><th scope="row">Predecessor</th><td>—</td><td>A</td><td>A</td><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Dijkstra trace expands C</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Pop (2,C) to finalize C.</p></li>
+                <li><p>C → E gives 2 + 3 = 5.</p></li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/dijkstra.png" alt="Directed edges and weights: A to B 4, A to C 2, B to C 5, B to D 10, C to E 3, E to D 4, E to F 2, D to F 11." width="640">
+            </div>
+          </div>
+          <ul>
+            <li><p><strong>Priority queue in pop order</strong></p>
+              <ul>
+                <li><p>[(4,B), (5,E)]</p></li>
+              </ul>
+            </li>
+          </ul>
+          <table class="compact">
+            <thead><tr><th scope="col">Vertex</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th><th scope="col">E</th><th scope="col">F</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Distance</th><td>0 ✓</td><td>4</td><td>2 ✓</td><td>∞</td><td><strong>5</strong></td><td>∞</td></tr>
+              <tr><th scope="row">Predecessor</th><td>—</td><td>A</td><td>A</td><td>—</td><td>C</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Dijkstra trace expands B</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Pop (4,B) to finalize B.</p></li>
+                <li><p>Test B → C.</p>
+                  <ul>
+                    <li><p>4 + 5 = 9 exceeds C’s distance of 2.</p></li>
+                  </ul>
+                </li>
+                <li><p>B → D gives 4 + 10 = 14.</p></li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/dijkstra.png" alt="Directed edges and weights: A to B 4, A to C 2, B to C 5, B to D 10, C to E 3, E to D 4, E to F 2, D to F 11." width="640">
+            </div>
+          </div>
+          <ul>
+            <li><p><strong>Priority queue in pop order</strong></p>
+              <ul>
+                <li><p>[(5,E), (14,D)]</p></li>
+              </ul>
+            </li>
+          </ul>
+          <table class="compact">
+            <thead><tr><th scope="col">Vertex</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th><th scope="col">E</th><th scope="col">F</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Distance</th><td>0 ✓</td><td>4 ✓</td><td>2 ✓</td><td><strong>14</strong></td><td>5</td><td>∞</td></tr>
+              <tr><th scope="row">Predecessor</th><td>—</td><td>A</td><td>A</td><td>B</td><td>C</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Dijkstra trace improves D through E</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Pop (5,E) to finalize E.</p></li>
+                <li><p>Relax E → D.</p>
+                  <ul>
+                    <li><p>5 + 4 = 9 improves on 14.</p></li>
+                  </ul>
+                </li>
+                <li><p>E → F gives 5 + 2 = 7.</p></li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/dijkstra.png" alt="Directed edges and weights: A to B 4, A to C 2, B to C 5, B to D 10, C to E 3, E to D 4, E to F 2, D to F 11." width="640">
+            </div>
+          </div>
+          <ul>
+            <li><p><strong>Priority queue in pop order</strong></p>
+              <ul>
+                <li><p>[(7,F), (9,D), (14,D stale)]</p></li>
+              </ul>
+            </li>
+          </ul>
+          <table class="compact">
+            <thead><tr><th scope="col">Vertex</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th><th scope="col">E</th><th scope="col">F</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Distance</th><td>0 ✓</td><td>4 ✓</td><td>2 ✓</td><td><strong>14 → 9</strong></td><td>5 ✓</td><td><strong>7</strong></td></tr>
+              <tr><th scope="row">Predecessor</th><td>—</td><td>A</td><td>A</td><td>E</td><td>C</td><td>E</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Dijkstra trace finishes with F and D</h2>
+          <div class="sd-row sd-gx-5">
+            <div class="sd-col-7">
+              <ul>
+                <li><p>Pop (7,F) to finalize F.</p>
+                  <ul>
+                    <li><p>F has no outgoing edges.</p></li>
+                  </ul>
+                </li>
+                <li><p>Pop (9,D) to finalize D.</p>
+                  <ul>
+                    <li><p>D → F gives 9 + 11 = 20, so F stays at 7.</p></li>
+                  </ul>
+                </li>
+                <li><p>Skip stale (14,D) because D’s distance is 9.</p></li>
+              </ul>
+            </div>
+            <div class="sd-col-5">
+              <img src="../_static/images/cop3530/graph/dijkstra.png" alt="Directed edges and weights: A to B 4, A to C 2, B to C 5, B to D 10, C to E 3, E to D 4, E to F 2, D to F 11." width="640">
+            </div>
+          </div>
+          <ul>
+            <li><p><strong>Priority queue in pop order</strong></p>
+              <ul>
+                <li><p>[]</p></li>
+              </ul>
+            </li>
+          </ul>
+          <table class="compact">
+            <thead><tr><th scope="col">Vertex</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th><th scope="col">D</th><th scope="col">E</th><th scope="col">F</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Distance</th><td>0 ✓</td><td>4 ✓</td><td>2 ✓</td><td>9 ✓</td><td>5 ✓</td><td>7 ✓</td></tr>
+              <tr><th scope="row">Predecessor</th><td>—</td><td>A</td><td>A</td><td>E</td><td>C</td><td>E</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Reconstructing the shortest paths</h2>
+          <ul>
+            <li><p>Follow predecessors from the destination back to A.</p>
+              <ul>
+                <li><p>For D, the predecessor chain is D, E, C, A.</p></li>
+              </ul>
+
+            </li>
+            <li><p>Reverse the vertex order to read the path from A.</p></li>
+          </ul>
+          <table class="compact">
+            <thead><tr><th scope="col">Destination</th><th scope="col">Distance from A</th><th scope="col">Path</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">A</th><td>0</td><td>A</td></tr>
+              <tr><th scope="row">B</th><td>4</td><td>A → B</td></tr>
+              <tr><th scope="row">C</th><td>2</td><td>A → C</td></tr>
+              <tr><th scope="row">D</th><td>9</td><td>A → C → E → D</td></tr>
+              <tr><th scope="row">E</th><td>5</td><td>A → C → E</td></tr>
+              <tr><th scope="row">F</th><td>7</td><td>A → C → E → F</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="frame">
+          <h2>Practice tracing Dijkstra</h2>
+          <div class="flex-container">
+            <div class="half">
+              <ul>
+                <li><p>Start at A.</p></li>
+                <li><p>Log the queue after each full step.</p></li>
+                <li><p>Break ties alphabetically.</p></li>
+                <li><p>Find the final distances.</p></li>
+                <li><p>Find each vertex’s predecessor.</p></li>
+              </ul>
+            </div>
+            <div class="half">
+              <img src="../_static/images/cop3530/graph/dijkstra_practice.png" alt="Directed edges and weights: A to B 3, A to C 3, C to B 2, B to D 6, B to E 5, D to E 4, E to F 2." width="625">
+            </div>
+          </div>
+          <div class="fragment">
+            <div class="sd-row sd-gx-5">
+              <div class="sd-col-7">
+                <table class="compact">
+                  <caption><strong>Priority queue by step</strong></caption>
+                  <thead><tr><th scope="col">Step</th><th scope="col">Queue after updates (next first)</th></tr></thead>
+                  <tbody>
+                    <tr><td>Initialize</td><td>[(0, A)]</td></tr>
+                    <tr><td>Pop (0, A)</td><td>[(3, B), (3, C)]</td></tr>
+                    <tr><td>Pop (3, B)</td><td>[(3, C), (8, E), (9, D)]</td></tr>
+                    <tr><td>Pop (3, C)</td><td>[(8, E), (9, D)]</td></tr>
+                    <tr><td>Pop (8, E)</td><td>[(9, D), (10, F)]</td></tr>
+                    <tr><td>Pop (9, D)</td><td>[(10, F)]</td></tr>
+                    <tr><td>Pop (10, F)</td><td>[]</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="sd-col-5">
+                <table class="compact">
+                  <caption><strong>Final results from A</strong></caption>
+                  <thead><tr><th scope="col">Vertex</th><th scope="col">Distance</th><th scope="col">Predecessor</th></tr></thead>
+                  <tbody>
+                    <tr><td>A</td><td>0</td><td>—</td></tr>
+                    <tr><td>B</td><td>3</td><td>A</td></tr>
+                    <tr><td>C</td><td>3</td><td>A</td></tr>
+                    <tr><td>D</td><td>9</td><td>B</td></tr>
+                    <tr><td>E</td><td>8</td><td>B</td></tr>
+                    <tr><td>F</td><td>10</td><td>E</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="frame">
+          <h2>Dijkstra implementation</h2>
+          <ul>
+            <li><p>The min-heap stores <code class="inline">(distance, vertex)</code> pairs.</p></li>
+            <li><p>The function returns distances.</p></li>
+            <li><p>It records predecessors in <code class="inline">prev</code>.</p></li>
+          </ul>
+          <pre><code class="language-cpp">vector&lt;long long&gt; dijkstra(const WeightedGraph&amp; g,
+                           int start, vector&lt;int&gt;&amp; prev) {
+    vector&lt;long long&gt; dist(g.size(), LLONG_MAX);
+    prev.assign(g.size(), -1);
+
+    using Entry = pair&lt;long long, int&gt;;
+    priority_queue&lt;Entry, vector&lt;Entry&gt;,
+                   greater&lt;Entry&gt;&gt; pq;
 
     dist[start] = 0;
     pq.push({0, start});
 
     while (!pq.empty()) {
-        auto [d, u] = pq.top(); pq.pop();
-        if (d != dist[u]) continue;  // stale entry, skip
+        long long d = pq.top().first;
+        int u = pq.top().second;
+        pq.pop();
+        if (d != dist[u]) continue;  // Stale entry.
 
-        for (auto [v, w] : g.adj[u]) {
-            if (dist[u] + w &lt; dist[v]) {  // shorter path found
-                dist[v] = dist[u] + w;
-                prev[v] = u;
-                pq.push({dist[v], v});
-            }
+        for (const auto&amp; edge : g.adj[u]) {
+            int v = edge.first;
+            long long candidate = d + edge.second;
+            if (candidate &gt;= dist[v]) continue;
+
+            dist[v] = candidate;
+            prev[v] = u;
+            pq.push({candidate, v});
         }
     }
     return dist;
@@ -779,313 +1197,74 @@ void dfs(const Graph& g, int start) {
         </section>
 
         <section class="frame">
-          <h2>Dijkstra's: key implementation notes</h2>
+          <h2>Dijkstra time complexity</h2>
           <ul>
-            <li><p><strong>Min-heap</strong>: <code class="inline">priority_queue</code> with <code class="inline">greater&lt;State&gt;</code> gives the smallest distance first</p></li>
-            <li><p><strong>Stale entry check</strong>: <code class="inline">if (d != dist[u]) continue</code></p>
+            <li><p>An adjacency list lets us scan each outgoing edge once.</p></li>
+            <li><p>A binary min-heap holds tentative entries.</p>
               <ul>
-                <li><p>The same vertex may appear in the queue multiple times with different distances</p></li>
-                <li><p>Only process the entry that matches the current best known distance</p></li>
+                <li><p>Relaxations add at most O(E) entries.</p></li>
+                <li><p>On a simple graph, each heap operation costs O(log V).</p></li>
               </ul>
+
             </li>
-            <li><p><strong>Relaxation</strong>: updating <code class="inline">dist[v]</code> when a shorter path through u is found</p></li>
-            <li><p><strong>prev array</strong>: tracks each vertex's predecessor so the full path can be reconstructed</p></li>
-          </ul>
-        </section>
-
-        <!-- Dijkstra Example -->
-        <section class="frame">
-          <h2>Dijkstra's example: setup</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li><p>Directed weighted graph, vertices A–F</p></li>
-          
-                <li><p>Starting vertex: A. Push <code class="inline">(0, A)</code></p></li>
-              </ul>
-              <table>
-                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
-                <tbody>
-                  <tr><td>A</td><td>0</td><td>–</td></tr>
-                  <tr><td>B</td><td>∞</td><td>–</td></tr>
-                  <tr><td>C</td><td>∞</td><td>–</td></tr>
-                  <tr><td>D</td><td>∞</td><td>–</td></tr>
-                  <tr><td>E</td><td>∞</td><td>–</td></tr>
-                  <tr><td>F</td><td>∞</td><td>–</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="media-col tight">
-              <img
-                src="../_static/images/graph/dijkstra.png"
-                alt="Weighted directed graph with vertices A through F used in Dijkstra example"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Dijkstra's example: step 1 — process A</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li><p>Pop <code class="inline">(0, A)</code>. Process A's neighbors:</p>
-                  <ul>
-                    <li><p>B: 0+4=4 &lt; ∞ &rightarrow; dist[B]=4, prev=A. Push (4,B)</p></li>
-                    <li><p>C: 0+2=2 &lt; ∞ &rightarrow; dist[C]=2, prev=A. Push (2,C)</p></li>
-                  </ul>
-                </li>
-                <li><p>PQ: [(2,C), (4,B)]</p></li>
-              </ul>
-              <table>
-                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
-                <tbody>
-                  <tr><td>A</td><td><strong>0 ✓</strong></td><td>–</td></tr>
-                  <tr><td>B</td><td><strong>∞ &rightarrow; 4</strong></td><td>A</td></tr>
-                  <tr><td>C</td><td><strong>∞ &rightarrow; 2</strong></td><td>A</td></tr>
-                  <tr><td>D</td><td>∞</td><td>–</td></tr>
-                  <tr><td>E</td><td>∞</td><td>–</td></tr>
-                  <tr><td>F</td><td>∞</td><td>–</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="media-col tight">
-              <img
-                src="../_static/images/graph/dijkstra.png"
-                alt="Weighted directed graph"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Dijkstra's example: step 2 — process C</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li>Starting PQ: [(2,C), (4,B)]</li>
-                <li><p>Pop <code class="inline">(2, C)</code>. Process C's neighbors:</p>
-                  <ul>
-                    <li><p>E: 2+3=5 &lt; ∞ &rightarrow; dist[E]=5, prev=C. Push (5,E)</p></li>
-                  </ul>
-                </li>
-                <li><p>PQ: [(4,B), (5,E)]</p></li>
-              </ul>
-              <table>
-                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
-                <tbody>
-                  <tr><td>A</td><td>0 ✓</td><td>–</td></tr>
-                  <tr><td>B</td><td>4</td><td>A</td></tr>
-                  <tr><td>C</td><td><strong>2 ✓</strong></td><td>A</td></tr>
-                  <tr><td>D</td><td>∞</td><td>–</td></tr>
-                  <tr><td>E</td><td><strong>∞ &rightarrow; 5</strong></td><td>C</td></tr>
-                  <tr><td>F</td><td>∞</td><td>–</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="media-col tight">
-              <img
-                src="../_static/images/graph/dijkstra.png"
-                alt="Weighted directed graph"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Dijkstra's example: step 3 — process B</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li>Starting PQ: [(4,B), (5,E)]</li>
-                <li><p>Pop <code class="inline">(4, B)</code>. Process B's neighbors:</p>
-                  <ul>
-                    <li><p>C: 4+5=9 &gt; dist[C]=2 &rightarrow; no update</p></li>
-                    <li><p>D: 4+10=14 &lt; ∞ &rightarrow; dist[D]=14, prev=B. Push (14,D)</p></li>
-                  </ul>
-                </li>
-                <li><p>PQ: [(5,E), (14,D)]</p></li>
-              </ul>
-              <table>
-                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
-                <tbody>
-                  <tr><td>A</td><td>0 ✓</td><td>–</td></tr>
-                  <tr><td>B</td><td><strong>4 ✓</strong></td><td>A</td></tr>
-                  <tr><td>C</td><td>2 ✓</td><td>A</td></tr>
-                  <tr><td>D</td><td><strong>∞ &rightarrow; 14</strong></td><td>B</td></tr>
-                  <tr><td>E</td><td>5</td><td>C</td></tr>
-                  <tr><td>F</td><td>∞</td><td>–</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="media-col tight">
-              <img
-                src="../_static/images/graph/dijkstra.png"
-                alt="Weighted directed graph"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Dijkstra's example: step 4 — process E, F</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li>Starting PQ: [(5,E), (14,D)]</li>
-                <li><p>Pop <code class="inline">(5, E)</code>. Process E's neighbors:</p>
-                  <ul>
-                    <li><p>D: 5+4=9 &lt; 14 &rightarrow; dist[D]=9, prev=E. Push (9,D)</p></li>
-                    <li><p>F: 5+2=7 &lt; ∞ &rightarrow; dist[F]=7, prev=E. Push (7,F)</p></li>
-                  </ul>
-                </li>
-                <li><p>PQ: [(7,F), (9,D), (14,D stale)]</p></li>
-                <li><p>Pop (7,F): F has no outgoing edges</p></li>
-                <li><p>PQ: [(9,D), (14,D stale)]</p></li>
-              </ul>
-              <table>
-                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
-                <tbody>
-                  <tr><td>A</td><td>0 ✓</td><td>–</td></tr>
-                  <tr><td>B</td><td><strong>4 ✓</strong></td><td>A</td></tr>
-                  <tr><td>C</td><td>2 ✓</td><td>A</td></tr>
-                  <tr><td>D</td><td><strong>14 &rightarrow; 9</strong></td><td>E</td></tr>
-                  <tr><td>E</td><td>5 ✓</td><td>C</td></tr>
-                  <tr><td>F</td><td><strong>∞ &rightarrow; 7 ✓</strong></td><td>E</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="media-col tight">
-              <img
-                src="../_static/images/graph/dijkstra.png"
-                alt="Weighted directed graph"
-              />
-              
-            </div>
-          </div>
-        </section>
-
-                <section class="frame">
-          <h2>Dijkstra's example: step 4 — D</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li>Starting PQ: [(9,D), (14,D stale)]</li>
-                <li><p>Pop <code class="inline">(9, D)</code>. Process D's neighbors:</p>
-                  <ul><li><p>F: 9+11=20 &gt; 7 &rightarrow; no update</p></li></ul>
-                <li><p>Pop (14,D): stale, dist[D]=9 &rightarrow; skip. Done</p></li>
-              </ul>
-            <table>
-                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
-                <tbody>
-                  <tr><td>A</td><td>0 ✓</td><td>–</td></tr>
-                  <tr><td>B</td><td>4 ✓</td><td>A</td></tr>
-                  <tr><td>C</td><td>2 ✓</td><td>A</td></tr>
-                  <tr><td>D</td><td>9 ✓</td><td>E</td></tr>
-                  <tr><td>E</td><td>5 ✓</td><td>C</td></tr>
-                  <tr><td>F</td><td>7 ✓</td><td>E</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="media-col tight">
-              <img
-                src="../_static/images/graph/dijkstra.png"
-                alt="Weighted directed graph"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Dijkstra's example: final result</h2>
-          <ul>
-            <li><p>All vertices finalized. Shortest distances from A:</p></li>
-          </ul>
-          <table>
-            <thead><tr><th>Vertex</th><th>Shortest distance from A</th><th>Path</th></tr></thead>
-            <tbody>
-              <tr><td>A</td><td>0</td><td>A</td></tr>
-              <tr><td>B</td><td>4</td><td>A &rightarrow; B</td></tr>
-              <tr><td>C</td><td>2</td><td>A &rightarrow; C</td></tr>
-              <tr><td>D</td><td>9</td><td>A &rightarrow; C &rightarrow; E &rightarrow; D</td></tr>
-              <tr><td>E</td><td>5</td><td>A &rightarrow; C &rightarrow; E</td></tr>
-              <tr><td>F</td><td>7</td><td>A &rightarrow; C &rightarrow; E &rightarrow; F</td></tr>
-            </tbody>
-          </table>
-          <ul>
-            <li><p>D is reached via E (cost 9), not directly via B (cost 14)</p></li>
+            <li><p>Adjacency lists plus a min-heap take <strong>O((V + E) log V)</strong>.</p></li>
+            <li><p>Scanning an array for the next vertex takes <strong>O(V²)</strong> overall.</p></li>
           </ul>
         </section>
 
         <section class="frame">
-          <h2>Dijkstra Practice</h2>
-          <div class="two-col">
-            <div class="text-col">
-              <ul>
-                <li>Use a prioty queue to find the shortest path from vertice A to other vertices</li>
-                <li>Keep track of the PQ content</li>
-                <li>Fill in the table: </p>
-              </ul>
-            <table>
-                <thead><tr><th>Vertex</th><th>dist</th><th>prev</th></tr></thead>
-                <tbody>
-                  <tr><td>A</td><td>-</td><td>–</td></tr>
-                  <tr><td>B</td><td>-</td><td>-</td></tr>
-                  <tr><td>C</td><td>-</td><td>-</td></tr>
-                  <tr><td>D</td><td>-</td><td>-</td></tr>
-                  <tr><td>E</td><td>-</td><td>-</td></tr>
-                  <tr><td>F</td><td>-</td><td>-</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="media-col tight">
-              <img
-                src="../_static/images/graph/dijkstra_practice.png"
-                alt="Weighted directed graph"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section class="frame">
-          <h2>Dijkstra's limitations</h2>
+          <h2>When Dijkstra applies</h2>
           <ul>
-            <li><p><strong>Negative edge weights are not supported</strong></p>
+            <li><p>Dijkstra requires <strong>non-negative weights</strong>.</p>
               <ul>
-                <li><p>Dijkstra assumes that once a vertex is popped, its distance is final</p></li>
-                <li><p>A later negative edge could shorten an already-finalized distance</p></li>
-                <li><p>This breaks the algorithm's correctness guarantee</p></li>
+                <li><p>A negative edge can improve an already finalized distance.</p></li>
               </ul>
+
             </li>
-            <li><p><strong>Negative cycles cause the algorithm to loop forever</strong></p>
+            <li><p><strong>Bellman–Ford</strong> supports negative edges.</p>
               <ul>
-                <li><p>Traversing a negative-weight cycle repeatedly lowers the path cost indefinitely</p></li>
-                <li><p>No finite shortest path exists in such a graph</p></li>
+                <li><p>It can detect a reachable negative cycle.</p></li>
               </ul>
+
             </li>
-            <li><p>For graphs with negative weights, use <strong>Bellman-Ford</strong> instead</p></li>
+            <li><p>A reachable negative cycle lets a route keep getting cheaper.</p>
+              <ul>
+                <li><p>Destinations reachable from that cycle have no finite minimum cost.</p></li>
+              </ul>
+
+            </li>
           </ul>
         </section>
-
       </section>
 
-      <!-- =========================================================
-           Wrap-up
-           ========================================================= -->
       <section>
-        <section class="title-slide slide level1">
-          <h1>Wrap-up</h1>
-        </section>
+        <section class="title-slide slide level1"><h1>Wrap-up</h1></section>
 
         <section class="frame">
-          <h2>Summary</h2>
+          <h2>Choosing a graph algorithm</h2>
           <ul>
-            <li><p>A <strong>graph</strong> has vertices and edges; properties include direction, weight, connectivity, and cycles</p></li>
-            <li><p><strong>Adjacency list</strong>: O(V+E) space, best for sparse graphs; <strong>matrix</strong>: O(1) edge lookup, O(V²) space</p></li>
-            <li><p><strong>BFS</strong> uses a queue to explore level by level; finds the shortest path by edge count</p></li>
-            <li><p><strong>DFS</strong> uses a stack to explore deep paths first; useful for cycle detection and topological sort</p></li>
-            <li><p><strong>Dijkstra's algorithm</strong> uses a min-heap to find shortest paths in weighted graphs with non-negative edges</p></li>
-            <li><p>Dijkstra's algorithm does not work with negative edge weights; use Bellman-Ford in that case</p></li>
+            <li><p>An adjacency list makes neighbor scans efficient.</p></li>
+            <li><p>An adjacency matrix gives constant-time edge checks.</p></li>
+            <li><p><strong>BFS</strong> finds a route with the fewest edges.</p>
+              <ul>
+                <li><p>A queue explores by layers.</p></li>
+                <li><p>Record a predecessor on first discovery.</p></li>
+              </ul>
+
+            </li>
+            <li><p><strong>DFS</strong> explores branches and backtracks.</p>
+              <ul>
+                <li><p>Use a stack or recursion.</p></li>
+              </ul>
+
+            </li>
+            <li><p><strong>Dijkstra</strong> finds minimum cost with non-negative weights.</p>
+              <ul>
+                <li><p>A min-priority queue selects the smallest tentative distance.</p></li>
+                <li><p>Record a predecessor when a distance improves.</p></li>
+              </ul>
+
+            </li>
           </ul>
         </section>
       </section>

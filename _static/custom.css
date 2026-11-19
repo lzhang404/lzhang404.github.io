@@ -817,6 +817,18 @@ body.image-viewer-open {
 .reveal table.compact { font-size: 0.78em; }
 .reveal table.tight { font-size: 0.72em; }
 
+/* Align ordinary slide-table text with the first-level list text.
+ * Lists have a 1em margin and 40px padding. Account for the table's
+ * 0.3em cell padding at its own font size, including compact tables.
+ * Keep nested tables and explicitly sized table layouts unchanged.
+ */
+.reveal .slides section:has(> ul, > ol) > table:not(.slide-table):not(.slide-table-inner) {
+  --table-list-inset: calc(var(--r-main-font-size) + 40px - 0.3em);
+  margin-left: var(--table-list-inset);
+  margin-right: 0;
+  width: calc(100% - var(--table-list-inset));
+}
+
 html.reveal-full-page,
 body,
 .reveal-viewport {
