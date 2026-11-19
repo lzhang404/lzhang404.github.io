@@ -559,9 +559,9 @@ D: [C]</code></pre>
             <div class="sd-col-7">
               <ul>
                 <li><p>Start at A.</p></li>
-                <li><p>Enqueue unseen neighbors in A–Z order.</p></li>
-                <li><p>Log the queue after each BFS step.</p></li>
-                <li><p>Record the discovery order.</p></li>
+                <li><p>Push unseen neighbors in A–Z order.</p></li>
+                <li><p>Keep the queue front on the left.</p></li>
+                <li><p>Track the queue and seen set after each step.</p></li>
               </ul>
             </div>
             <div class="sd-col-5">
@@ -573,17 +573,23 @@ D: [C]</code></pre>
           </ul>
           <table class="compact fragment" data-fragment-index="0">
             <thead>
-              <tr><th scope="col">Removed from front</th><th scope="col">Added to back</th><th scope="col">Queue now (front first)</th></tr>
+              <tr>
+                <th scope="col">Step</th>
+                <th scope="col">Removed<br>from front</th>
+                <th scope="col">Push unseen neighbors<br>to the back of the queue</th>
+                <th scope="col">Queue after<br>this step</th>
+                <th scope="col">Seen so far</th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td>—</td><td>A (start)</td><td>[A]</td></tr>
-              <tr><td>A</td><td>B, C, G</td><td>[B, C, G]</td></tr>
-              <tr><td>B</td><td>D</td><td>[C, G, D]</td></tr>
-              <tr><td>C</td><td>—</td><td>[G, D]</td></tr>
-              <tr><td>G</td><td>E</td><td>[D, E]</td></tr>
-              <tr><td>D</td><td>F</td><td>[E, F]</td></tr>
-              <tr><td>E</td><td>—</td><td>[F]</td></tr>
-              <tr><td>F</td><td>—</td><td>[]</td></tr>
+              <tr><th scope="row">Start</th><td>—</td><td>A</td><td>[A]</td><td>{A}</td></tr>
+              <tr><th scope="row">1</th><td>A</td><td>B, C, G</td><td>[B, C, G]</td><td>{A, B, C, G}</td></tr>
+              <tr><th scope="row">2</th><td>B</td><td>D</td><td>[C, G, D]</td><td>{A, B, C, D, G}</td></tr>
+              <tr><th scope="row">3</th><td>C</td><td>—</td><td>[G, D]</td><td>{A, B, C, D, G}</td></tr>
+              <tr><th scope="row">4</th><td>G</td><td>E</td><td>[D, E]</td><td>{A, B, C, D, E, G}</td></tr>
+              <tr><th scope="row">5</th><td>D</td><td>F</td><td>[E, F]</td><td>{A, B, C, D, E, F, G}</td></tr>
+              <tr><th scope="row">6</th><td>E</td><td>—</td><td>[F]</td><td>{A, B, C, D, E, F, G}</td></tr>
+              <tr><th scope="row">7</th><td>F</td><td>—</td><td>[]</td><td>{A, B, C, D, E, F, G}</td></tr>
             </tbody>
           </table>
         </section>
@@ -691,10 +697,10 @@ D: [C]</code></pre>
             <div class="sd-col-7">
               <ul>
                 <li><p>Start at A.</p></li>
-                <li><p>Push unvisited neighbors alphabetically.</p></li>
+                <li><p>Push unvisited neighbors in A–Z order.</p></li>
                 <li><p>Mark visited on pop.</p></li>
-                <li><p>Log the stack after each full step.</p></li>
-                <li><p>Record the visit order.</p></li>
+                <li><p>Keep the stack top on the right.</p></li>
+                <li><p>Track the stack and visited set after each step.</p></li>
               </ul>
             </div>
             <div class="sd-col-5">
@@ -704,18 +710,27 @@ D: [C]</code></pre>
           <ul class="fragment" data-fragment-index="0">
             <li><p><strong>Visit order</strong> A, G, E, C, D, F, B</p></li>
           </ul>
-          <table class="compact fragment" data-fragment-index="0">
-            <thead><tr><th scope="col">Popped from top</th><th scope="col">Pushed onto stack</th><th scope="col">Stack now (top at right)</th></tr></thead>
+          <table class="tight fragment" data-fragment-index="0">
+            <thead>
+              <tr>
+                <th scope="col">Step</th>
+                <th scope="col">Popped<br>from top</th>
+                <th scope="col">Visit / Skip</th>
+                <th scope="col">Pushed onto<br>the stack</th>
+                <th scope="col">Stack after<br>this step</th>
+                <th scope="col">Visited so far</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td>—</td><td>A (start)</td><td>[A]</td></tr>
-              <tr><td>A</td><td>B, C, G</td><td>[B, C, G]</td></tr>
-              <tr><td>G</td><td>E</td><td>[B, C, E]</td></tr>
-              <tr><td>E</td><td>—</td><td>[B, C]</td></tr>
-              <tr><td>C</td><td>D</td><td>[B, D]</td></tr>
-              <tr><td>D</td><td>B, F</td><td>[B, B, F]</td></tr>
-              <tr><td>F</td><td>—</td><td>[B, B]</td></tr>
-              <tr><td>B</td><td>—</td><td>[B]</td></tr>
-              <tr><td>B (already visited)</td><td>—</td><td>[]</td></tr>
+              <tr><th scope="row">Start</th><td>—</td><td>—</td><td>A</td><td>[A]</td><td>{}</td></tr>
+              <tr><th scope="row">1</th><td>A</td><td>Visit</td><td>B, C, G</td><td>[B, C, G]</td><td>{A}</td></tr>
+              <tr><th scope="row">2</th><td>G</td><td>Visit</td><td>E</td><td>[B, C, E]</td><td>{A, G}</td></tr>
+              <tr><th scope="row">3</th><td>E</td><td>Visit</td><td>—</td><td>[B, C]</td><td>{A, E, G}</td></tr>
+              <tr><th scope="row">4</th><td>C</td><td>Visit</td><td>D</td><td>[B, D]</td><td>{A, C, E, G}</td></tr>
+              <tr><th scope="row">5</th><td>D</td><td>Visit</td><td>B, F</td><td>[B, B, F]</td><td>{A, C, D, E, G}</td></tr>
+              <tr><th scope="row">6</th><td>F</td><td>Visit</td><td>—</td><td>[B, B]</td><td>{A, C, D, E, F, G}</td></tr>
+              <tr><th scope="row">7</th><td>B</td><td>Visit</td><td>—</td><td>[B]</td><td>{A, B, C, D, E, F, G}</td></tr>
+              <tr><th scope="row">8</th><td>B</td><td>Skip</td><td>—</td><td>[]</td><td>{A, B, C, D, E, F, G}</td></tr>
             </tbody>
           </table>
         </section>
